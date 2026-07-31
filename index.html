@@ -2,51 +2,34 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>火哥的个人站</title>
-<link rel="stylesheet" href="/assets/css/style.css">
+<meta name="description" content="火哥的个人站 — 计划安排 · 知识库 · 每日新闻 · AI训练师复习">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="/assets/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="manifest" href="/assets/manifest.webmanifest">
+<link rel="stylesheet" href="/assets/css/workbench.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="inner">
-    <h1>火哥的个人站</h1>
-    <p>这里收录我做过的各种小工具、复习资料和作品 —— 持续更新中。</p>
-  </div>
-</header>
-
-<main class="container">
-  <!-- 要新增板块：复制一个 .card 块，改标题/描述/链接即可 -->
-  <div class="section-title">作品与资料</div>
-  <div class="cards">
-
-    <div class="card feature">
-      <h3>🤖 人工智能训练师三级 · 备考复习</h3>
-      <p class="desc">上机代码复习 + 单选/多选/判断专项刷题 + 综合题库，全部可在线练习、自动判分。</p>
-      <div class="links">
-        <a class="chip" href="/ai-trainer/">进入板块 →</a>
-      </div>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-name">火哥的个人站</div>
+      <div class="brand-sub">我的个人工作台</div>
     </div>
-
-    <!-- 示例占位：以后做的东西放这里
-    <div class="card">
-      <h3>某作品标题</h3>
-      <p class="desc">一句话描述这个作品是干什么的。</p>
-      <div class="links">
-        <a class="chip" href="/some-path/">打开</a>
-      </div>
-    </div>
-    -->
-
-    <div class="card soon">
-      <h3>🚧 更多内容即将上线</h3>
-      <p class="desc">这个站点会随我做的东西一起长大。有新的小工具或资料，我会加进对应的板块。</p>
-    </div>
-
-  </div>
-</main>
-
-<footer class="footer">
-  火哥的个人站 · 由 Cloudflare Pages 免费托管
-</footer>
+    <nav id="menu">
+      <button class="menu-item active" data-view="plan"><span class="mi">◼</span>计划安排</button>
+      <button class="menu-item" data-view="kb"><span class="mi">▦</span>知识库</button>
+      <button class="menu-item" data-view="news"><span class="mi">◎</span>每日新闻</button>
+      <button class="menu-item" data-view="ait"><span class="mi">▸</span>AI训练师复习</button>
+      <div class="menu-spacer"></div>
+      <button class="menu-item" data-view="settings"><span class="mi">⚙</span>设置 / 数据</button>
+    </nav>
+  </aside>
+  <main id="content"></main>
+</div>
+<div id="toast"></div>
+<script src="/assets/js/workbench.js"></script>
 </body>
 </html>

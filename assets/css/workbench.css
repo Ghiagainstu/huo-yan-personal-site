@@ -1,0 +1,164 @@
+/* ============ 火哥的个人站 · 个人工作台（苹果黑白灰） ============ */
+:root{
+  --bg:#ffffff; --panel:#fafafa; --ink:#1a1a1a; --sub:#8a8a8e;
+  --line:#e5e5e7; --line2:#d2d2d7; --black:#000000;
+  --red:#e5484d; --yellow:#f5a623; --blue:#2f6fed; --gray:#9ca3af;
+  --radius:10px; --sidebar:23%;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,"SF Pro Text","SF Pro Display","PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;letter-spacing:.01em;
+}
+#app{display:flex;min-height:100vh}
+
+/* ---------- 左侧栏 23% ---------- */
+#sidebar{
+  width:var(--sidebar);min-width:200px;max-width:280px;
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+  background:var(--bg);
+}
+.brand{padding:28px 22px 14px;text-align:center}
+.brand-name{font-size:19px;font-weight:700;letter-spacing:.02em}
+.brand-sub{font-size:12px;color:var(--sub);margin-top:4px}
+#menu{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.menu-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:11px 14px;border:none;background:none;border-radius:8px;
+  font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;
+}
+.menu-item .mi{width:18px;text-align:center;color:var(--sub);font-size:13px}
+.menu-item:hover{background:var(--panel)}
+.menu-item.active{background:#f0f0f2;font-weight:600}
+.menu-item.active .mi{color:var(--black)}
+.menu-spacer{flex:1}
+
+/* ---------- 右栏 77% ---------- */
+#content{flex:1;width:77%;padding:34px 38px 60px;max-width:1080px}
+#content h2{font-size:24px;font-weight:700;letter-spacing:.01em}
+.sub{font-size:13px;color:var(--sub);margin:4px 0 22px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px 22px;margin-bottom:18px;
+}
+.card h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.card p.dim{font-size:13px;color:var(--sub)}
+
+/* 按钮 */
+.btn{
+  border:1px solid var(--black);background:var(--black);color:#fff;
+  padding:9px 18px;border-radius:8px;font-size:14px;font-weight:500;
+  cursor:pointer;font-family:inherit;
+}
+.btn:hover{opacity:.85}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--black);opacity:1}
+.btn.sm{padding:5px 12px;font-size:13px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 输入 */
+input[type=text],input[type=datetime-local],textarea,select{
+  width:100%;padding:10px 12px;border:1px solid var(--line2);border-radius:8px;
+  font-size:14px;font-family:inherit;background:#fff;color:var(--ink);
+}
+input:focus,textarea:focus{outline:none;border-color:var(--black)}
+textarea{min-height:74px;resize:vertical}
+
+/* 待办 */
+.todo-row{
+  display:flex;align-items:center;gap:10px;padding:11px 4px;
+  border-bottom:1px solid var(--line);
+}
+.todo-row:last-child{border-bottom:none}
+.todo-row .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.todo-row .txt{flex:1;font-size:14px}
+.todo-row .time{font-size:12px;color:var(--sub);white-space:nowrap}
+.todo-row .done .txt{color:var(--sub);text-decoration:line-through}
+.pri-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pri-opt{
+  display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line2);
+  border-radius:20px;font-size:13px;cursor:pointer;background:#fff;
+}
+.pri-opt.sel{border-color:var(--black);background:#f5f5f5;font-weight:600}
+.pri-opt .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.form-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.form-row input[type=datetime-local]{flex:1;min-width:200px}
+.add-line{display:flex;gap:10px}
+.add-line input[type=text]{flex:1}
+
+/* 知识库 */
+.tabbar{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tab{
+  padding:9px 14px;font-size:14px;color:var(--sub);cursor:pointer;border:none;background:none;
+  border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit;
+}
+.tab.active{color:var(--black);border-bottom-color:var(--black);font-weight:600}
+.kb-entry{border-bottom:1px solid var(--line);padding:14px 2px}
+.kb-entry:last-child{border-bottom:none}
+.kb-entry .t{font-size:14px;white-space:pre-wrap}
+.kb-entry img{max-width:220px;max-height:220px;border-radius:8px;margin-top:8px;display:block;border:1px solid var(--line)}
+.kb-entry .meta{font-size:12px;color:var(--sub);margin-top:6px}
+.icon-btn{background:none;border:none;color:var(--sub);cursor:pointer;font-size:13px;padding:2px 6px}
+.icon-btn:hover{color:var(--black)}
+
+/* 新闻 */
+.news-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.news-item{
+  display:flex;align-items:center;gap:12px;padding:13px 6px;
+  border-bottom:1px solid var(--line);cursor:pointer;
+}
+.news-item:hover{background:#f7f7f8}
+.news-item .idx{width:22px;text-align:center;font-weight:700;color:var(--sub);font-size:14px}
+.news-item .idx.top{color:var(--red)}
+.news-item .t{flex:1;font-size:14px}
+.news-item .hot{font-size:12px;color:var(--sub);white-space:nowrap}
+.copy-line{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.copy-line .c{font-size:14px;white-space:pre-wrap;margin-bottom:8px}
+.copy-line .row{display:flex;justify-content:space-between;align-items:center}
+.tip{background:#f0f0f2;border-radius:8px;padding:12px 14px;font-size:13px;color:var(--ink)}
+.tip b{font-weight:600}
+
+/* AI训练师板块 */
+.ait-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.ait-card{
+  display:block;border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;background:var(--panel);text-decoration:none;color:var(--ink);
+  transition:border-color .15s,transform .15s;
+}
+.ait-card:hover{border-color:var(--black);transform:translateY(-2px)}
+.ait-card .name{font-size:15px;font-weight:600}
+.ait-card .desc{font-size:12px;color:var(--sub);margin-top:4px}
+
+/* 设置 */
+.set-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+
+/* toast */
+#toast{
+  position:fixed;top:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:8px;
+}
+.toast{
+  background:var(--black);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:320px;
+  animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+
+/* 空状态 */
+.empty{font-size:13px;color:var(--sub);padding:18px 4px}
+
+/* ---------- 移动端 ---------- */
+@media (max-width:768px){
+  #app{flex-direction:column}
+  #sidebar{width:100%;max-width:none;height:auto;position:sticky;top:0;z-index:50;
+    border-right:none;border-bottom:1px solid var(--line);background:#fff}
+  .brand{padding:12px 14px 4px}
+  .brand-name{font-size:16px}
+  .brand-sub{display:none}
+  #menu{flex-direction:row;overflow-x:auto;padding:6px 10px 8px;gap:4px}
+  .menu-item{white-space:nowrap;padding:8px 12px;width:auto}
+  .menu-spacer{display:none}
+  #content{width:100%;padding:20px 14px 60px}
+}
