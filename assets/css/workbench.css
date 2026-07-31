@@ -121,16 +121,18 @@ textarea{min-height:74px;resize:vertical}
 .tip{background:#f0f0f2;border-radius:8px;padding:12px 14px;font-size:13px;color:var(--ink)}
 .tip b{font-weight:600}
 
-/* AI训练师板块 */
-.ait-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.ait-card{
+/* 火哥的项目（项目列表） */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.proj-card{
   display:block;border:1px solid var(--line);border-radius:var(--radius);
-  padding:18px;background:var(--panel);text-decoration:none;color:var(--ink);
+  padding:20px;background:var(--panel);text-decoration:none;color:var(--ink);
   transition:border-color .15s,transform .15s;
 }
-.ait-card:hover{border-color:var(--black);transform:translateY(-2px)}
-.ait-card .name{font-size:15px;font-weight:600}
-.ait-card .desc{font-size:12px;color:var(--sub);margin-top:4px}
+.proj-card:hover{border-color:var(--black);transform:translateY(-2px)}
+.proj-card .tag{font-size:12px;color:var(--sub);margin-bottom:10px}
+.proj-card .name{font-size:16px;font-weight:600;margin-bottom:6px}
+.proj-card .desc{font-size:13px;color:var(--sub);margin-bottom:16px}
+.proj-card .go{font-size:13px;font-weight:600}
 
 /* 设置 */
 .set-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}

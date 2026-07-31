@@ -110,7 +110,7 @@
     if (currentView === 'plan') renderPlan();
     else if (currentView === 'kb') renderKb();
     else if (currentView === 'news') renderNews();
-    else if (currentView === 'ait') renderAit();
+    else if (currentView === 'projects') renderProjects();
     else if (currentView === 'settings') renderSettings();
   }
 
@@ -339,20 +339,27 @@
       });
   }
 
-  /* ---------- AI训练师板块（链接到现有页面） ---------- */
-  function renderAit() {
-    var mods = [
-      { url: '/ai-trainer/heku.html', name: '综合题库合集', desc: '单选 + 多选 + 判断三合一' },
-      { url: '/ai-trainer/shangji.html', name: '上机代码复习', desc: '操作技能题 · 代码与实操要点' },
-      { url: '/ai-trainer/danxuan.html', name: '单选题专项', desc: '逐题练习 · 即时反馈' },
-      { url: '/ai-trainer/duoxuan.html', name: '多选题专项', desc: '快速提分 · 聚焦易错' },
-      { url: '/ai-trainer/panduan.html', name: '判断题专项', desc: '概念辨析巩固' }
+  /* ---------- 火哥的项目（项目列表，可持续添加） ---------- */
+  function renderProjects() {
+    var projects = [
+      {
+        url: '/ai-trainer/',
+        name: '人工智能训练师三级 · 备考复习',
+        desc: '上机代码复习 + 单选/多选/判断专项 + 综合题库合集，在线刷题、自动判分。',
+        tag: '备考资料'
+      }
+      // —— 以后新增项目：复制一个对象，填 url / name / desc / tag 即可 ——
     ];
     content.innerHTML =
-      '<h2>AI训练师复习</h2>' +
-      '<p class="sub">人工智能训练师三级 · 备考资料（进入后将切到对应页面，顶部可返回工作台）</p>' +
-      '<div class="ait-grid">' + mods.map(function (m) {
-        return '<a class="ait-card" href="' + m.url + '"><div class="name">' + m.name + '</div><div class="desc">' + m.desc + '</div></a>';
+      '<h2>火哥的项目</h2>' +
+      '<p class="sub">我做过的项目都放在这里 · 持续更新中</p>' +
+      '<div class="proj-grid">' + projects.map(function (p) {
+        return '<a class="proj-card" href="' + p.url + '">' +
+          '<div class="tag">' + esc(p.tag) + '</div>' +
+          '<div class="name">' + esc(p.name) + '</div>' +
+          '<div class="desc">' + esc(p.desc) + '</div>' +
+          '<div class="go">进入 →</div>' +
+          '</a>';
       }).join('') + '</div>';
   }
 
