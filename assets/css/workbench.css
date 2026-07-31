@@ -121,18 +121,35 @@ textarea{min-height:74px;resize:vertical}
 .tip{background:#f0f0f2;border-radius:8px;padding:12px 14px;font-size:13px;color:var(--ink)}
 .tip b{font-weight:600}
 
-/* 火哥的项目（项目列表） */
-.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+/* 火哥的项目（封面卡片 + 时间线） */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .proj-card{
   display:block;border:1px solid var(--line);border-radius:var(--radius);
-  padding:20px;background:var(--panel);text-decoration:none;color:var(--ink);
+  background:var(--panel);text-decoration:none;color:var(--ink);overflow:hidden;
   transition:border-color .15s,transform .15s;
 }
 .proj-card:hover{border-color:var(--black);transform:translateY(-2px)}
-.proj-card .tag{font-size:12px;color:var(--sub);margin-bottom:10px}
+.proj-cover{
+  height:110px;background:#f5f5f7;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;font-weight:600;color:#d1d1d6;letter-spacing:.06em;
+}
+.proj-body{padding:16px 18px 18px}
+.proj-card .tag{font-size:12px;color:var(--sub);margin-bottom:8px}
 .proj-card .name{font-size:16px;font-weight:600;margin-bottom:6px}
 .proj-card .desc{font-size:13px;color:var(--sub);margin-bottom:16px}
 .proj-card .go{font-size:13px;font-weight:600}
+.tl-title{margin:34px 0 16px;font-size:15px;font-weight:600}
+.timeline{position:relative;padding-left:22px;border-left:1px solid var(--line2);margin-left:4px}
+.tl-node{position:relative;padding:0 0 22px}
+.tl-dot{
+  position:absolute;left:-27px;top:4px;width:11px;height:11px;border-radius:50%;
+  background:var(--line2);border:2px solid var(--bg);
+}
+.tl-node.latest .tl-dot{background:var(--black)}
+.tl-date{font-size:13px;font-weight:600}
+.tl-text{font-size:14px;margin-top:2px}
+.tl-proj{font-size:12px;color:var(--sub);margin-top:2px}
 
 /* 设置 */
 .set-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}

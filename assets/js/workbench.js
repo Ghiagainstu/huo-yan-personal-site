@@ -339,27 +339,53 @@
       });
   }
 
-  /* ---------- 火哥的项目（项目列表，可持续添加） ---------- */
+  /* ---------- 火哥的项目（封面卡片 + 时间线，可持续添加） ---------- */
   function renderProjects() {
     var projects = [
       {
         url: '/ai-trainer/',
         name: '人工智能训练师三级 · 备考复习',
         desc: '上机代码复习 + 单选/多选/判断专项 + 综合题库合集，在线刷题、自动判分。',
-        tag: '备考资料'
+        tag: '备考资料',
+        coverChar: 'AI',
+        milestones: [
+          { date: '2026-06-27', text: '题库整理起步：单选 / 多选 / 判断题集完成' },
+          { date: '2026-07-15', text: '题库合集页上线，三题型在线刷题' },
+          { date: '2026-07-31', text: '上机代码复习 v5 完成，并入「火哥的个人站」' }
+        ]
       }
-      // —— 以后新增项目：复制一个对象，填 url / name / desc / tag 即可 ——
+      // —— 以后新增项目：复制一个对象，填 url / name / desc / tag / coverChar / milestones ——
     ];
+    var tl = [];
+    projects.forEach(function (p) {
+      (p.milestones || []).forEach(function (m) {
+        tl.push({ date: m.date, text: m.text, proj: p.name });
+      });
+    });
+    tl.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+
     content.innerHTML =
       '<h2>火哥的项目</h2>' +
       '<p class="sub">我做过的项目都放在这里 · 持续更新中</p>' +
       '<div class="proj-grid">' + projects.map(function (p) {
         return '<a class="proj-card" href="' + p.url + '">' +
-          '<div class="tag">' + esc(p.tag) + '</div>' +
-          '<div class="name">' + esc(p.name) + '</div>' +
-          '<div class="desc">' + esc(p.desc) + '</div>' +
-          '<div class="go">进入 →</div>' +
-          '</a>';
+          '<div class="proj-cover">' + esc(p.coverChar || p.name.charAt(0)) + '</div>' +
+          '<div class="proj-body">' +
+            '<div class="tag">' + esc(p.tag) + '</div>' +
+            '<div class="name">' + esc(p.name) + '</div>' +
+            '<div class="desc">' + esc(p.desc) + '</div>' +
+            '<div class="go">进入 →</div>' +
+          '</div>' +
+        '</a>';
+      }).join('') + '</div>' +
+      '<h3 class="tl-title">项目时间线</h3>' +
+      '<div class="timeline">' + tl.map(function (m, i) {
+        return '<div class="tl-node' + (i === 0 ? ' latest' : '') + '">' +
+          '<div class="tl-dot"></div>' +
+          '<div class="tl-date">' + esc(m.date) + '</div>' +
+          '<div class="tl-text">' + esc(m.text) + '</div>' +
+          '<div class="tl-proj">' + esc(m.proj) + '</div>' +
+        '</div>';
       }).join('') + '</div>';
   }
 
