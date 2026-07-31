@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人工智能训练师 · 判断题练习 v3</title>
+<style>
+  :root {
+    --bg: #f5f6fa; --card: #fff; --primary: #4f46e5; --success: #10b981;
+    --danger: #ef4444; --text: #1e293b; --muted: #94a3b8; --border: #e2e8f0;
+    --tag-bg: #eef2ff; --tag-text: #4f46e5;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  /* 夜间模式 */
+  .dark-mode {
+    --bg: #1a1a2e; --card: #16213e; --primary: #7c6cf0; --success: #34d399;
+    --danger: #f87171; --text: #e2e8f0; --muted: #94a3b8; --border: #2d3748;
+    --tag-bg: #2d2b55; --tag-text: #a5b4fc;
+    --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+  }
+  .dark-mode .btn-judge.btn-true { background:#1a3a2e; color:#6ee7b7; border-color:#2d5a3e }
+  .dark-mode .btn-judge.btn-true:hover:not(:disabled) { background:#2d5a3e }
+  .dark-mode .btn-judge.btn-false { background:#3a1a1a; color:#fca5a5; border-color:#5a2d2d }
+  .dark-mode .btn-judge.btn-false:hover:not(:disabled) { background:#5a2d2d }
+  .dark-mode .progress-bar { background:#2d3748 }
+  .dark-mode .nav-btn { background:var(--card); color:var(--text) }
+  .dark-mode .history-entry { background:#0f172a }
+  .dark-mode .summary-table th { color:var(--muted) }
+  .dark-mode .summary-row:hover { background:#0f172a }
+  .dark-mode .finish-panel { background:var(--card) }
+  .dark-mode select, .dark-mode input { background:#1e293b; color:var(--text); border-color:var(--border) }
+
+  * { margin:0; padding:0; box-sizing:border-box }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+    transition: background .3s, color .3s;
+  }
+  .container { max-width:720px; margin:0 auto; padding:16px }
+  header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color:#fff; border-radius:14px; padding:20px 24px; margin-bottom:16px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px
+  }
+  .dark-mode header { background: linear-gradient(135deg, #3b35a0, #5b32b0) }
+  header h1 { font-size:18px; font-weight:700 }
+  .stats { display:flex; gap:12px; font-size:13px; background:rgba(255,255,255,.15); border-radius:8px; padding:8px 14px }
+  .stat-item { text-align:center }
+  .stat-item .num { font-size:18px; font-weight:700; display:block }
+  .stat-item .label { font-size:11px; opacity:.8 }
+  .stat-item .num.correct { color:#a7f3d0 }
+  .stat-item .num.wrong { color:#fca5a5 }
+  .stat-item .num.remain { color:#fde68a }
+  .card {
+    background:var(--card); border-radius:14px; padding:24px; box-shadow:var(--shadow);
+    transition:border .2s, background .3s; border:2px solid transparent; margin-bottom:16px
+  }
+  .q-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px }
+  .q-num { font-size:12px; color:var(--muted) }
+  .q-timer { font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums }
+  .q-timer.slow { color:#f59e0b; font-weight:600 }
+  .q-timer.very-slow { color:var(--danger); font-weight:700 }
+  .fav-btn {
+    background:none; border:none; cursor:pointer; font-size:20px; padding:2px 6px;
+    transition:transform .15s; line-height:1
+  }
+  .fav-btn:hover { transform:scale(1.2) }
+  .fav-btn.active { animation: favPop .3s ease }
+  @keyframes favPop { 50% { transform:scale(1.4) } }
+  .q-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px }
+  .q-tag-label {
+    display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px;
+    background:var(--tag-bg); color:var(--tag-text); font-weight:500
+  }
+  .q-text { font-size:16px; font-weight:500; margin-bottom:16px; line-height:1.7 }
+  .btn-row { display:flex; gap:12px; margin-bottom:16px }
+  .btn-judge {
+    flex:1; padding:14px; border:none; border-radius:10px;
+    font-size:16px; font-weight:600; cursor:pointer;
+    transition:all .15s; font-family:inherit
+  }
+  .btn-judge:active { transform:scale(0.98) }
+  .btn-judge:disabled { opacity:.5; cursor:not-allowed; transform:none }
+  .btn-judge.btn-true { background:#ecfdf5; color:#065f46; border:2px solid #a7f3d0 }
+  .btn-judge.btn-true:hover:not(:disabled) { background:#d1fae5; border-color:#6ee7b7 }
+  .btn-judge.btn-true.correct-highlight { background:var(--success); color:#fff; border-color:var(--success) }
+  .btn-judge.btn-true.wrong-highlight { background:var(--danger); color:#fff; border-color:var(--danger) }
+  .btn-judge.btn-false { background:#fef2f2; color:#991b1b; border:2px solid #fecaca }
+  .btn-judge.btn-false:hover:not(:disabled) { background:#fee2e2; border-color:#fca5a5 }
+  .btn-judge.btn-false.correct-highlight { background:var(--success); color:#fff; border-color:var(--success) }
+  .btn-judge.btn-false.wrong-highlight { background:var(--danger); color:#fff; border-color:var(--danger) }
+  .q-result { padding:12px 16px; border-radius:10px; margin-top:14px; display:none; font-size:14px; line-height:1.6 }
+  .q-result.show { display:block }
+  .q-tag { display:inline-block; padding:2px 10px; border-radius:4px; font-size:12px; font-weight:600; margin:0 2px }
+  .q-tag.ans-true { background:#d1fae5; color:#065f46 }
+  .q-tag.ans-false { background:#fee2e2; color:#991b1b }
+  .nav { display:none; text-align:center; margin:16px 0 24px }
+  .nav-inner { display:inline-flex; align-items:center; gap:12px }
+  .nav-btn {
+    padding:8px 18px; border:1.5px solid var(--border); border-radius:8px;
+    background:var(--card); cursor:pointer; font-size:14px; font-weight:500; transition:all .15s
+  }
+  .nav-btn:hover { border-color:var(--primary); color:var(--primary) }
+  .nav-btn:disabled { opacity:.4; cursor:default; border-color:var(--border); color:var(--muted) }
+  .nav-pos { font-size:13px; color:var(--muted); min-width:60px }
+  .progress-bar { height:6px; background:var(--border); border-radius:3px; margin:12px 0; overflow:hidden }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary), #7c3aed); border-radius:3px; transition:width .3s; width:0 }
+  .progress-text { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:12px }
+  .toolbar {
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;
+    padding:10px 14px; background:var(--card); border-radius:10px; box-shadow:var(--shadow)
+  }
+  .toolbar select, .toolbar button {
+    padding:6px 12px; border-radius:6px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:13px; cursor:pointer;
+    transition:all .15s; font-family:inherit
+  }
+  .toolbar button:hover { border-color:var(--primary); color:var(--primary) }
+  .toolbar button.active { background:var(--primary); color:#fff; border-color:var(--primary) }
+  .toolbar .mode-btn { font-weight:600 }
+  .finish-panel {
+    text-align:center; padding:40px 20px; background:var(--card);
+    border-radius:14px; box-shadow:var(--shadow)
+  }
+  .finish-panel .big-icon { font-size:56px; margin-bottom:12px }
+  .finish-panel h2 { margin-bottom:8px }
+  .finish-panel .score { font-size:48px; font-weight:800; margin:16px 0 4px }
+  .finish-panel .detail { color:var(--muted); font-size:14px; margin-bottom:24px }
+  .summary-table { width:100%; border-collapse:collapse; font-size:14px; margin-top:12px }
+  .summary-table th, .summary-table td { padding:8px 10px; text-align:left; border-bottom:1px solid var(--border) }
+  .summary-table th { font-weight:600; color:var(--muted); font-size:12px }
+  .summary-row:hover { background:var(--bg) }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px }
+  .dot.green { background:var(--success) }
+  .dot.red { background:var(--danger) }
+  #historyBar { text-align:center; margin:8px 0 16px; display:none; cursor:pointer; color:var(--primary); font-size:13px; font-weight:500 }
+  #historyBar:hover { text-decoration:underline }
+  .history-entry { background:var(--bg); border-radius:8px; padding:12px; margin-bottom:10px; text-align:left; font-size:13px }
+  .toggle-btn { border:none; background:transparent; color:var(--primary); cursor:pointer; font-size:13px; font-weight:500; padding:4px 0 }
+  /* 考试模式 */
+  .exam-banner {
+    background:linear-gradient(135deg, #dc2626, #b91c1c); color:#fff;
+    padding:12px 20px; border-radius:10px; margin-bottom:12px;
+    display:flex; justify-content:space-between; align-items:center;
+    animation: examPulse 2s infinite
+  }
+  .dark-mode .exam-banner { background:linear-gradient(135deg, #991b1b, #7f1d1d) }
+  @keyframes examPulse { 0%,100%{opacity:1} 50%{opacity:.9} }
+  .exam-timer { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums }
+  .exam-timer.urgent { color:#fde68a; animation: examBlink 1s infinite }
+  @keyframes examBlink { 0%,100%{opacity:1} 50%{opacity:.5} }
+  /* 间隔重复标记 */
+  .spaced-badge {
+    display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px;
+    background:#fef3c7; color:#92400e; font-weight:600; margin-left:6px
+  }
+  .dark-mode .spaced-badge { background:#422006; color:#fbbf24 }
+  /* 计时统计 */
+  .time-stats { margin-top:16px; text-align:left }
+  .time-stats h4 { margin-bottom:8px; font-size:14px }
+  .time-bar-wrap { margin-bottom:6px }
+  .time-bar-label { font-size:12px; color:var(--muted); margin-bottom:2px }
+  .time-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden }
+  .time-bar-fill { height:100%; border-radius:4px; transition:width .3s }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <header>
+    <div>
+      <h1>⚖️ 判断题练习</h1>
+      <div style="font-size:12px;opacity:.8;margin-top:2px">选择正确或错误</div>
+    </div>
+    <div class="stats">
+      <div class="stat-item"><span class="num correct" id="correctCount">0</span><span class="label">正确</span></div>
+      <div class="stat-item"><span class="num wrong" id="wrongCount">0</span><span class="label">错误</span></div>
+      <div class="stat-item"><span class="num remain" id="remainCount">300</span><span class="label">剩余</span></div>
+      <div class="stat-item"><span class="num" id="scorePercent" style="color:#fff">-</span><span class="label">正确率</span></div>
+    </div>
+  </header>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <span style="font-size:12px;color:var(--muted)" id="roundBadge">第 1 轮</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="toggleDarkMode()" id="darkModeBtn" style="font-size:16px;padding:2px 8px;border:none;background:none;cursor:pointer" title="夜间模式">🌙</button>
+      <button onclick="if(confirm('确定要重置所有进度吗？'))resetAll()" style="font-size:12px;padding:4px 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--danger);cursor:pointer">🔄 重置进度</button>
+    </div>
+  </div>
+
+  <!-- 工具栏：模式切换 + 标签筛选 + 收藏 -->
+  <div class="toolbar" id="toolbar">
+    <button class="mode-btn active" id="modePractice" onclick="switchMode('practice')">📝 练习</button>
+    <button class="mode-btn" id="modeExam" onclick="switchMode('exam')">🎓 考试</button>
+    <button id="modeFav" onclick="switchMode('fav')" title="刷收藏题">⭐ 收藏<span id="favCount">0</span></button>
+    <button id="modeSpaced" onclick="switchMode('spaced')" title="间隔重复：到期需复习的错题">🔁 复习<span id="spacedCount">0</span></button>
+    <select id="tagFilter" onchange="applyTagFilter()" style="min-width:100px">
+      <option value="">全部知识点</option>
+    </select>
+  </div>
+
+  <div class="progress-text">
+    <span id="progressCur">0 / 0</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div id="examBanner" style="display:none"></div>
+
+  <div id="historyBar" onclick="toggleHistory()">📊 查看各轮错题回顾（<span id="historyCount">0</span>轮）</div>
+
+  <div id="questionArea"></div>
+
+  <div class="nav" id="qNav">
+    <div class="nav-inner">
+      <button class="nav-btn" id="prevBtn" onclick="goToQuestion(currentIndex-1)">◀ 上一题</button>
+      <span class="nav-pos" id="navPos"></span>
+      <button class="nav-btn" id="nextBtn" onclick="goToQuestion(currentIndex+1)">下一题 ▶</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 数据 =====
+var QDATA = [{"id":1,"text":"道德评价的关键是看其行为是否符合社会道德规范。","answer":true,"tags":["职业道德与伦理","法律法规"]},{"id":2,"text":"人工智能训练师在处理敏感数据时，必须获得用户同意，否则可能违反隐私保护法律法规。","answer":false,"tags":["数据安全与隐私","模型与算法","AI基础概念","法律法规","训练师职业"]},{"id":3,"text":"随着全球化的发展，职业道德也呈现出单一化的趋势，不同国家和地区的职业道德规范不存在差异。","answer":false,"tags":["职业道德与伦理","法律法规"]},{"id":4,"text":"人工智能训练师在职业道德建设中，无需考虑数据的质量与适用性，只需关注模型的训练效果。","answer":false,"tags":["职业道德与伦理","模型与算法","AI基础概念","质量与评估","训练师职业"]},{"id":5,"text":"人工智能训练师在开发和训练AI模型时，不需要对模型可能产生的歧视性或偏见性结果负责。","answer":false,"tags":["模型与算法","AI基础概念","训练师职业"]},{"id":6,"text":"人工智能训练师的职业道德不包括对用户隐私的保护。","answer":false,"tags":["职业道德与伦理","数据安全与隐私","模型与算法","AI基础概念","训练师职业"]},{"id":7,"text":"人工智能训练师的主要任务是设计和开发新的算法。","answer":false,"tags":["模型与算法","AI基础概念","训练师职业"]},{"id":8,"text":"职业守则仅仅是一种软约束，不具备法律效力。","answer":false,"tags":["法律法规"]},{"id":9,"text":"职业守则的特点之一是具有普遍性，适用于所有行业。","answer":true,"tags":["综合"]},{"id":10,"text":"职业守则核心内容不包括遵守法律。","answer":false,"tags":["法律法规"]},{"id":11,"text":"人工智能训练师在制定职业守则的过程中，应该充分考虑到人工智能技术的发展趋势和潜在风险。","answer":true,"tags":["模型与算法","AI基础概念","训练师职业"]},{"id":12,"text":"职业守则的实施与监督应该完全依靠员工个人的自觉性。","answer":false,"tags":["综合"]},{"id":13,"text":"职业守则中的奉献社会是指从业人员在工作中要正确处理个人利益和社会整体利益的关系，把个人利益放在首位。","answer":false,"tags":["综合"]},{"id":14,"text":"从业人员能否做到爱岗敬业，取决于他是否具有过硬的专业技能。","answer":false,"tags":["综合"]},{"id":15,"text":"人工智能训练师在训练过程中，可以根据自己的经验和直觉来调整模型参数，以提高模型性能。","answer":false,"tags":["模型与算法","AI基础概念","训练师职业"]},{"id":16,"text":"语音输入是Windows输入法的一种智能应用。","answer":true,"tags":["综合"]},{"id":17,"text":"Windows 系统的维护利器是一款可以帮助用户优化系统性能、清理垃圾文件和修复系统问题的软件。","answer":true,"tags":["综合"]},{"id":18,"text":"如果鼠标和键盘都无法使用，可以通过按F8键进入Windows 的高级启动选项进行修复。","answer":false,"tags":["综合"]},{"id":19,"text":"Windows 10中小工具中的时钟可以锁定前端显示。","answer":true,"tags":["综合"]},{"id":20,"text":"在浏览器中，可以通过点击地址栏输入网址来访问网页。","answer":true,"tags":["综合"]},{"id":21,"text":"浏览器的高级探索功能可以帮助用户更好地了解和管理浏览器的设置和功能。","answer":true,"tags":["综合"]},{"id":22,"text":"使用Ctrl + C 可以复制选中的文本或对象。","answer":true,"tags":["综合"]},{"id":23,"text":"使用Word进行高效办公时，可以同时打开多个文档进行编辑。","answer":true,"tags":["综合"]},{"id":24,"text":"Word 样式库中的样式可以快速应用到文档中的多个段落或文本框中。","answer":true,"tags":["综合"]},{"id":25,"text":"在Word 中进行图文混排时，图片和文本框的位置是可以随意调整的。","answer":true,"tags":["综合"]},{"id":26,"text":"在Excel中，可以使用公式计算单元格中的数据。","answer":true,"tags":["综合"]},{"id":27,"text":"在Excel中，使用MAX函数可以找到一列数据中的最大值。","answer":true,"tags":["综合"]},{"id":28,"text":"Excel图表的数据可视化功能只能用于静态展示数据，无法进行动态交互。","answer":false,"tags":["综合"]},{"id":29,"text":"工作簿的扩展名是.xls。","answer":false,"tags":["综合"]},{"id":30,"text":"通过利用Excel宏，我们可以将繁琐的重复性任务自动化，使我们的工作变得高效和轻松。","answer":true,"tags":["综合"]},{"id":31,"text":"用人单位与劳动者订立的劳动合同中，约定了试用期满后自动转正的条款，这样的约定是合法的。","answer":false,"tags":["综合"]},{"id":32,"text":"劳动合同中必须包含劳动合同期限。","answer":true,"tags":["综合"]},{"id":33,"text":"劳动者在试用期内可以随时解除劳动合同。","answer":false,"tags":["综合"]},{"id":34,"text":"网络运营者应当采取技术措施和其他必要措施，确保其收集的个人信息安全，防止信息泄露、损毁、丢失。","answer":true,"tags":["数据安全与隐私"]},{"id":35,"text":"网络接入的规范要求中，用户必须使用实名制进行注册。","answer":false,"tags":["法律法规"]},{"id":36,"text":"关键信息基础设施的运营者应当自行或者委托网络安全服务机构对其网络的安全性和可能存在的风险每年至少进行一次检测评估。","answer":false,"tags":["质量与评估"]},{"id":37,"text":"只有发明人和设计人才能成为专利申请权主体。","answer":false,"tags":["综合"]},{"id":38,"text":"如果一项发明创造具有新颖性、创造性和实用性，那么它一定可以获得专利授权。","answer":false,"tags":["综合"]},{"id":39,"text":"在专利申请流程中，申请人需要提交详细的专利说明书、权利要求书和摘要等文件。","answer":true,"tags":["综合"]},{"id":40,"text":"遵纪守法是社会成员的基本义务，因此每个人都应该自觉遵守法律法规。","answer":true,"tags":["法律法规"]},{"id":41,"text":"根据我国相关法律法规，人工智能训练师在工作过程中应当享有与其他职业相同的劳动保护权益，包括工作安全、健康保障和合理的工作时间安排等。","answer":true,"tags":["模型与算法","AI基础概念","法律法规","训练师职业"]},{"id":42,"text":"在人工智能训练师的工作中，使用、复制或分发数据、算法或模型时，必须遵守知识产权法的基本原则，包括尊重知识产权的专有性、保护创作者权益和禁止未经授权的使用。","answer":true,"tags":["模型与算法","AI基础概念","训练师职业"]},{"id":43,"text":"著作权法只保护原创性的作品。","answer":false,"tags":["综合"]},{"id":44,"text":"专利权的主体只能是发明人或设计人。","answer":false,"tags":["综合"]},{"id":45,"text":"知识产权的保护措施只针对原创性作品。","answer":false,"tags":["综合"]},{"id":46,"text":"数据采集的常用工具包括Python、Excel和SQL Server。","answer":false,"tags":["综合"]},{"id":47,"text":"使用Python编写网络爬虫时，可以安装requests库，来完成任务。","answer":true,"tags":["综合"]},{"id":48,"text":"在数据采集流程中，工具应用的意义仅限于提高数据收集的速度。","answer":false,"tags":["综合"]},{"id":49,"text":"数据治理工具主要用于优化人工智能算法训练过程中的数据输入，以确保训练数据集的质量和一致性。","answer":true,"tags":["模型与算法","AI基础概念","质量与评估"]},{"id":50,"text":"ETL工具的基本原理包括数据抽取、数据转换和数据加载三个步骤。","answer":true,"tags":["综合"]},{"id":51,"text":"数据存储和管理相关工具通常具有自动备份和恢复功能。","answer":true,"tags":["综合"]},{"id":52,"text":"云服务是一种基于互联网的计算方式，通过这种方式，共享软硬件资源和信息可以按需求提供给计算机各种终端和其他设备。","answer":true,"tags":["综合"]},{"id":53,"text":"使用Excel可以将CSV文件转换为JSON 格式。","answer":false,"tags":["综合"]},{"id":54,"text":"所有的大数据处理平台都专门用于处理结构化数据，并且不能处理非结构化数据。","answer":false,"tags":["综合"]},{"id":55,"text":"所有的常用数据处理工具都只能处理数值型数据，无法处理文本或图像数据。","answer":false,"tags":["综合"]},{"id":56,"text":"在特征工程中，所有工具都自动选择最佳的特征集，无需人工干预或领域知识。","answer":false,"tags":["综合"]},{"id":57,"text":"数据质量监控工具的主要意义在于减少数据集的大小，以便更快地处理数据。","answer":false,"tags":["数据标注与处理","质量与评估"]},{"id":58,"text":"数据审核平台是一种专门用于审核和处理数据的软件工具。","answer":false,"tags":["综合"]},{"id":59,"text":"Power BI是微软推出的一款商业智能工具，主要用于数据分析和报告制作。","answer":true,"tags":["综合"]},{"id":60,"text":"业务流程管理与优化工具只能用于制造业企业。","answer":false,"tags":["综合"]},{"id":61,"text":"数据采集策略应该避免使用自动化工具，以确保数据的原始性。","answer":false,"tags":["综合"]},{"id":62,"text":"数据源选择只要基于数据的准确性，不需要可靠性。","answer":false,"tags":["综合"]},{"id":63,"text":"数据抓取技术中，正则表达式是一种非常强大的工具，可以用于匹配和提取网页中的特定信息。","answer":true,"tags":["综合"]},{"id":64,"text":"数据抓取策略的优化方法包括使用更快的抓取工具。","answer":false,"tags":["综合"]},{"id":65,"text":"关系型数据库通常用于存储结构化数据，而非关系型数据库则更适合存储半结构化或非结构化数据。","answer":true,"tags":["综合"]},{"id":66,"text":"数据清洗与预处理流程的第一步是对数据进行缺失值处理。","answer":false,"tags":["数据标注与处理"]},{"id":67,"text":"数据清洗的主要目的确实是解决数据中的重复值、缺失值和异常值问题。","answer":true,"tags":["数据标注与处理"]},{"id":68,"text":"加密技术可以保证数据的机密性，但无法防止数据泄露。","answer":false,"tags":["综合"]},{"id":69,"text":"实时数据处理技术可以处理大量数据并实时产生结果。","answer":true,"tags":["综合"]},{"id":70,"text":"特征提取的主要方法包括主成分分析和线性判别分析。","answer":false,"tags":["综合"]},{"id":71,"text":"容器化技术可以完全替代传统的虚拟化技术来管理业务数据处理流程。","answer":false,"tags":["综合"]},{"id":72,"text":"数据质量评估通常是通过对数据进行抽样检查来进行的。","answer":false,"tags":["数据标注与处理","质量与评估"]},{"id":73,"text":"数据校验和异常数据检测的方法都是为了确保数据的准确性和完整性。","answer":true,"tags":["综合"]},{"id":74,"text":"高效业务流程的设计方法应该包括对现有流程的详细分析。","answer":true,"tags":["综合"]},{"id":75,"text":"合规性检查通常只关注数据的安全性，而不涉及数据的完整性和可用性。","answer":false,"tags":["法律法规"]},{"id":76,"text":"业务数据产生的场合包括企业内部和外部的各种业务流程。","answer":true,"tags":["综合"]},{"id":77,"text":"人工智能业务可以根据应用场景分为智能客服、智能家居、自动驾驶和智能医疗等类别。","answer":true,"tags":["AI基础概念"]},{"id":78,"text":"综合人工智能系统中的智能控制模块不能用于实现设备控制。","answer":false,"tags":["AI基础概念"]},{"id":79,"text":"推荐系统的功能模块包括用户画像、物品画像和推荐算法三个部分。","answer":false,"tags":["模型与算法"]},{"id":80,"text":"智能搜索业务不能通过自然语言处理技术来解析和理解搜索查询。","answer":false,"tags":["综合"]},{"id":81,"text":"智能交互功能模块具有自然语言处理能力，可以理解用户的语音指令和文本输入。","answer":true,"tags":["综合"]},{"id":82,"text":"自动数据处理能够通过人工智能模型和算力，挖掘出稳定且准确的分析结果。","answer":true,"tags":["模型与算法","AI基础概念"]},{"id":83,"text":"最优化决策支持利用人工智能计算来实现系统的最优性能，以及得出达到最优业务指标的分配或决策。","answer":true,"tags":["AI基础概念"]},{"id":84,"text":"智能控制功能模块的原理是通过模拟人类大脑的思维方式来实现对设备的自动控制。","answer":false,"tags":["综合"]},{"id":85,"text":"自然语言处理技术可以自动分析和理解人类语言，从而实现人机交互。","answer":true,"tags":["综合"]},{"id":86,"text":"生物特征识别是一种身份验证技术，因此可以不经许可获取用户生物特征。","answer":false,"tags":["质量与评估"]},{"id":87,"text":"计算机视觉的功能包括图像处理、目标检测和识别等。","answer":true,"tags":["综合"]},{"id":88,"text":"图像识别是智能计算在人工智能领域的主要应用之一。","answer":true,"tags":["AI基础概念"]},{"id":89,"text":"数据挖掘和知识发现的流程中，数据清洗和预处理步骤是可选的。","answer":false,"tags":["数据标注与处理"]},{"id":90,"text":"数据挖掘和知识发现的方法包括监督学习、无监督学习和强化学习。","answer":false,"tags":["综合"]},{"id":91,"text":"业务模块构建方法的原则包括可扩展性、可重用性和可维护性。","answer":true,"tags":["综合"]},{"id":92,"text":"业务流程优化方法主要包括流程再造、流程改进和流程分析三种。","answer":false,"tags":["综合"]},{"id":93,"text":"业务数据的收集方法只有通过问卷调查一种方式。","answer":false,"tags":["综合"]},{"id":94,"text":"单据流是企业业务流程的核心流程之一。","answer":true,"tags":["综合"]},{"id":95,"text":"简单业务流程分析流程的第一步是对现有流程进行详细的记录和描述。","answer":true,"tags":["综合"]},{"id":96,"text":"简化业务流程就是减少流程中的环节和步骤。","answer":false,"tags":["综合"]},{"id":97,"text":"业务流程优化中的监测和评估阶段的目的是确定优化目标。","answer":false,"tags":["质量与评估"]},{"id":98,"text":"在复杂综合业务流程分析中，控制图和帕累托图是常用的分析工具。","answer":true,"tags":["综合"]},{"id":99,"text":"技术更新是复杂业务系统改进措施的唯一方法。","answer":false,"tags":["综合"]},{"id":100,"text":"综合业务流程优化方法的原则包括以客户为中心、以流程为导向和持续改进。","answer":true,"tags":["综合"]},{"id":101,"text":"知识表示方法只有符号主义和连接主义两种。","answer":false,"tags":["综合"]},{"id":102,"text":"知识图谱表示法是一种基于图的数据结构，用于表示实体之间的关系。","answer":true,"tags":["综合"]},{"id":103,"text":"数据分析工具的种类比较多，一款好的数据分析工具，可以帮助我们提高学习工作的效率。","answer":true,"tags":["综合"]},{"id":104,"text":"预测性分析是一种常见的业务数据分析，主要用于预测未来的趋势。","answer":true,"tags":["综合"]},{"id":105,"text":"业务数据可以直接进行使用，不需要进行规范化。","answer":false,"tags":["法律法规"]},{"id":106,"text":"机器学习的基础流程包括特征工程、模型选择和评估。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":107,"text":"卷积神经网络主要用于处理图像数据，其基本结构包括输入层、卷积层、池化层和全连接层。","answer":true,"tags":["模型与算法"]},{"id":108,"text":"在智能训练中，特征提取的主要方法是手工设计特征。","answer":false,"tags":["模型与算法"]},{"id":109,"text":"学习率是影响模型训练效果的关键因素之一，较大的学习率会导致模型收敛速度加快，但可能会导致模型无法收敛。","answer":true,"tags":["模型与算法"]},{"id":110,"text":"数据预处理的主要目标之一是提高模型的预测性能。","answer":true,"tags":["数据标注与处理","模型与算法"]},{"id":111,"text":"在图像数据集中添加随机噪声被视为一种数据增强方法。","answer":true,"tags":["综合"]},{"id":112,"text":"数据分片是将一个大型数据库或数据仓库分割成更小、更易管理的部分的过程。","answer":true,"tags":["综合"]},{"id":113,"text":"在数据标注过程中，主动学习可以用来选择最有价值的未标注数据进行人工标注。","answer":true,"tags":["数据标注与处理"]},{"id":114,"text":"在计算模型评估指标时，我们需要使用训练集和测试集的数据来计算准确率。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":115,"text":"模型评估指标的选择应该基于问题的具体需求和目标。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":116,"text":"TensorFlow和PyTorch都是开源的机器学习库，它们都可以用于深度学习任务。","answer":true,"tags":["模型与算法"]},{"id":117,"text":"NumPy库中的数组对象可以存储不同类型的数据，包括整数、浮点数、字符串等。","answer":false,"tags":["综合"]},{"id":118,"text":"在设计数据收集任务时，应该尽量避免引入偏差，以确保数据的代表性和质量。","answer":true,"tags":["质量与评估"]},{"id":119,"text":"所有的自动化标注工具都能保证100%的准确性，无需人工审核或后处理。","answer":false,"tags":["数据标注与处理"]},{"id":120,"text":"数据预处理通常包括转换原始数据为一种更适合机器学习模型处理的格式。","answer":true,"tags":["数据标注与处理","模型与算法"]},{"id":121,"text":"线性回归是一种用于解决分类问题的方法。","answer":false,"tags":["综合"]},{"id":122,"text":"模型训练和验证工具的原理是通过不断调整模型的参数来最小化损失函数，从而提高模型的预测准确性。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":123,"text":"所有的自动化模型训练工具都使用相同的超参数优化策略。","answer":false,"tags":["模型与算法"]},{"id":124,"text":"日志分析工具仅用于记录系统的错误信息。","answer":false,"tags":["综合"]},{"id":125,"text":"生成对抗网络中的生成器和判别器是同步训练的。","answer":true,"tags":["模型与算法"]},{"id":126,"text":"人工智能训练师使用Python或R进行智能训练数据处理时，主要依赖于这些编程语言提供的数据处理和机器学习库，以及其支持的数据可视化和预处理方法。","answer":true,"tags":["数据标注与处理","模型与算法","AI基础概念","训练师职业"]},{"id":127,"text":"模型部署工具的原理是将训练好的模型转换为可执行程序，以便在实际应用中使用。","answer":true,"tags":["模型与算法"]},{"id":128,"text":"数据探索分析是指对数据进行收集、整理、清洗和转换的过程。","answer":false,"tags":["数据标注与处理"]},{"id":129,"text":"数据探索分析旨在通过初步的图表、图形和统计方法来了解和发现数据的基本特征和结构。","answer":true,"tags":["综合"]},{"id":130,"text":"缺失值处理方法中的删除法是指直接删除含有缺失值的记录。","answer":false,"tags":["综合"]},{"id":131,"text":"当数据集中存在缺失值时，我们应该直接删除这些数据点。","answer":false,"tags":["综合"]},{"id":132,"text":"在Python 中，使用箱型图法检测异常值时，任何位于箱型图外的点都应被视为异常值并从数据集中删除。","answer":false,"tags":["综合"]},{"id":133,"text":"异常值检测的原理完全基于统计学方法，与数据的业务逻辑无关。","answer":false,"tags":["综合"]},{"id":134,"text":"噪声数据处理技术只能用于消除图像中的噪声。","answer":false,"tags":["综合"]},{"id":135,"text":"数据去重技术主要是通过哈希表来实现的。","answer":false,"tags":["综合"]},{"id":136,"text":"数据归一化处理的目的是为了改变数据的类型，使其能够适配不同的机器学习算法。","answer":false,"tags":["模型与算法"]},{"id":137,"text":"数据白化处理通常是指一种特殊的归一化技术，它不仅缩放数据使其具有单位方差，还使数据特征之间相互独立，数据白化处理常用于图像处理、语音信号处理和机器学习领域。","answer":true,"tags":["模型与算法"]},{"id":138,"text":"特征工程是指从原始数据中提取、转换和构建有助于提高模型性能的特征的过程。","answer":true,"tags":["模型与算法"]},{"id":139,"text":"在选择数据标注工具时，应该首先考虑工具的价格，而不是它支持的标注类型或与现有工作流的集成性。","answer":false,"tags":["数据标注与处理"]},{"id":140,"text":"数据标注技术主要依赖于人工进行标注，因此成本较高。","answer":true,"tags":["数据标注与处理"]},{"id":141,"text":"在机器学习项目中，训练集、验证集和测试集的划分并不是一成不变的。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":142,"text":"自动化标注的主要优势在于减少了人为错误，但并不包括提高效率和降低成本。","answer":false,"tags":["数据标注与处理"]},{"id":143,"text":"分布式数据处理是指在多台计算机上并行处理数据的技术。","answer":true,"tags":["综合"]},{"id":144,"text":"数据可追溯性是指在数据处理和分析过程中，能够追踪数据的来源、流动路径以及数据在各个阶段所经历的处理和转换的能力。","answer":true,"tags":["综合"]},{"id":145,"text":"数据可追溯性确保了数据的完整性、透明度和责任性，对于数据的质量和可信度至关重要。","answer":true,"tags":["质量与评估"]},{"id":146,"text":"表格类数据的数据清洗和标注的第一步是对数据进行预处理，包括去除重复值、缺失值处理和异常值处理。","answer":true,"tags":["数据标注与处理"]},{"id":147,"text":"在Python 中，可以使用Pillow库读取、保存或显示图像。","answer":true,"tags":["综合"]},{"id":148,"text":"在进行文本类数据清洗和标注时，规则与流程是固定不变的，适用于所有类型的文本数据。","answer":false,"tags":["数据标注与处理"]},{"id":149,"text":"对图像或视频数据进行精确的标记和注释，以提供机器学习模型训练所需的信息。标注类型可能包括边界框、多边形、语义分割等。","answer":true,"tags":["数据标注与处理","模型与算法"]},{"id":150,"text":"算法训练的基本流程通常包括这些步骤：数据预处理、数据分割、选择模型、模型训练、模型评估和模型优化。","answer":true,"tags":["数据标注与处理","模型与算法","质量与评估"]},{"id":151,"text":"数据集划分的原则是将数据集按照一定比例随机划分为训练集、验证集和测试集。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":152,"text":"使用Pandas库可以方便地加载和处理CSV、Excel和SQL等格式的数据。","answer":true,"tags":["综合"]},{"id":153,"text":"降维技术可以将高维数据集映射到低维空间，同时保留数据的主要信息。","answer":true,"tags":["综合"]},{"id":154,"text":"使用数据标注和注释工具时，标注结果需要人工审核以确保准确性。","answer":true,"tags":["数据标注与处理"]},{"id":155,"text":"在模型训练过程中，训练数据集越大，模型训练出的准确率一定会越高。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":156,"text":"损失函数的选择和优化算法的选取都需要根据具体的模型和任务来决定，它们共同决定了模型训练的效果和最终性能。","answer":true,"tags":["模型与算法"]},{"id":157,"text":"搭建算法训练环境时，只需要考虑计算硬件的性能，而无需考虑软件依赖和版本兼容性。","answer":false,"tags":["模型与算法"]},{"id":158,"text":"机器学习框架的选择与使用主要取决于开发者的个人喜好。","answer":false,"tags":["模型与算法"]},{"id":159,"text":"评估算法的效率，包括时间复杂度和空间复杂度分析，确保算法能够在可接受的时间内完成计算，并且资源消耗在合理范围内。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":160,"text":"超参数调优的策略只有随机搜索。","answer":false,"tags":["综合"]},{"id":161,"text":"动态监控工具通常能够实时显示模型训练过程中的多种指标，包括但不限于损失函数值、准确率、验证集上的表现等。这些指标对于评估模型的训练效果和调整训练策略至关重要。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":162,"text":"在模型调试过程中，可以通过观察训练集和验证集的损失函数值来判断模型是否过拟合或欠拟合。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":163,"text":"算法测试的评价指标主要包括时间复杂度和空间复杂度。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":164,"text":"在将机器学习模型部署到生产环境时，模型部署只需要将训练好的模型文件上传到服务器，无需其他步骤。","answer":false,"tags":["模型与算法"]},{"id":165,"text":"TensorFlow Lite 是一个用于在移动设备上部署机器学习模型的框架。","answer":false,"tags":["模型与算法"]},{"id":166,"text":"使用云平台可以降低企业的运营成本。","answer":true,"tags":["综合"]},{"id":167,"text":"容器化技术是一种将应用程序及其依赖项打包在一起的方法，以便在不同的环境中轻松部署和运行。","answer":true,"tags":["综合"]},{"id":168,"text":"容器化技术与虚拟机技术相比，容器化技术提供了更彻底的操作系统级隔离，因为每个容器都运行在自己的操作系统内核上。","answer":false,"tags":["综合"]},{"id":169,"text":"在人工智能项目中，选择数据处理框架时，框架的易用性和灵活性比其性能和扩展性更加重要。","answer":false,"tags":["AI基础概念"]},{"id":170,"text":"在高性能计算HPC环境中，为了最大化资源利用率，应该始终将所有计算节点配置为相同的任务类型，以保持操作的一致性。","answer":false,"tags":["综合"]},{"id":171,"text":"性能监控工具可以自动发现系统中的瓶颈和问题，无需人工干预。","answer":false,"tags":["综合"]},{"id":172,"text":"在设计人工智能系统的测试用例时，确保测试用例的全面性比确保它们的执行效率更重要。","answer":false,"tags":["AI基础概念","质量与评估"]},{"id":173,"text":"人工智能测试的目的在一定程度上可以识别并解决模型可能存在的偏差，确保AI系统的决策过程是公正和无歧视的。","answer":true,"tags":["模型与算法","AI基础概念","质量与评估"]},{"id":174,"text":"人工智能测试工具的类型只包括黑盒测试。","answer":false,"tags":["AI基础概念","质量与评估"]},{"id":175,"text":"在选择测试框架时，唯一需要考虑的因素是该框架是否支持自动化测试。","answer":false,"tags":["质量与评估"]},{"id":176,"text":"在人工智能项目的测试过程中，自动化测试可以完全取代手动测试，因为自动化测试可以覆盖所有的测试场景。","answer":false,"tags":["AI基础概念","质量与评估"]},{"id":177,"text":"算法性能指标的监控可以帮助我们了解算法的实际运行情况，从而优化算法设计。","answer":true,"tags":["模型与算法"]},{"id":178,"text":"交叉验证是一种强大的统计技术，可以用来确保模型评估结果的稳定性和可靠性，特别是在数据量有限的情况下。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":179,"text":"算法鲁棒性测试只关注算法在面对特定类型的数据异常时的表现。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":180,"text":"算法安全性测试的结果可以用来指导算法的改进和优化。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":181,"text":"算法可解释性与透明度测试是确保人工智能系统决策过程能够被用户、开发者和监管机构理解和信任的重要方面。","answer":true,"tags":["模型与算法","AI基础概念","质量与评估"]},{"id":182,"text":"在进行数据多样性与公平性测试时，我们只需要关注数据集中是否存在偏见即可。","answer":false,"tags":["质量与评估"]},{"id":183,"text":"k折交叉验证是一种评价训练数据的数据集泛化能力的统计方法，通过对数据集进行多次划分，对多次评估的结果取平均，从而消除单次划分时数据划分不平衡造成的不良影响。","answer":true,"tags":["模型与算法","质量与评估"]},{"id":184,"text":"收集和分析算法在生产环境中的性能数据是重要的，这有助于了解算法的实际表现，并进行必要的优化。","answer":true,"tags":["模型与算法"]},{"id":185,"text":"用户反馈集成可以帮助开发团队更好地理解用户需求，从而提高人工智能系统的满意度。","answer":true,"tags":["AI基础概念"]},{"id":186,"text":"在进行算法测试结果的统计分析时，我们应该只关注正例的测试结果。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":187,"text":"测试报告是一份重要的文档，它不仅记录了测试结果，还应该详细说明测试的方法、测试环境、测试用例、测试数据和测试过程中遇到的问题及解决方案。","answer":true,"tags":["质量与评估"]},{"id":188,"text":"在人工智能算法开发过程中，进行调试与问题定位时，在发现问题后立即重写整个算法，而不是逐步定位和修复问题。","answer":false,"tags":["模型与算法","AI基础概念"]},{"id":189,"text":"在人工智能算法的开发和测试中，通过可视化，可以更直观地识别数据中的模式、异常值、偏差和噪声，同时也能够更清楚地展示算法性能的变化趋势和潜在问题。","answer":true,"tags":["模型与算法","AI基础概念","质量与评估"]},{"id":190,"text":"日志分析工具通常需要具备实时处理能力，以便快速响应潜在的安全威胁。","answer":true,"tags":["综合"]},{"id":191,"text":"在进行算法测试实验管理时，使用统一的测试管理平台可以提高测试效率，但无法帮助追踪和管理测试过程中的复杂依赖关系。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":192,"text":"在人工智能项目中，修复与迭代是一个持续的过程，通常不是简单地按部就班解决所有缺陷后再进行测试和迭代。","answer":true,"tags":["AI基础概念","质量与评估"]},{"id":193,"text":"合规性测试只需要验证软件产品是否符合行业标准和法律法规，而不需要考虑产品的实际功能和性能。","answer":false,"tags":["法律法规","质量与评估"]},{"id":194,"text":"利用并行计算和分布式系统可以显著提高算法的运行效率，尤其是对于那些可以分解为多个独立且可以并行处理的任务的算法。","answer":true,"tags":["模型与算法"]},{"id":195,"text":"在进行伦理考量时，我们只需要关注自己的利益，而不需要考虑他人的利益。","answer":false,"tags":["职业道德与伦理"]},{"id":196,"text":"在人工智能算法训练中，数据拆解的基本方法包括随机拆分和分层拆分。","answer":true,"tags":["模型与算法","AI基础概念"]},{"id":197,"text":"数据拆解模型的原理是将原始数据按照一定的规则进行拆分和重组，以便更好地理解和分析数据。","answer":true,"tags":["模型与算法"]},{"id":198,"text":"训练集、验证集和测试集的作用都是为了评估模型的性能。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":199,"text":"主成分分析是一种基于数据拆解的特征降维方法。","answer":true,"tags":["综合"]},{"id":200,"text":"基于统计的特征拆解及选择是一种常用的机器学习特征处理方法。","answer":true,"tags":["模型与算法"]},{"id":201,"text":"在基于模型的特征选择中，递归特征消除RFE是一种包装器方法，它通过反复构建模型来选择特征子集。","answer":true,"tags":["模型与算法"]},{"id":202,"text":"时间序列数据分割时，通常不需要保持数据的连续性和时序性，可以直接随机分割。","answer":false,"tags":["综合"]},{"id":203,"text":"在文本数据处理中，分词是所有语言的必要步骤。","answer":true,"tags":["综合"]},{"id":204,"text":"时间序列分析是一种预测方法，它可以帮助我们预测未来的天气情况。","answer":false,"tags":["综合"]},{"id":205,"text":"在网络分析中，节点和边分别代表网络中的对象和它们之间的关系。","answer":true,"tags":["综合"]},{"id":206,"text":"社会网络分析主要关注个体之间的社会联系，而忽略了网络结构的影响。","answer":false,"tags":["综合"]},{"id":207,"text":"多维度数据分解的原理仅适用于数值型数据。","answer":false,"tags":["综合"]},{"id":208,"text":"多维度数据分解不能有效地提高图像处理的效率和准确性。","answer":false,"tags":["综合"]},{"id":209,"text":"特征提取是指从原始数据中提取出对模型预测有帮助的特征。","answer":true,"tags":["模型与算法"]},{"id":210,"text":"在自然语言处理中，特征工程主要用于文本数据的降维处理。","answer":false,"tags":["综合"]},{"id":211,"text":"响应时间的优化是指在软件设计中减少程序执行所需的时间。","answer":false,"tags":["综合"]},{"id":212,"text":"在人工智能系统的训练过程中，人工智能训练师不需要关注模型的安全性分析。","answer":false,"tags":["模型与算法","AI基础概念","训练师职业"]},{"id":213,"text":"负载均衡是一种资源分配策略，用于确保系统中的各个服务器负载相对均衡。","answer":true,"tags":["综合"]},{"id":214,"text":"数据预处理技术细节包括数据清洗、数据集成、数据变换和数据规约四个步骤。","answer":true,"tags":["数据标注与处理"]},{"id":215,"text":"在数据分析过程中，数据清洗的主要目的是去除重复数据、处理缺失值和异常值。","answer":true,"tags":["数据标注与处理"]},{"id":216,"text":"使用交叉验证方法可以避免过拟合问题，因此在选择统计模型时应该优先考虑这种方法。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":217,"text":"机器学习算法可以完全替代人类专家在某些领域的决策过程。","answer":false,"tags":["模型与算法"]},{"id":218,"text":"聚类分析是一种无监督学习方法，主要用于发现数据集中的模式和结构。","answer":true,"tags":["综合"]},{"id":219,"text":"关联规则学习中的置信度是指包含项集A 的事务中同时也包含项集B的比例。","answer":true,"tags":["综合"]},{"id":220,"text":"线性回归模型是最常用的回归分析方法。","answer":true,"tags":["模型与算法"]},{"id":221,"text":"决策树的每个节点可以有多个父节点。","answer":false,"tags":["综合"]},{"id":222,"text":"神经网络中的激活函数是用来引入非线性因素的。","answer":true,"tags":["模型与算法"]},{"id":223,"text":"在贝叶斯网络中，节点之间的依赖关系是通过概率分布来描述的。","answer":true,"tags":["综合"]},{"id":224,"text":"集成学习方法的效果合成是指将多个模型的预测结果进行加权平均，以提高模型的性能。","answer":false,"tags":["模型与算法"]},{"id":225,"text":"深度学习中的卷积神经网络CNN主要用于处理序列数据。","answer":false,"tags":["模型与算法"]},{"id":226,"text":"在强化学习中，奖励信号应该始终与动作结果相关联，以便模型能够学习到正确的动作选择。","answer":true,"tags":["模型与算法"]},{"id":227,"text":"在文本分析中，词袋模型将文本表示为单词的集合。","answer":true,"tags":["模型与算法"]},{"id":228,"text":"时间序列分析只能处理线性数据。","answer":false,"tags":["综合"]},{"id":229,"text":"主成分分析PCA是一种常用的维度约简技术，其基本思想是通过降低数据维度来减少信息损失。","answer":true,"tags":["综合"]},{"id":230,"text":"异常值检测与处理是一种用于识别数据集中异常点的方法。","answer":true,"tags":["综合"]},{"id":231,"text":"数据融合技术主要用于将多源异构数据集成为一个统一的数据源。","answer":true,"tags":["综合"]},{"id":232,"text":"智能解决方案设计旨在结合人工智能技术与特定领域需求，提供全面的解决方案。","answer":true,"tags":["AI基础概念"]},{"id":233,"text":"用户需求分析是指识别和理解用户对产品或服务的需求和期望，以便设计出符合其预期的解决方案。","answer":true,"tags":["综合"]},{"id":234,"text":"产品功能规划是对产品功能的全面、系统、科学的规划，它具有全局性、前瞻性和创新性。","answer":true,"tags":["综合"]},{"id":235,"text":"人工智能技术选型的原则包括选择最新的技术，以保持竞争优势。","answer":false,"tags":["AI基础概念"]},{"id":236,"text":"模型训练与验证的方法只有交叉验证一种。","answer":false,"tags":["模型与算法","质量与评估"]},{"id":237,"text":"系统集成设计的规则主要包括尽量减少模块之间的依赖关系，以提高系统的灵活性。","answer":true,"tags":["综合"]},{"id":238,"text":"用户界面设计UI不需要考虑性能优化。","answer":false,"tags":["综合"]},{"id":239,"text":"用户体验设计UX的原则强调在设计过程中始终关注用户的需求和体验。","answer":true,"tags":["综合"]},{"id":240,"text":"产品差异化设计旨在使产品在竞争激烈的市场中脱颖而出，吸引更多的用户。","answer":true,"tags":["综合"]},{"id":241,"text":"在设计软件时，不需要考虑安全性问题。","answer":false,"tags":["综合"]},{"id":242,"text":"在云服务集成中，关键策略之一是选择合适的云服务提供商以满足业务需求。","answer":true,"tags":["综合"]},{"id":243,"text":"性能优化技术的原理是通过减少程序中的冗余代码来提高程序的运行速度。","answer":false,"tags":["综合"]},{"id":244,"text":"可扩展性设计旨在确保系统能够在不断增长的需求下保持高性能。","answer":true,"tags":["综合"]},{"id":245,"text":"代码审计主要关注代码的编写规范性，对系统性能影响不大。","answer":false,"tags":["法律法规"]},{"id":246,"text":"企业在收集、存储和处理用户数据时，不需要告知用户数据的用途和收集方式。","answer":false,"tags":["综合"]},{"id":247,"text":"故障恢复策略的设计不包括备份和恢复机制。","answer":false,"tags":["综合"]},{"id":248,"text":"产品维护与升级制定的关键是定期发布新版本以保持用户的兴趣。","answer":false,"tags":["综合"]},{"id":249,"text":"在用户反馈与迭代过程的管理中，应该忽略所有负面反馈。","answer":false,"tags":["综合"]},{"id":250,"text":"人机交互是指人与计算机之间的信息交流和操作过程。","answer":true,"tags":["综合"]},{"id":251,"text":"人机交互三要素包括输入设备、输出设备和控制器。","answer":false,"tags":["综合"]},{"id":252,"text":"人机交互模型描述了人和计算机之间信息传递的过程，通常包括输入、处理、输出和反馈等环节。","answer":true,"tags":["模型与算法"]},{"id":253,"text":"在用户界面设计中，应该遵循一致性原则，即相同类型的元素应该有相同的操作和外观。","answer":true,"tags":["综合"]},{"id":254,"text":"输入与输出的系统设计应该考虑用户的操作习惯和心理模型。","answer":true,"tags":["模型与算法"]},{"id":255,"text":"反馈机制在人机交互中不起重要作用。","answer":false,"tags":["综合"]},{"id":256,"text":"适应性设计是指产品或服务能够根据用户的需求和偏好进行自动调整。","answer":false,"tags":["综合"]},{"id":257,"text":"触摸界面交互主要依赖键盘和鼠标。","answer":false,"tags":["综合"]},{"id":258,"text":"语音交互设计不需要考虑语音识别的准确性和响应速度。","answer":false,"tags":["综合"]},{"id":259,"text":"增强现实AR交互主要依赖虚拟现实头戴设备。","answer":false,"tags":["综合"]},{"id":260,"text":"虚拟现实VR交互的设计需要考虑用户的生理反应。","answer":true,"tags":["综合"]},{"id":261,"text":"多模态交互设计仅关注不同输入方式的整合，而不考虑输出方式。","answer":false,"tags":["综合"]},{"id":262,"text":"用户研究的方法论主要包括定性和定量两种方法。","answer":true,"tags":["综合"]},{"id":263,"text":"原型设计与测试是人机交互设计过程中的最后一步。","answer":false,"tags":["质量与评估"]},{"id":264,"text":"用户测试与评估的系统方法是一种定性的研究方法。","answer":false,"tags":["质量与评估"]},{"id":265,"text":"情感设计主要关注用户的理性需求。","answer":false,"tags":["综合"]},{"id":266,"text":"人工智能在人机交互中主要应用于提高系统的安全性。","answer":false,"tags":["AI基础概念"]},{"id":267,"text":"一个高效的人机交互系统应该能够在短时间内响应用户的操作。","answer":true,"tags":["综合"]},{"id":268,"text":"用户中心的设计原则要求设计师在设计过程中始终站在用户的角度思考问题，因此设计师不需要了解产品的目标市场和竞争对手。","answer":false,"tags":["综合"]},{"id":269,"text":"设计的可用性标准是指在设计过程中需要遵循的一系列原则和规范，以确保产品的易用性和用户体验。","answer":true,"tags":["法律法规"]},{"id":270,"text":"交互设计模板可以帮助设计师更好地组织和展示他们的想法。","answer":true,"tags":["综合"]},{"id":271,"text":"在设计过程中，用户反馈是必不可少的环节，因为它可以帮助设计师更好地了解用户需求。","answer":true,"tags":["综合"]},{"id":272,"text":"工作流程的任务分解有助于明确每个阶段的责任和目标。","answer":true,"tags":["训练师职业"]},{"id":273,"text":"界面设计的布局策略仅关注美观而忽视功能性。","answer":false,"tags":["综合"]},{"id":274,"text":"用户使用情境的分析工具可以帮助设计师更好地理解目标用户的需求和行为。","answer":true,"tags":["综合"]},{"id":275,"text":"使用Adobe XD进行原型制作时，用户可以直接导出最终的设计文件。","answer":true,"tags":["综合"]},{"id":276,"text":"Adobe XD只能用于创建移动应用的原型。","answer":false,"tags":["综合"]},{"id":277,"text":"Axure RP是一款用于创建原型和模拟复杂交互的工具。","answer":true,"tags":["综合"]},{"id":278,"text":"Axure RP中的条件逻辑设置可以用来控制页面元素的显示和隐藏。","answer":true,"tags":["综合"]},{"id":279,"text":"Balsamiq Mockups只能用于创建线框图。","answer":false,"tags":["综合"]},{"id":280,"text":"Figma的设计系统支持创建自定义组件库。","answer":true,"tags":["综合"]},{"id":281,"text":"Marvel的简单交互设计强调减少用户的认知负担，提高用户体验。","answer":true,"tags":["综合"]},{"id":282,"text":"在使用Marvel的设计评审功能时，用户可以上传自己的设计文件，但是不能邀请其他团队成员进行评论。","answer":false,"tags":["综合"]},{"id":283,"text":"使用Marvel的响应式设计预览，设计师可以轻松地查看和调整他们的网站布局，以确保其在各种设备上都能正常工作。","answer":true,"tags":["综合"]},{"id":284,"text":"Sketch的插件生态系统为用户提供了广泛的功能扩展选项。","answer":true,"tags":["综合"]},{"id":285,"text":"Sketch的矢量图形编辑功能非常强大，可以轻松地创建和编辑各种复杂的图形。","answer":true,"tags":["综合"]},{"id":286,"text":"培训讲义编写应该包含大量的理论知识和实例分析。","answer":false,"tags":["综合"]},{"id":287,"text":"培训讲义的编写应该遵循一定的结构，包括引入、主体和总结三个部分。","answer":true,"tags":["综合"]},{"id":288,"text":"编写培训讲义时，不需要考虑学员的学习需求和背景。","answer":false,"tags":["综合"]},{"id":289,"text":"在人工智能培训中，使用单一的教学方法可以有效地满足所有学员的学习需求。","answer":false,"tags":["AI基础概念"]},{"id":290,"text":"讲授法是一种单向沟通的培训方法，因此它不利于受训者主动参与培训。","answer":false,"tags":["综合"]},{"id":291,"text":"讲授法是一种非常有效的培训方法，因此没有缺点。","answer":false,"tags":["综合"]},{"id":292,"text":"培训方法的选择应该完全依赖于培训者的经验和偏好。","answer":false,"tags":["综合"]},{"id":293,"text":"在数据采集和处理流程中，重点分析数据的质量和准确性是非常重要的。","answer":true,"tags":["质量与评估"]},{"id":294,"text":"在数据采集和处理流程中，数据清洗的主要目的是去除重复数据和提高数据质量。","answer":true,"tags":["数据标注与处理","质量与评估"]},{"id":295,"text":"在数据采集和处理流程中，数据清洗是一个不必要的步骤。","answer":false,"tags":["数据标注与处理"]},{"id":296,"text":"指导数据采集和处理问题的解决方法主要包括数据清洗、数据转换和数据可视化。","answer":false,"tags":["数据标注与处理"]},{"id":297,"text":"在数据标注流程中，标注员需要严格按照标注规则进行操作。","answer":true,"tags":["数据标注与处理"]},{"id":298,"text":"数据标注流程中的难点仅仅是数据清洗。","answer":false,"tags":["数据标注与处理"]},{"id":299,"text":"数据标注流程中的常见问题点包括数据清洗和预处理。","answer":false,"tags":["数据标注与处理"]},{"id":300,"text":"在数据标注过程中，标注人员需要遵循一定的标注规范和流程。","answer":true,"tags":["数据标注与处理","法律法规"]}];
+var TAG_COUNTS = {'职业道德与伦理': 5, '法律法规': 14, '数据安全与隐私': 3, '模型与算法': 74, 'AI基础概念': 32, '训练师职业': 12, '质量与评估': 45, '综合': 164, '数据标注与处理': 28};
+var EXAM_TIME = 5400; // 90分钟
+
+var allQuestions = QDATA;
+var currentPool = [];
+var currentIndex = 0;
+var submitted = false;
+var selectedAnswer = null;
+var roundNumber = 1;
+var roundResults = [];
+var resumedMidRound = false;
+var autoAdvancing = false;
+var globalWrongIds = null;
+var snapshotPreRoundWrongIds = null;
+var snapshotPreRoundNumber = 1;
+var roundHistory = [];
+var reviewingRound = 0;
+
+// 收藏
+var favorites = new Set();
+// 标签筛选
+var currentTag = '';
+// 模式: practice / exam / fav / spaced
+var currentMode = 'practice';
+// 考试模式
+var examTimer = null;
+var examTimeLeft = 0;
+var examAnswers = {};
+var examSubmitted = false;
+// 答题计时
+var questionStartTime = 0;
+var questionTimes = {}; // id -> seconds
+var timerInterval = null;
+// 间隔重复: id -> { nextDate: 'YYYY-MM-DD', interval: 1|3|7 }
+var spacedRepetition = {};
+// 夜间模式
+var darkMode = false;
+
+// ===== 初始化 =====
+function init() {
+  var ver = localStorage.getItem('ai_trainer_judge_version');
+  if (ver !== '3') { clearStorage(); localStorage.setItem('ai_trainer_judge_version', '3'); }
+  loadFromStorage();
+  initTagFilter();
+  updateFavCount();
+  updateSpacedCount();
+  // 夜间模式
+  if (darkMode) document.body.classList.add('dark-mode');
+  if (darkMode) document.getElementById('darkModeBtn').textContent = '☀️';
+
+  var savedFinish = localStorage.getItem('ai_trainer_finish_judge');
+  if (savedFinish) {
+    try {
+      var data = JSON.parse(savedFinish);
+      snapshotPreRoundWrongIds = globalWrongIds ? new Set(globalWrongIds) : null;
+      snapshotPreRoundNumber = data.roundNumber;
+      renderFinishPanel(data);
+      return;
+    } catch(e) {}
+  }
+  if (currentPool.length > 0 && roundResults.length > 0) { resumedMidRound = true; }
+  startNewRound();
+}
+
+function loadFromStorage() {
+  try {
+    var raw = localStorage.getItem('ai_trainer_wrong_ids_judge');
+    if (raw) globalWrongIds = new Set(JSON.parse(raw));
+    var r = localStorage.getItem('ai_trainer_round_judge');
+    if (r) roundNumber = parseInt(r) || 1;
+    var poolOrder = localStorage.getItem('ai_trainer_pool_order_judge');
+    var results = localStorage.getItem('ai_trainer_round_results_judge');
+    var idx = localStorage.getItem('ai_trainer_current_index_judge');
+    if (poolOrder) {
+      var orderIds = JSON.parse(poolOrder);
+      currentPool = orderIds.map(function(id) { return allQuestions.find(function(q) { return q.id === id; }); }).filter(Boolean);
+    }
+    if (results) roundResults = JSON.parse(results);
+    if (idx !== null) currentIndex = parseInt(idx) || 0;
+    var rh = localStorage.getItem('ai_trainer_round_history_judge');
+    if (rh) roundHistory = JSON.parse(rh);
+    // 收藏
+    var fav = localStorage.getItem('ai_trainer_favs_judge');
+    if (fav) favorites = new Set(JSON.parse(fav));
+    // 间隔重复
+    var sr = localStorage.getItem('ai_trainer_spaced_judge');
+    if (sr) spacedRepetition = JSON.parse(sr);
+    // 答题计时
+    var qt = localStorage.getItem('ai_trainer_times_judge');
+    if (qt) questionTimes = JSON.parse(qt);
+    // 夜间模式
+    var dm = localStorage.getItem('ai_trainer_dark_judge');
+    if (dm === '1') darkMode = true;
+  } catch(e) { currentPool = []; roundResults = []; currentIndex = 0; }
+}
+
+function saveProgress() {
+  saveToStorage();
+  try {
+    localStorage.setItem('ai_trainer_pool_order_judge', JSON.stringify(currentPool.map(function(q) { return q.id; })));
+    localStorage.setItem('ai_trainer_round_results_judge', JSON.stringify(roundResults));
+    localStorage.setItem('ai_trainer_current_index_judge', currentIndex);
+  } catch(e) {}
+}
+
+function clearCurrentProgress() {
+  localStorage.removeItem('ai_trainer_pool_order_judge');
+  localStorage.removeItem('ai_trainer_round_results_judge');
+  localStorage.removeItem('ai_trainer_current_index_judge');
+}
+
+function saveToStorage() {
+  if (globalWrongIds && globalWrongIds.size > 0) {
+    localStorage.setItem('ai_trainer_wrong_ids_judge', JSON.stringify(Array.from(globalWrongIds)));
+  } else { localStorage.removeItem('ai_trainer_wrong_ids_judge'); }
+  localStorage.setItem('ai_trainer_round_judge', roundNumber);
+  if (roundHistory.length > 0) localStorage.setItem('ai_trainer_round_history_judge', JSON.stringify(roundHistory));
+  // 收藏
+  localStorage.setItem('ai_trainer_favs_judge', JSON.stringify(Array.from(favorites)));
+  // 间隔重复
+  localStorage.setItem('ai_trainer_spaced_judge', JSON.stringify(spacedRepetition));
+  // 计时
+  localStorage.setItem('ai_trainer_times_judge', JSON.stringify(questionTimes));
+  // 夜间
+  localStorage.setItem('ai_trainer_dark_judge', darkMode ? '1' : '0');
+}
+
+function clearStorage() {
+  var keys = ['wrong_ids','round','pool_order','round_results','current_index','finish','round_history','favs','spaced','times','dark'];
+  keys.forEach(function(k) { localStorage.removeItem('ai_trainer_' + k + '_judge'); });
+  roundHistory = []; favorites = new Set(); spacedRepetition = {}; questionTimes = {};
+}
+
+// ===== 标签筛选 =====
+function initTagFilter() {
+  var sel = document.getElementById('tagFilter');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">全部知识点</option>';
+  Object.keys(TAG_COUNTS).sort().forEach(function(tag) {
+    var opt = document.createElement('option');
+    opt.value = tag; opt.textContent = tag + '（' + TAG_COUNTS[tag] + '题）';
+    sel.appendChild(opt);
+  });
+}
+
+function applyTagFilter() {
+  currentTag = document.getElementById('tagFilter').value;
+  if (currentMode === 'practice' || currentMode === 'fav' || currentMode === 'spaced') {
+    startNewRound();
+  }
+}
+
+// ===== 模式切换 =====
+function switchMode(mode) {
+  if (mode === 'exam') { startExam(); return; }
+  currentMode = mode;
+  stopExamTimer();
+  // 更新按钮状态
+  document.getElementById('modePractice').classList.toggle('active', mode === 'practice');
+  document.getElementById('modeExam').classList.toggle('active', mode === 'exam');
+  document.getElementById('modeFav').classList.toggle('active', mode === 'fav');
+  document.getElementById('modeSpaced').classList.toggle('active', mode === 'spaced');
+  document.getElementById('examBanner').style.display = 'none';
+  reviewingRound = 0; resumedMidRound = false;
+  clearCurrentProgress();
+  localStorage.removeItem('ai_trainer_finish_judge');
+  startNewRound();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ===== 夜间模式 =====
+function toggleDarkMode() {
+  darkMode = !darkMode;
+  document.body.classList.toggle('dark-mode', darkMode);
+  document.getElementById('darkModeBtn').textContent = darkMode ? '☀️' : '🌙';
+  saveToStorage();
+}
+
+// ===== 收藏 =====
+function toggleFavorite(id) {
+  if (favorites.has(id)) { favorites.delete(id); }
+  else { favorites.add(id); }
+  saveToStorage(); updateFavCount();
+  // 更新按钮
+  var btn = document.getElementById('favBtn');
+  if (btn) btn.textContent = favorites.has(id) ? '⭐' : '☆';
+}
+
+function updateFavCount() {
+  var el = document.getElementById('favCount');
+  if (el) el.textContent = favorites.size > 0 ? '(' + favorites.size + ')' : '';
+}
+
+// ===== 间隔重复 =====
+function getToday() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function addSpacedRepetition(id, correct) {
+  if (correct) {
+    // 答对：推进间隔
+    var cur = spacedRepetition[id] || { nextDate: getToday(), interval: 1 };
+    var nextInterval = cur.interval === 1 ? 3 : cur.interval === 3 ? 7 : 30;
+    var next = new Date();
+    next.setDate(next.getDate() + nextInterval);
+    spacedRepetition[id] = { nextDate: next.getFullYear() + '-' + String(next.getMonth()+1).padStart(2,'0') + '-' + String(next.getDate()).padStart(2,'0'), interval: nextInterval };
+  } else {
+    // 答错：重置间隔
+    spacedRepetition[id] = { nextDate: getToday(), interval: 1 };
+  }
+  saveToStorage();
+}
+
+function getSpacedDueIds() {
+  var today = getToday();
+  var due = [];
+  for (var id in spacedRepetition) {
+    if (spacedRepetition[id].nextDate <= today) due.push(parseInt(id));
+  }
+  return due;
+}
+
+function updateSpacedCount() {
+  var el = document.getElementById('spacedCount');
+  var count = getSpacedDueIds().length;
+  if (el) el.textContent = count > 0 ? '(' + count + ')' : '';
+}
+
+// ===== 答题计时 =====
+function startQuestionTimer() {
+  questionStartTime = Date.now();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(function() {
+    var elapsed = Math.round((Date.now() - questionStartTime) / 1000);
+    var el = document.getElementById('qTimer');
+    if (el) {
+      var m = Math.floor(elapsed / 60);
+      var s = elapsed % 60;
+      el.textContent = (m > 0 ? m + ':' : '') + (m > 0 ? String(s).padStart(2,'0') : s + 's');
+      el.className = 'q-timer' + (elapsed > 30 ? ' very-slow' : elapsed > 15 ? ' slow' : '');
+    }
+  }, 1000);
+}
+
+function stopQuestionTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function recordQuestionTime(id) {
+  var elapsed = Math.round((Date.now() - questionStartTime) / 1000);
+  questionTimes[id] = (questionTimes[id] || 0) + elapsed;
+  saveToStorage();
+}
+
+// ===== 考试模式 =====
+function startExam() {
+  currentMode = 'exam';
+  examSubmitted = false;
+  examAnswers = {};
+  examTimeLeft = EXAM_TIME;
+  document.getElementById('modePractice').classList.remove('active');
+  document.getElementById('modeExam').classList.add('active');
+  document.getElementById('modeFav').classList.remove('active');
+  document.getElementById('modeSpaced').classList.remove('active');
+  reviewingRound = 0; resumedMidRound = false;
+  clearCurrentProgress();
+  localStorage.removeItem('ai_trainer_finish_judge');
+
+  // 打乱所有题目
+  currentPool = allQuestions.slice();
+  shuffle(currentPool);
+  currentIndex = 0; roundResults = []; submitted = false; selectedAnswer = null;
+
+  renderExamBanner();
+  document.getElementById('examBanner').style.display = 'flex';
+  document.getElementById('toolbar').style.display = 'none';
+  updateRoundUI();
+  renderExamQuestion();
+  startExamTimer();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function renderExamBanner() {
+  var banner = document.getElementById('examBanner');
+  if (!banner) return;
+  var m = Math.floor(examTimeLeft / 60);
+  var s = examTimeLeft % 60;
+  var urgent = examTimeLeft <= 300;
+  banner.innerHTML = '<div><b>🎓 考试模式</b><span style="font-size:12px;opacity:.8;margin-left:8px">' + currentPool.length + ' 题</span></div>'
+    + '<div style="display:flex;align-items:center;gap:12px"><span class="exam-timer' + (urgent ? ' urgent' : '') + '">' + m + ':' + String(s).padStart(2,'0') + '</span>'
+    + '<button onclick="submitExam()" style="padding:6px 16px;border-radius:6px;border:none;background:#fff;color:#dc2626;font-weight:600;cursor:pointer;font-size:13px">交卷</button></div>';
+}
+
+function startExamTimer() {
+  if (examTimer) clearInterval(examTimer);
+  examTimer = setInterval(function() {
+    examTimeLeft--;
+    renderExamBanner();
+    if (examTimeLeft <= 0) { stopExamTimer(); submitExam(); }
+  }, 1000);
+}
+
+function stopExamTimer() {
+  if (examTimer) { clearInterval(examTimer); examTimer = null; }
+}
+
+function renderExamQuestion() {
+  if (currentIndex >= currentPool.length) { submitExam(); return; }
+  var q = currentPool[currentIndex];
+  var answered = examAnswers.hasOwnProperty(q.id);
+  var area = document.getElementById('questionArea');
+
+  var btnTrueClass = 'btn-judge btn-true';
+  var btnFalseClass = 'btn-judge btn-false';
+  var resultHtml = '';
+
+  if (answered) {
+    btnTrueClass += ' disabled-style'; btnFalseClass += ' disabled-style';
+    // 考试中不显示对错，只显示已选
+    if (examAnswers[q.id] === true) btnTrueClass += ' selected';
+    else btnFalseClass += ' selected';
+    resultHtml = '<div class="q-result show" style="background:var(--tag-bg);color:var(--tag-text)">已作答</div>';
+  }
+
+  area.innerHTML = '<div class="card">'
+    + '<div class="q-header"><div class="q-num">第 ' + q.id + ' 题</div><div class="q-timer" id="qTimer"></div></div>'
+    + '<div class="q-tags">' + (q.tags||[]).map(function(t){return '<span class="q-tag-label">'+t+'</span>';}).join('') + '</div>'
+    + '<div class="q-text">' + escapeHtml(q.text) + '</div>'
+    + '<div class="btn-row">'
+    + '<button class="' + btnTrueClass + '" onclick="examChoose(' + q.id + ',true)"' + (answered?' disabled':'') + '>✅ 正确</button>'
+    + '<button class="' + btnFalseClass + '" onclick="examChoose(' + q.id + ',false)"' + (answered?' disabled':'') + '>❌ 错误</button>'
+    + '</div>'
+    + resultHtml + '</div>';
+
+  updateProgress(); renderNav();
+  startQuestionTimer();
+}
+
+function examChoose(id, ans) {
+  if (examAnswers.hasOwnProperty(id)) return;
+  examAnswers[id] = ans;
+  recordQuestionTime(id);
+  // 自动跳下一题
+  autoAdvancing = true;
+  setTimeout(function() {
+    autoAdvancing = false;
+    if (currentIndex >= currentPool.length - 1) { /* 最后一题，不自动交卷 */ renderExamQuestion(); }
+    else { currentIndex++; renderExamQuestion(); window.scrollTo({ top:0, behavior:'smooth' }); }
+  }, 200);
+}
+
+function submitExam() {
+  stopExamTimer();
+  examSubmitted = true;
+  document.getElementById('examBanner').style.display = 'none';
+  document.getElementById('toolbar').style.display = 'flex';
+
+  // 批改
+  var correct = 0, wrong = 0, unanswered = 0;
+  var wrongItems = [];
+  currentPool.forEach(function(q) {
+    if (!examAnswers.hasOwnProperty(q.id)) { unanswered++; return; }
+    var isCorrect = examAnswers[q.id] === q.answer;
+    if (isCorrect) correct++;
+    else { wrong++; wrongItems.push({ id: q.id, text: q.text.substring(0,50)+(q.text.length>50?'...':''), userAnswer: examAnswers[q.id], correctAnswer: q.answer }); }
+  });
+
+  // 记录到 roundHistory
+  var total = currentPool.length;
+  var pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  roundHistory.push({ round: roundNumber, correct: correct, wrong: wrong, pct: pct, wrongIds: wrongItems.map(function(w){return w.id;}), exam: true });
+  globalWrongIds = new Set();
+  for (var gi = 0; gi < roundHistory.length; gi++) {
+    for (var gj = 0; gj < roundHistory[gi].wrongIds.length; gj++) { globalWrongIds.add(roundHistory[gi].wrongIds[gj]); }
+  }
+  // 间隔重复
+  wrongItems.forEach(function(w) { addSpacedRepetition(w.id, false); });
+  currentPool.forEach(function(q) { if (examAnswers[q.id] === q.answer) addSpacedRepetition(q.id, true); });
+  saveToStorage();
+  updateSpacedCount();
+
+  // 渲染考试结果
+  var area = document.getElementById('questionArea');
+  var wrongListHtml = '';
+  if (wrongItems.length > 0) {
+    wrongListHtml = '<div style="text-align:left;margin-top:20px"><h4 style="margin-bottom:10px">📋 错题详情：</h4><table class="summary-table"><thead><tr><th>题号</th><th>题目</th><th>你的答案</th><th>正确答案</th></tr></thead><tbody>'
+      + wrongItems.map(function(w) {
+        return '<tr class="summary-row"><td><span class="dot red"></span>' + w.id + '</td><td>' + escapeHtml(w.text) + '</td><td>' + (w.userAnswer?'正确':'错误') + '</td><td>' + (w.correctAnswer?'正确':'错误') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  // 计时统计
+  var timeStatsHtml = buildTimeStats(currentPool);
+
+  var emoji = pct === 100 ? '🎉' : pct >= 80 ? '😊' : pct >= 60 ? '💪' : '📚';
+  var msg = pct === 100 ? '太棒了！' : pct >= 80 ? '不错！' : pct >= 60 ? '继续加油！' : '多加练习！';
+
+  area.innerHTML = '<div class="finish-panel"><div class="big-icon">' + emoji + '</div><h2>🎓 考试结束</h2><div class="score">' + pct + '%</div>'
+    + '<p class="detail">' + correct + ' 正确 / ' + wrong + ' 错误 / ' + unanswered + ' 未答（共' + total + '题）</p>'
+    + '<p style="color:var(--muted);font-size:14px">' + msg + '</p>'
+    + wrongListHtml + timeStatsHtml
+    + '<div style="margin-top:24px"><button class="toggle-btn" style="background:var(--primary);color:#fff;padding:10px 24px;border-radius:8px;font-size:14px" onclick="switchMode(\'practice\')">📝 返回练习模式</button></div></div>';
+
+  clearCurrentProgress();
+  localStorage.removeItem('ai_trainer_finish_judge');
+}
+
+// ===== 练习模式核心 =====
+function startNewRound() {
+  if (resumedMidRound && currentPool.length > 0 && currentIndex < currentPool.length) {
+    resumedMidRound = false;
+    if (roundResults.length >= currentPool.length) { showRoundFinish(); return; }
+    updateRoundUI(); renderQuestion(); return;
+  }
+  resumedMidRound = false;
+  localStorage.removeItem('ai_trainer_finish_judge');
+  submitted = false; selectedAnswer = null; roundResults = [];
+
+  if (currentMode === 'fav') {
+    // 收藏模式
+    currentPool = allQuestions.filter(function(q) { return favorites.has(q.id); });
+    if (currentTag) currentPool = currentPool.filter(function(q) { return q.tags && q.tags.indexOf(currentTag) >= 0; });
+  } else if (currentMode === 'spaced') {
+    // 间隔重复模式
+    var dueIds = getSpacedDueIds();
+    currentPool = allQuestions.filter(function(q) { return dueIds.indexOf(q.id) >= 0; });
+    if (currentTag) currentPool = currentPool.filter(function(q) { return q.tags && q.tags.indexOf(currentTag) >= 0; });
+  } else {
+    // 练习模式
+    if (!globalWrongIds || globalWrongIds.size === 0) {
+      currentPool = allQuestions.slice(); roundNumber = 1;
+    } else {
+      var ids = new Set(globalWrongIds);
+      currentPool = allQuestions.filter(function(q) { return ids.has(q.id); });
+    }
+    if (currentTag) currentPool = currentPool.filter(function(q) { return q.tags && q.tags.indexOf(currentTag) >= 0; });
+  }
+
+  shuffle(currentPool); currentIndex = 0;
+  updateRoundUI();
+  if (currentPool.length > 0) { renderQuestion(); } else { showEmptyPool(); }
+}
+
+function showEmptyPool() {
+  var area = document.getElementById('questionArea');
+  var msg = currentMode === 'fav' ? '还没有收藏题目，练习时点击 ☆ 收藏吧！' :
+            currentMode === 'spaced' ? '暂无需要复习的题目，做得好！' : '暂无题目';
+  area.innerHTML = '<div class="finish-panel"><div class="big-icon">📭</div><h2>' + msg + '</h2>'
+    + '<button class="toggle-btn" style="margin-top:16px;background:var(--primary);color:#fff;padding:8px 20px;border-radius:8px" onclick="switchMode(\'practice\')">📝 返回练习模式</button></div>';
+}
+
+function updateRoundUI() {
+  var label = reviewingRound ? '📖 回顾第' + reviewingRound + '轮错题' :
+              currentMode === 'fav' ? '⭐ 收藏题练习' :
+              currentMode === 'spaced' ? '🔁 间隔复习' :
+              '第 ' + roundNumber + ' 轮';
+  document.getElementById('roundBadge').textContent = label;
+  updateStats(); updateProgress();
+}
+
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+}
+
+function renderQuestion(reviewMode) {
+  if (currentIndex >= currentPool.length) { showRoundFinish(); return; }
+  var q = currentPool[currentIndex];
+  var result = roundResults.find(function(r) { return r.id === q.id; });
+  if (result && !reviewMode) { submitted = true; }
+  else if (!result) { submitted = false; selectedAnswer = null; }
+
+  var area = document.getElementById('questionArea');
+  var btnTrueClass = 'btn-judge btn-true';
+  var btnFalseClass = 'btn-judge btn-false';
+  var btnTrueDisabled = '';
+  var btnFalseDisabled = '';
+
+  if (result) {
+    btnTrueDisabled = ' disabled';
+    btnFalseDisabled = ' disabled';
+    if (result.correct) {
+      if (q.answer === true) { btnTrueClass += ' correct-highlight'; }
+      else { btnFalseClass += ' correct-highlight'; }
+    } else {
+      if (result.userAnswer === true) { btnTrueClass += ' wrong-highlight'; }
+      else { btnFalseClass += ' wrong-highlight'; }
+      if (q.answer === true) { btnTrueClass += ' correct-highlight'; }
+      else { btnFalseClass += ' correct-highlight'; }
+    }
+  }
+
+  var resultHtml = '';
+  if (result) {
+    if (result.correct) {
+      resultHtml = '<div class="q-result show" style="background:#ecfdf5;color:#065f46">✅ <b>回答正确！</b></div>';
+    } else {
+      var correctLabel = q.answer ? '正确' : '错误';
+      var yourLabel = result.userAnswer ? '正确' : '错误';
+      var yourCls = result.userAnswer ? 'ans-true' : 'ans-false';
+      var correctCls = q.answer ? 'ans-true' : 'ans-false';
+      resultHtml = '<div class="q-result show" style="background:#fef2f2;color:#991b1b">❌ <b>回答错误！</b> 你的答案：<span class="q-tag ' + yourCls + '">' + yourLabel + '</span> 正确答案：<span class="q-tag ' + correctCls + '">' + correctLabel + '</span></div>';
+    }
+  }
+
+  // 间隔重复标记
+  var spacedBadge = '';
+  if (spacedRepetition[q.id]) {
+    var sr = spacedRepetition[q.id];
+    spacedBadge = '<span class="spaced-badge">🔁 ' + sr.interval + '天后复查</span>';
+  }
+
+  var isFav = favorites.has(q.id);
+
+  area.innerHTML = '<div class="card">'
+    + '<div class="q-header"><div class="q-num">第 ' + q.id + ' 题' + spacedBadge + '</div><div style="display:flex;align-items:center;gap:8px"><div class="q-timer" id="qTimer"></div><button class="fav-btn' + (isFav?' active':'') + '" id="favBtn" onclick="toggleFavorite(' + q.id + ')">' + (isFav?'⭐':'☆') + '</button></div></div>'
+    + '<div class="q-tags">' + (q.tags||[]).map(function(t){return '<span class="q-tag-label">'+t+'</span>';}).join('') + '</div>'
+    + '<div class="q-text">' + escapeHtml(q.text) + '</div>'
+    + '<div class="btn-row">'
+    + '<button class="' + btnTrueClass + '" id="btnTrue" onclick="chooseAnswer(true)"' + btnTrueDisabled + '>✅ 正确</button>'
+    + '<button class="' + btnFalseClass + '" id="btnFalse" onclick="chooseAnswer(false)"' + btnFalseDisabled + '>❌ 错误</button>'
+    + '</div>'
+    + resultHtml + '</div>';
+
+  updateProgress(); renderNav();
+  startQuestionTimer();
+}
+
+function chooseAnswer(ans) {
+  if (submitted) return;
+  selectedAnswer = ans;
+  submitAnswer();
+}
+
+function submitAnswer() {
+  if (submitted || selectedAnswer === null) return;
+  // Guard: don't allow re-submit on already-answered question
+  if (roundResults.some(function(r) { return r.id === currentPool[currentIndex].id; })) return;
+  submitted = true;
+  stopQuestionTimer();
+  var q = currentPool[currentIndex];
+  var isCorrect = (selectedAnswer === q.answer);
+  roundResults.push({ id: q.id, correct: isCorrect, userAnswer: selectedAnswer });
+  recordQuestionTime(q.id);
+  addSpacedRepetition(q.id, isCorrect);
+  updateSpacedCount();
+
+  var btnT = document.getElementById('btnTrue');
+  var btnF = document.getElementById('btnFalse');
+  var card = document.querySelector('.card');
+
+  if (btnT) btnT.disabled = true;
+  if (btnF) btnF.disabled = true;
+
+  var correctLabel = q.answer ? '正确' : '错误';
+  var yourLabel = selectedAnswer ? '正确' : '错误';
+
+  // 创建结果区域
+  var resEl = document.createElement('div');
+  resEl.className = 'q-result show';
+  card.appendChild(resEl);
+
+  if (isCorrect) {
+    if (q.answer === true && btnT) { btnT.classList.add('correct-highlight'); }
+    else if (btnF) { btnF.classList.add('correct-highlight'); }
+    resEl.style.background = '#ecfdf5'; resEl.style.color = '#065f46';
+    resEl.innerHTML = '✅ <b>回答正确！</b>';
+    autoAdvancing = true;
+    setTimeout(function() {
+      autoAdvancing = false;
+      if (currentIndex >= currentPool.length - 1) { showRoundFinish(); }
+      else { currentIndex++; saveProgress(); renderQuestion(); window.scrollTo({ top:0, behavior:'smooth' }); }
+    }, 400);
+  } else {
+    if (selectedAnswer === true && btnT) { btnT.classList.add('wrong-highlight'); }
+    else if (btnF) { btnF.classList.add('wrong-highlight'); }
+    if (q.answer === true && btnT) { btnT.classList.add('correct-highlight'); }
+    else if (btnF) { btnF.classList.add('correct-highlight'); }
+    var yourCls = selectedAnswer ? 'ans-true' : 'ans-false';
+    var correctCls = q.answer ? 'ans-true' : 'ans-false';
+    resEl.style.background = '#fef2f2'; resEl.style.color = '#991b1b';
+    resEl.innerHTML = '❌ <b>回答错误！</b> 你的答案：<span class="q-tag ' + yourCls + '">' + yourLabel + '</span> 正确答案：<span class="q-tag ' + correctCls + '">' + correctLabel + '</span>';
+    autoAdvancing = true;
+    setTimeout(function() {
+      autoAdvancing = false;
+      if (currentIndex >= currentPool.length - 1) { showRoundFinish(); }
+      else { currentIndex++; saveProgress(); renderQuestion(); window.scrollTo({ top:0, behavior:'smooth' }); }
+    }, 1500);
+  }
+
+  updateStats(); updateProgress(); saveProgress(); renderNav();
+}
+
+function goToQuestion(idx) {
+  if (autoAdvancing) return;
+  if (idx < 0 || idx >= currentPool.length) return;
+  currentIndex = idx;
+  var done = roundResults.find(function(r) { return r.id === currentPool[idx].id; });
+  renderQuestion(!!done);
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function renderNav() {
+  var nav = document.getElementById('qNav');
+  if (!nav) return;
+  var total = currentPool.length;
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var navPos = document.getElementById('navPos');
+  if (prevBtn) prevBtn.disabled = currentIndex <= 0;
+  if (nextBtn) nextBtn.disabled = currentIndex >= total - 1;
+  if (navPos) navPos.textContent = (currentIndex + 1) + ' / ' + total;
+  nav.style.display = 'block';
+}
+
+function updateStats() {
+  var total = currentPool.length;
+  var done = roundResults.length;
+  var correct = roundResults.filter(function(r) { return r.correct; }).length;
+  var wrong = roundResults.filter(function(r) { return !r.correct; }).length;
+  var remain = total - done;
+  var pct = done > 0 ? Math.round(correct / done * 100) : '-';
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('remainCount').textContent = remain;
+  document.getElementById('scorePercent').textContent = pct === '-' ? '-' : pct + '%';
+  var hb = document.getElementById('historyBar');
+  if (hb) {
+    hb.style.display = roundHistory.length > 0 ? 'block' : 'none';
+    var hc = document.getElementById('historyCount');
+    if (hc) hc.textContent = roundHistory.length;
+  }
+}
+
+function updateProgress() {
+  var total = currentPool.length;
+  var done = roundResults.length;
+  var pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCur').textContent = done + ' / ' + total;
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ===== 轮次完成 =====
+function showRoundFinish() {
+  var total = currentPool.length;
+  // Dedup: keep only last result per question
+  var lastResult = {};
+  for (var lri = 0; lri < roundResults.length; lri++) {
+    lastResult[roundResults[lri].id] = roundResults[lri];
+  }
+  var correct = 0, wrong = 0;
+  var qids = Object.keys(lastResult);
+  for (var qi = 0; qi < qids.length; qi++) {
+    if (lastResult[qids[qi]].correct) correct++; else wrong++;
+  }
+  var pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  snapshotPreRoundWrongIds = globalWrongIds ? new Set(globalWrongIds) : null;
+  snapshotPreRoundNumber = roundNumber;
+  updateStats(); updateProgress();
+  var wrongIds = []; for (var wi = 0; wi < qids.length; wi++) { if (!lastResult[qids[wi]].correct) wrongIds.push(parseInt(qids[wi])); }
+  if (!reviewingRound) {
+    roundHistory.push({ round: roundNumber, correct: correct, wrong: wrong, pct: pct, wrongIds: wrongIds });
+  }
+  globalWrongIds = new Set();
+  for (var gi = 0; gi < roundHistory.length; gi++) {
+    for (var gj = 0; gj < roundHistory[gi].wrongIds.length; gj++) { globalWrongIds.add(roundHistory[gi].wrongIds[gj]); }
+  }
+  saveToStorage(); updateSpacedCount();
+
+  var emoji = pct === 100 ? '🎉' : pct >= 80 ? '😊' : pct >= 60 ? '💪' : '📚';
+  var msg = pct === 100 ? '太棒了，全部正确！' : pct >= 80 ? '不错，继续保持！' : pct >= 60 ? '还需努力，加油！' : '多加练习，你可以的！';
+  var allClear = (!globalWrongIds || globalWrongIds.size === 0);
+  var finishData = { roundNumber: roundNumber, correct: correct, wrong: wrong, pct: pct, total: total, emoji: emoji, msg: msg, hasWrong: wrong > 0, allClear: allClear };
+  if (wrong > 0) {
+    finishData.wrongItems = wrongIds.map(function(wid) { var r = lastResult[wid]; return (function(q) {
+      var q = allQuestions.find(function(x) { return x.id === wid; });
+      return { id: wid, text: q ? q.text.substring(0, 50) + (q.text.length > 50 ? '...' : '') : '' };
+    })(r); });
+  }
+  localStorage.setItem('ai_trainer_finish_judge', JSON.stringify(finishData));
+  clearCurrentProgress();
+
+  if (reviewingRound) {
+    renderReviewFinish({ roundNumber: reviewingRound, correct: correct, wrong: wrong, pct: pct, total: total, emoji: emoji, msg: msg, wrongItems: finishData.wrongItems });
+    reviewingRound = 0;
+    return;
+  }
+  renderFinishPanel(finishData);
+}
+
+function renderFinishPanel(data) {
+  var area = document.getElementById('questionArea');
+  if (!area) return;
+  var rn = data.roundNumber, correct = data.correct, wrong = data.wrong, pct = data.pct, total = data.total;
+  var emoji = data.emoji, msg = data.msg, hasWrong = data.hasWrong, wrongItems = data.wrongItems, allClear = data.allClear;
+
+  var wrongListHtml = '';
+  if (hasWrong && wrongItems && wrongItems.length > 0) {
+    wrongListHtml = '<div style="text-align:left;margin-top:20px"><h4 style="margin-bottom:10px">📋 本轮错误题目：</h4><table class="summary-table"><thead><tr><th>题号</th><th>题目</th></tr></thead><tbody>'
+      + wrongItems.map(function(r) { return '<tr class="summary-row"><td><span class="dot red"></span>' + r.id + '</td><td>' + escapeHtml(r.text || '') + '</td></tr>'; }).join('')
+      + '</tbody></table></div>';
+  }
+
+  var historyHtml = buildHistoryHtml();
+
+  var btnArea = '';
+  if (hasWrong) {
+    var mergedCount = globalWrongIds ? globalWrongIds.size : wrong;
+    btnArea = '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:360px;margin:0 auto"><button class="toggle-btn" style="background:var(--primary);color:#fff;padding:10px 20px;border-radius:8px;flex:1;min-width:140px" onclick="redoRound()">🔄 重做本轮（' + total + ' 题）</button><button class="toggle-btn" style="background:#f59e0b;color:#fff;padding:10px 20px;border-radius:8px;flex:1;min-width:140px;border:2px solid #f59e0b" onclick="retryWrong()">⏭ 下一轮（只做错题 · ' + mergedCount + ' 题）</button></div>';
+  } else if (allClear) {
+    btnArea = '<button class="toggle-btn" style="background:var(--success);color:#fff;padding:10px 24px;border-radius:8px" onclick="resetAll()">🏆 重新开始挑战</button>';
+  } else {
+    btnArea = '<button class="toggle-btn" style="background:var(--primary);color:#fff;padding:10px 24px;border-radius:8px" onclick="resetAll()">🔄 重新开始全部练习</button>';
+  }
+
+  // 计时统计
+  var timeStatsHtml = buildTimeStats(roundResults.map(function(r){return allQuestions.find(function(q){return q.id===r.id})}).filter(Boolean));
+
+  area.innerHTML = '<div class="finish-panel"><div class="big-icon">' + emoji + '</div><h2>第 ' + rn + ' 轮完成！</h2><div class="score">' + pct + '%</div><p class="detail">' + correct + ' / ' + total + ' 正确，' + wrong + ' 题错误</p><p style="color:var(--muted);font-size:14px">' + msg + '</p>' + wrongListHtml + historyHtml + timeStatsHtml + btnArea
+    + '<button class="toggle-btn" style="margin-top:12px;color:var(--danger)" onclick="if(confirm(\'确定要清空所有记录吗？\'))resetAll()">🗑 清空记录，从头开始</button></div>';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function showAllClear() {
+  var total = allQuestions.length;
+  var area = document.getElementById('questionArea');
+  area.innerHTML = '<div class="finish-panel"><div class="big-icon">🏆</div><h2>全部通关！</h2><p style="color:var(--muted);margin:8px 0 20px">' + total + '道判断题已全部掌握！</p><button class="toggle-btn" style="background:var(--primary);color:#fff;padding:10px 24px;border-radius:8px" onclick="resetAll()">🔄 重新开始挑战</button></div>';
+  document.getElementById('roundBadge').textContent = '🏆 通关';
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressCur').textContent = total + ' / ' + total;
+  document.getElementById('progressPct').textContent = '100%';
+}
+
+function renderReviewFinish(data) {
+  var area = document.getElementById('questionArea');
+  if (!area) return;
+  var rn = data.roundNumber, correct = data.correct, wrong = data.wrong, pct = data.pct, total = data.total;
+  var emoji = data.emoji, msg = data.msg, wrongItems = data.wrongItems;
+  var wrongListHtml = '';
+  if (wrongItems && wrongItems.length > 0) {
+    wrongListHtml = '<div style="text-align:left;margin-top:20px"><h4 style="margin-bottom:10px">📋 本次错误题目：</h4><table class="summary-table"><thead><tr><th>题号</th><th>题目</th></tr></thead><tbody>'
+      + wrongItems.map(function(r) { return '<tr class="summary-row"><td><span class="dot red"></span>' + r.id + '</td><td>' + escapeHtml(r.text || '') + '</td></tr>'; }).join('')
+      + '</tbody></table></div>';
+  }
+  area.innerHTML = '<div class="finish-panel"><div class="big-icon">' + emoji + '</div><h2>回顾第' + rn + '轮错题 · 完成</h2><div class="score">' + pct + '%</div><p class="detail">' + correct + ' / ' + total + ' 正确，' + wrong + ' 题错误</p><p style="color:var(--muted);font-size:14px">' + msg + '</p>' + wrongListHtml
+    + '<button class="toggle-btn" style="margin-top:16px;background:var(--primary);color:#fff;padding:10px 24px;border-radius:8px" onclick="switchMode(\'practice\')">📝 返回练习模式</button></div>';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ===== 历史回顾 =====
+function buildHistoryHtml() {
+  if (roundHistory.length === 0) return '';
+  var html = '<div style="text-align:left;margin-top:20px"><div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px 0;border-bottom:1.5px solid var(--border);margin-bottom:12px" onclick="toggleHistory()"><h4 style="margin:0;font-size:14px">📊 各轮错题回顾（' + roundHistory.length + ' 轮）</h4><span id="historyToggle" style="font-size:18px;color:var(--muted)">▼</span></div><div id="historyBody" style="display:none">';
+  for (var hi = 0; hi < roundHistory.length; hi++) {
+    var h = roundHistory[hi];
+    var wrongQItems = '';
+    for (var wi = 0; wi < h.wrongIds.length; wi++) {
+      var q = allQuestions.find(function(x) { return x.id === h.wrongIds[wi]; });
+      var text = q ? q.text.substring(0, 40) + (q.text.length > 40 ? '...' : '') : '';
+      wrongQItems += '<tr style="font-size:12px"><td><span class="dot red"></span>' + h.wrongIds[wi] + '</td><td>' + escapeHtml(text) + '</td></tr>';
+    }
+    var hEmoji = h.pct === 100 ? '🎉' : h.pct >= 80 ? '😊' : h.pct >= 60 ? '💪' : '📚';
+    html += '<div class="history-entry"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span style="font-weight:600;font-size:14px">' + hEmoji + ' 第' + h.round + '轮' + (h.exam?' 🎓考试':'') + '</span><span style="font-size:13px;color:var(--muted)">' + h.correct + '/' + (h.correct + h.wrong) + ' · ' + h.pct + '%</span></div>';
+    if (h.wrongIds.length > 0) {
+      html += '<table class="summary-table" style="margin-bottom:8px"><thead><tr><th>题号</th><th>题目</th></tr></thead><tbody>' + wrongQItems + '</tbody></table>';
+      html += '<button class="toggle-btn" style="background:#6366f1;color:#fff;padding:4px 14px;border-radius:6px;font-size:12px" onclick="event.stopPropagation();retryRoundWrong(' + h.round + ', [' + h.wrongIds.join(',') + '])">📝 重做第' + h.round + '轮错题（' + h.wrongIds.length + ' 题）</button>';
+    } else { html += '<p style="font-size:12px;color:var(--success);margin:4px 0">✅ 全部正确</p>'; }
+    html += '</div>';
+  }
+  // 合并按钮
+  var allWrongSet = new Set();
+  for (var ai = 0; ai < roundHistory.length; ai++) {
+    for (var aj = 0; aj < roundHistory[ai].wrongIds.length; aj++) { allWrongSet.add(roundHistory[ai].wrongIds[aj]); }
+  }
+  var allWrongArr = Array.from(allWrongSet);
+  if (allWrongArr.length > 0 && allWrongArr.length !== (roundHistory[roundHistory.length-1].wrongIds || []).length) {
+    html += '<div style="margin-top:10px;text-align:center"><button class="toggle-btn" style="background:#f59e0b;color:#fff;border:2px solid #f59e0b;padding:6px 18px;border-radius:8px" onclick="event.stopPropagation();retryRoundWrong(0, [' + allWrongArr.join(',') + '])">🔄 重做所有轮错题合并（' + allWrongArr.length + ' 题）</button></div>';
+  }
+  html += '</div></div>';
+  return html;
+}
+
+// ===== 计时统计 =====
+function buildTimeStats(pool) {
+  if (!pool || pool.length === 0) return '';
+  var items = pool.filter(function(q) { return questionTimes[q.id]; }).map(function(q) { return { id: q.id, text: q.text || '', time: questionTimes[q.id] }; }).sort(function(a,b) { return b.time - a.time; });
+  if (items.length === 0) return '';
+  var maxTime = items[0].time;
+  var slowItems = items.slice(0, 10); // 最慢的10题
+  var html = '<div class="time-stats"><h4>⏱ 答题最慢的题目（Top 10）</h4>';
+  slowItems.forEach(function(item) {
+    var pct = maxTime > 0 ? Math.round(item.time / maxTime * 100) : 0;
+    var color = item.time > 30 ? 'var(--danger)' : item.time > 15 ? '#f59e0b' : 'var(--success)';
+    html += '<div class="time-bar-wrap"><div class="time-bar-label">第' + item.id + '题 · ' + item.time + '秒' + (item.time > 30 ? ' ⚠️' : '') + '</div><div class="time-bar"><div class="time-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// ===== 轮次操作 =====
+function redoRound() {
+  globalWrongIds = snapshotPreRoundWrongIds;
+  roundNumber = snapshotPreRoundNumber;
+  roundHistory = roundHistory.filter(function(h) { return h.round !== roundNumber; });
+  reviewingRound = 0; resumedMidRound = false;
+  clearCurrentProgress();
+  localStorage.removeItem('ai_trainer_finish_judge');
+  startNewRound();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function retryWrong() {
+  reviewingRound = 0; resumedMidRound = false;
+  clearCurrentProgress();
+  localStorage.removeItem('ai_trainer_finish_judge');
+  roundNumber++;
+  localStorage.setItem('ai_trainer_round_judge', roundNumber);
+  var merged = new Set();
+  for (var i = 0; i < roundHistory.length; i++) {
+    for (var j = 0; j < roundHistory[i].wrongIds.length; j++) { merged.add(roundHistory[i].wrongIds[j]); }
+  }
+  globalWrongIds = merged;
+  startNewRound();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function retryRoundWrong(round, wrongIds) {
+  if (!wrongIds || wrongIds.length === 0) return;
+  reviewingRound = round; resumedMidRound = false;
+  localStorage.removeItem('ai_trainer_finish_judge');
+  currentPool = wrongIds.map(function(id) { return allQuestions.find(function(q) { return q.id === id; }); }).filter(Boolean);
+  shuffle(currentPool);
+  currentIndex = 0; roundResults = []; selectedAnswer = null; submitted = false;
+  clearCurrentProgress();
+  var label = round === 0 ? '所有轮错题合并' : '第' + round + '轮错题';
+  document.getElementById('roundBadge').textContent = '📖 ' + label + '（' + currentPool.length + ' 题）';
+  document.getElementById('progressCur').textContent = '0 / ' + currentPool.length;
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressPct').textContent = '0%';
+  renderQuestion();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function resetAll() {
+  reviewingRound = 0; resumedMidRound = false;
+  globalWrongIds = null; roundNumber = 1;
+  currentMode = 'practice'; currentTag = '';
+  stopExamTimer();
+  document.getElementById('modePractice').classList.add('active');
+  document.getElementById('modeExam').classList.remove('active');
+  document.getElementById('modeFav').classList.remove('active');
+  document.getElementById('modeSpaced').classList.remove('active');
+  document.getElementById('examBanner').style.display = 'none';
+  document.getElementById('toolbar').style.display = 'flex';
+  var tagSel = document.getElementById('tagFilter');
+  if (tagSel) tagSel.value = '';
+  clearStorage(); startNewRound();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function toggleHistory() {
+  var body = document.getElementById('historyBody');
+  var toggle = document.getElementById('historyToggle');
+  if (!body || !toggle) return;
+  if (body.style.display === 'none') { body.style.display = 'block'; toggle.textContent = '▲'; }
+  else { body.style.display = 'none'; toggle.textContent = '▼'; }
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== 键盘 =====
+document.addEventListener('keydown', function(e) {
+  if (autoAdvancing) return;
+  if (currentMode === 'exam') {
+    // 考试模式：T/F选择，Enter下一题
+    if (e.key === 'Enter') { e.preventDefault(); if (currentIndex < currentPool.length - 1) { currentIndex++; renderExamQuestion(); } return; }
+    return;
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (!submitted) { if (selectedAnswer !== null) submitAnswer(); }
+    else { if (currentIndex < currentPool.length - 1) { currentIndex++; saveProgress(); renderQuestion(); } }
+    return;
+  }
+  if (!submitted) {
+    if (e.key === 't' || e.key === 'T') { e.preventDefault(); chooseAnswer(true); return; }
+    if (e.key === 'f' || e.key === 'F') { e.preventDefault(); chooseAnswer(false); return; }
+  }
+  if (e.key === 'a' || e.key === 'A') { e.preventDefault(); if (currentIndex > 0) goToQuestion(currentIndex - 1); }
+  if (e.key === 'd' || e.key === 'D') { e.preventDefault(); if (currentIndex < currentPool.length - 1) goToQuestion(currentIndex + 1); }
+});
+
+init();
+</script>
+<script src="/assets/js/nav.js"></script>
+</body>
+</html>

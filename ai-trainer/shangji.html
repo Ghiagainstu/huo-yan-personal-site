@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人工智能训练师三级 · 上机代码复习</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --card:#ffffff; --ink:#1f2d3d; --sub:#5b6b7c;
+    --line:#e3e8ef; --brand:#2563eb; --brand2:#1d4ed8; --ok:#16a34a;
+    --warn:#d97706; --warnbg:#fff7ed; --pink:#fde68a; --muted:#64748b; --bd:#e3e8ef;
+    --codebg:#0f172a; --codeink:#e2e8f0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px}
+  header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);
+    padding:10px 14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .hrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hrow h1{font-size:17px;margin:0;font-weight:700}
+  .badge{font-size:12px;background:var(--brand);color:#fff;padding:2px 8px;border-radius:20px}
+  .progress-wrap{flex:1;min-width:160px}
+  .progress{height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .3s}
+  .pcount{font-size:12px;color:var(--sub);margin-top:2px}
+  .tabs{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .tab{padding:7px 14px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:var(--sub)}
+  .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .tab:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .tab[aria-selected="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .controls input,.controls select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .controls input[type=text]{flex:1;min-width:180px}
+  .btn{padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink)}
+  .btn:hover{border-color:var(--brand);color:var(--brand)}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.warn{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+  main{padding:14px;max-width:980px;margin:0 auto}
+  .cat{margin:18px 0 6px;font-size:16px;font-weight:700;color:var(--brand2);display:flex;align-items:center;gap:8px}
+  .cat .cnt{font-size:12px;color:var(--sub);font-weight:500}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .human{font-size:15px;font-weight:700}
+  .human .no{color:var(--brand);margin-right:6px}
+  .read{color:var(--sub);font-size:13px;margin-top:4px}
+  .tip{background:#f0f7ff;border-left:3px solid var(--brand);padding:8px 10px;border-radius:6px;margin-top:8px;font-size:13px;color:#334155}
+  .code{display:none;margin-top:10px;background:var(--codebg);color:var(--codeink);padding:12px;border-radius:8px;
+    font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;position:relative}
+  .code.show{display:block}
+  .code .copy{position:absolute;top:8px;right:8px;background:#334155;color:#fff;border:none;padding:4px 9px;border-radius:6px;font-size:12px;cursor:pointer}
+  .card .acts{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .master{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);cursor:pointer;user-select:none}
+  .master input{width:16px;height:16px}
+  .card.done{border-color:var(--ok);background:#f6fffa}
+  /* skeleton + pitfalls */
+  .note{background:var(--warnbg);border:1px solid #fed7aa;border-radius:10px;padding:12px;margin:10px 0}
+  .note h3{margin:0 0 8px;font-size:14px;color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+  th{background:#f1f5f9}
+  /* quiz */
+  .quiz-q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+  .quiz-human{font-size:15px;font-weight:700;margin-bottom:10px}
+  textarea{width:100%;min-height:70px;font-family:"SF Mono",Consolas,monospace;font-size:14px;
+    border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+  .blanks{font-family:"SF Mono",Consolas,monospace;font-size:13.5px;background:var(--codebg);color:var(--codeink);
+    padding:12px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .blank{width:7ch;font-family:"SF Mono",Consolas,monospace;font-size:13.5px;border:1px solid #64748b;background:#1e293b;color:#fde68a;
+    border-radius:4px;padding:0 3px;text-align:center;box-sizing:content-box}
+  .blank.ok{background:#14532d;color:#bbf7d0;border-color:#16a34a}
+  .blank.no{background:#7f1d1d;color:#fecaca;border-color:#dc2626}
+  .blank.ungraded{background:#422006;color:#fde68a;border-color:var(--warn)}
+  .ans-hint.warn{color:#fbbf24}
+  .ans-hint{color:#fca5a5;font-size:12px;margin-left:5px;font-family:"SF Mono",Consolas,monospace;white-space:nowrap}
+  .code-line{white-space:pre-wrap;overflow-wrap:anywhere}
+  .cmt-line{color:#cbd5e1;background:#1e293b;border-left:3px solid var(--brand);padding:5px 10px;margin:4px 0;border-radius:0 6px 6px 0;font-size:12.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .ln-hint-btn{display:inline-block;border:1px solid #64748b;background:#334155;color:#fde68a;border-radius:4px;font-size:11px;line-height:1.4;padding:0 5px;margin-left:5px;cursor:pointer;vertical-align:middle}
+  .filled{background:#334155;color:#cbd5e1;border-radius:3px;padding:0 3px}
+  .ln-hint-btn:hover{background:#475569}
+  .reveal{display:none;margin-top:10px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;
+    font-family:monospace;font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .reveal.show{display:block}
+  /* 模拟考试“显示完整答案”：仅答案片段黄色高亮，区域其余代码保持深蓝 */
+  .ans-hl{background:#fff200;color:#1a1a1a;padding:0 3px;border-radius:3px;font-weight:600;}
+  .reveal .r-ok{color:#86efac}
+  .reveal .r-no{color:#fecaca;background:rgba(239,68,68,.14);border-left:3px solid #dc2626;padding:1px 6px;margin:2px 0;border-radius:0 4px 4px 0}
+  .thcard{border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:14px;background:var(--card)}
+  .thhead{font-size:15px;margin-bottom:8px}
+  .thkind{font-size:11px;color:var(--muted);border:1px solid var(--bd);border-radius:6px;padding:1px 6px;margin-left:6px}
+  .thbody{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.7;background:var(--codebg);color:var(--codeink);border-radius:8px;padding:10px 12px;margin:8px 0 0}
+  .thbody pre{margin:0;white-space:pre-wrap}
+  .verdict{margin-top:8px;font-weight:700}
+  .verdict.ok{color:var(--ok)} .verdict.no{color:#dc2626}
+  .qblock{background:var(--codebg);color:var(--codeink);padding:10px;border-radius:8px;font-family:monospace;
+    font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0;position:relative}
+  .qblock .pg{position:absolute;top:6px;right:8px;background:#334155;color:#cbd5e1;font-size:11px;padding:1px 7px;border-radius:10px}
+  .warnbox{background:var(--warnbg);border:1px solid #fdba74;color:#9a3412;font-size:12.5px;padding:6px 10px;border-radius:6px;margin-top:6px}
+  .empty{padding:40px;text-align:center;color:var(--sub)}
+  .hide{display:none!important}
+  @media(max-width:560px){.hrow h1{font-size:15px}.tab{padding:6px 10px;font-size:13px}}
+  /* 考点提示面板 */
+  .tip-card{padding:0;overflow:hidden}
+  .tip-sum{padding:14px;cursor:pointer;font-size:15px;font-weight:600;background:linear-gradient(90deg,#eff6ff,#fff);border-bottom:1px solid var(--line)}
+  .tip-sum b{color:var(--brand);margin-right:8px}
+  .tip-sum::-webkit-details-marker{color:var(--brand)}
+  .tip-body{padding:12px 14px}
+  .tip-sec{margin:8px 0}
+  .tip-badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;margin-bottom:4px}
+  .b-score{background:#eff6ff;color:#1d4ed8}
+  .b-must{background:#ecfdf5;color:#047857}
+  .b-pit{background:#fff7ed;color:#c2410c}
+  .b-kw{background:#faf5ff;color:#7e22ce}
+  .tip-list{margin:4px 0 0;padding-left:20px}
+  .tip-list li{margin:3px 0;font-size:13px;line-height:1.55}
+  .tip-muted{color:var(--muted);list-style:none;margin-left:-20px}
+  .tip-kw{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .tip-tag{background:#f3e8ff;color:#6b21a8;font-size:12px;padding:2px 8px;border-radius:12px;border:1px solid #e9d5ff}
+  /* v2：重点/错题徽章、星标、筛选栏、样板句复制 */
+  .tips-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 10px}
+  .tips-filters{display:flex;gap:6px;flex-wrap:wrap}
+  .tip-card>summary{display:flex;align-items:center;gap:8px}
+  .tip-star{border:none;background:transparent;font-size:18px;line-height:1;cursor:pointer;padding:2px 4px;border-radius:6px;color:#f59e0b}
+  .tip-star:hover{background:#fff7ed}
+  .tip-star:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .tip-badge.b-star{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+  .tip-badge.b-wrong{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+  .tip-badge.b-snip{background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe}
+  .tip-snip{display:flex;align-items:stretch;gap:8px;margin:6px 0}
+  .tip-pre{margin:0;flex:1;background:var(--codebg);color:var(--codeink);padding:8px 10px;border-radius:8px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow-x:auto;white-space:pre}
+  .tip-copy{border:1px solid var(--line);background:#fff;border-radius:8px;padding:0 14px;cursor:pointer;font-size:13px;
+    color:var(--sub);align-self:flex-start;white-space:nowrap}
+  .tip-copy:hover{background:#f0f7ff;color:var(--brand);border-color:var(--brand)}
+  .tip-copy:active{transform:translateY(1px)}
+  /* 考点提示面板：清空错题集 / 每题移除 */
+  .tip-clear{font-size:12px;padding:5px 10px;color:#991b1b;border-color:#fecaca}
+  .tip-clear:hover{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+  .tip-rm{margin-left:6px;border:1px solid #fecaca;background:#fff;color:#991b1b;border-radius:6px;
+    font-size:11px;padding:1px 7px;cursor:pointer}
+  .tip-rm:hover{background:#fee2e2}
+  /* 练习页标题区：重点/错题徽章 + 可点击⭐ */
+  .tip-mini{display:inline-flex;align-items:center;gap:6px;margin-left:8px;vertical-align:middle}
+  .tip-star-mini{border:none;background:transparent;font-size:16px;line-height:1;cursor:pointer;padding:0 3px;border-radius:6px;color:#f59e0b}
+  .tip-star-mini:hover{background:#fff7ed}
+  .tip-mini .tip-badge{font-size:11px;padding:1px 7px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>🧠 人工智能训练师三级 · 复习（代码 + 理论）</h1>
+    <span class="badge" id="modeBadge">学习卡</span>
+    <div class="progress-wrap">
+      <div class="progress"><i id="progBar"></i></div>
+      <div class="pcount" id="progCount">已掌握 0 / 0</div>
+    </div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="功能切换">
+    <div class="tab active" role="tab" tabindex="0" aria-selected="true" data-mode="tips">💡 考点提示</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="cloze">✍️ 挖空自测</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="recall">🔁 默写自测</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="study">📇 学习卡</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="exam">📝 小测验</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="mock">📋 模拟考试</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="bank">📚 全量题库</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="theory">📖 理论</div>
+    <div class="tab" role="tab" tabindex="-1" aria-selected="false" data-mode="errata">📕 PDF勘误</div>
+  </div>
+  <div class="controls">
+    <input type="text" id="search" placeholder="搜索：人话 / 代码 / 记忆点…">
+    <select id="catFilter"><option value="">全部分类</option></select>
+    <button class="btn" id="shuffleBtn">🎲 随机抽卡</button>
+    <button class="btn" id="resetBtn">↺ 重置掌握</button>
+  </div>
+</header>
+<main id="main"></main>
+
+<script>
+const CARDS = [{"n": 1, "cat": "一、读数据", "human": "把 csv 表格读进来，起名叫 data", "code": "data = pd.read_csv('文件名.csv')", "read": "", "tip": "几乎每题第一行。读Excel用 pd.read_excel('文件.xlsx')；中文乱码加 encoding='gbk'"}, {"n": 2, "cat": "一、读数据", "human": "打印表格前 5 行，看看数据长啥样", "code": "print(data.head())", "read": "", "tip": "head 后面有一对空括号；看整体信息用 data.info()"}, {"n": 3, "cat": "一、读数据", "human": "统计每列有多少缺失值(空值)", "code": "print(data.isnull().sum())", "read": "", "tip": "isnull() 和 sum() 都带空括号，两段连写"}, {"n": 4, "cat": "二、清洗数据", "human": "删掉有缺失值的整行", "code": "data = data.dropna()", "read": "", "tip": "drop=删，na=缺失。指定列: data.dropna(subset=['列名'])"}, {"n": 5, "cat": "二、清洗数据", "human": "删掉重复的行", "code": "data = data.drop_duplicates()", "read": "", "tip": "duplicates=重复。也可写 data.drop_duplicates(inplace=True)"}, {"n": 6, "cat": "二、清洗数据", "human": "把每列缺失值数量存起来", "code": "missing_values = data.isnull().sum()", "read": "", "tip": "缺失值统计常考"}, {"n": 7, "cat": "二、清洗数据", "human": "统计有多少重复行", "code": "duplicate_values = data.duplicated().sum()", "read": "", "tip": "duplicated() 判断是否重复，sum() 数个数"}, {"n": 8, "cat": "二、清洗数据", "human": "把某列的数据类型转成整数", "code": "data['列名'] = data['列名'].astype(int)", "read": "", "tip": "转小数用 float，转整数用 int。astype=as type 当作某类型"}, {"n": 9, "cat": "二、清洗数据", "human": "把某列强制转成数字，转不了的变成空值", "code": "data['列名'] = pd.to_numeric(data['列名'], errors='coerce')", "read": "", "tip": "errors='coerce' 表示出错就置空，之后再 dropna"}, {"n": 10, "cat": "二、清洗数据", "human": "用前一个值填补空缺(向前填充)", "code": "data['列名'].fillna(method='ffill', inplace=True)", "read": "", "tip": "ffill=向前填, bfill=向后填。inplace=True 直接改原表"}, {"n": 11, "cat": "三、数据审核 / 筛选", "human": "判断某列的值是否在[下限,上限]范围内", "code": "data['列名'].between(下限, 上限)", "read": "", "tip": "between=在…之间。返回True/False，常用于合理性审核"}, {"n": 12, "cat": "三、数据审核 / 筛选", "human": "新增一列，标记年龄是否在18~70之间", "code": "data['is_age_valid'] = data['Age'].between(18, 70)", "read": "", "tip": "审核题套路：给每个字段建一个 is_xxx_valid 列"}, {"n": 13, "cat": "三、数据审核 / 筛选", "human": "按条件给新列赋值：满足写前者，否则写后者", "code": "data['列名'] = np.where(条件, '真时的值', '假时的值')", "read": "", "tip": "np.where 三个参数：条件、真值、假值。像Excel的IF"}, {"n": 14, "cat": "三、数据审核 / 筛选", "human": "只保留同时满足多个条件的行", "code": "data = data[(data['Age'].between(18, 70)) & (data['列'].between(a, b))]", "read": "", "tip": "多条件用 & 连接，每个条件加圆括号。取反(不满足)用 ~"}, {"n": 15, "cat": "四、分组统计 / 分箱", "human": "统计某列每个取值出现多少次", "code": "data['列名'].value_counts()", "read": "", "tip": "value_counts 最高频考点之一，注意复数 counts"}, {"n": 16, "cat": "四、分组统计 / 分箱", "human": "按某列分组，求另一列的平均值", "code": "data.groupby('分组列')['统计列'].mean()", "read": "", "tip": "groupby=分组。求和.sum() 求均值.mean() 计数.count()"}, {"n": 17, "cat": "四、分组统计 / 分箱", "human": "分组后一次算多个指标", "code": "data.groupby('列').agg({'列1':'mean', '列2':'mean'})", "read": "", "tip": "agg=aggregate聚合。字典写法 {列:'统计方式'}，这里统计方式用 'mean'（平均数）"}, {"n": 18, "cat": "四、分组统计 / 分箱", "human": "把连续数值(如BMI)切成几个区间段", "code": "data['BMIRange'] = pd.cut(data['BMI'], bins=bmi_bins, labels=bmi_labels, right=False)", "read": "", "tip": "cut=切。right=False 表示左闭右开[a,b)。bins是边界列表,labels是每段名字"}, {"n": 19, "cat": "五、标准化 / 编码", "human": "把数值列做标准化(缩放到同一尺度)", "code": "data[列名列表] = scaler.fit_transform(data[列名列表])", "read": "", "tip": "fit_transform=拟合并转换。scaler 一般是 StandardScaler()"}, {"n": 20, "cat": "五、标准化 / 编码", "human": "把文字类别变量转成0/1数值(独热编码)", "code": "X = pd.get_dummies(X)", "read": "", "tip": "get_dummies=生成哑变量。模型只认数字，文字要先转"}, {"n": 21, "cat": "五、标准化 / 编码", "human": "把类别文字编码成数字标签", "code": "data['列'] = label_encoder.fit_transform(data['列'])", "read": "", "tip": "LabelEncoder 把 高/中/低 变成 0/1/2"}, {"n": 22, "cat": "六、切分数据 / 建模", "human": "取出特征列(输入)存为 X", "code": "X = data[selected_features]", "read": "", "tip": "X是特征(题目给的输入列),大写"}, {"n": 23, "cat": "六、切分数据 / 建模", "human": "取出目标列(要预测的)存为 y", "code": "y = data['目标列']", "read": "", "tip": "y是标签/目标,小写。X大y小别搞反"}, {"n": 24, "cat": "六、切分数据 / 建模", "human": "把数据切成训练集和测试集(测试占20%)", "code": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)", "read": "", "tip": "最高频建模行！四个返回值顺序固定:X_train,X_test,y_train,y_test。test_size=0.2, random_state=42 几乎不变"}, {"n": 25, "cat": "六、切分数据 / 建模", "human": "创建一个逻辑回归模型(分类用)", "code": "model = LogisticRegression(max_iter=1000)", "read": "", "tip": "分类问题。max_iter=1000 是最大迭代次数"}, {"n": 26, "cat": "六、切分数据 / 建模", "human": "创建一个线性回归模型(预测数值用)", "code": "model = LinearRegression()", "read": "", "tip": "回归问题。空括号"}, {"n": 27, "cat": "六、切分数据 / 建模", "human": "创建随机森林模型(100棵树)", "code": "rf_model = RandomForestRegressor(n_estimators=100, random_state=42)", "read": "", "tip": "n_estimators=树的数量。分类版是 RandomForestClassifier"}, {"n": 28, "cat": "六、切分数据 / 建模", "human": "创建决策树模型", "code": "dt_model = DecisionTreeRegressor(random_state=42)", "read": "", "tip": "DecisionTree=决策树"}, {"n": 29, "cat": "六、切分数据 / 建模", "human": "用训练集训练模型(让模型学习)", "code": "model.fit(X_train, y_train)", "read": "", "tip": "fit=训练/拟合。永远喂 train 集"}, {"n": 30, "cat": "六、切分数据 / 建模", "human": "用训练好的模型对测试集做预测", "code": "y_pred = model.predict(X_test)", "read": "", "tip": "predict=预测。永远喂 test 集。结果存 y_pred"}, {"n": 31, "cat": "七、模型评估", "human": "算均方误差(越小越准)", "code": "mse = mean_squared_error(y_test, y_pred)", "read": "", "tip": "评估回归模型。参数顺序:真实值y_test在前,预测值y_pred在后"}, {"n": 32, "cat": "七、模型评估", "human": "算决定系数R²(越接近1越好)", "code": "r2 = r2_score(y_test, y_pred)", "read": "", "tip": "R²衡量拟合优度。同样 y_test 在前"}, {"n": 33, "cat": "七、模型评估", "human": "算准确率(预测对的比例)", "code": "accuracy = (y_test == y_pred).mean()", "read": "", "tip": "分类准确率。双等号==是判断相等"}, {"n": 34, "cat": "七、模型评估", "human": "用模型自带方法算测试集得分", "code": "test_score = model.score(X_test, y_test)", "read": "", "tip": "score() 参数是 X 和 y,不是 y_pred"}, {"n": 35, "cat": "八、保存结果 / 模型", "human": "把处理后的表格存成 csv 文件", "code": "data.to_csv('文件名.csv', index=False)", "read": "", "tip": "存表最高频行！index=False 表示不保存行号。存文本 sep='\\t' 用制表符"}, {"n": 36, "cat": "八、保存结果 / 模型", "human": "把训练好的模型保存到文件", "code": "pickle.dump(model, file)", "read": "", "tip": "dump=倾倒/保存。另一种写法 joblib.dump(model, 文件名)"}, {"n": 37, "cat": "八、保存结果 / 模型", "human": "用 joblib 保存模型", "code": "joblib.dump(model, model_filename)", "read": "", "tip": "和 pickle.dump 二选一,效果类似"}, {"n": 38, "cat": "九、图像识别推理(ONNX类)", "human": "加载 onnx 模型,创建推理会话", "code": "session = ort.InferenceSession('模型.onnx')", "read": "", "tip": "ort 是 onnxruntime。也可写 onnxruntime.InferenceSession(...)"}, {"n": 39, "cat": "九、图像识别推理(ONNX类)", "human": "打开图片并转成RGB彩色", "code": "image = Image.open('图片.jpg').convert('RGB')", "read": "", "tip": "灰度图用 .convert('L')。手写数字识别常用L"}, {"n": 40, "cat": "九、图像识别推理(ONNX类)", "human": "把处理好的图片喂给模型,得到输出", "code": "output = session.run([output_name], {input_name: processed_image})[0]", "read": "", "tip": "run(输出名列表, {输入名:数据})。末尾[0]取第一个结果"}, {"n": 41, "cat": "九、图像识别推理(ONNX类)", "human": "找出概率最大的那个类别(即预测结果)", "code": "predicted_class = np.argmax(output)", "read": "", "tip": "argmax=最大值的位置=预测类别。识别题必考结尾"}];
+const QUESTIONS = [{"code": "1.1.1", "title": "智能医疗系统中的业务数据处理流程设计", "blocks": [{"page": "P4", "code": "data = pd.read_csv('patient_data.csv')\ndata['RiskLevel'] = np.where(data['DaysInHospital'] > 7,'高风险患者','低风险患者')\nrisk_counts = data['RiskLevel'].value_counts()\nhigh_risk_ratio = risk_counts['高风险患者']/len(data)\nlow_risk_ratio = risk_counts['低风险患者']/len(data)\ndata['BMIRange'] = pd.cut(data['BMI'], bins=bmi_bins, labels=bmi_labels, right=False)  ＃使用左闭右开区间\nbmi_risk_rate = data.groupby('BMIRange')['RiskLevel'].apply(lambda x: (x =='高风险患者').mean())\nbmi_patient_count = data['BMIRange'].value_counts()", "warn": false, "warnText": []}, {"page": "P5", "code": "data['AgeRange'] = pd.cut(data['Age'], bins=age_bins, labels=age_labels, right=False)  ＃使用左闭右开区间\nage_risk_rate = data.groupby('AgeRange')['RiskLevel'].apply(lambda x: (x =='高风险患者').mean())\nage_patient_count = data['AgeRange'].value_counts()", "warn": false, "warnText": []}]}, {"code": "1.1.2", "title": "智能农业系统中的业务数据采集和处理流程设计", "blocks": [{"page": "P10", "code": "data = pd.read_csv('sensor_data.csv')\nsensor_stats = data.groupby('SensorType')['Value'].agg(['count','mean'])\nlocation_stats = data[data['SensorType'].isin(['Temperature','Humidity'])].groupby(['Location','SensorType'])['Value'].mean()", "warn": true, "warnText": ["`location_stats = data[data['SensorType'].isin(['Temperature','Humidity` — 括号不配对(可能跨行)", "已修正：该行被截断于 .mean(，已补全括号"]}, {"page": "P11", "code": "data['is_abnormal'] = np.where(\n((data['SensorType'] =='Temperature') & ((data['Value']<-10) | (data['Value'] > 50)))\n((data['SensorType'] =='Humidity') & ((data['Value'] < 0) | (data['Value'] > 100))),\nprint(“异常值数量：\",data['is_abnormal'].sum())\ndata['Value'].fillna(method='ffill',inplace=True)\ndata['Value'].fillna(method='bfill', inplace=True)\ncleaned_data = data.drop(columns=['is_abnormal'])\ncleaned_data.to_csv('cleaned_sensor_data.csv', index=False)", "warn": true, "warnText": ["`data['is_abnormal'] = np.where(` — 括号不配对(可能跨行)", "`print(“异常值数虽：\",data['is_abnormal'].sum())` — 中文疑似OCR错", "已修正：OCR错字：数虽→数量"]}]}, {"code": "1.1.3", "title": "金融机构信用评估系统中的业务数据审核流程设计", "blocks": [{"page": "P14", "code": "missing_values = data.isnull().sum()  ＃数据缺失值统计2分\nduplicate_values = data.duplicated().sum()  ＃数据重复值统计2分\ndata['is_age_valid'] = data['Age'].between(18, 70)  #Age数据的合理性审核2分\ndata['is_income_valid'] = data['Income'] > 2000  #Income数据的合理性审核2分\ndata['is_loan_amount_valid'] = data['LoanAmount'] < (data['Income'] * 5)  #LoanAmount数据的合理性审核2分\ndata['is_credit_score_valid'] = data['CreditScore'].between(300, 850)  #CreditScore数据的合理性审核2分", "warn": true, "warnText": ["已修正：标识符被空格断开：is_income_v alid→is_income_valid"]}, {"page": "P15", "code": "cleaned_data.to_csv('cleaned_credit_data.csv', index=False)", "warn": false, "warnText": []}]}, {"code": "1.1.4", "title": "电商平台用户行为分析系统的数据采集与处理流程设计", "blocks": [{"page": "P20", "code": "data = pandas.read_csv('user_behavior_data.csv')\nprint(data.head())\ndata = data.dropna()\ndata['Age'] = data['Age'].astype(int)  # Age数据类型转换为int2分\ndata['PurchaseAmount'] = data['PurchaseAmount'].astype(float)  # PurchaseAmount数据类型转换为float2分\ndata['ReviewScore'] = data['ReviewScore'].astype(int)  # ReviewScore数据类型转换为int2分\ndata = data[(data['Age'].between(18, 70)) &", "warn": true, "warnText": ["`data = data[(data['Age'].between(18, 70)) &` — 方括号不配对(可能跨行)"]}, {"page": "P21", "code": "(data['ReviewScore'].between(1, 5))]\ndata['PurchaseAmount'] = (data['PurchaseAmount'] -data['PurchaseAmount'].mean()) / data['PurchaseAmount'].std()  # PurchaseAn:\ndata['ReviewScore'] = (data['ReviewScore'] -data['ReviewScore'].mean()) / data['ReviewScore'].std()  # ReviewScore数据市\ndata.to_csv('cleaned_user_behavior_data.csv', index=False)\npurchase_category_counts = data['PurchaseCategory'].value_counts()\ngender_purchase_amount_mean = data.groupby('Gender')['PurchaseAmount'].mean()\ndata['AgeGroup'] = pandas.cut(data['Age'], bins=bins, labels=labels, right=False)", "warn": true, "warnText": ["`(data['ReviewScore'].between(1, 5))]` — 方括号不配对(可能跨行)"]}]}, {"code": "1.1.5", "title": "智能交通系统的数据采集、处理和审核流程设计", "blocks": [{"page": "P27", "code": "data = pd.read_csv('vehicle_traffic_data.csv')\nprint(data.head())\ndata = data.dropna()\ndata['Age'] = data['Age'].astype(int)  #Age数据类型转换为int1分\ndata['Speed'] = data['Speed'].astype(float)  #Speed数据类型转换为float1分\ndata['TravelDistance'] = data['TravelDistance'].astype(float)  #TraveLDistance数据类型转换为float1分\ndata['TravelTime'] = data['TravelTime'].astype(float)  #Travel Time数据类型转换为float1分\ndata = data[(data['Age'].between(18, 70))", "warn": true, "warnText": ["`data = data[(data['Age'].between(18, 70))` — 方括号不配对(可能跨行)"]}, {"page": "P28", "code": "(data['Speed'].between(0, 200)) &\n(data['TravelDistance'].between(1, 1000)) &\n(data['TravelTime'].between(1, 1440))]\ndata.to_csv('cleaned_vehicle_traffic_data.csv', index=False)\nunreasonable_data = data[~((data['Age'].between(18, 70)) &\n(data['Speed'].between(0, 200)) &\n(data['TravelDistance'].between(1, 1000)) &\n(data['TravelTime'].between(1, 1440)))]\ntraffic_event_counts = data['TrafficEvent'].value_counts()\ngender_stats = data.groupby('Gender').agg({'Speed':'mean','TravelDistance':'mean','TravelTime':'mean'})\ndata['AgeGroup'] = pd.cut(data['Age'], bins=age_bins, labels=age_labels, right=False)\nage_group_counts = data['AgeGroup'].value_counts()", "warn": true, "warnText": ["`(data['TravelTime'].between(1, 1440))]` — 方括号不配对(可能跨行)", "`unreasonable_data = data[~((data['Age'].between(18, 70)) &` — 括号不配对(可能跨行),方括号不配对(可能跨行)", "`(data['TravelTime'].between(1, 1440)))]` — 括号不配对(可能跨行),方括号不配对(可能跨行)"]}]}, {"code": "2.1.1", "title": "智慧交通中燃油效率模型的数据清洗和标注流程设计", "blocks": [{"page": "P53", "code": "data = pd.read_csv('auto-mpg.csv')\nprint(data.head())\nprint(data.isnull().sum())\ndata = data.dropna()\ndata['horsepower'] = pd.to_numeric(data['horsepower'], errors='coerce')\ndata = data.dropna(subset=['horsepower'])\ndata[numerical_features] = scaler.fit_transform(data[numerical_features])\nselected_features = ['cylinders','displacement','horsepower','weight','acceleration','model year','origin']\nX = data[selected_features]\ny = data['mpg']", "warn": false, "warnText": []}, {"page": "P54", "code": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\ncleaned_data.to_csv('2.1.1_cleaned_data.csv', index=False)", "warn": false, "warnText": []}]}, {"code": "2.1.2", "title": "低碳生活行为影响因素数据清洗和标注流程设计", "blocks": [{"page": "P61", "code": "data = pd.read_excel('大学生低碳生活行为的影响因素数据集.xlsx')\nprint(data.head())\ninitial_row_count = data.shape[0]  ＃处理前的数据行数\ndata = data.dropna()  # 删除缺失值所在行\nfinal_row_count = data.shape[0]  ＃处理后的数据行数\ndata = data.drop_duplicates()\ndata[numerical_features] = scaler.fit_transform(data[numerical_features])\nselected_features= ['1.您的性别○男性   ○女性', '2.您的年级○大一   ○大二   ○大三   ○大四', '3.您的生源地○农村   ○城镇（乡镇）   ○地县级城市  ○省会城市及直辖市', '4.您的月生活费○≦1,000元   ○1,001-2,000元   ○2,001-3,000元   ○≧3,001元', '5.您进行过绿色低碳的相关生活方式吗?', '6.您觉得“低碳”，与你的生活关系密切吗？', '7.低碳生活是否会成为未来的主流生活方式？', '8.您是否认为低碳生活会提高您的生活质量？']\nX = data[selected_features]\ny = data['低碳行为积极性']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)", "warn": true, "warnText": ["`data = pd.read_excel('大学生低碳生活行为的影响因素数据栠.xlsx')` — 中文疑似OCR错", "`data = data.dropna() 卧削除缺失值所在行` — 代码含中文?", "`selected features= ['1.您的性别o男性o女性',` — 方括号不配对(可能跨行)", "`]` — 方括号不配对(可能跨行)", "已修正：空格应为下划线：selected features→selected_features", "已修正：OCR文件名：数据栠→数据集", "已修正：代码行混入中文，改注释"]}, {"page": "P62", "code": "cleaned_data = pd.concat([X, y], axis=1)\ncleaned_data.to_csv('2.1.2_cleaned_data.csv', index=False)", "warn": false, "warnText": []}]}, {"code": "2.1.3", "title": "信用评分模型数据清洗和标注流程设计", "blocks": [{"page": "P69", "code": "data = pd.read_csv('finance数据集.csv')\n  # 显示前五行的数据\nprint(data.head())\nQ1 = data[numeric_cols].quantile(0.25)\nQ3 = data[numeric_cols].quantile(0.75)\nIQR = Q3 - Q1\ndata_cleaned = data[~((data[numeric_cols] < (Q1 - 1.5 * IQR)) | (data[numeric_cols] > (Q3 + 1.5 * IQR))).any(axis=1)]\nduplicates = data_cleaned.duplicated()", "warn": false, "warnText": []}, {"page": "P70", "code": "data_cleaned[numeric_cols] = scaler.fit_transform(data_cleaned[numeric_cols])\ntarget_variable = 'SeriousDlqin2yrs'\nX = data_cleaned.drop(columns=[target_variable])  #1分\ny = data_cleaned[target_variable]  #1分\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\ndata_cleaned.to_csv(cleaned_file_path, index=False)", "warn": false, "warnText": []}]}, {"code": "2.1.4", "title": "医疗研究数据清洗和标注设计", "blocks": [{"page": "P77", "code": "data = pd.read_csv('medical_data.csv', encoding='gbk')\nprint(data.head())\ndata.rename(columns={'病人ID':'患者ID'},inplace=True)\ndata['诊断延迟']= (data['诊断日期']-data['就诊日期']).dt.days\ndata = data[(data['诊断延迟']>=0) & (data['年龄']>0) & (data['年龄']<120)]\ndata.drop_duplicates(inplace=True)", "warn": false, "warnText": []}, {"page": "P78", "code": "columns to normalize= ['年龄','体重','身高']\ndata[columns_to_normalize] = scaler.fit_transform(data[columns_to_normalize])\ntreatment_outcome_distribution.plot(kind='bar', stacked=True)\nplt.scatter(data['年龄'],data['疾病严重程度'])", "warn": false, "warnText": []}, {"page": "P79", "code": "data.to_csv(output_path, index=False)", "warn": false, "warnText": []}]}, {"code": "2.1.5", "title": "健康与营养咨询数据预处理与数据规范设计", "blocks": [{"page": "P89", "code": "data = pd.read_csv('健康咨询客户数据集.csv')\nprint(data.info())\nprint(data.isnull().sum())\ndata_cleaned = data.dropna()\ndata_cleaned.loc[:,'Your age']= pd.to_numeric(data_cleaned['Your age'], errors='coerce')\ndata_cleaned.loc[:,'Your age']= data_cleaned['Your age'].astype(int)\ndata_cleaned = data_cleaned.drop_duplicates()\ndata_cleaned['How do you describe your current level of fitness ?'] = label_encoder.fit_transform(data_cleaned['How do you describe your current level of fitness ?'])", "warn": true, "warnText": ["`data_cleaned['How do you describe your current level of fitness?']= la` — 括号不配对(可能跨行),方括号不配对(可能跨行)"]}, {"page": "P90", "code": "exercise_frequency_counts.plot.pie(autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)\ntrain_data, test_data = train_test_split(data_filled, test_size=0.2, random_state=42)\ncleaned_file_path ='2.1.5_cleaned_data.csv'\ndata_filled.to_csv(cleaned_file_path, index=False)", "warn": false, "warnText": []}]}, {"code": "2.2.1", "title": "智能信用评分Logistic回归模型开发与测试", "blocks": [{"page": "P100", "code": "data = pd.read_csv('finance数据集.csv')\nprint(data.head())\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nmodel= LogisticRegression(max_iter=1000)\nmodel.fit(X_train, y_train)\nwith open('2.2.1_model.pkl', 'wb') as file:\n    pickle.dump(model, file)\ny_pred = model.predict(X_test)", "warn": false, "warnText": []}, {"page": "P101", "code": "accuracy = (y_test == y_pred).mean()\nX_resampled, y_resampled = smote.fit_resample(X_train, y_train)\nmodel.fit(X_resampled, y_resampled)\ny_pred_resampled = model.predict(X_test)\naccuracy_resampled = (y_test == y_pred_resampled).mean()", "warn": false, "warnText": []}]}, {"code": "2.2.2", "title": "智慧交通中燃油效率随机森林模型开发与测试", "blocks": [{"page": "P107", "code": "df = pd.read_csv('auto-mpg.csv')\nprint(df.head())\ndf['horsepower'] = pd.to_numeric(df['horsepower'], errors='coerce')\ndf = df.dropna()\nX = df[['cylinders','displacement','horsepower','weight','acceleration','model year','origin']]\ny = df['mpg']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npipeline= Pipeline([('scaler', StandardScaler()),('linreg', LinearRegression())])\npipeline.fit(X_train, y_train)\nwith open('2.2.2_model.pkl', 'wb') as model_file:\n    pickle.dump(pipeline, model_file)\ny_pred = pipeline.predict(X_test)", "warn": false, "warnText": []}, {"page": "P108", "code": "results_df.to_csv('2.2.2_results.txt', index=False)\nrf_model = RandomForestRegressor(n_estimators=100, random_state=42)\nrf_model.fit(X_train, y_train)\ny_pred_rf = rf_model.predict(X_test)\nresults_rf_df.to_csv('2.2.2_results_rf.txt', index=False)", "warn": false, "warnText": []}]}, {"code": "2.2.3", "title": "日常运动量随机森林预测模型开发与测试", "blocks": [{"page": "P114", "code": "df = pd.read_csv('fitness analysis.csv')\nprint(df.head())\nX = pd.get_dummies(X)  ＃将分类变量转为数值变量\ny = df['Your age'].apply(lambda x: int(x.split(' ')[0]))  ＃假设年龄段为整数\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nrf_model = RandomForestRegressor(n_estimators=100, random_state=42)\nrf_model.fit(X_train, y_train)\nwith open('2.2.3_model.pkl', 'wb') as model_file:\n    pickle.dump(rf_model, model_file)", "warn": true, "warnText": ["已修正：空引号应为空格：按空格切分"]}, {"page": "P115", "code": "y_pred = rf_model.predict(X_test)\ntrain_score = rf_model.score(X_train, y_train)  #i)il练集分数\ntest_score = rf_model.score(X_test, y_test)  ＃测试集分数\nmse = mean_squared_error(y_test, y_pred)  ＃均方误差\nr2 = r2_score(y_test, y_pred)  ＃决定系数\nxgb_model = xgb.XGBRegressor(n_estimators=100, random_state=42)\nxgb_model.fit(X_train, y_train)\ny_pred_xgb = xgb_model.predict(X_test)\nxgb_report_file.write(f'XGBoost训练集得分：{xgb_model.score(X_train, y_train)}\\n')\nxgb_report_file.write(f'XGBoost测试集得分：{xgb_model.score(X_test, y_test)}\\n')\nxgb_report_file.write(f'XGBoost均方误差(MSE):{mean_squared_error(y_test, y_pred_xgb)}\\n')\nxgb_report_file.write(f'XGBoost决定系数(R²):{r2_score(y_test, y_pred_xgb)}\\n')", "warn": true, "warnText": ["已修正：OCR：RA2→R²"]}]}, {"code": "2.2.4", "title": "低碳生活行为影响因素预测线性回归模型开发与测试", "blocks": [{"page": "P124", "code": "data = pd.read_excel('大学生低碳生活行为的影响因素数据集.xlsx')\nprint(data.head())\ndata_cleaned = data.drop(columns=['序号','所用时间'])  ＃删除不必要的列\nX = data_cleaned.drop(columns=[target])\ny = data_cleaned[target]\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)\njoblib.dump(model, model_filename)\ny_pred = model.predict(X_test)", "warn": false, "warnText": []}, {"page": "P125", "code": "results.to_csv(results_filename, index=False, sep='\\\\ t' )  ＃使用制表符分隔值保存到文本文件\nf.write(f'均方误差：{mean_squared_error(y_test, y_pred)}\\n')\nf.write(f'决定系数：{r2_score(y_test, y_pred)}\\n')\nxgb_model = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=5, subsample=0.8, colsample_bytree=0.8)\nxgb_model.fit(X_train, y_train)\ny_pred_xg = xgb_model.predict(X_test)\nf.write(f'均方误差：{mean_squared_error(y_test, y_pred_xg)}\\n')\nf.write(f'决定系数：{r2_score(y_test, y_pred_xg)}\\n')", "warn": false, "warnText": []}]}, {"code": "2.2.5", "title": "智能步数预测模型开发与测试", "blocks": [{"page": "P133", "code": "df = pd.read_csv('fitness analysis.csv')\nprint(df.head())\nX = pd.get_dummies(X)  ＃将分类变晕转为数值变量\ny = df['daily_steps']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\ndt_model = DecisionTreeRegressor(random_state=42)\ndt_model.fit(X_train, y_train)\npickle.dump(dt_model, model_file)\ny_pred = dt_model.predict(X_test)\nresults.to_csv(results_filename, index=False, sep='\\t')", "warn": false, "warnText": []}, {"page": "P134", "code": "with open(report_filename,'w') as f:\nf.write(f'均方误差：{mean_squared_error(y_test, y_pred)}\\n')\nf.write(f'平均绝对误差：{mean_absolute_error(y_test, y_pred)}\\n')\nf.write(f'决定系数：{r2_score(y_test, y_pred)}\\n')", "warn": false, "warnText": []}]}, {"code": "3.2.1", "title": "图像识别评估系统交互流程设计", "blocks": [{"page": "P166", "code": "session = ort.InferenceSession('resnet.onnx')\nimage = Image.open('img_test.jpg').convert('RGB')", "warn": false, "warnText": []}, {"page": "P167", "code": "processed_image = preprocess_image(image)\noutput = session.run([output_name], {input_name: processed_image})[0]\nprobabilities = scipy.special.softmax(output, axis=-1)\ntop5_idx = np.argsort(probabilities[0])[-5:][::-1]\ntop5_prob = probabilities[0][top5_idx]", "warn": false, "warnText": []}]}, {"code": "3.2.2", "title": "手写数字识别系统交互流程设计", "blocks": [{"page": "P172", "code": "ort_session = onnxruntime.InferenceSession('mnist.onnx')\nimage = Image.open('img_test.png').convert('L')  # 转为灰度图\nimage = image.resize((28, 28))  # 调整大小为MNIST模型的输入尺寸2分\nimage_array = np.array(image, dtype=np.float32)  # 转为numpy数组2分\nimage_array = np.expand_dims(image_array, axis=0)  # 添加batch维度2分\nimage_array = np.expand_dims(image_array, axis=0)  # 添加通道维度2分\nort_inputs = {ort_session.get_inputs()[0].name: image_array}\nort_outs = ort_session.run(None, ort_inputs)\npredicted_class = np.argmax(ort_outs[0])", "warn": false, "warnText": []}]}, {"code": "3.2.3", "title": "面部表情识别系统交互流程设计", "blocks": [{"page": "P177", "code": "emotion_table = {'neutral':0, 'happiness':1, 'surprise':2, 'sadness':3, 'anger':4, 'disgust':5, 'fear':6, 'contempt':7}\nort_session = ort.InferenceSession('emotion-ferplus.onnx')  # 使用onnxruntime创建一个会话，用于加载并运行模型\ninput_data = preprocess('img_test.png')\nIn [2]:  # 导入必要的库\nort_outs = ort_session.run(None, ort_inputs)", "warn": false, "warnText": []}, {"page": "P178", "code": "predicted_label = np.argmax(ort_outs[0])\npredicted_emotion = list(emotion_table.keys())[predicted_label]", "warn": false, "warnText": []}]}, {"code": "3.2.4", "title": "花朵智能识别系统交互流程设计", "blocks": [{"page": "P183", "code": "session = ort.InferenceSession('flower-detection.onnx')\nwith open('labels.txt') as f:\nimage = Image.open('flower_test.png').convert('RGB')", "warn": false, "warnText": []}, {"page": "P184", "code": "processed_image = preprocess_image(image)\noutput = session.run([output_name], {input_name: processed_image})[0]\naccuracy = scipy.special.softmax(output, axis=-1)\npredicted_idx = np.argmax(accuracy[0])\nprob_percentage = accuracy[0, predicted_idx] * 100\npredicted_label = labels[predicted_idx]", "warn": false, "warnText": []}]}, {"code": "3.2.5", "title": "人脸AI智能检测系统交互流程设计", "blocks": [{"page": "P189", "code": "class_names = [name.strip() for name in open('voc-model-labels.txt').readlines()]", "warn": false, "warnText": []}, {"page": "P190", "code": "ort_session = ort.InferenceSession('version-RFB-320.onnx')\ninput_name = ort_session.get_inputs()[0].name\nos.makedirs(result_path)\norig_image = cv2.imread(img_path)\nimage = cv2.resize(image, (320, 240))\nimage_mean = np.array([127, 127, 127])\nimage = np.expand_dims(image, axis=0)", "warn": false, "warnText": []}, {"page": "P191", "code": "confidences, boxes = ort_session.run(None, {input_name: image})", "warn": false, "warnText": []}]}];
+const MOCK=[{"code":"1.1.1","title":"智能医疗系统中的业务数据处理流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["import numpy as np"],"a":[]},{"cmt":"# 读取数据集 1分"},{"s":["data = ",""],"a":["pd.read_csv('patient_data.csv')"]}]},{"type":"code","l":[{"cmt":"# 1. 统计住院天数超过7天的患者数量及其占比"},{"cmt":"# 创建新列'RiskLevel'，根据住院天数判断风险等级 3分"},{"s":[""," = ","(",", '高风险患者', '低风险患者')"],"a":["data['RiskLevel']","np.where","data['DaysInHospital']>7"]},{"cmt":"# 统计不同风险等级的患者数量 2分"},{"s":["risk_counts = data",".",""],"a":["['RiskLevel']","value_counts()"]},{"cmt":"# 计算高风险患者占比 1分"},{"s":["high_risk_ratio = risk_counts['高风险患者'] / ",""],"a":["len(data)"]},{"cmt":"# 计算低风险患者占比 1分"},{"s":["low_risk_ratio = risk_counts['低风险患者'] / ",""],"a":["len(data)"]},{"cmt":"# 输出结果"},{"s":["print(\"高风险患者数量:\", risk_counts['高风险患者'])"],"a":[]},{"s":["print(\"低风险患者数量:\", risk_counts['低风险患者'])"],"a":[]},{"s":["print(\"高风险患者占比:\", high_risk_ratio)"],"a":[]},{"s":["print(\"低风险患者占比:\", low_risk_ratio)"],"a":[]}]},{"type":"code","l":[{"cmt":"# 2. 统计不同BMI区间中高风险患者的比例和统计不同BMI区间中的患者数"},{"cmt":"# 定义BMI区间和标签"},{"s":["bmi_bins = [0, 18.5, 24, 28, np.inf]"],"a":[]},{"s":["bmi_labels = ['偏瘦', '正常', '超重', '肥胖']"],"a":[]},{"cmt":"# 根据BMI值划分指定区间 4分"},{"s":["data['BMIRange'] = ","(",", ",", ",", right=False)  # 使用左闭右开区间"],"a":["pd.cut","data['BMI']","bins=bmi_bins","labels=bmi_labels"]},{"cmt":"# 计算每个BMI区间中高风险患者的比例 2分"},{"s":["bmi_risk_rate = ","(",")['RiskLevel'].apply(lambda x: (x == '高风险患者').mean())"],"a":["data.groupby","'BMIRange'"]},{"cmt":"# 统计每个BMI区间的患者数量 1分"},{"s":["bmi_patient_count = data",""],"a":["['BMIRange'].value_counts()"]},{"cmt":"# 输出结果"},{"s":["print(\"BMI区间中高风险患者的比例和患者数:\")"],"a":[]},{"s":["print(bmi_risk_rate)"],"a":[]},{"s":["print(bmi_patient_count)"],"a":[]}]},{"type":"code","l":[{"cmt":"# 3. 统计不同年龄区间中高风险患者的比例和统计不同年龄区间中的患者数"},{"cmt":"# 定义年龄区间和标签"},{"s":["age_bins = [0, 26, 36, 46, 56, 66, np.inf]"],"a":[]},{"s":["age_labels = ['≤25岁', '26-35岁', '36-45岁', '46-55岁', '56-65岁', '＞65岁']"],"a":[]},{"cmt":"# 根据年龄值划分指定区间 4分"},{"s":["data['AgeRange'] = ","(",", ",", ",", right=False)  # 使用左闭右开区间"],"a":["pd.cut","data['Age']","bins=age_bins","labels=age_labels"]},{"cmt":"# 计算每个年龄区间中高风险患者的比例 2分"},{"s":["age_risk_rate = ","(",")['RiskLevel'].apply(lambda x: (x == '高风险患者').mean())"],"a":["data.groupby","'AgeRange'"]},{"cmt":"# 统计每个年龄区间的患者数量 1分"},{"s":["age_patient_count = data",""],"a":["['AgeRange'].value_counts()"]},{"cmt":"# 输出结果"},{"s":["print(\"年龄区间中高风险患者的比例和患者数:\")"],"a":[]},{"s":["print(age_risk_rate)"],"a":[]},{"s":["print(age_patient_count)"],"a":[]}]}]},{"code":"1.1.2","title":"智能农业系统中的业务数据采集和处理流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"cmt":"# 读取数据集 2分"},{"s":["data = ",""],"a":["pd.read_csv('sensor_data.csv')"]}]},{"type":"code","l":[{"cmt":"# 1. 传感器数据统计"},{"cmt":"# 对传感器类型进行分组，并计算每个组的数据数量和平均值 3分"},{"s":["sensor_stats = ","(",")['Value'].",""],"a":["data.groupby","'SensorType'","agg(['count','mean'])"]},{"cmt":"# 输出结果"},{"s":["print(\"传感器数据数量和平均值:\")"],"a":[]},{"s":["print(sensor_stats)"],"a":[]}]},{"type":"code","l":[{"cmt":"# 2. 按位置统计温度和湿度数据"},{"cmt":"# 筛选出温度和湿度数据，然后按位置和传感器类型分组，计算每个组的平均值 2分"},{"s":["location_stats = data[data['SensorType'].","].",""],"a":["isin(['Temperature','Humidity'])","groupby(['Location','SensorType'])['Value'].mean()"]},{"cmt":"# 输出结果"},{"s":["print(\"每个位置的温度和湿度数据平均值:\")"],"a":[]},{"s":["print(location_stats)"],"a":[]}]},{"type":"code","l":[{"cmt":"# 3. 数据清洗和异常值处理"},{"cmt":"# 标记异常值 3分"},{"s":["data['is_abnormal'] = ","("],"a":["np.where"]},{"s":["((",") & ((data['Value'] < -10) | (data['Value'] > 50))) |"],"a":["data['SensorType'] =='Temperature'"]},{"s":["((",") & ((data['Value'] < 0) | (data['Value'] > 100))),"],"a":["data['SensorType'] =='Humidity'"]},{"s":["True, False"],"a":[]},{"s":[")"],"a":[]},{"cmt":"# 输出异常值数量 2分"},{"s":["print(\"异常值数量:\", data['is_abnormal'].",")"],"a":["sum()"]},{"cmt":"# 填补缺失值"},{"cmt":"# 使用前向填充和后向填充的方法填补缺失值 4分"},{"s":["data['Value'].","(",", inplace=True)"],"a":["fillna","method='ffill'"]},{"s":["data['Value'].","(",", inplace=True)"],"a":["fillna","method='bfill'"]},{"cmt":"# 保存清洗后的数据"},{"cmt":"# 删除用于标记异常值的列，并将清洗后的数据保存到新的CSV文件中 4分"},{"s":["cleaned_data = ","(","=['is_abnormal'])"],"a":["data.drop","columns"]},{"s":["","('cleaned_sensor_data.csv', ",")"],"a":["cleaned_data.to_csv","index=False"]},{"s":["print(\"数据清洗完成，已保存为 'cleaned_sensor_data.csv'\")"],"a":[]}]}]},{"code":"1.1.3","title":"金融机构信用评估系统中的业务数据审核流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"cmt":"# 读取数据集"},{"s":["data = pd.read_csv('credit_data.csv')"],"a":[]}]},{"type":"code","l":[{"cmt":"# 1. 数据完整性审核"},{"s":["missing_values = data.","  #数据缺失值统计 2分"],"a":["isnull().sum()"]},{"s":["duplicate_values = data.","  #数据重复值统计 2分"],"a":["duplicated().sum()"]},{"cmt":"# 输出结果"},{"s":["print(\"缺失值统计:\")"],"a":[]},{"s":["print(missing_values)"],"a":[]},{"s":["print(\"重复值统计:\")"],"a":[]},{"s":["print(duplicate_values)"],"a":[]}]},{"type":"code","l":[{"cmt":"# 2. 数据合理性审核"},{"s":["data['is_age_valid'] = ",".","(18, 70)  #Age数据的合理性审核 2分"],"a":["data['Age']","between"]},{"s":["data['is_income_valid'] = "," > ","  #Income数据的合理性审核 2分"],"a":["data['Income']","2000"]},{"s":["data['is_loan_amount_valid'] = "," < ("," * 5)  #LoanAmount数据的合理性审核 2分"],"a":["data['LoanAmount']","data['Income']"]},{"s":["data['is_credit_score_valid'] = ",".","(300, 850)  #CreditScore数据的合理性审核 2分"],"a":["data['CreditScore']","between"]},{"cmt":"# 合理性检查结果"},{"s":["validity_checks = data[['is_age_valid', 'is_income_valid', 'is_loan_amount_valid', 'is_credit_score_valid']].all(axis=1)"],"a":[]},{"s":["data['is_valid'] = validity_checks"],"a":[]},{"cmt":"# 输出结果"},{"s":["print(\"数据合理性检查:\")"],"a":[]},{"s":["print(data[['is_age_valid', 'is_income_valid', 'is_loan_amount_valid', 'is_credit_score_valid', 'is_valid']].describe())"],"a":[]}]},{"type":"code","l":[{"cmt":"# 3. 数据清洗和异常值处理"},{"cmt":"# 标记不合理数据"},{"s":["invalid_rows = data[~data['is_valid']]"],"a":[]},{"cmt":"# 删除不合理数据行"},{"s":["cleaned_data = data[data['is_valid']]"],"a":[]},{"cmt":"# 删除标记列"},{"s":["cleaned_data = cleaned_data.drop(columns=['is_age_valid', 'is_income_valid', 'is_loan_amount_valid', 'is_credit_score_valid', 'is_valid'])"],"a":[]},{"cmt":"# 保存清洗后的数据"},{"s":["",".","(",", index=False)"],"a":["cleaned_data","to_csv","'cleaned_credit_data.csv'"]},{"s":["print(\"数据清洗完成，已保存为 'cleaned_credit_data.csv'\")"],"a":[]}]}]},{"code":"1.1.4","title":"电商平台用户行为分析系统的数据采集与处理流程设计","cells":[{"type":"code","l":[{"s":["import pandas"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"cmt":"# 1. 数据采集"},{"cmt":"# 从本地文件中读取数据  2分"},{"s":["data =  pandas.read_csv('user_behavior_data.csv')"],"a":[]},{"s":["print(\"数据采集完成，已加载到DataFrame中\")"],"a":[]},{"cmt":"# 打印数据的前5条记录  2分"},{"s":["print(data.head())"],"a":[]}]},{"type":"code","l":[{"cmt":"# 2. 数据清洗与预处理"},{"cmt":"# 处理缺失值（删除）  2分"},{"s":["data = data.dropna()"],"a":[]},{"cmt":"# 数据类型转换"},{"s":["data['Age'] = data['Age'].astype(int)  # Age数据类型转换为int 2分"],"a":[]},{"s":["data['PurchaseAmount'] = data['PurchaseAmount'].astype(float)  # PurchaseAmount数据类型转换为float  2分"],"a":[]},{"s":["data['ReviewScore'] = data['ReviewScore'].astype(int)  # ReviewScore数据类型转换为int 2分"],"a":[]},{"cmt":"# 处理异常值  2分"},{"s":["data = data[(data['Age'].between(18, 70)) &"],"a":[]},{"s":["(data['PurchaseAmount'] > 0) &"],"a":[]},{"s":["(data['ReviewScore'].between(1, 5))"],"a":[]},{"cmt":"# 数据标准化"},{"s":["data['PurchaseAmount'] = (data['PurchaseAmount'] - data['PurchaseAmount'].mean() / data['PurchaseAmount'].std()  # PurchaseAmount数据标准化 2分)"],"a":[]},{"s":["data['ReviewScore'] = (data['ReviewScore'] - data['ReviewScore'].mean() / data['ReviewScore'].std()  # ReviewScore数据标准化 2分)"],"a":[]},{"cmt":"# 保存清洗后的数据  1分"},{"s":["","('cleaned_user_behavior_data.csv', index=False)"],"a":["data.to_csv"]},{"s":["print(\"数据清洗完成，已保存为 'cleaned_user_behavior_data.csv'\")"],"a":[]}]},{"type":"code","l":[{"cmt":"# 3. 数据统计"},{"cmt":"# 统计每个购买类别的用户数 2分"},{"s":["purchase_category_counts = ",".",""],"a":["data['PurchaseCategory']","value_counts()"]},{"s":["print(\"每个购买类别的用户数:\\n\", purchase_category_counts)"],"a":[]},{"cmt":"# 统计不同性别的平均购买金额 2分"},{"s":["gender_purchase_amount_mean = ","(",")['PurchaseAmount'].mean()"],"a":["data.groupby","'Gender'"]},{"s":["print(\"不同性别的平均购买金额:\\n\", gender_purchase_amount_mean)"],"a":[]},{"cmt":"# 统计不同年龄段的用户数 2分"},{"s":["bins = [18, 26, 36, 46, 56, 66, np.inf]"],"a":[]},{"s":["labels = ['18-25', '26-35', '36-45', '46-55', '56-65', '65+']"],"a":[]},{"s":["data['AgeGroup'] = pandas.","(",", right=False)"],"a":["cut","data['Age'], bins=bins, labels=labels"]},{"s":["age_group_counts = data['AgeGroup'].value_counts().sort_index()"],"a":[]},{"s":["print(\"不同年龄段的用户数:\\n\", age_group_counts)"],"a":[]}]}]},{"code":"1.1.5","title":"智能交通系统的数据采集、处理和审核流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"cmt":"# 1. 数据采集"},{"cmt":"# 从本地文件中读取数据  2分"},{"s":["data = pd.read_csv('vehicle_traffic_data.csv')"],"a":[]},{"s":["print(\"数据采集完成，已加载到DataFrame中\")"],"a":[]},{"cmt":"# 打印数据的前5条记录 2分"},{"s":["print(data.head())"],"a":[]}]},{"type":"code","l":[{"cmt":"# 2. 数据清洗与预处理"},{"cmt":"# 处理缺失值（删除）  2分"},{"s":["data = data.dropna()"],"a":[]},{"cmt":"# 数据类型转换"},{"s":["data['Age'] = data['Age'].astype(int)  #Age数据类型转换为int 1分"],"a":[]},{"s":["data['Speed'] = data['Speed'].astype(float)  #Speed数据类型转换为float 1分"],"a":[]},{"s":["data['TravelDistance'] = data['TravelDistance'].astype(float)  #TravelDistance数据类型转换为float 1分"],"a":[]},{"s":["data['TravelTime'] = data['TravelTime'].astype(float)  #TravelTime数据类型转换为float 1分"],"a":[]},{"cmt":"# 处理异常值  2分"},{"s":["data = data[(data['Age'].between(18, 70)  &"],"a":[]},{"s":[" data['Speed'].between(0, 200)  &"],"a":[]},{"s":[" data['TravelDistance'].between(1, 1000)  &"],"a":[]},{"s":[" data['TravelTime'].between(1, 1440)]"],"a":[]},{"cmt":"# 保存清洗后的数据  1分"},{"s":["","('cleaned_vehicle_traffic_data.csv', index=False)"],"a":["data.to_csv"]},{"s":["print(\"数据清洗完成，已保存为 'cleaned_vehicle_traffic_data.csv'\")"],"a":[]}]},{"type":"code","l":[{"cmt":"# 3. 数据合理性审核"},{"cmt":"# 审核字段合理性 1分"},{"s":["unreasonable_data = data[~(","(18, 70)  &"],"a":["data['Age'].between"]},{"s":[" ","(0, 200)  &"],"a":["data['Speed'].between"]},{"s":[" ","(1, 1000)  &"],"a":["data['TravelDistance'].between"]},{"s":[" ","(1, 1440))]"],"a":["data['TravelTime'].between"]},{"s":["print(\"不合理的数据:\\n\", unreasonable_data)"],"a":[]},{"cmt":"# 4. 数据统计"},{"cmt":"# 统计每种交通事件的发生次数  2分"},{"s":["traffic_event_counts = ",""],"a":["data['TrafficEvent'].value_counts()"]},{"s":["print(\"每种交通事件的发生次数:\\n\", traffic_event_counts)"],"a":[]},{"cmt":"# 统计不同性别的平均车速、行驶距离和行驶时间  2分"},{"s":["gender_stats = data.",".",""],"a":["groupby('Gender')","agg({'Speed':'mean','TravelDistance':'mean','TravelTime':'mean'})"]},{"s":["print(\"不同性别的平均车速、行驶距离和行驶时间:\\n\", gender_stats)"],"a":[]},{"cmt":"# 统计不同年龄段的驾驶员数  5分"},{"s":["age_bins = [18, 26, 36, 46, 56, 66, np.inf]"],"a":[]},{"s":["age_labels = ['18-25', '26-35', '36-45', '46-55', '56-65', '65+']"],"a":[]},{"s":["data['AgeGroup'] = ","(",",",",",", right=False)"],"a":["pd.cut","data['Age']","bins=age_bins","labels=age_labels"]},{"s":["age_group_counts = ",""],"a":["data['AgeGroup'].value_counts()"]},{"s":["print(\"不同年龄段的驾驶员数:\\n\", age_group_counts)"],"a":[]}]}]},{"code":"2.1.1","title":"智慧交通中燃油效率模型的数据清洗和标注流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"cmt":"# 加载数据集并显示数据集的前五行 1分"},{"s":["data = ",""],"a":["pd.read_csv('auto-mpg.csv')"]},{"s":["print(\"数据集的前五行:\")"],"a":[]},{"s":["print(",")"],"a":["data.head("]},{"cmt":"# 显示每一列的数据类型"},{"s":["print(data.dtypes)"],"a":[]},{"cmt":"# 检查缺失值并删除缺失值所在的行  2分"},{"s":["print(\"\\n检查缺失值:\")"],"a":[]},{"s":["print(",".",".",")"],"a":["data","isnull()","sum("]},{"s":["data = ",""],"a":["data.dropna()"]},{"cmt":"# 将 'horsepower' 列转换为数值类型，并（删除）处理转换中的异常值 1分"},{"s":["data['horsepower'] = ","(data['horsepower'], errors='coerce')"],"a":["pd.to_numeric"]},{"s":["data = ",""],"a":["data.dropna(subset=['horsepower'])"]},{"cmt":"# 显示每一列的数据类型"},{"s":["print(data.horsepower.dtypes)"],"a":[]},{"cmt":"# 检查清洗后的缺失值"},{"s":["print(\"\\n检查清洗后的缺失值:\")"],"a":[]},{"s":["print(data.isnull().sum())"],"a":[]},{"s":["from sklearn.preprocessing import StandardScaler"],"a":[]},{"cmt":"# 对数值型数据进行标准化处理 1分"},{"s":["numerical_features = ['displacement', 'horsepower', 'weight', 'acceleration']"],"a":[]},{"s":["scaler = StandardScaler()"],"a":[]},{"s":["data[numerical_features] = ",""],"a":["scaler.fit_transform(data[numerical_features])"]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"cmt":"# 选择特征、自变量和目标变量 2分"},{"s":["selected_features = ",""],"a":["['cylinders','displacement','horsepower','weight','acceleration','model year','origin']"]},{"s":["X = ",""],"a":["data[selected_features]"]},{"s":["y = ",""],"a":["data['mpg']"]},{"cmt":"# 划分数据集为训练集和测试集（训练集占8成） 1分"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 将特征和目标变量合并到一个数据框中"},{"s":["cleaned_data = X.copy()"],"a":[]},{"s":["cleaned_data['mpg'] = y"],"a":[]},{"cmt":"# 保存清洗和处理后的数据（不存储额外的索引号） 1分"},{"s":["","('2.1.1_cleaned_data.csv', ",")"],"a":["cleaned_data.to_csv","index=False"]},{"cmt":"# 打印消息指示文件已保存"},{"s":["print(\"\\n清洗后的数据已保存到 2.1.1_cleaned_data.csv\")"],"a":[]}]}]},{"code":"2.1.2","title":"低碳生活行为影响因素数据清洗和标注流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"cmt":"#读取一个Excel文件，并将读取到的数据存储在变量data中"},{"s":["data = ",""],"a":["pd.read_excel('大学生低碳生活行为的影响因素数据集.xlsx')"]},{"cmt":"#打印出数据集的前5行"},{"s":["print(data.head())"],"a":[]},{"cmt":"#处理数据集中的缺失值"},{"s":["initial_row_count = ","  #处理前的数据行数"],"a":["data.shape[0]"]},{"s":["data = ","  #删除缺失值所在行"],"a":["data.dropna()"]},{"s":["final_row_count = ","  #处理后的数据行数"],"a":["data.shape[0]"]},{"s":["print(f'处理后数据行数: {final_row_count}, 删除的行数: {initial_row_count - final_row_count}')"],"a":[]},{"cmt":"#删除重复行"},{"s":["data = ",""],"a":["data.drop_duplicates()"]},{"s":["from sklearn.preprocessing import StandardScaler"],"a":[]},{"s":["numerical_features = ['4.您的月生活费○≦1,000元   ○1,001-2,000元   ○2,001-3,000元   ○≧3,001元']"],"a":[]},{"s":["scaler = StandardScaler()"],"a":[]},{"s":["data[numerical_features] = ",""],"a":["scaler.fit_transform(data[numerical_features])"]},{"cmt":"#选择特征"},{"s":["selected_features = [","]"],"a":["'1.您的性别○男性   ○女性', '2.您的年级○大一   ○大二   ○大三   ○大四', '3.您的生源地○农村   ○城镇（乡镇）   ○地县级城市  ○省会城市及直辖市', '4.您的月生活费○≦1,000元   ○1,001-2,000元   ○2,001-3,000元   ○≧3,001元', '5.您进行过绿色低碳的相关生活方式吗?', '6.您觉得“低碳”，与你的生活关系密切吗？', '7.低碳生活是否会成为未来的主流生活方式？', '8.您是否认为低碳生活会提高您的生活质量？'"]},{"s":["X = ",""],"a":["data[selected_features]"]},{"cmt":"# 创建目标变量"},{"s":["y = ",""],"a":["data['低碳行为积极性']"]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"cmt":"# 数据划分（测试集取20%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 合并处理后得数据，并将其保存（保存中不用额外创建索引）"},{"s":["cleaned_data = ","(",", axis=1)"],"a":["pd.concat","[X, y]"]},{"s":["","('2.1.2_cleaned_data.csv', ",")"],"a":["cleaned_data.to_csv","index=False"]}]}]},{"code":"2.1.3","title":"信用评分模型数据清洗和标注流程设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"cmt":"# 加载数据"},{"s":["data = ",""],"a":["pd.read_csv('finance数据集.csv')"]},{"cmt":"# 显示前五行的数据"},{"s":["",""],"a":["print(data.head())"]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"s":["import seaborn as sns"],"a":[]},{"cmt":"# 设置图像尺寸"},{"s":["plt.figure(figsize=(12, 8))"],"a":[]},{"cmt":"# 识别数值列用于箱线图"},{"s":["numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns"],"a":[]},{"cmt":"# 创建箱线图"},{"s":["for i, col in enumerate(numeric_cols, 1):"],"a":[]},{"s":["plt.subplot(3, 4, i)"],"a":[]},{"s":["sns.boxplot(x=data[col])"],"a":[]},{"s":["plt.title(col)"],"a":[]},{"s":["plt.tight_layout()"],"a":[]},{"s":["plt.show()"],"a":[]},{"cmt":"# 使用IQR处理异常值"},{"s":["Q1 = ","(0.25)"],"a":["data[numeric_cols].quantile"]},{"s":["Q3 = ","(0.75)"],"a":["data[numeric_cols].quantile"]},{"s":["IQR = ",""],"a":["Q3-Q1"]},{"cmt":"# 移除异常值"},{"s":["data_cleaned = data[~((data[numeric_cols] < (Q1 - 1.5 * ",")) | (data[numeric_cols] > (Q3 + 1.5 * ","))).any(axis=1)]"],"a":["IQR","IQR"]},{"cmt":"# 检查处理重复值"},{"s":["duplicates = ","()"],"a":["data_cleaned.duplicated"]},{"s":["num_duplicates = duplicates.sum()"],"a":[]},{"s":["data_cleaned = data_cleaned[~duplicates]"],"a":[]},{"s":["print(f'删除的重复行数: {num_duplicates}')"],"a":[]},{"cmt":"#对数据进行归一化处理"},{"s":["from sklearn.preprocessing import MinMaxScaler"],"a":[]},{"s":["scaler = MinMaxScaler()"],"a":[]},{"s":["data_cleaned[numeric_cols] = ",""],"a":["scaler.fit_transform(data_cleaned[numeric_cols])"]},{"cmt":"# 设定目标变量"},{"s":["target_variable = ",""],"a":["'SeriousDlqin2yrs'"]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"cmt":"# 定义特征和目标"},{"s":["X = ","(columns=[","])  #1分"],"a":["data_cleaned.drop","target_variable"]},{"s":["y = ","  #1分"],"a":["data_cleaned[target_variable]"]},{"cmt":"# 划分数据（训练集占80%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 显示划分后的数据形状"},{"s":["print(f'训练数据形状: {X_train.shape}')"],"a":[]},{"s":["print(f'测试数据形状: {X_test.shape}')"],"a":[]},{"cmt":"# 保存清洗后的数据到CSV"},{"s":["cleaned_file_path = '2.1.3_cleaned_data.csv'"],"a":[]},{"s":["","(",", index=False)"],"a":["data_cleaned.to_csv","cleaned_file_path"]}]}]},{"code":"2.1.4","title":"医疗研究数据清洗和标注设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"cmt":"# 加载数据集并指定编码为gbk"},{"s":["data = ",""],"a":["pd.read_csv('medical_data.csv',encoding='gbk')"]},{"cmt":"# 查看数据类型"},{"s":["print(data.dtypes)"],"a":[]},{"cmt":"# 查看表结构基本信息"},{"s":["print(",")"],"a":["data.info("]},{"cmt":"# 显示每一列的空缺值数量"},{"s":["print(data.isnull().sum())"],"a":[]},{"cmt":"# 规范日期格式"},{"s":["data['就诊日期'] = pd.to_datetime(data['就诊日期'])"],"a":[]},{"s":["data['诊断日期'] = pd.to_datetime(data['诊断日期'])"],"a":[]},{"cmt":"# 修改列名"},{"s":["","(",", inplace=True)"],"a":["data.rename","columns={'病人ID':'患者ID'}"]},{"cmt":"# 查看修改后的表结构"},{"s":["print(data.head())"],"a":[]},{"s":["from datetime import datetime"],"a":[]},{"cmt":"# 增加诊断延迟和病程列"},{"s":["data['诊断延迟'] = ",".dt.days"],"a":["(data['诊断日期']-data['就诊日期'])"]},{"s":["data['病程'] = (datetime(2024, 9, 1) - data['诊断日期']).dt.days"],"a":[]},{"cmt":"# 删除不合理的数据"},{"s":["data = ","[("," >= 0) & ("," > 0) & ("," < 120)]"],"a":["data","data['诊断延迟']","data['年龄']","data['年龄']"]},{"cmt":"# 查看修改后的数据"},{"s":["print(data.describe())"],"a":[]},{"cmt":"# 删除重复值并记录删除的行数"},{"s":["initial_rows = data.shape[0]"],"a":[]},{"s":["","(inplace=True)"],"a":["data.drop_duplicates"]},{"s":["deleted_rows = initial_rows - data.shape[0]"],"a":[]},{"s":["print(f'删除的重复行数: {deleted_rows}')"],"a":[]},{"s":["from sklearn.preprocessing import MinMaxScaler"],"a":[]},{"cmt":"# 对需要归一化的列进行处理"},{"s":["scaler = MinMaxScaler()"],"a":[]},{"s":["columns_to_normalize = [","]"],"a":["'年龄','体重','身高'"]},{"s":["data[columns_to_normalize] = ",""],"a":["scaler.fit_transform(data[columns_to_normalize])"]},{"cmt":"# 查看归一化后的数据"},{"s":["print(data.head())"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"s":["import matplotlib.font_manager as fm"],"a":[]},{"cmt":"# 统计治疗结果分布"},{"s":["treatment_outcome_distribution = data.groupby('疾病类型')['治疗结果'].value_counts().unstack()"],"a":[]},{"cmt":"# 设置中文字体"},{"s":["font_path = 'C:/Windows/Fonts/simhei.ttf'  # 根据你的系统调整字体路径"],"a":[]},{"s":["my_font = fm.FontProperties(fname=font_path)"],"a":[]},{"cmt":"# 绘制柱状图"},{"s":["","(",", stacked=True)"],"a":["treatment_outcome_distribution.plot","kind='bar'"]},{"s":["plt.title('不同疾病类型的治疗结果分布', fontproperties=my_font)"],"a":[]},{"s":["plt.xlabel('疾病类型', fontproperties=my_font)"],"a":[]},{"s":["plt.ylabel('治疗结果数量', fontproperties=my_font)"],"a":[]},{"s":["plt.xticks(fontproperties=my_font)  # 设置x轴刻度标签的字体"],"a":[]},{"s":["plt.yticks(fontproperties=my_font)  # 设置y轴刻度标签的字体"],"a":[]},{"s":["plt.legend(prop=my_font)  # 设置图例字体"],"a":[]},{"s":["plt.show()"],"a":[]},{"cmt":"# 绘制散点图"},{"s":["","(",", ",")"],"a":["plt.scatter","data['年龄']","data['疾病严重程度']"]},{"s":["plt.title('年龄和疾病严重程度的关系', fontproperties=my_font)"],"a":[]},{"s":["plt.xlabel('年龄', fontproperties=my_font)"],"a":[]},{"s":["plt.ylabel('疾病严重程度', fontproperties=my_font)"],"a":[]},{"s":["plt.xticks(fontproperties=my_font)  # 设置x轴刻度标签的字体"],"a":[]},{"s":["plt.yticks(fontproperties=my_font)  # 设置y轴刻度标签的字体"],"a":[]},{"s":["plt.legend(prop=my_font)  # 设置图例字体"],"a":[]},{"s":["plt.show()"],"a":[]},{"cmt":"# 保存处理后得数据"},{"s":["output_path = '2.1.4_cleaned_data.csv'"],"a":[]},{"s":["","(",", index=False)"],"a":["data.to_csv","output_path"]}]}]},{"code":"2.1.5","title":"健康与营养咨询数据预处理与数据规范设计","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"cmt":"# 加载数据集"},{"s":["data = ",""],"a":["pd.read_csv('健康咨询客户数据集.csv')"]},{"cmt":"# 查看表结构基本信息"},{"s":["print(",")"],"a":["data.info("]},{"cmt":"# 显示每一列的空缺值数量"},{"s":["print(",")"],"a":["data.isnull().sum("]},{"cmt":"# 删除含有缺失值的行"},{"s":["data_cleaned = ",""],"a":["data.dropna()"]},{"cmt":"# 转换 'Your age' 列的数据类型为整数类型，并处理异常值"},{"s":["data_cleaned.loc[:, 'Your age'] = ","(",", errors='coerce')"],"a":["pd.to_numeric","data_cleaned['Your age']"]},{"s":["data_cleaned = data_cleaned.dropna(subset=['Your age'])"],"a":[]},{"s":["data_cleaned = data_cleaned[data_cleaned['Your age'] >= 0]"],"a":[]},{"s":["data_cleaned.loc[:, 'Your age'] = data_cleaned['Your age'].",""],"a":["astype(int)"]},{"s":["print(data_cleaned['Your age'].dtype)"],"a":[]},{"cmt":"# 检查和删除重复值"},{"s":["duplicates_removed = data_cleaned.duplicated().sum()"],"a":[]},{"s":["data_cleaned = ",""],"a":["data_cleaned.drop_duplicates()"]},{"s":["print(f\"Removed {duplicates_removed} duplicate rows\")"],"a":[]},{"s":["from sklearn.preprocessing import LabelEncoder"],"a":[]},{"cmt":"# 归一化 'How do you describe your current level of fitness ?' 列"},{"s":["label_encoder = LabelEncoder()"],"a":[]},{"s":["data_cleaned[","] = ",""],"a":["'How do you describe your current level of fitness ?'","label_encoder.fit_transform(data_cleaned['How do you describe your current level of fitness ?'])"]},{"s":["print(data_cleaned['How do you describe your current level of fitness ?'].unique())"],"a":[]},{"s":["from sklearn.preprocessing import LabelEncoder"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"cmt":"# 去掉列名中的空格"},{"s":["data.columns = data.columns.str.strip()"],"a":[]},{"cmt":"# 显示数据集的列名"},{"s":["print(data.columns)"],"a":[]},{"cmt":"# 删除包含缺失值的行"},{"s":["data_cleaned = data.dropna(subset=['How often do you exercise?'])"],"a":[]},{"cmt":"# 统计不同健身频率的分布情况"},{"s":["exercise_frequency_counts = data_cleaned['How often do you exercise?'].value_counts()"],"a":[]},{"cmt":"# 绘制饼图"},{"s":["plt.figure(figsize=(10, 6))"],"a":[]},{"s":["","(autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)"],"a":["exercise_frequency_counts.plot.pie"]},{"s":["plt.title('Distribution of Exercise Frequency')"],"a":[]},{"s":["plt.ylabel('')"],"a":[]},{"s":["plt.show()"],"a":[]},{"s":["import pandas as pd"],"a":[]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"s":["import matplotlib.pyplot as plt"],"a":[]},{"cmt":"# 填充缺失值"},{"s":["data_filled = data.apply(lambda x: x.fillna(x.mode()[0]))"],"a":[]},{"cmt":"# 划分数据（测试集占比20%）"},{"s":["train_data, test_data = ","(",", random_state=42)"],"a":["train_test_split","data_filled"]},{"cmt":"# 保存处理后的数据"},{"s":["cleaned_file_path = '","'"],"a":["2.1.5_cleaned_data.csv"]},{"s":["","(",", index=False)"],"a":["data_filled.to_csv","cleaned_file_path"]}]}]},{"code":"2.2.1","title":"智能信用评分Logistic回归模型开发与测试","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"s":["from sklearn.linear_model import LogisticRegression"],"a":[]},{"s":["import pickle"],"a":[]},{"s":["from sklearn.metrics import classification_report"],"a":[]},{"s":["from imblearn.over_sampling import SMOTE"],"a":[]},{"cmt":"# 加载数据"},{"s":["data = ",""],"a":["pd.read_csv('finance数据集.csv')"]},{"cmt":"# 显示前五行的数据"},{"s":["print(",")"],"a":["data.head("]},{"cmt":"# 选择自变量和因变量"},{"s":["X = data.drop(['SeriousDlqin2yrs', 'Unnamed: 0'], axis=1)"],"a":[]},{"s":["y = data['SeriousDlqin2yrs']"],"a":[]},{"cmt":"# 分割训练集和测试集（测试集20%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 训练Logistic回归模型（最大迭代次数为1000次）"},{"s":["model = ",""],"a":["LogisticRegression(max_iter=1000)"]},{"s":["",""],"a":["model.fit(X_train, y_train)"]},{"cmt":"# 保存模型"},{"s":["with open('2.2.1_model.pkl', 'wb') as file:"],"a":[]},{"s":["pickle.",""],"a":["dump(model, file)"]},{"cmt":"# 预测并保存结果"},{"s":["y_pred = ",""],"a":["model.predict(X_test)"]},{"s":["pd.DataFrame(y_pred, columns=['预测结果']).to_csv('2.2.1_results.txt', index=False)"],"a":[]},{"cmt":"# 生成测试报告"},{"s":["report = classification_report(y_test, y_pred, zero_division=1)"],"a":[]},{"s":["with open('2.2.1_report.txt', 'w') as file:"],"a":[]},{"s":["file.write(report)"],"a":[]},{"cmt":"# 分析测试结果"},{"s":["accuracy = ",""],"a":["(y_test == y_pred).mean()"]},{"s":["print(f\"模型准确率: {accuracy:.2f}\")"],"a":[]},{"cmt":"# 处理数据不平衡"},{"s":["smote = SMOTE(random_state=42)"],"a":[]},{"s":["X_resampled, y_resampled = ",""],"a":["smote.fit_resample(X_train, y_train)"]},{"cmt":"# 重新训练模型"},{"s":["",""],"a":["model.fit(X_resampled, y_resampled)"]},{"cmt":"# 重新预测"},{"s":["y_pred_resampled = ",""],"a":["model.predict(X_test)"]},{"cmt":"# 保存新结果"},{"s":["pd.DataFrame(y_pred_resampled, columns=['预测结果']).to_csv('2.2.1_results_xg.txt', index=False)"],"a":[]},{"cmt":"# 生成新的测试报告"},{"s":["report_resampled = classification_report(y_test, y_pred_resampled, zero_division=1)"],"a":[]},{"s":["with open('2.2.1_report_xg.txt', 'w') as file:"],"a":[]},{"s":["file.write(report_resampled)"],"a":[]},{"cmt":"# 分析新的测试结果"},{"s":["accuracy_resampled = ",""],"a":["(y_test == y_pred_resampled).mean()"]},{"s":["print(f\"重新采样后的模型准确率: {accuracy_resampled:.2f}\")"],"a":[]}]}]},{"code":"2.2.2","title":"智慧交通中燃油效率随机森林模型开发与测试","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"s":["from sklearn.linear_model import LinearRegression"],"a":[]},{"s":["from sklearn.preprocessing import StandardScaler"],"a":[]},{"s":["from sklearn.pipeline import Pipeline"],"a":[]},{"s":["import pickle"],"a":[]},{"s":["from sklearn.ensemble import RandomForestRegressor"],"a":[]},{"cmt":"# 加载数据集"},{"s":["df = ",""],"a":["pd.read_csv('auto-mpg.csv')"]},{"cmt":"# 显示前五行数据"},{"s":["print(",")"],"a":["df.head("]},{"cmt":"# 处理缺失值"},{"cmt":"# 将 'horsepower' 列中的所有值转换为数值类型"},{"s":["df['horsepower'] = ","(",", errors='coerce')"],"a":["pd.to_numeric","df['horsepower']"]},{"cmt":"# 删除包含缺失值的行"},{"s":["df = ",""],"a":["df.dropna()"]},{"cmt":"# 选择相关特征进行建模（定义自变量（返回一个DataFrame）和因变量）"},{"s":["X = ",""],"a":["df[['cylinders','displacement','horsepower','weight','acceleration','model year','origin']]"]},{"s":["y = ",""],"a":["df['mpg']"]},{"cmt":"# 将数据集划分为训练集和测试集（测试集占比20%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 创建包含标准化和线性回归的管道"},{"s":["pipeline = ","([('scaler', ",")),('linreg', ",")])"],"a":["Pipeline","StandardScaler(","LinearRegression()"]},{"cmt":"# 训练模型"},{"s":["",""],"a":["pipeline.fit(X_train, y_train)"]},{"cmt":"# 保存训练好的模型"},{"s":["with open('2.2.2_model.pkl', 'wb') as model_file:"],"a":[]},{"s":["pickle.",""],"a":["dump(pipeline, model_file)"]},{"cmt":"# 预测并保存结果"},{"s":["y_pred = ",""],"a":["pipeline.predict(X_test)"]},{"s":["results_df = pd.DataFrame(y_pred, columns=['预测结果'])"],"a":[]},{"s":["","('2.2.2_results.txt', index=False)"],"a":["results_df.to_csv"]},{"cmt":"# 测试模型"},{"s":["with open('2.2.2_report.txt', 'w') as results_file:"],"a":[]},{"s":["results_file.write(f'训练集得分: {pipeline.score(X_train, y_train)}\\n')"],"a":[]},{"s":["results_file.write(f'测试集得分: {pipeline.score(X_test, y_test)}\\n')"],"a":[]},{"cmt":"# 创建随机森林回归模型实例（创建的决策树的数量为100）"},{"s":["rf_model = ","(",", random_state=42)"],"a":["RandomForestRegressor","n_estimators=100"]},{"cmt":"# 训练随机森林回归模型"},{"s":["",""],"a":["rf_model.fit(X_train, y_train)"]},{"cmt":"# 使用随机森林模型进行预测"},{"s":["y_pred_rf = ",""],"a":["rf_model.predict(X_test)"]},{"cmt":"# 保存新的结果"},{"s":["results_rf_df = pd.DataFrame(y_pred_rf, columns=['预测结果'])"],"a":[]},{"s":["","('2.2.2_results_rf.txt', index=False)"],"a":["results_rf_df.to_csv"]},{"cmt":"# 测试模型并保存得分"},{"s":["with open('2.2.2_report_rf.txt', 'w') as results_rf_file:"],"a":[]},{"s":["results_rf_file.write(f'训练集得分: {rf_model.score(X_train, y_train)}\\n')"],"a":[]},{"s":["results_rf_file.write(f'测试集得分: {rf_model.score(X_test, y_test)}\\n')"],"a":[]}]}]},{"code":"2.2.3","title":"日常运动量随机森林预测模型开发与测试","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"s":["from sklearn.ensemble import RandomForestRegressor"],"a":[]},{"s":["import pickle"],"a":[]},{"s":["from sklearn.metrics import mean_squared_error, r2_score"],"a":[]},{"s":["import xgboost as xgb"],"a":[]},{"cmt":"# 加载数据集"},{"s":["df = ",""],"a":["pd.read_csv('fitness analysis.csv')"]},{"cmt":"# 显示前五行数据"},{"s":["print(",")"],"a":["df.head("]},{"cmt":"# 去除所有字符串字段的前后空格"},{"s":["df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)"],"a":[]},{"cmt":"# 检查和清理列名"},{"s":["df.columns = df.columns.str.strip()"],"a":[]},{"cmt":"# 选择相关特征进行建模"},{"s":["X = df[['Your gender', 'How important is exercise to you ?', 'How healthy do you consider yourself?']]"],"a":[]},{"s":["X = ","(X)  # 将分类变量转为数值变量"],"a":["pd.get_dummies"]},{"cmt":"# 将年龄段转为数值变量"},{"s":["y = ","(lambda x: int(x.split(' ')[0]))  # 假设年龄段为整数"],"a":["df['Your age'].apply"]},{"cmt":"# 将数据集划分为训练集和测试集（测试集占比20%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 创建随机森林回归模型（创建的决策树的数量为100）"},{"s":["rf_model = ","(",", random_state=42)"],"a":["RandomForestRegressor","n_estimators=100"]},{"cmt":"# 训练随机森林回归模型"},{"s":["",""],"a":["rf_model.fit(X_train,y_train)"]},{"cmt":"# 保存训练好的模型"},{"s":["with open('2.2.3_model.pkl', 'wb') as model_file:"],"a":[]},{"s":["pickle.",""],"a":["dump(rf_model,model_file)"]},{"cmt":"# 进行结果预测"},{"s":["y_pred = ",""],"a":["rf_model.predict(X_test)"]},{"s":["results_df = pd.DataFrame(y_pred, columns=['预测结果'])"],"a":[]},{"s":["results_df.to_csv('2.2.3_results.txt', index=False)"],"a":[]},{"cmt":"# 使用测试工具对模型进行测试，并记录测试结果"},{"s":["train_score = ","  #训练集分数"],"a":["rf_model.score(X_train,y_train)"]},{"s":["test_score = ","  #测试集分数"],"a":["rf_model.score(X_test,y_test)"]},{"s":["mse = ","  #均方误差"],"a":["mean_squared_error(y_test,y_pred)"]},{"s":["r2 = ","  #决定系数"],"a":["r2_score(y_test,y_pred)"]},{"s":["with open('2.2.3_report.txt', 'w') as report_file:"],"a":[]},{"s":["report_file.write(f'训练集得分: {train_score}\\n')"],"a":[]},{"s":["report_file.write(f'测试集得分: {test_score}\\n')"],"a":[]},{"s":["report_file.write(f'均方误差(MSE): {mse}\\n')"],"a":[]},{"s":["report_file.write(f'决定系数(R^2): {r2}\\n')"],"a":[]},{"cmt":"# 运用工具分析算法中错误案例产生的原因并进行纠正"},{"cmt":"# 初始化XGBoost回归模型（构建100棵树）"},{"s":["xgb_model = ","(",", random_state=42)"],"a":["xgb.XGBRegressor","n_estimators=100"]},{"cmt":"# 训练XGBoost回归模型"},{"s":["",""],"a":["xgb_model.fit(X_train,y_train)"]},{"cmt":"# 使用XGBoost回归模型在测试集上进行结果预测"},{"s":["y_pred_xgb = ",""],"a":["xgb_model.predict(X_test)"]},{"s":["results_df_xgb = pd.DataFrame(y_pred_xgb, columns=['预测结果'])"],"a":[]},{"s":["results_df_xgb.to_csv('2.2.3_results_xgb.txt', index=False)"],"a":[]},{"s":["with open('2.2.3_report_xgb.txt', 'w') as xgb_report_file:"],"a":[]},{"s":["xgb_report_file.write(f'XGBoost训练集得分: {","}\\n')"],"a":["xgb_model.score(X_train, y_train)"]},{"s":["xgb_report_file.write(f'XGBoost测试集得分: {","}\\n')"],"a":["xgb_model.score(X_test, y_test)"]},{"s":["xgb_report_file.write(f'XGBoost均方误差(MSE): {","}\\n')"],"a":["mean_squared_error(y_test, y_pred_xgb)"]},{"s":["xgb_report_file.write(f'XGBoost决定系数(R^2): {",")}\\n')"],"a":["r2_score(y_test, y_pred_xgb)"]}]}]},{"code":"2.2.4","title":"低碳生活行为影响因素预测线性回归模型开发与测试","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"s":["from sklearn.linear_model import LinearRegression"],"a":[]},{"s":["from sklearn.metrics import mean_squared_error, r2_score"],"a":[]},{"s":["import joblib"],"a":[]},{"s":["from xgboost import XGBRegressor"],"a":[]},{"cmt":"# 加载数据集"},{"s":["data = ",""],"a":["pd.read_excel('大学生低碳生活行为的影响因素数据集.xlsx')"]},{"cmt":"# 显示数据集的前五行"},{"s":["print(",")"],"a":["data.head("]},{"cmt":"# 删除不必要的列并处理分类变量"},{"s":["data_cleaned = ","(","=['序号', '所用时间'])  # 删除不必要的列"],"a":["data.drop","columns"]},{"s":["data_cleaned = pd.get_dummies(data_cleaned, drop_first=True)  # 将分类变量转换为哑变量/指示变量"],"a":[]},{"cmt":"# 定义目标变量和特征"},{"s":["target = '5.您进行过绿色低碳的相关生活方式吗?'  # 确保这是目标变量"],"a":[]},{"cmt":"# 定义自变量和因变量"},{"s":["X = ","(","=",")"],"a":["data_cleaned.drop","columns","[target]"]},{"s":["y = ",""],"a":["data_cleaned[target]"]},{"cmt":"# 将数据拆分为训练集和测试集（测试集占20%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 初始化线性回归模型"},{"s":["model = ",""],"a":["LinearRegression()"]},{"cmt":"# 训练线性回归模型"},{"s":["",""],"a":["model.fit(X_train,y_train)"]},{"cmt":"# 保存训练好的模型"},{"s":["model_filename = '2.2.4_model.pkl'"],"a":[]},{"s":["joblib.",""],"a":["dump(model,model_filename)"]},{"cmt":"# 进行预测"},{"s":["y_pred = ",""],"a":["model.predict(X_test)"]},{"cmt":"# 将结果保存到文本文件中"},{"s":["results = pd.DataFrame({'实际值': y_test, '预测值': y_pred})"],"a":[]},{"s":["results_filename = '2.2.4_results.txt'"],"a":[]},{"s":["","(",", index=False, sep='\\t')  # 使用制表符分隔值保存到文本文件"],"a":["results.to_csv","results_filename"]},{"cmt":"# 将测试结果保存到报告文件中"},{"s":["report_filename = '2.2.4_report.txt'"],"a":[]},{"s":["with open(report_filename, 'w') as f:"],"a":[]},{"s":["f.write(f'均方误差: {","}\\n')"],"a":["mean_squared_error(y_test, y_pred)"]},{"s":["f.write(f'决定系数: {","}\\n')"],"a":["r2_score(y_test, y_pred)"]},{"cmt":"# 分析并纠正错误（示例：使用XGBoost）"},{"cmt":"# 初始化XGBoost模型（设定树的数量为1000，学习率为0.05，每棵树的最大深度为5，）"},{"s":["xgb_model = ","(",", subsample=0.8, colsample_bytree=0.8)"],"a":["XGBRegressor","n_estimators=1000, learning_rate=0.05, max_depth=5"]},{"cmt":"# 训练XGBoost模型"},{"s":["",""],"a":["xgb_model.fit(X_train, y_train)"]},{"cmt":"# 使用XGBoost模型进行预测"},{"s":["y_pred_xg = ",""],"a":["xgb_model.predict(X_test)"]},{"cmt":"# 将XGBoost结果保存到文本文件中"},{"s":["results_xg_filename = '2.2.4_results_xg.txt'"],"a":[]},{"s":["results_xg = pd.DataFrame({'实际值': y_test, '预测值': y_pred_xg})"],"a":[]},{"s":["results_xg.to_csv(results_xg_filename, index=False, sep='\\t')  # 使用制表符分隔值保存到文本文件"],"a":[]},{"cmt":"# 将XGBoost测试结果保存到报告文件中"},{"s":["report_filename_xgb = '2.2.4_report_xgb.txt'"],"a":[]},{"s":["with open(report_filename_xgb, 'w') as f:"],"a":[]},{"s":["f.write(f'均方误差: {","}\\n')"],"a":["mean_squared_error(y_test, y_pred_xg)"]},{"s":["f.write(f'决定系数: {","}\\n')"],"a":["r2_score(y_test, y_pred_xg)"]}]}]},{"code":"2.2.5","title":"智能步数预测模型开发与测试","cells":[{"type":"code","l":[{"s":["import pandas as pd"],"a":[]},{"s":["from sklearn.model_selection import train_test_split"],"a":[]},{"s":["from sklearn.tree import DecisionTreeRegressor"],"a":[]},{"s":["import pickle"],"a":[]},{"s":["from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score"],"a":[]},{"cmt":"# 加载数据集"},{"s":["df = ",""],"a":["pd.read_csv('fitness analysis.csv')"]},{"cmt":"# 显示前五行数据"},{"s":["print(",")"],"a":["df.head("]},{"cmt":"# 选择相关特征进行建模"},{"s":["X = df[['Your gender ', 'How important is exercise to you ?', 'How healthy do you consider yourself?']]"],"a":[]},{"s":["X = ","(X)  # 将分类变量转为数值变量"],"a":["pd.get_dummies"]},{"cmt":"# 设置目标变量"},{"s":["y = ",""],"a":["df['daily_steps']"]},{"cmt":"# 将数据集划分为训练集和测试集（测试集占20%）"},{"s":["X_train, X_test, y_train, y_test = ","(",", random_state=42)"],"a":["train_test_split","X, y, test_size=0.2"]},{"cmt":"# 创建并训练决策树回归模型"},{"s":[""," = ","(random_state=42)"],"a":["dt_model","DecisionTreeRegressor"]},{"cmt":"# 训练决策树回归模型"},{"s":["",""],"a":["dt_model.fit(X_train,y_train)"]},{"cmt":"# 保存训练好的模型"},{"s":["with open('2.2.5_model.pkl', 'wb') as model_file:"],"a":[]},{"s":["pickle.",""],"a":["dump(dt_model,model_file)"]},{"cmt":"# 进行预测"},{"s":["y_pred = ",""],"a":["dt_model.predict(X_test)"]},{"cmt":"# 将结果保存到文本文件中"},{"s":["results = pd.DataFrame({'实际值': y_test, '预测值': y_pred})"],"a":[]},{"s":["results_filename = '2.2.5_results.txt'"],"a":[]},{"s":["","(",", index=False, sep='\\t')"],"a":["results.to_csv","results_filename"]},{"cmt":"# 将测试结果保存到报告文件中"},{"s":["report_filename = '2.2.5_report.txt'"],"a":[]},{"s":["with open(",") as f:"],"a":["report_filename,'w'"]},{"s":["f.write(f'均方误差: {","}\\n')"],"a":["mean_squared_error(y_test, y_pred)"]},{"s":["f.write(f'平均绝对误差: {","}\\n')"],"a":["mean_absolute_error(y_test, y_pred)"]},{"s":["f.write(f'决定系数: {","}\\n')"],"a":["r2_score(y_test, y_pred)"]}]}]},{"code":"3.2.1","title":"图像识别评估系统交互流程设计","cells":[{"type":"code","l":[{"s":["import onnxruntime as ort"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import scipy.special"],"a":[]},{"s":["from PIL import Image"],"a":[]},{"cmt":"# 预处理图像"},{"s":["def preprocess_image(image, resize_size=256, crop_size=224, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):"],"a":[]},{"s":["image = image.resize((resize_size, resize_size), Image.BILINEAR)"],"a":[]},{"s":["w, h = image.size"],"a":[]},{"s":["left = (w - crop_size) / 2"],"a":[]},{"s":["top = (h - crop_size) / 2"],"a":[]},{"s":["image = image.crop((left, top, left + crop_size, top + crop_size))"],"a":[]},{"s":["image = np.array(image).astype(np.float32)"],"a":[]},{"s":["image = image / 255.0"],"a":[]},{"s":["image = (image - mean) / std"],"a":[]},{"s":["image = np.transpose(image, (2, 0, 1))"],"a":[]},{"s":["image = image.reshape((1,) + image.shape)"],"a":[]},{"s":["return image"],"a":[]},{"cmt":"# 模型加载 2分"},{"s":["session = ",""],"a":["ort.InferenceSession('resnet.onnx')"]},{"cmt":"# 加载类别标签"},{"s":["labels_path = 'labels.txt'"],"a":[]},{"s":["with open(labels_path) as f:"],"a":[]},{"s":["labels = [line.strip() for line in f.readlines()]"],"a":[]},{"cmt":"# 获取模型输入和输出的名称"},{"s":["input_name = session.get_inputs()[0].name"],"a":[]},{"s":["output_name = session.get_outputs()[0].name"],"a":[]},{"cmt":"# 加载图片 2分"},{"s":["image = ","('RGB')"],"a":["Image.open('img_test.jpg').convert"]},{"cmt":"# 预处理图片 2分"},{"s":["processed_image = ",""],"a":["preprocess_image(image)"]},{"cmt":"# 确保输入数据是 float32 类型"},{"s":["processed_image = processed_image.astype(np.float32)"],"a":[]},{"cmt":"# 进行图片识别 2分"},{"s":["output = ","([output_name], {input_name: processed_image})[0]"],"a":["session.run"]},{"cmt":"# 应用 softmax 函数获取概率 2分"},{"s":["probabilities = ","(output, axis=-1)"],"a":["scipy.special.softmax"]},{"cmt":"# 获取最高的5个概率和对应的类别索引 3分"},{"s":["top5_idx = ","[-5:][::-1]"],"a":["np.argsort(probabilities[0])"]},{"s":["top5_prob = ",""],"a":["probabilities[0][top5_idx]"]},{"cmt":"# 打印结果"},{"s":["print(\"Top 5 predicted classes:\")"],"a":[]},{"s":["for i in range(5):"],"a":[]},{"s":["print(f\"{i+1}: {labels[top5_idx[i]]} - Probability: {top5_prob[i]}\")"],"a":[]}]}]},{"code":"3.2.2","title":"手写数字识别系统交互流程设计","cells":[{"type":"code","l":[{"s":["import onnxruntime"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["from PIL import Image"],"a":[]},{"cmt":"# 加载ONNX模型  2分"},{"s":["ort_session = ",""],"a":["onnxruntime.InferenceSession('mnist.onnx')"]},{"cmt":"# 加载图像 2分"},{"s":["image = ","('L')  # 转为灰度图"],"a":["Image.open('img_test.png').convert"]},{"cmt":"#图像预处理"},{"s":["image = ","((28, 28))  # 调整大小为MNIST模型的输入尺寸2分"],"a":["image.resize"]},{"s":["image_array = ","(",", dtype=np.float32)  # 转为numpy数组2分"],"a":["np.array","image"]},{"s":["image_array = ","(",", axis=0)  # 添加batch维度2分"],"a":["np.expand_dims","image_array"]},{"s":["image_array = ","(",", axis=0)  # 添加通道维度2分"],"a":["np.expand_dims","image_array"]},{"cmt":"#返回模型输入列表 2分"},{"s":["ort_inputs = {","()[0].name: image_array}"],"a":["ort_session.get_inputs"]},{"cmt":"# 执行预测 2分"},{"s":["ort_outs = ","(None, ort_inputs)"],"a":["ort_session.run"]},{"cmt":"# 获取预测结果 2分"},{"s":["predicted_class = ",""],"a":["np.argmax(ort_outs[0])"]},{"cmt":"# 输出预测结果"},{"s":["print(f\"Predicted class: {predicted_class}\")"],"a":[]}]}]},{"code":"3.2.3","title":"面部表情识别系统交互流程设计","cells":[{"type":"code","l":[{"cmt":"# 导入必要的库"},{"s":["import numpy as np"],"a":[]},{"s":["from PIL import Image"],"a":[]},{"s":["import onnxruntime as ort"],"a":[]},{"cmt":"# 定义预处理函数，用于将图片转换为模型所需的输入格式"},{"s":["def preprocess(image_path):"],"a":[]},{"s":["input_shape = (1, 1, 64, 64)  # 模型输入期望的形状，这里是 (N, C, H, W)，N=batch size, C=channels, H=height, W=width"],"a":[]},{"s":["img = Image.open(image_path).convert('L')  # 打开图像文件并将其转换为灰度图  1分"],"a":[]},{"s":["img = img.resize((64, 64), Image.ANTIALIAS)  # 调整图像大小到模型输入所需的尺寸"],"a":[]},{"s":["img_data = np.array(img, dtype=np.float32)  # 将PIL图像对象转换为numpy数组，并确保数据类型是float32"],"a":[]},{"cmt":"# 调整数组的形状以匹配模型输入的形状"},{"s":["img_data = np.expand_dims(img_data, axis=0)  # 添加 batch 维度"],"a":[]},{"s":["img_data = np.expand_dims(img_data, axis=1)  # 添加 channel 维度"],"a":[]},{"s":["assert img_data.shape == input_shape, f\"Expected shape {input_shape}, but got {img_data.shape}\"  # 确保最终的形状与模型输入要求的形状一致"],"a":[]},{"s":["return img_data  # 返回预处理后的图像数据"],"a":[]},{"cmt":"# 定义情感类别与数字标签的映射表 3分"},{"s":["emotion_table = {","}"],"a":["'neutral':0,'happiness':1,'surprise':2,'sadness':3,'anger':4,'disgust':5,'fear':6,'contempt':7"]},{"cmt":"# 加载模型 3分"},{"s":["ort_session = ","  # 使用onnxruntime创建一个会话，用于加载并运行模型"],"a":["ort.InferenceSession('emotion-ferplus.onnx')"]},{"cmt":"# 加载本地图片并进行预处理 3分"},{"s":["input_data = ",""],"a":["preprocess('img_test.png')"]},{"cmt":"# 准备输入数据，确保其符合模型输入的要求"},{"s":["ort_inputs = {ort_session.get_inputs()[0].name: input_data}  # ort_session.get_inputs()[0].name 是获取模型的第一个输入的名字"],"a":[]},{"cmt":"# 运行模型，进行预测 3分"},{"s":["ort_outs = ","(None, ",")"],"a":["ort_session.run","ort_inputs"]},{"cmt":"# 解码模型输出，找到预测概率最高的情感类别 3分"},{"s":["predicted_label = ","(ort_outs[0])"],"a":["np.argmax"]},{"cmt":"# 根据预测的标签找到对应的情感名称 3分"},{"s":["predicted_emotion = ","[predicted_label]"],"a":["list(emotion_table.keys())"]},{"cmt":"# 输出预测的情感"},{"s":["print(f\"Predicted emotion: {predicted_emotion}\")"],"a":[]}]}]},{"code":"3.2.4","title":"花朵智能识别系统交互流程设计","cells":[{"type":"code","l":[{"s":["import onnxruntime as ort"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import scipy.special"],"a":[]},{"s":["from PIL import Image"],"a":[]},{"cmt":"# 预处理图像"},{"s":["def preprocess_image(image, resize_size=256, crop_size=224, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):"],"a":[]},{"s":["image = image.resize((resize_size, resize_size), Image.BILINEAR)"],"a":[]},{"s":["w, h = image.size"],"a":[]},{"s":["left = (w - crop_size) / 2"],"a":[]},{"s":["top = (h - crop_size) / 2"],"a":[]},{"s":["image = image.crop((left, top, left + crop_size, top + crop_size))"],"a":[]},{"s":["image = np.array(image).astype(np.float32)"],"a":[]},{"s":["image = image / 255.0"],"a":[]},{"s":["image = (image - mean) / std"],"a":[]},{"s":["image = np.transpose(image, (2, 0, 1))"],"a":[]},{"s":["image = image.reshape((1,) + image.shape)"],"a":[]},{"s":["return image"],"a":[]},{"cmt":"# 加载模型  2分"},{"s":["session = ",""],"a":["ort.InferenceSession('flower-detection.onnx')"]},{"cmt":"# 加载类别标签 2分"},{"s":["with "," as f:"],"a":["open('labels.txt')"]},{"s":["labels = [line.strip() for line in f.readlines()]"],"a":[]},{"cmt":"# 获取模型输入和输出的名称"},{"s":["input_name = session.get_inputs()[0].name"],"a":[]},{"s":["output_name = session.get_outputs()[0].name"],"a":[]},{"cmt":"# 加载图片  2分"},{"s":["image = ","('RGB')"],"a":["Image.open('flower_test.png').convert"]},{"cmt":"# 预处理图片  2分"},{"s":["processed_image = ",""],"a":["preprocess_image(image)"]},{"cmt":"# 确保输入数据是 float32 类型"},{"s":["processed_image = processed_image.astype(np.float32)"],"a":[]},{"cmt":"# 进行图片识别  2分"},{"s":["output = ","([output_name], {input_name: processed_image})[0]"],"a":["session.run"]},{"cmt":"# 应用 softmax 函数获取识别分类后的准确率  2分"},{"s":["accuracy = ","(output, axis=-1)"],"a":["scipy.special.softmax"]},{"cmt":"# 获取预测的类别索引"},{"s":["predicted_idx =  ",""],"a":["np.argmax(accuracy[0])"]},{"cmt":"# 获取预测的准确值（转换为百分比）"},{"s":["prob_percentage =  ",""],"a":["accuracy[0,predicted_idx]*100"]},{"cmt":"# 获取预测的类别标签"},{"s":["predicted_label = ",""],"a":["labels[predicted_idx]"]},{"cmt":"# 输出预测结果，包含百分比形式的概率"},{"s":["print(f\"Predicted class: {predicted_label}, Accuracy: {prob_percentage:.2f}%\")"],"a":[]}]}]},{"code":"3.2.5","title":"人脸AI智能检测系统交互流程设计","cells":[{"type":"code","l":[{"s":["import os"],"a":[]},{"s":["import time"],"a":[]},{"s":["import cv2"],"a":[]},{"s":["import numpy as np"],"a":[]},{"s":["import vision.utils.box_utils_numpy as box_utils"],"a":[]},{"s":["import onnxruntime as ort"],"a":[]},{"cmt":"# 定义预测函数，对模型输出的边界框和置信度进行后处理"},{"s":["def predict(width, height, confidences, boxes, prob_threshold, iou_threshold=0.3, top_k=-1):"],"a":[]},{"s":["boxes = boxes[0]"],"a":[]},{"s":["confidences = confidences[0]"],"a":[]},{"s":["picked_box_probs = []"],"a":[]},{"s":["picked_labels = []"],"a":[]},{"s":["for class_index in range(1, confidences.shape[1]):"],"a":[]},{"s":["probs = confidences[:, class_index]"],"a":[]},{"s":["mask = probs > prob_threshold"],"a":[]},{"s":["probs = probs[mask]"],"a":[]},{"s":["if probs.shape[0] == 0:"],"a":[]},{"s":["continue"],"a":[]},{"s":["subset_boxes = boxes[mask, :]"],"a":[]},{"s":["box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)"],"a":[]},{"s":["box_probs = box_utils.hard_nms(box_probs,"],"a":[]},{"s":["iou_threshold=iou_threshold,"],"a":[]},{"s":["top_k=top_k,"],"a":[]},{"s":[")"],"a":[]},{"s":["picked_box_probs.append(box_probs)"],"a":[]},{"s":["picked_labels.extend([class_index] * box_probs.shape[0])"],"a":[]},{"s":["if not picked_box_probs:"],"a":[]},{"s":["return np.array([]), np.array([]), np.array([])"],"a":[]},{"s":["picked_box_probs = np.concatenate(picked_box_probs)"],"a":[]},{"s":["picked_box_probs[:, 0] *= width"],"a":[]},{"s":["picked_box_probs[:, 1] *= height"],"a":[]},{"s":["picked_box_probs[:, 2] *= width"],"a":[]},{"s":["picked_box_probs[:, 3] *= height"],"a":[]},{"s":["return picked_box_probs[:, :4].astype(np.int32), np.array(picked_labels), picked_box_probs[:, 4]"],"a":[]},{"cmt":"# 从标签文件中读取每一行，并去除行首尾的空白字符，得到类别名称列表 2分"},{"s":["class_names = ["," for name in open('voc-model-labels.txt').readlines()]"],"a":["name.strip()"]},{"cmt":"# 创建 ONNX Runtime 的推理会话，用于运行模型进行推理 2分"},{"s":["ort_session = ","('version-RFB-320.onnx')"],"a":["ort.InferenceSession"]},{"cmt":"# 获取模型输入的名称 2分"},{"s":["input_name = ","()[0].name"],"a":["ort_session.get_inputs"]},{"cmt":"# 定义保存检测结果图像的目录路径"},{"s":["result_path = \"./detect_imgs_results_onnx\""],"a":[]},{"cmt":"# 定义置信度阈值，用于筛选出置信度较高的检测结果"},{"s":["threshold = 0.7"],"a":[]},{"cmt":"# 定义存储待检测图像的目录路径"},{"s":["path = \"imgs\""],"a":[]},{"cmt":"# 用于统计所有图像中检测到的目标框总数，初始化为 0"},{"s":["sum = 0"],"a":[]},{"cmt":"# 如果保存结果的目录不存在，则创建该目录 2分"},{"s":["if not os.path.exists(result_path):"],"a":[]},{"s":["os.",""],"a":["makedirs(result_path)"]},{"cmt":"# 获取指定目录下的所有文件和文件夹名称列表"},{"s":["listdir = os.listdir(path)"],"a":[]},{"cmt":"# 遍历目录下的每个文件"},{"s":["for file_path in listdir:"],"a":[]},{"cmt":"# 拼接图像文件的完整路径"},{"s":["img_path = os.path.join(path, file_path)"],"a":[]},{"cmt":"# 使用 OpenCV 读取图像文件 2分"},{"s":["orig_image = ",""],"a":["cv2.imread(img_path)"]},{"cmt":"# 将图像从 BGR 颜色空间转换为 RGB 颜色空间（许多模型要求输入为 RGB 格式）"},{"s":["image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)"],"a":[]},{"cmt":"# 将图像调整为 320x240 的尺寸（符合模型输入的尺寸要求） 2分"},{"s":["image = ","(",", (320, 240))"],"a":["cv2.resize","image"]},{"cmt":"# 定义图像归一化的均值数组 2分"},{"s":["image_mean = ","([127, 127, 127])"],"a":["np.array"]},{"cmt":"# 对图像进行归一化处理，减去均值并除以 128"},{"s":["image = (image - image_mean) / 128"],"a":[]},{"cmt":"# 将图像的维度从 (高度, 宽度, 通道数) 转换为 (通道数, 高度, 宽度)"},{"s":["image = np.transpose(image, [2, 0, 1])"],"a":[]},{"cmt":"# 在第一个维度上扩展一个维度，将图像变为 (1, 通道数, 高度, 宽度)，以符合模型输入的维度要求  1分"},{"s":["image = ","(image, axis=0)"],"a":["np.expand_dims"]},{"cmt":"# 将图像数据类型转换为 float32 类型"},{"s":["image = image.astype(np.float32)"],"a":[]},{"cmt":"# 记录开始时间，用于计算模型推理的耗时"},{"s":["time_time = time.time()"],"a":[]},{"cmt":"# 使用 ONNX Runtime 运行模型，输入图像数据，得到模型输出的置信度和边界框  2分"},{"s":["confidences, boxes = ","(None, {input_name: image})"],"a":["ort_session.run"]},{"cmt":"# 计算并打印模型推理的耗时"},{"s":["print(\"cost time:{}\".format(time.time() - time_time))"],"a":[]},{"cmt":"# 调用 predict 函数对模型输出的边界框和置信度进行后处理，得到最终的边界框、类别标签和置信度"},{"s":["boxes, labels, probs = predict(orig_image.shape[1], orig_image.shape[0], confidences, boxes, threshold)"],"a":[]},{"cmt":"# 遍历每个检测到的目标框"},{"s":["for i in range(boxes.shape[0]):"],"a":[]},{"cmt":"# 获取当前目标框的坐标"},{"s":["box = boxes[i, :]"],"a":[]},{"cmt":"# 生成当前目标框的标签字符串，包含类别名称和置信度"},{"s":["label = f\"{class_names[labels[i]]}: {probs[i]:.2f}\""],"a":[]},{"cmt":"# 在原始图像上绘制目标框，颜色为 (255, 255, 0)，线条粗细为 4"},{"s":["cv2.rectangle(orig_image, (box[0], box[1]), (box[2], box[3]), (255, 255, 0), 4)"],"a":[]},{"cmt":"# 将绘制了目标框的图像保存到结果目录中"},{"s":["cv2.imwrite(os.path.join(result_path, file_path), orig_image)"],"a":[]},{"cmt":"# 累加当前图像中检测到的目标框数量到总数中"},{"s":["sum += boxes.shape[0]"],"a":[]},{"cmt":"# 打印所有图像中检测到的目标框总数"},{"s":["print(\"sum:{}\".format(sum))"],"a":[]}]}]}];;;;
+const EXAM_HINTS = {"1.1.1": ["# 读取数据集 1分", "# 1. 统计住院天数超过7天的患者数量及其占比 / # 创建新列'RiskLevel'，根据住院天数判断风险等级 3分", "# 统计不同风险等级的患者数量 2分", "# 计算高风险患者占比 1分", "# 计算低风险患者占比 1分", "# 根据BMI值划分指定区间 4分", "# 计算每个BMI区间中高风险患者的比例 2分", "# 统计每个BMI区间的患者数量 1分", "# 根据年龄值划分指定区间 4分", "# 计算每个年龄区间中高风险患者的比例 2分", "# 统计每个年龄区间的患者数量 1分"], "1.1.2": ["# 读取数据集 2分", "# 1. 传感器数据统计 / # 对传感器类型进行分组，并计算每个组的数据数量和平均值 3分", "", "# 3. 数据清洗和异常值处理 / # 标记异常值 3分", "", "", "", "# 填补缺失值 / # 使用前向填充和后向填充的方法填补缺失值 4分", "", "# 保存清洗后的数据 / # 删除用于标记异常值的列，并将清洗后的数据保存到新的CSV文件中 4分", ""], "1.1.3": ["# 1. 数据完整性审核", "", "# 2. 数据合理性审核", "", "", "", "# 保存清洗后的数据"], "1.1.4": ["# 1. 数据采集 / # 从本地文件中读取数据  2分", "# 打印数据的前5条记录  2分", "# 2. 数据清洗与预处理 / # 处理缺失值（删除）  2分", "# 数据类型转换", "", "", "# 处理异常值  2分", "", "# 数据标准化", "", "# 保存清洗后的数据  1分", "# 3. 数据统计 / # 统计每个购买类别的用户数 2分", "# 统计不同性别的平均购买金额 2分", ""], "1.1.5": ["# 1. 数据采集 / # 从本地文件中读取数据  2分", "# 打印数据的前5条记录 2分", "# 2. 数据清洗与预处理 / # 处理缺失值（删除）  2分", "# 数据类型转换", "", "", "", "", "", "", "", "# 保存清洗后的数据  1分", "# 3. 数据合理性审核 / # 审核字段合理性 1分", "", "", "", "# 4. 数据统计 / # 统计每种交通事件的发生次数  2分", "# 统计不同性别的平均车速、行驶距离和行驶时间  2分", "", ""], "2.1.1": ["# 加载数据集并显示数据集的前五行 1分", "", "", "", "# 将 'horsepower' 列转换为数值类型，并（删除）处理转换中的异常值 1分", "", "", "# 选择特征、自变量和目标变量 2分", "", "", "# 划分数据集为训练集和测试集（训练集占8成） 1分", "# 保存清洗和处理后的数据（不存储额外的索引号） 1分"], "2.1.2": ["#读取一个Excel文件，并将读取到的数据存储在变量data中", "#打印出数据集的前5行", "#处理数据集中的缺失值", "", "", "#删除重复行", "", "", "", "", "", "", "", "", "", "", "", "# 创建目标变量", "# 数据划分（测试集取20%）", "# 合并处理后得数据，并将其保存（保存中不用额外创建索引）", ""], "2.1.3": ["# 加载数据", "# 显示前五行的数据", "", "# 使用IQR处理异常值", "", "", "# 移除异常值", "# 检查处理重复值", "", "# 设定目标变量", "# 定义特征和目标", "", "# 划分数据（训练集占80%）", ""], "2.1.4": ["# 加载数据集并指定编码为gbk", "# 查看表结构基本信息", "# 修改列名", "# 增加诊断延迟和病程列", "# 删除不合理的数据", "", "", "", "# 绘制柱状图", "# 绘制散点图", ""], "2.1.5": ["# 加载数据集", "# 查看表结构基本信息", "# 显示每一列的空缺值数量", "# 删除含有缺失值的行", "# 转换 'Your age' 列的数据类型为整数类型，并处理异常值", "", "", "", "", "# 划分数据（测试集占比20%）", "", ""], "2.2.1": ["# 加载数据", "# 显示前五行的数据", "# 分割训练集和测试集（测试集20%）", "# 训练Logistic回归模型（最大迭代次数为1000次）", "#训练 Logistic 回归模型", "# 预测并保存结果", "# 分析测试结果", "", "# 重新训练模型", "# 重新预测", "# 分析新的测试结果"], "2.2.2": ["# 加载数据集", "# 显示前五行数据", "# 处理缺失值 / # 将 'horsepower' 列中的所有值转换为数值类型", "# 删除包含缺失值的行", "# 选择相关特征进行建模（定义自变量（返回一个DataFrame）和因变量）", "", "# 将数据集划分为训练集和测试集（测试集占比20%）", "# 创建包含标准化和线性回归的管道", "# 训练模型", "# 预测并保存结果", "", "# 创建随机森林回归模型实例（创建的决策树的数量为100）", "# 训练随机森林回归模型", "# 使用随机森林模型进行预测", ""], "2.2.3": ["# 加载数据集", "# 显示前五行数据", "", "# 将年龄段转为数值变量", "# 将数据集划分为训练集和测试集（测试集占比20%）", "# 创建随机森林回归模型（创建的决策树的数量为100）", "# 训练随机森林回归模型", "", "# 进行结果预测", "# 使用测试工具对模型进行测试，并记录测试结果", "", "", "", "# 运用工具分析算法中错误案例产生的原因并进行纠正 / # 初始化XGBoost回归模型（构建100棵树）", "# 训练XGBoost回归模型", "# 使用XGBoost回归模型在测试集上进行结果预测", "", "", "", ""], "2.2.4": ["# 加载数据集", "# 显示数据集的前五行", "# 删除不必要的列并处理分类变量", "# 定义自变量和因变量", "", "# 将数据拆分为训练集和测试集（测试集占20%）", "# 初始化线性回归模型", "# 训练线性回归模型", "", "# 进行预测", "", "", "", "# 分析并纠正错误（示例：使用XGBoost） / # 初始化XGBoost模型（设定树的数量为1000，学习率为0.05，每棵树的最大深度为5，）", "# 训练XGBoost模型", "# 使用XGBoost模型进行预测", "", ""], "2.2.5": ["# 加载数据集", "# 显示前五行数据", "", "# 设置目标变量", "# 将数据集划分为训练集和测试集（测试集占20%）", "# 创建并训练决策树回归模型", "# 训练决策树回归模型", "", "# 进行预测", "", "", "", "", ""], "3.2.1": ["# 模型加载 2分", "# 加载图片 2分", "# 预处理图片 2分", "# 进行图片识别 2分", "# 应用 softmax 函数获取概率 2分", "# 获取最高的5个概率和对应的类别索引 3分", ""], "3.2.2": ["# 加载ONNX模型  2分", "# 加载图像 2分", "#图像预处理", "", "", "", "#返回模型输入列表 2分", "# 执行预测 2分", "# 获取预测结果 2分"], "3.2.3": ["# 定义情感类别与数字标签的映射表 3分", "# 加载模型 3分", "# 加载本地图片并进行预处理 3分", "", "# 运行模型，进行预测 3分", "# 解码模型输出，找到预测概率最高的情感类别 3分", "# 根据预测的标签找到对应的情感名称 3分"], "3.2.4": ["# 加载模型  2分", "# 加载类别标签 2分", "# 加载图片  2分", "# 预处理图片  2分", "# 进行图片识别  2分", "# 应用 softmax 函数获取识别分类后的准确率  2分", "# 获取预测的类别索引", "# 获取预测的准确值（转换为百分比）", "# 获取预测的类别标签"], "3.2.5": ["# 从标签文件中读取每一行，并去除行首尾的空白字符，得到类别名称列表 2分", "# 创建 ONNX Runtime 的推理会话，用于运行模型进行推理 2分", "# 获取模型输入的名称 2分", "", "# 使用 OpenCV 读取图像文件 2分", "# 将图像调整为 320x240 的尺寸（符合模型输入的尺寸要求） 2分", "# 定义图像归一化的均值数组 2分", "# 在第一个维度上扩展一个维度，将图像变为 (1, 通道数, 高度, 宽度)，以符合模型输入的维度要求  1分", "# 使用 ONNX Runtime 运行模型，输入图像数据，得到模型输出的置信度和边界框  2分"]};
+const SKELETON = "# ① 读数据\ndata = pd.read_csv('文件名.csv')\n# ② 清洗（删空值/重复/转类型）\ndata = data.dropna()\ndata = data.drop_duplicates()\n# ③ 处理/分组统计（分箱、计数、分组均值）\ndata['新列'] = pd.cut(data['列'], bins=..., labels=..., right=False)\nresult = data.groupby('列')['列'].mean()\n# ④ 建模（切分→建模→训练→预测）\nX = data[特征列]; y = data['目标列']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nmodel.fit(X_train, y_train)\ny_pred = model.predict(X_test)\n# ⑤ 保存\ndata.to_csv('结果.csv', index=False)";
+const PITFALLS = [{"坑": "大小写", "错": "risklevel", "对": "RiskLevel", "记": "列名/驼峰大小写必须和题目一模一样"}, {"坑": "引号", "错": "中文引号 ‘’", "对": "英文引号 ''", "记": "代码里所有引号、括号、逗号都是英文半角"}, {"坑": "括号配对", "错": "少一个 )", "对": "数量对齐", "记": "每个 ( [ { 都要有对应的闭合"}, {"坑": "下划线", "错": "train test split", "对": "train_test_split", "记": "单词间用 _ 连接，不是空格"}, {"坑": "等号", "错": "=(赋值) vs ==(判断)", "对": "相等判断用 ==", "记": "np.where/准确率里是双等号"}];
+const CORRECTIONS = [{"wrong": "异常值数虽", "right": "异常值数量", "note": "OCR错字：数虽→数量", "q": "1.1.2"}, {"wrong": "is_income_v alid", "right": "is_income_valid", "note": "标识符被空格断开：is_income_v alid→is_income_valid", "q": "1.1.3"}, {"wrong": "selected features", "right": "selected_features", "note": "空格应为下划线：selected features→selected_features", "q": "2.1.2"}, {"wrong": "数据栠", "right": "数据集", "note": "OCR文件名：数据栠→数据集", "q": "2.1.2"}, {"wrong": " 卧削除缺失值所在行", "right": "  # 删除缺失值所在行", "note": "代码行混入中文，改注释", "q": "2.1.2"}, {"wrong": "x.split('')", "right": "x.split(' ')", "note": "空引号应为空格：按空格切分", "q": "2.2.3"}, {"wrong": "RA2", "right": "R²", "note": "OCR：RA2→R²", "q": "2.2.3"}, {"wrong": ".groupby(['Location','SensorType'])['Value'].mean(", "right": "].groupby(['Location','SensorType'])['Value'].mean()", "note": "该行被截断于 .mean(，已补全括号", "q": "1.1.2"}];
+const THEORY = [{"code": "3.1.1", "title": "智能音箱产品的数据分析与优化", "kind": "analysis", "content": "3.1.1 智能音箱产品的数据分析与优化\n（1）分析报告\n一、用户使用习惯\n最常被使用的功能：调整音量、查询新闻、查天气\n二、功能使用频率\n最受欢迎的功能：调整音量\n较少使用的功能：播放音乐、控制家居\n三、响应时间分析\n响应时间较长的功能：控制家居\n响应时间适中的功能：提醒事项/调整音量/查询知识/设置闹钟/播放音乐/查天气\n响应时间较短的功能：查询新闻", "answer": "（2）优化方向及解决方案（仅需回答3个优化方向和对应解决方案）\n1. 优化方向：网络连接与设备交互优化\n解决方案：强化网络连接稳定性，采用更高效的通信协议，减少控制家居功能的响应时间\n2. 优化方向：提升信息检索效率\n解决方案：优化查询知识的检索算法，加快数据处理速度，提升用户体验\n3. 优化方向：增强本地处理能力\n解决方案：增加本地缓存和预加载机制，尤其在播放音乐和查天气上，以减少对外部资源的依\n赖\n4. 优化方向：改善闹钟与提醒功能\n解决方案：设计更直观的闹钟和提醒事项设置流程，增加个性化选项，鼓励用户更频繁地使用\n这些功能\n5. 优化方向：用户界面与语音识别优化\n解决方案：提升语音识别准确率，简化用户界面设计，确保用户能够快速、准确地调用所需功\n能\n\n---"}, {"code": "3.1.2", "title": "智能照明系统的数据分析与优化", "kind": "analysis", "content": "3.1.2 智能照明系统的数据分析与优化\n（1）分析报告\n一、用户使用习惯\n上午（06:00 - 12:00）：用户的平均光线亮度值为51.74468085或52左右，平均色温值为3689.51773或3689.5左右\n下午（12:00 - 18:00）：用户的平均光线亮度值为49.93055556或50左右，平均色温值为3732.402778或3732.4左右\n夜间（18:00 - 24:00）：用户的平均光线亮度值为48.05586592或48左右，平均色温值为3661.351955或3661.4左右\n二、功能（智能场景）使用频率\n频繁使用的场景：Relax Mode\n适中使用的场景：Work Mode/Reading Mode\n较少使用的场景：Sleep Mode\n三、响应时间分析\n响应时间分布区间：(0.1, 2) f\n延迟瓶颈:网络延迟/系统处理能力/硬件限制", "answer": "（2）优化方向及解决方案（仅需回答3个优化方向和对应解决方案）\n1. 优化方向：提升响应速度\n解决方案：\n硬件升级：增加处理器速度或使用更高效的LED驱动器来减少控制响应时间。\n软件优化：改进算法，减少不必要的计算步骤，提高数据处理效率。\n网络优化：确保网络连接稳定，减少数据传输延迟，必要时采用更可靠的网络协议。\n2. 优化方向：个性化场景定制\n解决方案：根据用户使用习惯，自动调整预设场景参数，如亮度和色温等。\n3. 优化方向：用户体验增强\n解决方案：开发更直观的用户界面，简化场景切换操作。\n4. 优化方向：功能拓展与集成\n解决方案：集成更多传感器（如人体感应、环境光传感器），实现更加智能的自动化控制。\n与智能家居其他设备（如智能窗帘、空调等）联动，提供更全面的智能家居体验\n\n---"}, {"code": "3.1.3", "title": "智能健康手环的数据分析与优化", "kind": "analysis", "content": "3.1.3 智能健康手环的数据分析与优化\n(1)分析报告\n一、用户活动模式\n早晨（6:00-8:00）用户的步数普遍较高（为5068.099048 步或5000步左右），这可能与\n上班通勤、早晨锻炼或户外活动有关\n傍晚（17:00-20:00）用户的步数普遍较高（为5005.6475步或平均5000步左右），这可能\n与下班通勤、锻炼或户外活动有关\n其余时间段，用户步数显著下降（为1101.247792步或平均在1100 步左右）\n二、健康指标关注度\n最受关注的指标：步数\n较少关注的指标：心率和睡眠时长\n三、数据同步性能\n平均延迟时间：0.697955845 秒\n影响因素：网络状况不佳、设备电量低、手机后台运行程序过多、数据包大小等\ndata.columns f", "answer": "(2)优化方向及解决方案（仅需回答 3 个优化方向和对应解决方案）\n1. 优化方向：用户活动模式的优化：\n解决方案：早晨和傍晚是用户活跃的高峰期，手环可以在这些时段自动开启高灵敏度模式，以\n更准确地捕捉步数和其他运动数据。\n对于低活跃时段，手环可以降低传感器的灵敏度，以节省电量并减少不必要的数据记录。\n2. 优化方向：健康指标关注度的优化：\n解决方案：增加对心率和睡眠时长监测功能的推广和教育，让用户了解这些指标的重要性。\n通过软件更新，优化心率和睡眠监测算法，提高数据的准确性和可靠性。\n3. 优化方向：数据同步性能的优化：\n解决方案：优化数据包的大小和格式，减少传输所需的时间。\n在手环上实施有效的电源管理策略，确保在数据同步过程中有足够的电量。\n提供用户界面管理选项，让用户能够控制后台程序，减少对数据同步的干扰。\n增强网络模块，支持更稳定的数据传输，尤其是在网络状况不佳的情况下。\n4. 优化方向：软件和硬件的升级：\n解决方案：根据用户反馈和使用数据，定期更新手环的固件和应用程序，以提高性能和用户体\n验。\n考虑使用更先进的传感器和处理器，以提高数据采集和处理的速度和准确性。\n5. 优化方向：用户界面和体验的改进：\n解决方案：优化用户界面，使其更加直观易用，让用户能够轻松查看和分析他们的健康数据。\n提供个性化的设置选项，让用户可以根据自己的需求和偏好定制手环的功能。\n6. 优化方向：教育和社区建设：\n解决方案：建立用户社区，鼓励用户分享他们的健康数据和经验，增加用户粘性。\n提供健康和健身相关的教育资源，帮助用户更好地理解他们的数据，并根据数据做出健康决策。\n\n---"}, {"code": "3.1.4", "title": "智能健康监测系统的数据分析与优化", "kind": "analysis", "content": "3.1.4 智能健康监测系统的数据分析与优化\n（1）分析报告\n一、用户活动周期\n健康指标变化趋势：\n1. 早上7：30分的平均血压值最高，之后时间平均血压值都在标准范围内。\n2. 血糖处于正常水平；即空腹血糖处于正常水平，餐后血糖会上升，然后随着时间的推移而\n逐步降低。\n3. 体脂连续一周维持在0.17的水平；\n高风险时间段：早上时间段（6：00-10：00）的血压\n安全时间段：除去早上时间段（6：00-10：00）外的其余时间段的血压，全天的血糖\n二、健康指标偏好度\n受用户青睐的功能：血压监测、血糖检测。\n较少使用的功能：体脂分析。\n三、系统响应与准确性\n响应时间较长的功能：体脂分析（0.67） f\n响应时间适中的功能：血压监测（0.62）\n响应时间较短的功能：血糖监测（0.6）", "answer": "（2）优化方向及解决方案（仅需回答3n个优化方向和对应解决方案）\n1. 优化方向：优化血压监测算法：\n解决方案：开发一个智能算法，该算法能够识别血压模式并在血压可能升高的时间段自动调整\n监测频率。\n2. 优化方向：改进血糖监测功能：\n解决方案：集成更精确的血糖传感器，并开发一个应用程序，该程序能够根据用户的血糖数据\n提供实时反馈和建议。\n3. 优化方向：a增强体脂分析功能：\n解决方案：优化体脂分析算法，减少响应时间（当前为 0.67秒），并提供更详细的体脂报告。\n4. 优化方向：提升系统响应速度：\n解决方案：升级硬件组件，如使用更快的处理器，优化数据处理算法，减少延迟。\n5. 优化方向：增加用户参与度：\n解决方案：开发一个用户参与计划，通过应用程序提供健康目标设定、进度跟踪和奖励。\n6. 优化方向：数据安全和隐私保护：\n解决方案：实施更强的数据加密技术，确保所有传输和存储的数据都符合最新的隐私保护标准。\n7. 优化方向：集成人工智能：\n解决方案：开发基于机器学习的分析工具，这些工具能够从用户的健康数据中学习并提供个性\n化的健康建议。\n8. 优化方向：提升用户界面和体验：\n解决方案：重新设计应用程序的用户界面，确保信息清晰、易于访问，并提供更好的用户体验。\n\n---"}, {"code": "3.1.5", "title": "智能家居环境控制系统的数据分析与优化", "kind": "analysis", "content": "3.1.5 智能家居环境控制系统的数据分析与优化\n（1）分析报告\n一、用户环境偏好\n温度偏好：\n上午（6:00-12:00）时间段：平均温度为24.71818342或在24.7左右\n下午（13:00-18:00）时间段：平均温度为24.92491993或在24.9左右\n晚上（19:00-05:00）时间段：平均温度为25.02322393或在25.0左右\n湿度偏好：\n上午（6:00-12:00）时间段：平均湿度为50.17551441或在50.2左右\n下午（13:00-18:00）时间段：平均湿度为49.08463089或在49.1左右\n晚上（19:00-05:00）时间段：平均湿度为49.91843944或在49.9左右\n光照水平偏好：\n上午（6:00-12:00）时间段：平均光照水平为540.939268或在540.9左右\n下午（13:00-18:00）时间段：平均光照水平为557.7976734或在557.8左右\n晚上（19:00-05:00）时间段：平均光照水平为54f2.748874或在542.7 左右\n二、系统响应时间\n平均响应时间：3.02\n影响因素：系统架构、网络连接、硬件性能、软件优化、数据量、用户界面、系统负载、外\n部干扰等\n三、能源消耗分析\n平均能源消耗：1.02\n节能潜力：智能调度、温控系统优化、设备智能控制、用户行为习惯、系统性能优化、能源\n消耗预警与提示等", "answer": "（2）优化方向及解决方案（仅需回答3 个优化方向和对应解决方案）\n优化方向1. 智能调度与温控系统优化：\n解决方案：开发一个智能温控系统，该系统能够学习用户的习惯并预测他们的需求，自动调整\n室内环境以保持最佳舒适度和节能效果。\n优化方向2. 设备智能控制：\n解决方案：集成智能传感器和控制系统，使设备能够根据环境变化和用户行为自动调节运行状\n态。\n优化方向3. 用户行为习惯：\n解决方案：开发一个用户行为分析工具，该工具能够识别用户的能源使用习惯，并提供定制化\n的节能方案。\n优化方向4. 系统性能优化：\n解决方案：改进系统架构和网络连接，减少数据处理和命令执行的延迟，确保快速响应用户的\n操作。\n优化方向5. 能源消耗预警与提示：\n解决方案：实现一个能源管理平台，该平台能够实时监控能源消耗并提供反馈，帮助用户做出\n\n---\n\n节能决策。\n优化方向6. 增强用户界面：\n解决方案：设计一个友好的用户界面，集成语音控制和触摸屏操作，提供清晰的环境状态显示\n和控制选项。\n优化方向7. 集成可再生能源：\n解决方案：与能源公司合作，为用户提供太阳能解决方案，优化能源结构。\n优化方向8. 智能家电系统的能耗分析：\n解决方案：开发能耗分析工具，帮助用户了解家电的能源效率，并提供节能建议。\nn\nr\nn\ne\na\n\n---\n\n3.2.1.html\nIn [1]: import onnxruntime as ort\nimport numpy as np\nimport scipy.special\nfrom PIL import Image\n# 预处理图像\ndef preprocess_image(image, resize_size=256, crop_size=224, mean=[0.485, 0.456,\nimage = image.resize((resize_size, resize_size), Image.BILINEAR)\nw, h = image.size\nleft = (w - crop_size) / 2\ntop = (h - crop_size) / 2\nimage = image.crop((left, top, left + crop_size, top + crop_size))\nimage = np.array(image).astype(np.float32)\nimage = image / 255.0\nimage = (image - mean) / std\nimage = np.transpose(image, (2, 0, 1))\nimage = image.reshape((1,) + image.shape)\nreturn image\n# 模型加载 2分\nsession = ort.InferenceSession('resnet.onnx')\n# 加载类别标签\nlabels_path = 'labels.txt'\nwith open(labels_path) as f:\nlabels = [line.strip() for line in f.readlines()]\n# 获取模型输入和输出的名称\ninput_name = session.get_inputs()[0].name\noutput_name = session.get_outputs()[0].name\na\n# 加载图片 2分\nmimage = Image.open('img_test.jpg').convert('RGB')\n# 预处理图片 2分\nprocessed_image = preprocess_image(image)\n# 确保输入数据是 float32 类型\nprocessed_image = processed_image.astype(np.float32)\n# 进行图片识别 2分\noutput = session.run([output_name], {input_name: processed_image})[0]\n# 应用 softmax 函数获取概率 2分\nprobabilities = scipy.special.softmax(output, axis=-1)\n# 获取最高的5个概率和对应的类别索引 3分\ntop5_idx = np.argsort(probabilities[0])[-5:][::-1]\n\n---\n\n3.2.1完整代码+运行结果\ntop5_prob = probabilities[0][top5_idx]\n# 打印结果\nprint(\"Top 5 predicted classes:\")\nfor i in range(5):\nprint(f\"{i+1}: {labels[top5_idx[i]]} - Probability: {top5_prob[i]}\")\nTop 5 predicted classes:\n1: tusker - Probability: 0.9328869581222534\n2: Indian elephant - Probability: 0.06619396805763245\n3.2.1-1.jpg\n3: African elephant - Probability: 0.0009152606944553554\n4: gorilla - Probability: 4.810995619664027e-07\n5: water buffalo - Probability: 3.850165910534997e-07\nIn [ ]:\nn\nr\nn\ne\na\n\n---"}, {"code": "4.1.1", "title": "数据标注基础理论", "kind": "theory", "content": "4.1.1\n在下划线上填写答案。\n根据学习大纲补充学习目标\n引言\n内容：\n介绍人工智能在康复训练中的应用，数据标注在个性化康复训练计划中的作用。\n数据标注基础理论\n内容：\n什么是数据标注？\n数据标注的类型：文本、图像、视频、音频。\n数据标注在人工智能中的作用和重要性。 f\nLabel Studio 简介与安装\n内容：\nLabel Studio简介及应用场景。\n安装与配置Label Studio。\nLabel Studio界面介绍和基本操作。\n文本数据标注\n内容：\n文本标注类型：命名实体识别、情感分析等。\nLabmel Studio文本标注功能演示。\n实践操作：标注一个文本数据集。\n图像数据标注\n内容：\n图像标注类型：图像分类、目标检测、图像分割等。\nLabel Studio图像标注功能演示。\n实践操作：标注一个图像数据集。\n视频数据标注\n内容：\n视频标注类型：动作识别、事件检测等。\nLabel Studio视频标注功能演示。\n\n---\n4.1.1\n实践操作：标注一个视频数据集。\n音频数据标注\n内容：\n音频标注类型：语音识别、情感分析等。\nLabel Studio音频标注功能演示。\n实践操作：标注一个音频数据集。\n综合项目实践\n内容：\n项目介绍：为康复训练项目进行多模态数据标注（包括文本、图像、视频、音频）。\n数据标注：学员分组进行实际数据标注任务。\n项目评审：展示标注成果，讲解标注思路和遇到的问题。\n总结与答疑\n内容：培训内容总结，关键点回顾，学 员提问与解答。\n评估测试\n内容：\n理论测试：关于数据标 注基本概念和Label Studio使用的笔试。\n实操测试：要求学员完成指定的数据标注任务。\nd\nm\n\n---", "answer": "学习目标：了解数据标注的重要性和应用场景。\n学习目标：掌握数据标注的基本概念和类型。\n学习目标：了解Label Studio工具的基本功能和安装方法。\n学习目标：掌握文本数据标注的方法和技巧。\n学习目标：掌握图像数据标注的方法和技巧。\n学习目标：掌握视频数据标注的方法和技巧。\n学习目标：掌握音频数据标注的方法和技巧。\n学习目标：综合运用所学知识进行数据标注项目。 k\n学习目标：巩固所学内容，解决学员疑问。\n学习目标：评估学员掌握的数据标注技能。"}, {"code": "4.1.2", "title": "网页爬虫基础理论", "kind": "theory", "content": "4.1.2\n在下划线上填写答案。\n根据学习大纲补充学习目标\n引言\n内容：\n介绍人工智能在金融数据采集中的应用，网页爬虫在获取上市公司财务报告中的作用。\n网页爬虫基础理论\n内容：\n什么是网页爬虫？\n网页爬虫的工作流程和基本结构。\n机器人协议（robots.txt）的作用和遵守方法。f\n常用网页爬虫工具简介\n具的功能和特点。\n内容：\nBeautifulSoup：用于解析HTML和XML文档。\nScrapy：一个快速、高效的网页爬虫框架。\nSelenium：用于模拟浏览器操作，处理动态网页。\n环境搭建与工具安装\n内容：\n安装Python和pip包管理工具。\n安装并配置BeautifulSoup、Scrapy、Selenium。\n网页数据解析\n内容：\n使用BeautifulSoup进行HTML解析。\n使用XPath和CSS选择器提取数据。\n实践操作：解析一个简单的网页数据。\n动态网页处理\n内容：\n使用Selenium模拟浏览器操作。\n处理动态加载的数据，如Ajax请求。\n实践操作：爬取一个动态加载的网页数据。\n\n---\n4.1.2\nScrapy 框架实战\n内容：\nScrapy项目的创建和基本配置。\n编写爬虫脚本，设置抓取规则。\n数据存储与导出：将数据保存为CSV、JSON等格式。\n实践操作：构建一个Scrapy爬虫项目，获取上市公司财务报告。\n数据清洗与处理\n内容：\n数据去重、缺失值处理。\n数据格式转换与规范化。 a\n实践操作：对获取的财务报告数据进行清洗和处理。\n综合项目实践\n内容：\n项目介绍：构建一个完整的财务报告爬虫项目。\n数据采集：获取多个网站的财务报告数据。\n数据处理与分析：清洗并分析获取的数据。\n项目评审：展示爬虫成果，讲解实现思路和遇到的问题。\n总结与答疑\n内容：培训内容总结，关键点回顾，学员提问与解答。\n评估测试\n内容：\n理论测试：关于网页爬虫基本概念和工具使用的笔试。\n实操测试：要求学员完成指定的网页爬虫任务。\n\n---", "answer": "学习目标：了解网页爬虫的重要性和应用场景。\n学习目标： 掌握网页爬虫的基本概念和工作原理。\n学习目标： 了解常用网页爬虫工\n学习目标：掌握网页爬虫工具的安装和环境配置。\n学习目标： 掌握网页数据解析的方法和技巧。\n学习目标：掌握处理动态网页的方法。\n学习目标： 掌握使用Scrapy框架进行大规模数据采集。\n学习目标： 掌握爬取数据的清洗和处理方法。 k\n学习目标：综合运用所学知识进行网页爬虫项目。\n学习目标：巩固所学内容，解决学员疑问。\n学习目标：评估学员掌握的网页爬虫技能。"}, {"code": "4.1.3", "title": "数据清洗基础理论", "kind": "theory", "content": "4.1.3\n在下划线上填写答案。\n根据学习大纲补充学习目标\n引言\n内容：\n介绍人工智能在康复训练中的应用，数据清洗在处理康复数据中的作用。\n数据清洗基础理论\n内容：\n什么是数据清洗？\n数据清洗的常见任务：数据去重、缺失值处理、数据格式转换等。\n数据清洗在数据分析和模型训练中的重要性。\n常用数据清洗工具简介\n内容：\nPandas：强大的数据处理与分析工具。n\nNumPy：高性能科学计算和数据处理库。\nOpenRefine：用于数据清洗的开源工具。\nDask：用于处理大规模数据的并行计算库。\n环境搭建与工具安装\n内容：\n安装Python和pip包管理工具。\n安装并配置Pandas、NumPy、OpenRefine、Dask。\nPanmdas 实战\n内容：\n数据导入与导出：读取和保存CSV、Excel等格式的数据。\n数据筛选与过滤：条件筛选、去重、缺失值处理。\n数据转换：数据类型转换、时间序列处理。\n实践操作：使用Pandas清洗一个康复数据集。\nNumPy 实战\n内容：\n项目介绍：清洗一个多来源、多格式的康复数据集。\n数据采集：导入多种格式的数据。\n数据清洗：使用Pandas、NumPy、OpenRefine、Dask进行清洗。\n项目评审：展示清洗成果，讲解实现思路和遇到的问题。\n\n---", "answer": "学习目标： 了解数据清洗的重要性和应用场景。\n学习目标： 掌握数据清洗的基本概念和流程。 n\n学习目标： 了解常用数据清洗工具的功能和特点。\n学习目标： 掌握数据清洗工具的安装和环境配置。\n学习目标： 掌握Pandas在数据清洗中的应用。\n学习目标：综合运用所学知识进行数据清洗项目。"}, {"code": "4.1.4", "title": "数据清洗基础理论", "kind": "theory", "content": "4.1.4\n在下划线上填写答案。\n根据学习大纲补充学习目标\n数据清洗基础理论\n内容：\n什么是数据清洗？\n数据清洗的常见任务：数据去重、缺失值处理、数据格式转换等。\n数据清洗在数据分析和模型训练中的重要性。 n\nPandas 简介与安装\n内容：\n读取CSV、Excel、SQL等格式的数据。 f\n保存数据到CSV、Excel等格式。\n实践操作：导入和导出康复数据集。\n数据筛选与过滤\n内容：\n条件筛选：基于单列或多列的条件筛选数据。\n数据去重：去除重复记录。\n缺失值处理：识别、删除和填充缺失值。\n实践操作：筛选和过滤康复数据。\n数据转换\n内容：\n数据类型转换：转换数据类型（如字符串到日期）。\n时间序列处理：处理和分析时间序列数据。\n数据分列和合并：分割和合并数据列。\n实践操作：转换和处理康复数据。\n数据合并与重塑\n内容：\n数据合并：concat和merge方法。\n数据重塑：pivot和melt方法。\n实践操作：合并和重塑康复数据。\n数据分组与聚合\n\n---\n4.1.4\n内容：\n数据分组：groupby方法。\n聚合函数：sum、mean、count等。\n实践操作：分组和聚合康复数据。\n数据可视化\n内容：\n项目介绍：清洗一个多来源的康复数据集。\n数据采集：导入多种格式的数据。 k\n数据清洗：使用Pandas进行数据清洗和转换。\n项目评审：展示清洗成果，讲解实现思路和遇到的问题。\nr\nn\ne\na\n\n---", "answer": "学习目标：掌握数据清洗的基本概念和流程。\n学习目标： 掌握使用Pandas进行数据导入与导出的方法。\n学习目标： 掌握使用Pandasi进行数据筛选与过滤的方法。\n学习目标： 掌握使用Pandas进行数据转换的方法。\n学习目标： 掌握使用Pandas进行数据合并与重塑的方法。\n学习目标： 掌握使用Pandas进行数据分组与聚合的方法。\n学习目标：综合运用所学知识进行数据清洗项目。"}, {"code": "4.1.5", "title": "数据可视化基础理论", "kind": "theory", "content": "4.1.5\n在下划线上填写答案。\n根据学习大纲补充学习目标\n数据可视化基础理论\n内容：\n什么是数据可视化？\n数据可视化的目的和优势。\n常见的数据可视化类型：条形图、折线图、散点图、饼图等。 n\nMatplotlib 简介与安装\n内容：\nMatplotlib简介及其应用场景。 f\n安装与配置Matplotlib库。\nMatplotlib基本构架与常用组件。\nMatplotlib 基本绘图\n内容：\n创建简单图表：折线图、条形图、饼图。\n图表定制：标题、轴标签、图例、颜色等。\n实践操作：使用Matplotlib绘制康复数据的基本图表。\nPlotly 简介与安装\n内容m：\nPlotly简介及其应用场景。\n安装与配置Plotly库。\nPlotly与Jupyter Notebook的结合使用。\nPlotly 交互式绘图\n内容：\n创建交互式图表：折线图、散点图、饼图、地理图表。\n图表交互功能：缩放、平移、悬停显示。\n实践操作：使用Plotly绘制交互式康复数据图表。\n数据可视化项目实战\n内容：\n\n---\n4.1.5\n项目介绍：对康复数据进行可视化分析。\n数据采集与预处理：导入并清洗康复数据。\n数据可视化：使用Matplotlib、Seaborn、Plotly进行可视化分析。\n项目评审：展示可视化成果，讲解实现思路和遇到的问题。\n总结与答疑\n内容：培训内容总结，关键点回顾，学员提问与解答。\n评估测试\n内容：\n理论测试：关于数据可视化基本概念和工具使用的笔试。\n实操测试：要求学员完成指定的数据可视化任务。 a\nf\ni\nd\nm\n\n---", "answer": "学习目标： 掌握数据可视化的基本概念和原则。\n学习目标： 了解Matplotlib库的基本功能和安装方法。\n学习目标： 掌握Matplotlibi基本绘图方法。\n学习目标： 了解Plotly库的基本功能和安装方法。\n学习目标： 掌握Plotly交互式绘图方法。\n学习目标：综合运用所学知识进行数据可视化项目。\n学习目标：巩固所学内容，解决学员疑问。\n学习目标：评估学员掌握的数据可视化技能。 k"}, {"code": "4.2.1", "title": "智能零售分析系统数据采集和处理指导方案", "kind": "theory", "content": "【题目】智能零售分析系统数据采集和处理指导方案：请写出对应的方案要点（数据源 / 采集方法 / 预处理 / 安全合规 / 存储管理 / 分析应用）。", "answer": "1. 数据源确定\n 销售点（POS）数据：从收银系统获取交易记录，包括商品种类、数量、价格和购\n买时间。\n 顾客信息：会员卡使用数据，包括 会员基本信息、消费记录和积分兑换 。\n 库存管理系统：实时库存量、入库和出库记录。\n 顾客反馈：在线评价、投诉和建议。\n 外部数据：天气预报、节假日信息、竞争对手价格数据。n\n2. 数据采集方法\n API接口：与内部系统（如POS、CRM）和外部数据提供商建立API连接，自动化数\n据抓取。\n 传感器和物联网设备：在货架上安装RFID标签和重量传感器，监测商品存量。\n 社交媒体监听：通过社交媒体API 监听品牌相关的公众讨论和评价。\n 顾客调查：定期发送电子问卷 n ，收集顾客反馈。\n3. 数据预处理\n 清洗： 去除重复、错误或无关的数据项 。\n 标准化： 统一数据格式，例如日期和时间的表示方式 。\n 整合：将来自不同来源的数据合并到单一数据库中，创建关联字段。\n4. 数据安全与合规\n a加密传输：确保数据在传输过程中的安全。\n 访问控制：限制对敏感数据的访问权限，只允许授权人员查看。\n 匿名化处理：对个人信息进行去标识化，遵守GDPR等数据保护法规。\n5. 数据存储与管理\n 云存储：选择可靠的云服务商，如AWS或Azure，存储海量数据。\n 备份与恢复：定期备份数据，并测试恢复流程，以防数据丢失。\n6. 数据分析与应用\n 建模： 使用机器学习算法预测销售趋势、顾客偏好和库存需求 。\n 可视化：开发仪表板展示关键指标，帮助管理层做出决策。\n 报告：定期生成销售、库存和顾客满意度报告，提供业务洞察。\n 通过上述方案，智能零售分析系统能够有效地采集、处理和分析大量数据，为企业\n提供决策支持，最终达到 提升业务效率和顾客满意度 的目标。\n\n---"}, {"code": "4.2.2", "title": "AI辅助的医疗影像诊断系统数据采集和处理指导方案", "kind": "theory", "content": "【题目】AI辅助的医疗影像诊断系统数据采集和处理指导方案：请写出对应的方案要点（数据源 / 采集方法 / 预处理 / 安全合规 / 存储管理 / 分析应用）。", "answer": "1. 数据采集方案\n 医学影像获取：确保影像质量，使用高分辨率的医疗设备获取清晰的影像资料，涵\n盖多种疾病类型和人群。\n 患者信息收集：在符合HIPAA等隐私保护法规的前提下，收集患者的病史、年龄、\n性别等基本信息，以及相关的实验室检查结果。\n 专家标注数据 ：邀请经验丰富的医生对影像进行标注，标记病灶位置、类型、\n大小等关键信息，作为训练AI模型的标注数据集。 n\n 数据脱敏处理：对收集的患者信息进行脱敏处理，确保患者隐私安全。\n2. 数据处理方案\n 数据清洗与预处理： 剔除低质量影像，如模糊不清或曝光不当的图片，进行图像\n增强，如亮度调整、锐化处理，以提高图像质量 。\n 模型训练与验证： 使用深度学习框 架，如Tensorflow或PyTorch，构建卷积神经\n网络（CNN）模型，利用标注数据集进行训练，通过交叉验证确保模型的泛化能力 。\n 模型测试与优化： 在独立的测试数据集上评估模型性能，如准确率、召回率、F1\n分数等，根据结果调整模型参数，直至达到满意的诊断准确率 。\n 系统集成与部署：将训练好的模型集成到医疗影像诊断系统中，部署在医院的服务\n器上，确保医生可以随时调用AI分析结果。\n3. 数据安全与隐私保护\n 所有数据传输和存储过程都需加密，防止数据泄露。\n 遵守HIPAA等隐私法规，确保患者信息不被非法访问或滥用。\n 使用数据脱敏技术，如差分隐私，保护患者身份不被识别。\n4. 系统优化与升级\n 定期收集医生和患者的反馈，评估系统性能，根据实际需求调整AI模型。\n 不断更新训练数据集，加入新的疾病类型或变异特征，提高 模型的诊断范围和准\n确性 。\n 跟踪AI技术的最新进展，适时引入更先进的算法，提升系统性能。\n\n---"}, {"code": "4.2.3", "title": "AI 智能安防监控系统采集和处理指导方案", "kind": "theory", "content": "【题目】AI 智能安防监控系统采集和处理指导方案：请写出对应的方案要点（数据源 / 采集方法 / 预处理 / 安全合规 / 存储管理 / 分析应用）。", "answer": "1. 数据采集方法\n 高清视频流采集：部署高清摄像头，确保视频画面清晰，便于AI算法识别细节。\n 多角度覆盖：合理布置摄像头，确保 关键区域 无死角，覆盖所有入口、出口和\n敏感区域。\n 夜间与低光环境适应：使用带有红外夜视功能的摄像头，保证夜间或低光条件下仍\n能捕捉到清晰图像。\n 数据传输与存储：采用稳定的数据传输网络，确保视频流的实时传输，同时建立安\n全的 数据存储系统 ，保存原始视频和分析结果。\n2. 数据处理方案\n 视频流预处理： 对视频流进行实时压缩和格式转换，减少带宽消耗，同时进行\n初步的图像增强，如亮度调整、色彩校正 。\n 行为分析与异常检测： 利用深度 学习模型，进行目标检测和行为识别，标记出异\n常行为 。\n 隐私保护算法：在不影响异常行为识别的前提下，对视频中无关个体进行模糊处理，\n保护个人隐私。\n 数据融合与决策支持：结合多个摄像头的数据，进行空间和时间上的数据融合，构\n建更全面的场景理解，为安全决策提供依据。\n3. 系统优化与安全措施\n 算法优化：持续训练和优化AI模型，提升 识别精度和响应速度 。\n 隐私合规：确保系统设计和运营遵守GDPR、CCPA等数据保护法规，定期进行隐私\n影响评估。\n 安全防护：实施数据加密、访问控制和防火墙等安全措施，防止数据泄露和系统被\n攻击。\n\n---"}, {"code": "4.2.4", "title": "自动驾驶汽车感知系统数据采集与标注指导方案", "kind": "theory", "content": "【题目】自动驾驶汽车感知系统数据采集与标注指导方案：请写出对应的方案要点（数据源 / 采集方法 / 预处理 / 安全合规 / 存储管理 / 分析应用）。", "answer": "1. 数据采集方案\n 多传感器融合： 使用摄像头、雷达、激光雷达等多模态传感器，确保数据的全面\n性和准确性 。\n 场景覆盖： 在不同的天气条件、时间段、道路类型下采集数据，以增强模型的鲁\n棒性和泛化能力 。\n 事件触发采集：在特定事件发生时（如紧急刹车、避让行动），自动触发额外数据\n采集，以捕获关键时刻。 n\n 数据质量控制： 实施数据清洗流程，移除重复、低质量或不符合标准的样本，确\n保数据集的质量 。\n 数据加密与传输：采用安全的数据传输协议，确保数据在传输过程中的安全性。\n2. 数据标注方案\n 定义标注标准：明确标注类别、边 界框精度要求、遮挡处理规则等。\n 选择标注工具：使用专业的数 n 据标注软件，支持2D框、3D框、语义分割等标注类\n型。\n 培训标注团队 ：对标注员进行专业培训，确保他们理解标注标准，熟悉工具使用。\n 执行标注任务：分配数据给标注团队，设定清晰的任务指标和截止日期。\n 质量控制与复查：实施多级检查，包括自动检查和人工复查，确保标注的准确性和\n一致性d。\n 数据整合与存储：将标注后的数据整合，形成 结构化的 数据集，存储在安全的\n数据仓库中，供模型训练使用。\n\n---"}, {"code": "4.2.5", "title": "数据标注工具与方法", "kind": "theory", "content": "【题目】4.2.5：请写出对应的方案要点（数据源 / 采集方法 / 预处理 / 安全合规 / 存储管理 / 分析应用）。", "answer": "智能化数据标注在文化遗产数字化保护中的应用指导方案\n1. 数据标注工具与方法\n 图像标注：\n 使用 Labelbox、VGG Image Annotator（VIA）或LabelImg 等标注工具，\n为文化遗产图像添加边界框、多边形、点、线段等标注。\n 对于复杂的文物细节，可以使用语义分割或实例分割技术，精细到每个物体的每一部分。\n 三维模型标注：\n 采用MeshLab或Blender等软件，对3D模型进行顶点、面、体素级别的标注。\n 实现对模型内部结构和外部特征的全面标注。\n 属性标签：\n 文物的材料、风格、时代、作者、位置等元数据，使用CSV、JSON等格式记录，\n并关联至相应的图像或模型。\n 可以使用数据库管理系统（如 MySQL、MongoDB）来存储和管理这些信息。\n2. 智能化辅助标注\n 深度学习模型：训练 基于卷积神经网络 的模型，如MaskR-CNN、U-Net等，用\n于自动识别和标记文物的特定特征。\n 模型训练数据集：构建一个包含大量已标注文化遗产图像的数据集，用于模型训练和验证。\n 模型迭代与优化：定期更新模型，引入新发现的文物类型和特征，提升识别精度。\n3. 跨学科团队协作\n 组建由考古学家、艺术史家、计算机视觉专家、AI工程师组成的 跨学科\n团队，共同制定标注标准和工作流程。\n 定期举行会议，讨论标注过程中的问题，调整标注策略。\n4. 数据安全与隐私保护\n 使用 加密技术 存储和传输数据，确保文化遗产信息不被非法获取。\n 遵守相关法律法规，特别是涉及文化遗产的所有权和使用权的规定。\n5. 用户体验与公众教育\n 开发Web应用或移动应用程序，允许用户在线浏览、搜索和学习文化遗产的数字化资料。\n 利用 AR/VR 技术，为用户提供沉浸式文化遗产体验，增加教育和娱乐价值。\n6. 技术融合与未来展望\n 探索区块链技术的应用，为文化遗产的数字档案提供不可篡改的记录，增强其权威性和可信度。\n 结合AI和物联网技术，监测和预警文化遗产的物理状态变化，及时采取保护措施。"}];
+const STORE_KEY = 'ai3_master_v1';
+
+let mode = 'tips';
+let examLevel = 1;   // 小测验难度：1 只函数 / 2 函数+变量 / 3 函数+变量+符号
+let mockIdx = 0;
+// 用户作答暂存：切 tab / 刷新页面都不丢。key = "mode:mockIdx:slot"
+let userAnswers = {};
+try { userAnswers = JSON.parse(localStorage.getItem('aiTrainerUserAnswers') || '{}') || {}; } catch(e){ userAnswers = {}; }
+function slotKey(slot){ return mode + ':' + slot; }
+let _persistTimer=null;
+function persistAnswers(){
+  if(_persistTimer) clearTimeout(_persistTimer);
+  // 防抖：每次敲键只更新内存 map（保证切回回填最新），落盘延迟 250ms，避免高频写 localStorage
+  _persistTimer=setTimeout(()=>{ try{ localStorage.setItem('aiTrainerUserAnswers', JSON.stringify(userAnswers)); }catch(_){} }, 250);
+}
+// 任何带 data-slot 的元素（含默写 textarea）都实时暂存；空值则清除该记录
+function saveBlank(inp){
+  if(inp && inp.dataset && inp.dataset.slot!==undefined){
+    const k = slotKey(inp.dataset.slot);
+    if(inp.value==='') delete userAnswers[k];
+    else userAnswers[k] = inp.value;
+    persistAnswers();
+  }
+}
+function clearBlank(slot){ delete userAnswers[slotKey(slot)]; persistAnswers(); }
+let master = new Set(JSON.parse(localStorage.getItem(STORE_KEY) || '[]'));
+// v2：错题(系统判错自动收集) 与 手动重点星标，分别独立存储，互不影响
+let wrongSet = new Set(JSON.parse(localStorage.getItem('ai3_wrong_v2') || '[]'));
+let starSet  = new Set(JSON.parse(localStorage.getItem('ai3_star_v2') || '[]'));
+function saveWrong(){ try{ localStorage.setItem('ai3_wrong_v2', JSON.stringify([...wrongSet])); }catch(_){} }
+function saveStar(){ try{ localStorage.setItem('ai3_star_v2', JSON.stringify([...starSet])); }catch(_){} }
+// 某题被判错 → 记入错题集（用于「考点提示」面板冲刺筛选）。code 为 QUESTIONS 题号
+function markWrong(code){ if(code){ wrongSet.add(code); saveWrong(); } }
+// 某题被判对 → 从错题集移除（做对即不再算“还不会”）；手动移除也走这里
+function unmarkWrong(code){ if(code && wrongSet.has(code)){ wrongSet.delete(code); saveWrong(); } }
+// 清空整个错题集（带确认，避免误清空）
+function clearWrong(){ if(wrongSet.size && confirm('确定清空错题集？做错的题会全部移除（之后做错会重新收集）。')){ wrongSet.clear(); saveWrong(); } renderTips(); }
+
+const $ = s => document.querySelector(s);
+const main = $('#main');
+
+function saveMaster(){ localStorage.setItem(STORE_KEY, JSON.stringify([...master])); updateProgress(); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// Python 感知的空格归一化：去掉「字符串字面量(含三引号)」和「# 注释」以外的所有空白，
+// 使 df['a'] 与 df [ 'a' ]、x = 1 与 x=1、>= 与 > = 都判定相等，但字符串内容保持不变。
+// 字符串内部归一：折叠连续空白为单空格、统一弯引号（“ ” → " 与 ‘ ’ → '），
+// 使 '○男性   ○女性' 与 '○男性 ○女性'、'您觉得"低碳"' 与 '您觉得"低碳"' 判定相等。
+function normStr(t){
+  return t.replace(/[ \t\n\r ]+/g,' ').trim()
+          .replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)) // 全角标点/符号→半角
+          .replace(/　/g, ' ')                                                            // 全角空格→半角
+          .replace(/[“”]/g,'"').replace(/[‘’]/g,"'");                                   // 弯引号统一
+}
+function pyNorm(s){
+  if(s==null) return '';
+  s=String(s); let out='', i=0, n=s.length;
+  while(i<n){
+    const c=s[i];
+    if(c==='"'||c==="'"||c==='`'){
+      const triple = (s[i+1]===c && s[i+2]===c);
+      const q=c; i++;
+      if(triple){ i+=2; }
+      let buf='';
+      while(i<n){
+        const d=s[i];
+        if(d==='\\'){ buf+=d+(s[i+1]||''); i+=2; continue; }
+        buf+=d;
+        if(d===q){
+          if(triple && s[i+1]===q && s[i+2]===q){ buf+=q+q; i+=3; break; }
+          if(!triple){ i++; break; }
+        }
+        i++;
+      }
+      out += triple ? (q+q+q + normStr(buf) + q+q+q) : (q + normStr(buf) + q);
+    } else if(c==='#'){
+      while(i<n && s[i]!=='\n') i++;   // 注释内的空白无关紧要
+    } else if(c===' '||c==='\t'||c==='\n'||c==='\r'||c==='\f'||c==='\v'){
+      i++;
+    } else { out+=c; i++; }
+  }
+  return out;
+}
+function pyEq(a,b){ return pyNorm(a)===pyNorm(b); }
+// 判分容错：挖空模板已在外部提供右括号（如 print(▢)），用户多写/少写一个 ")" 也判对
+function pyEqFlex(a,b){
+  a=String(a==null?'':a); b=String(b==null?'':b);
+  if(pyEq(a,b)) return true;
+  const sa=a.replace(/\)+$/,''), sb=b.replace(/\)+$/,'');
+  return pyEq(sa,sb);
+}
+
+function updateProgress(){
+  const total = CARDS.length;
+  // 只统计学习卡（id 以 'c' 开头），理论题（'t' 开头）单独记录、不计入学习进度
+  let cnt=0; master.forEach(id=>{ if(typeof id==='string' && id[0]==='c') cnt++; });
+  $('#progBar').style.width = (total? cnt/total*100 : 0) + '%';
+  $('#progCount').textContent = `已掌握 ${cnt} / ${total}`;
+}
+
+function buildCatFilter(){
+  const cats = [...new Set(CARDS.map(c=>c.cat))];
+  const sel = $('#catFilter');
+  cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+}
+
+const BLANK_TOKENS = ['read_csv','read_excel','to_csv','dropna','drop_duplicates','drop','isnull','isna','sum',
+  'head','info','astype','to_numeric','fillna','between','value_counts','groupby','agg','cut','get_dummies',
+  'fit_transform','where','train_test_split','LogisticRegression','LinearRegression','RandomForestRegressor',
+  'RandomForestClassifier','DecisionTreeRegressor','fit','predict','mean_squared_error','r2_score','mean','score',
+  'argmax','InferenceSession','Image','open','convert','run','StandardScaler','Pipeline','pickle','dump','joblib',
+  'concat','quantile','duplicated','rename','resample','expand_dims','array','argsort','softmax','makedirs','imread','resize'];
+const BLANK_RE = new RegExp('\\b('+BLANK_TOKENS.join('|')+')\\b','g');
+function blankify(code, withHint, level){
+  const hintBtn = withHint ? '<button class="ln-hint-btn" onclick="toggleLnHint(this)">💡</button>' : '';
+  // 挖空自测：保持原行为——只挖函数名、不加按钮、不挖符号
+  if(!withHint){
+    return esc(code).replace(BLANK_RE, m=>`<input class="blank" style="width:${Math.max(m.length,3)}ch" aria-label="填空" data-ans="${m}">`);
+  }
+  // 小测验分难度：① 只函数 ② 函数+变量 ③ 函数+变量+符号
+  // 在原始代码上定位候选区间（避免 < > & 被 HTML 转义后难以匹配）
+  level = level || 1;
+  let m;
+  // —— 函数/方法名（所有难度都挖）——
+  const fns=[];
+  const fnRe=new RegExp(BLANK_RE.source,'g');
+  while((m=fnRe.exec(code))) fns.push({s:m.index,e:m.index+m[0].length,ans:m[0]});
+  // —— 变量（level≥2）：列名 ['列名'] + 行首赋值变量名，每行最多 2 个 ——
+  let vars=[];
+  if(level>=2){
+    const colRe=/\[(['"])([A-Za-z_]\w*)\1\]/g;            // data['列名'] → 挖列名（保留引号括号）
+    while((m=colRe.exec(code))) vars.push({s:m.index+2,e:m.index+2+m[2].length,ans:m[2]});
+    const am=/^(\s*)([A-Za-z_]\w*)\s*=(?!=)/.exec(code);  // 行首赋值变量（逐行调用，故行首即赋值目标）
+    if(am) vars.push({s:am[1].length,e:am[1].length+am[2].length,ans:am[2]});
+    vars=vars.filter(v=>!fns.some(f=>v.s<f.e&&v.e>f.s)).sort((a,b)=>a.s-b.s);
+    const vp=[];
+    for(const v of vars){ if(vp.length>=2)break; if(vp.some(p=>v.s<p.e&&v.e>p.s))continue; vp.push(v); }
+    vars=vp;
+  }
+  // —— 符号（level≥3）：参数名/比较逻辑/括号/引号，按优先级每行最多 2 个 ——
+  let syms=[];
+  if(level>=3){
+    const cand=[];
+    const kwRe=/\b([A-Za-z_]\w*)=(?!=)/g;                 // 关键参数名 name=（挖参数名保留=）pri1
+    while((m=kwRe.exec(code))) cand.push({s:m.index,e:m.index+m[1].length,ans:m[1],pri:1});
+    const cmpRe=/==|<=|>=|!=|<|>|&|\|/g;                  // 比较/逻辑符 pri2
+    while((m=cmpRe.exec(code))) cand.push({s:m.index,e:m.index+m[0].length,ans:m[0],pri:2});
+    const parRe=/[()]/g;                                  // 括号 pri3
+    while((m=parRe.exec(code))) cand.push({s:m.index,e:m.index+1,ans:m[0],pri:3});
+    const qRe=/'/g;                                       // 单引号 pri4
+    while((m=qRe.exec(code))) cand.push({s:m.index,e:m.index+1,ans:"'",pri:4});
+    const used=fns.concat(vars);
+    const others=cand.filter(o=>!used.some(u=>o.s<u.e&&o.e>u.s)).sort((a,b)=>a.pri-b.pri||a.s-b.s);
+    for(const o of others){ if(syms.length>=2)break; if(syms.some(p=>o.s<p.e&&o.e>p.s))continue; syms.push(o); }
+  }
+  // 汇总所有挖空区间，按位置排序，逐区间生成
+  const chosen=fns.concat(vars,syms).sort((a,b)=>a.s-b.s);
+  let out='',idx=0;
+  for(const c of chosen){
+    out+=esc(code.slice(idx,c.s));
+    out+=`<input class="blank" style="width:${Math.max(c.ans.length,3)}ch" aria-label="填空" data-ans="${escAttr(c.ans)}">${hintBtn}`;
+    idx=c.e;
+  }
+  out+=esc(code.slice(idx));
+  return out;
+}
+
+function filteredCards(){
+  const q = $('#search').value.trim().toLowerCase();
+  const cat = $('#catFilter').value;
+  return CARDS.filter(c=>{
+    if(cat && c.cat!==cat) return false;
+    if(q){
+      const hay=(c.human+' '+c.code+' '+c.tip).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/* ---------- 学习卡 ---------- */
+function renderStudy(){
+  let html='';
+  // skeleton + pitfalls on top
+  html += `<div class="note"><h3>⭐ 万能骨架（先背这个空壳，每题只换中间的列名/文件名）</h3>
+    <div class="code show" style="position:relative">${esc(SKELETON)}</div></div>`;
+  html += `<div class="note"><h3>⚠️ 零基础三大坑（丢分重灾区）</h3><table>
+    <tr><th>坑</th><th>错误</th><th>正确</th><th>记忆</th></tr>`;
+  PITFALLS.forEach(p=>{ html+=`<tr><td>${esc(p.坑)}</td><td>${esc(p.错)}</td><td>${esc(p.对)}</td><td>${esc(p.记)}</td></tr>`; });
+  html += `</table></div>`;
+  html += `<div class="acts" style="margin:4px 0 10px"><button class="btn" onclick="toggleAllCode()">👁 全部显示/隐藏代码</button></div>`;
+
+  const cards = filteredCards();
+  if(!cards.length){ html += `<div class="empty">没有匹配的内容</div>`; main.innerHTML=html; bindStudy(); return; }
+  const cats = [...new Set(cards.map(c=>c.cat))];
+  cats.forEach(cat=>{
+    const grp = cards.filter(c=>c.cat===cat);
+    html += `<div class="cat">${esc(cat)} <span class="cnt">${grp.length} 条</span></div>`;
+    grp.forEach(c=>{
+      const id='c'+c.n;
+      const done = master.has(id)?'done':'';
+      const checked = master.has(id)?'checked':'';
+      html += `<div class="card ${done}" id="${id}">
+        <div class="top"><div class="human"><span class="no">${c.n}.</span>${esc(c.human)}</div></div>
+        <div class="tip">💡 ${esc(c.tip)}</div>
+        <div class="code" id="code_${id}">${esc(c.code)}<button class="copy" onclick="copyCode('code_${id}')">复制</button></div>
+        <div class="acts">
+          <button class="btn" onclick="toggleCode('code_${id}')">👁 显示/隐藏代码</button>
+          <label class="master"><input type="checkbox" ${checked} onchange="toggleMaster('${id}',this)"> 我已掌握</label>
+        </div>
+      </div>`;
+    });
+  });
+  main.innerHTML = html;
+  bindStudy();
+}
+function bindStudy(){ /* nothing extra; handlers inline */ }
+
+/* ---------- 挖空自测 ---------- */
+function renderCloze(){
+  const cards = filteredCards();
+  if(!cards.length){ main.innerHTML=`<div class="empty">没有匹配的内容</div>`; return; }
+  let html='';
+  cards.forEach(c=>{
+    const id='cz'+c.n;
+    html += `      <div class="quiz-q" id="${id}">
+        <div class="quiz-human">${c.n}. ${esc(c.human)}</div>
+        <div class="blanks" id="blanks_${id}" data-full="${encodeURIComponent(c.code)}">${blankify(c.code)}</div>
+        <div class="acts" style="margin-top:10px">
+          <button class="btn primary" onclick="checkCloze('blanks_${id}')">核对</button>
+          <button class="btn" onclick="showCloze('blanks_${id}')">显示完整答案</button>
+          ${c.tip?`<button class="btn" onclick="toggleClozeTip('tip_${id}')">💡 提示</button>`:''}
+        </div>
+        ${c.tip?`<div class="tip hide" id="tip_${id}">💡 ${esc(c.tip)}</div>`:''}
+        <div class="reveal" id="rev_${id}"></div>
+        <div class="verdict" id="vd_${id}"></div>
+      </div>`;
+  });
+  main.innerHTML = html;
+}
+function checkCloze(blanksId){
+  const box=document.getElementById(blanksId);
+  box.querySelectorAll('.blank').forEach(inp=>{
+    const ans=inp.dataset.ans;
+    if(pyEqFlex(inp.value, ans)){ inp.classList.add('ok'); inp.classList.remove('no'); }
+    else { inp.classList.add('no'); inp.classList.remove('ok'); }
+  });
+  const vid=blanksId.replace('blanks_','');
+  const total=box.querySelectorAll('.blank').length;
+  const ok=box.querySelectorAll('.blank.ok').length;
+  const vd=document.getElementById('vd_'+vid);
+  vd.textContent=`✅ ${ok} / ${total} 正确`;
+  vd.className='verdict '+(ok===total?'ok':'no');
+}
+function showCloze(blanksId){
+  const box=document.getElementById(blanksId);
+  const rev=box.parentElement.querySelector('.reveal');
+  rev.textContent=decodeURIComponent(box.dataset.full);
+  rev.classList.add('show');
+  if(rev.scrollIntoView) rev.scrollIntoView({behavior:'smooth', block:'nearest'});
+  box.querySelectorAll('.blank').forEach(inp=>inp.value=inp.dataset.ans);
+}
+function toggleClozeTip(tipId){
+  const el=document.getElementById(tipId);
+  if(el) el.classList.toggle('hide');
+}
+
+/* ---------- 默写自测 ---------- */
+function renderRecall(){
+  const cards = filteredCards();
+  if(!cards.length){ main.innerHTML=`<div class="empty">没有匹配的内容</div>`; return; }
+  let html='';
+  cards.forEach(c=>{
+    const id='rc'+c.n;
+    const savedRecall = userAnswers[slotKey('rc'+c.n)] || '';
+    html += `      <div class="quiz-q" id="${id}">
+        <div class="quiz-human">${c.n}. ${esc(c.human)}</div>
+        <textarea id="ta_${id}" data-full="${encodeURIComponent(c.code)}" data-slot="rc${c.n}" placeholder="在这里默写代码…">${esc(savedRecall)}</textarea>
+        <div class="acts" style="margin-top:10px">
+          <button class="btn primary" onclick="checkRecall('ta_${id}','${id}')">对答案</button>
+          <label class="master"><input type="checkbox" ${master.has('c'+c.n)?'checked':''} onchange="toggleMaster('c${c.n}',this)"> 标记掌握</label>
+        </div>
+        <div class="reveal" id="rev_${id}"></div>
+        <div class="verdict" id="vd_${id}"></div>
+      </div>`;
+  });
+  main.innerHTML = html;
+}
+function checkRecall(taId, id){
+  const ta=document.getElementById(taId);
+  const rev=document.getElementById('rev_'+id);
+  const vd=document.getElementById('vd_'+id);
+  const ans=decodeURIComponent(ta.dataset.full);
+  const uLines = ta.value.split('\n');
+  const aLines = ans.split('\n');
+  const n = Math.max(uLines.length, aLines.length);
+  let ok=0, html='';
+  for(let i=0;i<n;i++){
+    const u=(uLines[i]||'').trim();
+    const a=(aLines[i]||'').trim();
+    const same = pyEq(u, a);
+    if(same) ok++;
+    const cls = same?'r-ok':'r-no';
+    const mark = same?'✅':'❌';
+    const disp = a!=='' ? esc(a) : (u!=='' ? '（你多写了一行）' : '');
+    html += `<div class="${cls}">${mark} ${disp}</div>`;
+  }
+  rev.innerHTML = html; rev.classList.add('show');
+  const total = aLines.filter(x=>x.trim()!=='').length;
+  const hasInput = ta.value.trim()!=='';
+  if(!hasInput){
+    vd.textContent='先在上面写代码再点“对答案”'; vd.className='verdict';
+  } else if(ok===total && uLines.length===aLines.length){
+    vd.textContent='✅ 完全正确！'; vd.className='verdict ok';
+  } else {
+    vd.textContent=`❌ 逐行对照 ${ok}/${total} 行一致（❌ 红底行见上）`; vd.className='verdict no';
+  }
+}
+
+/* ---------- 全量题库 ---------- */
+function renderBank(){
+  const q = $('#search').value.trim().toLowerCase();
+  let html='';
+  html += `<div class="note"><h3>📌 说明</h3>本页代码已对照《上机题与PDF标黄代码比对报告》修正 PDF 标黄中的 <b>8 处错码</b>（OCR / 印刷瑕疵），修正处用 ⚠️ 标出。背诵以本页修正版为准。</div>`;
+  const qs = QUESTIONS.filter(x=> !q || (x.title+x.code).toLowerCase().includes(q));
+  if(!qs.length){ main.innerHTML=`<div class="empty">没有匹配的题目</div>`; return; }
+  qs.forEach((x,i)=>{
+    html += `<div class="cat">代码 ${esc(x.code)} · ${esc(x.title)} <span class="cnt">${x.blocks.length} 段</span></div>`;
+    x.blocks.forEach(b=>{
+      html += `<div class="qblock">${b.page?`<span class="pg">${esc(b.page)}</span>`:''}${esc(b.code)}</div>`;
+      if(b.warn){ b.warnText.forEach(w=> html+=`<div class="warnbox">⚠️ ${esc(w)}</div>`); }
+    });
+  });
+  main.innerHTML = html;
+}
+
+/* ---------- PDF 勘误表 ---------- */
+function renderErrata(){
+  let html='';
+  html += `<div class="note"><h3>📕 PDF 标黄勘误表（共 ${CORRECTIONS.length} 处）</h3>
+    <p>下表为原始 PDF 标黄中的 OCR / 印刷瑕疵，已全部修正进《全量题库》。此外还有 1 处静默清理（<code>data [</code> → <code>data[</code>，括号内空格）。建议重点记“✅ 修正后”列与“原因 / 记忆”。</p></div>`;
+  html += `<table><tr><th>#</th><th>所在代码</th><th>❌ 原始标黄（有错）</th><th>✅ 修正后</th><th>原因 / 记忆</th></tr>`;
+  CORRECTIONS.forEach((c,i)=>{
+    html += `<tr>
+      <td>${i+1}</td>
+      <td>${esc(c.q)}</td>
+      <td style="color:#dc2626;white-space:pre-wrap;font-family:monospace">${esc(c.wrong)}</td>
+      <td style="color:#16a34a;white-space:pre-wrap;font-family:monospace">${esc(c.right)}</td>
+      <td>${esc(c.note)}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  main.innerHTML = html;
+}
+
+/* ---------- 小测验（基于原题 ipynb 原始挖空 + 三档难度筛选） ---------- */
+// 把 MOCK 某题拼回完整代码（所有原始答案填回 s 段）——用于“显示完整答案”
+function mockFull(mq){
+  const out=[];
+  mq.cells.forEach(cell=>{
+    if(cell.type==='md') return;
+    cell.l.forEach(ln=>{
+      if(ln.cmt!==undefined) return;
+      if(!ln.a || ln.a.length===0){ out.push(ln.s[0]); return; }
+      let t=ln.s[0];
+      for(let k=0;k<ln.a.length;k++){ t+=ln.a[k]+ln.s[k+1]; }
+      out.push(t);
+    });
+  });
+  return out.join('\n');
+}
+// 原始空答案分类：fn 函数 / var 变量列名 / param 参数符号（决定三档可见性）
+function classifyAns(ans){
+  if(!ans) return 'none';
+  if(/=/.test(ans) && !/(==|>=|<=|!=)/.test(ans)) return 'param';            // bins=bmi_bins / right=False
+  // 方法调用（即使标准答案只存了方法名、括号在 s 段里）：末段是函数 token 即判为 fn
+  if(BLANK_TOKENS.includes(ans.split('.').pop())) return 'fn';               // pd.cut / data.groupby / np.where
+  if(new RegExp('^('+BLANK_TOKENS.join('|')+')$').test(ans)) return 'fn';    // cut / groupby / mean
+  if(/^[\w.]+\s*\(/.test(ans)) return 'fn';                                  // pd.read_csv(…) / len(…) / value_counts()
+  if(/data\[/.test(ans) || /'/.test(ans) || /^[\w.]+$/.test(ans)) return 'var'; // 列名/变量/取值
+  return 'var';
+}
+function ansVisible(type, level){
+  if(type==='fn') return true;              // 所有档都显示函数类
+  if(type==='var') return level>=2;         // ② 起显示变量/列名类
+  if(type==='param') return level>=3;       // ③ 显示参数符号类
+  return false;
+}
+function renderExam(){
+  const qs = MOCK;
+  let sel = '<select id="examSel" onchange="mockIdx=+this.value;renderExam()">';
+  qs.forEach((q,i)=>{ sel += `<option value="${i}" ${i===mockIdx?'selected':''}>代码 ${esc(q.code)} · ${esc(q.title)}</option>`; });
+  sel += '</select>';
+  const q = qs[mockIdx];
+  let slot = 0;
+  const lvDefs=[[1,'① 只函数'],[2,'② 函数+变量'],[3,'③ 函数+变量+符号']];
+  const lvBtns = lvDefs.map(([v,t])=>`<button class="btn ${examLevel===v?'primary':''}" onclick="examLevel=${v};renderExam()">${t}</button>`).join('');
+  let examInner='';
+  q.cells.forEach(cell=>{
+    if(cell.type==='md'){ examInner += `<div class="qblock" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(cell.text)}</div>`; return; }
+    cell.l.forEach(ln=>{
+      if(ln.cmt!==undefined){ examInner += `<div class="cmt-line">💡 ${esc(ln.cmt)}</div>`; return; }
+      if(!ln.a || ln.a.length===0){ examInner += `<div class="code-line">${esc(ln.s[0])}</div>`; return; }
+      // 有原始空：按难度筛选哪些显示为挖空框，其余原样显示答案（灰底）
+      let t = esc(ln.s[0]);
+      for(let k=0;k<ln.a.length;k++){
+        const ans = ln.a[k];
+        // 每个答案位都占一个稳定的 slot（无论当前是否为挖空框），保证切换难度后回填不错位
+        const sidx = mockIdx + '_' + (slot++);
+        if(!ans){
+          // 原始 ipynb 挖了空但对不齐标准答案 → 渲染为无答案框（核对时提示“无标准答案”）
+          const v0 = userAnswers[slotKey(sidx)]; const a0 = (v0!==undefined && v0!=='') ? ` value="${escAttr(v0)}"` : '';
+          t += `<input class="blank" style="width:10ch" data-ans="" aria-label="代码 ${escAttr(q.code)} 填空（无标准答案）" data-slot="${sidx}"${a0}><button class="ln-hint-btn" onclick="toggleLnHint(this)">💡</button>`;
+        } else if(ansVisible(classifyAns(ans), examLevel)){
+          const v1 = userAnswers[slotKey(sidx)]; const a1 = (v1!==undefined && v1!=='') ? ` value="${escAttr(v1)}"` : '';
+          t += `<input class="blank" style="width:${Math.max(ans.length,3)}ch" data-ans="${escAttr(ans)}" aria-label="代码 ${escAttr(q.code)} 填空" data-slot="${sidx}"${a1}><button class="ln-hint-btn" onclick="toggleLnHint(this)">💡</button>`;
+        } else {
+          t += `<span class="filled">${esc(ans)}</span>`;
+        }
+        t += esc(ln.s[k+1]);
+      }
+      examInner += `<div class="code-line">${t}</div>`;
+    });
+  });
+  let html = `<div class="controls" style="margin-top:0;margin-bottom:8px">
+      ${sel}
+      <button class="btn primary" onclick="checkExam()">✅ 核对</button>
+      <button class="btn" onclick="showExamAll()">显示完整答案</button>
+      <button class="btn" onclick="resetExam()">清空重做</button>
+      <span id="examSummary" class="verdict"></span>
+    </div>
+    <div class="controls" style="margin-top:0;margin-bottom:12px;align-items:center">
+      <span style="color:var(--sub);font-size:13px;font-weight:600">难度</span>${lvBtns}
+    </div>`;
+  html += `<div class="quiz-q">
+      <div class="quiz-human">📝 小测验 · 代码 ${esc(q.code)} · ${esc(q.title)} ${tipBadges(q.code)}<br>
+        <span style="font-weight:400;color:var(--sub);font-size:13px">挖空位置严格取自原题 ipynb 的 _____ ；难度①只挖函数类空，②加变量/列名类，③再加参数符号类。灰底为本题未要求填的原题内容。点 💡 看该空答案</span></div>
+      <div class="blanks" id="examBlanks" data-code="${esc(q.code)}" data-full="${encodeURIComponent(mockFull(q))}">${examInner}</div>
+      <div class="reveal" id="examReveal"></div>
+    </div>`;
+  main.innerHTML = html;
+}
+function checkExam(){
+  const box=document.getElementById('examBlanks');
+  if(!box) return;
+  const qCode = box.dataset.code || '';   // v2：供自动错题收集使用
+  let ok=0, graded=0, ungraded=0;
+  box.querySelectorAll('.blank').forEach(inp=>{
+    const ans=inp.dataset.ans;
+    clearHints(inp);
+    inp.classList.remove('ok','no','ungraded');
+    if(ans){
+      graded++;
+      if(pyEqFlex(inp.value, ans)){ inp.classList.add('ok'); ok++; unmarkWrong(qCode); }
+      else {
+        inp.classList.add('no');
+        if(inp.value.trim()!=='') markWrong(qCode);   // v2：非空填错才记入错题集；空输入=未做，不计入
+        const span=document.createElement('span'); span.className='ans-hint'; span.textContent=' → '+ans;
+        const btn=inp.nextElementSibling;   // 💡 按钮紧跟在每个 input 之后
+        (btn||inp).insertAdjacentElement('afterend', span);
+      }
+    } else {   // 原始空但对不齐答案（data-ans 空）→ 不判分，但明确标出，区别于“填错”
+      ungraded++;
+      inp.classList.add('ungraded');
+      const span=document.createElement('span'); span.className='ans-hint warn'; span.textContent=' ⚠️ 无标准答案';
+      (inp.nextElementSibling||inp).insertAdjacentElement('afterend', span);
+    }
+  });
+  const sum=document.getElementById('examSummary');
+  if(graded===0){
+    sum.textContent='本题无标准答案可判分，请点“显示完整答案”对照';
+    sum.className='verdict';
+  } else {
+    let txt=`✅ ${ok} / ${graded} 正确`;
+    if(ungraded>0) txt+=` (另有 ${ungraded} 空无标准答案)`;
+    sum.textContent=txt;
+    sum.className='verdict '+(ok===graded?'ok':'no');
+  }
+}
+function showExamAll(){
+  const box=document.getElementById('examBlanks');
+  if(!box) return;
+  box.querySelectorAll('.blank').forEach(inp=>{
+    if(inp.dataset.ans) inp.value=inp.dataset.ans;   // 无标准答案的空保持用户原输入，不强行清空
+    clearHints(inp); saveBlank(inp);
+  });
+  const rev=document.getElementById('examReveal');
+  rev.textContent=decodeURIComponent(box.dataset.full); rev.classList.add('show');
+  if(rev.scrollIntoView) rev.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function resetExam(){
+  const box=document.getElementById('examBlanks');
+  if(!box) return;
+  box.querySelectorAll('.blank').forEach(inp=>{
+    inp.value=''; inp.classList.remove('ok','no','ungraded'); clearBlank(inp.dataset.slot); clearHints(inp);
+  });
+  const sum=document.getElementById('examSummary'); sum.textContent=''; sum.className='verdict';
+  document.getElementById('examReveal').classList.remove('show');
+}
+
+function escAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* 收集/清理某空之后的提示 span（提示统一插在 💡 按钮之后，需跨过按钮查找） */
+function getHints(inp){
+  const arr=[]; let n=inp.nextElementSibling;
+  while(n && !(n.classList&&n.classList.contains('blank'))){
+    if(n.classList&&n.classList.contains('ans-hint')) arr.push(n);
+    n=n.nextElementSibling;
+  }
+  return arr;
+}
+function clearHints(inp){ getHints(inp).forEach(e=>e.remove()); }
+
+/* 逐空提示：点击 💡 显示/隐藏该空应填的答案（小测验用，单空） */
+function toggleLnHint(btn){
+  let inp=btn.previousElementSibling;
+  while(inp && !(inp.classList&&inp.classList.contains('blank'))) inp=inp.previousElementSibling;
+  if(!inp) return;
+  const hs=getHints(inp);
+  if(hs.length){ hs.forEach(e=>e.remove()); return; }   // 已显示 → 关闭
+  const span=document.createElement('span'); span.className='ans-hint';
+  span.textContent = inp.dataset.ans ? (' → '+inp.dataset.ans) : ' → (无标准答案，点“显示完整答案”对照)';
+  btn.insertAdjacentElement('afterend', span);           // 提示插在 💡 之后，保持 input↔button 相邻
+}
+
+/* 逐行提示：点击 💡 显示该行所有空应填的答案（模拟考试用，整行） */
+function toggleMockLineHint(btn){
+  const line = btn.closest('.code-line'); if(!line) return;
+  const blanks = line.querySelectorAll('.blank');
+  let any=false;
+  blanks.forEach(b=>{ if(b.nextElementSibling && b.nextElementSibling.classList.contains('ans-hint')) any=true; });
+  if(any){
+    blanks.forEach(b=>{ const h=b.nextElementSibling; if(h && h.classList.contains('ans-hint')) h.remove(); });
+    return;
+  }
+  blanks.forEach(b=>{
+    const span=document.createElement('span'); span.className='ans-hint';
+    const ans=b.dataset.ans;
+    span.textContent = ans ? (' → '+ans) : ' → (无标准答案)';
+    b.insertAdjacentElement('afterend', span);
+  });
+}
+function renderMock(){
+  const qs = MOCK;
+  let sel = '<select id="mockSel" onchange="mockIdx=+this.value;renderMock()">';
+  qs.forEach((q,i)=>{ sel += `<option value="${i}" ${i===mockIdx?'selected':''}>代码 ${esc(q.code)} · ${esc(q.title)}</option>`; });
+  sel += '</select>';
+  const q = qs[mockIdx];
+  let slot = 0;
+  let html = `<div style="display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap;align-items:center">
+      ${sel}
+      <button class="btn primary" onclick="checkMock()">✅ 核对</button>
+      <button class="btn" onclick="showMockAll()">显示完整答案</button>
+      <button class="btn" onclick="resetMock()">清空重做</button>
+      <button class="btn warn" onclick="clearMockProgress()">🧹 清除本模块存档</button>
+      <span id="mockSummary" class="verdict"></span>
+    </div>`;
+  html += `<div class="quiz-human" style="margin-bottom:8px">📋 模拟考试 · 代码 ${esc(q.code)} · ${esc(q.title)} ${tipBadges(q.code)}</div>`;
+  q.cells.forEach(cell=>{
+    if(cell.type==='md'){
+      html += `<div class="qblock" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(cell.text)}</div>`;
+      return;
+    }
+    let inner='';
+    cell.l.forEach(ln=>{
+      if(ln.cmt!==undefined){
+        inner += `<div class="cmt-line">💡 ${esc(ln.cmt)}</div>`;
+        return;
+      }
+      if(!ln.a || ln.a.length===0){
+        inner += `<div class="code-line">${esc(ln.s[0])}</div>`;
+      } else {
+        let t = esc(ln.s[0]);
+        for(let k=0;k<ln.a.length;k++){
+          const ans = ln.a[k];
+          const w = ans ? Math.max(ans.length + (ans.length>10?6:3), 9) : 14;
+          const attr = ans ? ` data-ans="${escAttr(ans)}"` : '';
+          const sidx = mockIdx + '_' + (slot++);
+          const saved = userAnswers[slotKey(sidx)];
+          const valAttr = (saved!==undefined && saved!=='') ? ` value="${escAttr(saved)}"` : '';
+          t += `<input class="blank" style="width:${w}ch"${attr} aria-label="代码 ${escAttr(q.code)} 填空" data-slot="${sidx}"${valAttr}>` + esc(ln.s[k+1]);
+        }
+        t += `<button class="ln-hint-btn" onclick="toggleMockLineHint(this)">💡</button>`;
+        inner += `<div class="code-line">${t}</div>`;
+      }
+    });
+    html += `<div class="qblock">${inner}</div>`;
+  });
+  html += `<div class="reveal" id="mockReveal"></div>`;
+  main.innerHTML = html;
+}
+function checkMock(){
+  const blanks = main.querySelectorAll('.blank');
+  if(!blanks.length) return;
+  const qCode = (MOCK[mockIdx] && MOCK[mockIdx].code) || '';   // v2：供自动错题收集使用
+  let ok=0, graded=0, ungraded=0;
+  blanks.forEach(inp=>{
+    const ans = inp.dataset.ans;
+    const prev = inp.nextElementSibling;
+    if(prev && prev.classList.contains('ans-hint')) prev.remove();
+    inp.classList.remove('ok','no','ungraded');
+    if(ans){
+      graded++;
+      if(pyEqFlex(inp.value, ans)){ inp.classList.add('ok'); ok++; unmarkWrong(qCode); }
+      else {
+        inp.classList.add('no');
+        if(inp.value.trim()!=='') markWrong(qCode);   // v2：非空填错才记入错题集；空输入=未做，不计入
+        const hint=document.createElement('span');
+        hint.className='ans-hint'; hint.textContent=' → '+ans;
+        inp.insertAdjacentElement('afterend', hint);
+      }
+    } else {   // 无标准答案的空：明确标出，和“填错”区分
+      ungraded++;
+      inp.classList.add('ungraded');
+      const hint=document.createElement('span');
+      hint.className='ans-hint warn'; hint.textContent=' ⚠️ 无标准答案';
+      inp.insertAdjacentElement('afterend', hint);
+    }
+  });
+  const sum=document.getElementById('mockSummary');
+  if(graded===0){
+    sum.textContent='本题为原题式挖空，暂无标准答案逐空判分，请点“显示完整答案”对照';
+    sum.className='verdict';
+  } else {
+    let txt=`✅ ${ok} / ${graded} 正确`;
+    if(ungraded>0) txt+=` (另有 ${ungraded} 空无标准答案，点“显示完整答案”对照)`;
+    sum.textContent=txt;
+    sum.className='verdict '+(ok===graded?'ok':'no');
+  }
+}
+function showMockAll(){
+  const q = MOCK[mockIdx];
+  let html='';
+  q.cells.forEach(cell=>{
+    if(cell.type==='md'){
+      html += `<div class="qblock" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(cell.text)}</div>`;
+      return;
+    }
+    let inner='';
+    cell.l.forEach(ln=>{
+      if(ln.cmt!==undefined){ inner += `<div class="cmt-line">💡 ${esc(ln.cmt)}</div>`; return; }
+      if(!ln.a || ln.a.length===0){ inner += `<div class="code-line">${esc(ln.s[0])}</div>`; return; }
+      let t = esc(ln.s[0]);
+      for(let k=0;k<ln.a.length;k++){
+        const ans = ln.a[k];
+        t += `<span class="ans-hl">${esc(ans)}</span>`;
+        t += esc(ln.s[k+1]);
+      }
+      inner += `<div class="code-line">${t}</div>`;
+    });
+    html += `<div class="qblock">${inner}</div>`;
+  });
+  const rev=document.getElementById('mockReveal');
+  if(rev){ rev.innerHTML=html; rev.classList.add('show'); if(rev.scrollIntoView) rev.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+}
+function resetMock(){
+  main.querySelectorAll('.blank').forEach(inp=>{
+    inp.value=''; inp.classList.remove('ok','no','ungraded'); clearBlank(inp.dataset.slot);
+    const p=inp.nextElementSibling; if(p && p.classList.contains('ans-hint')) p.remove();
+  });
+  const sum=document.getElementById('mockSummary'); if(sum){ sum.textContent=''; sum.className='verdict'; }
+  const rev=document.getElementById('mockReveal'); if(rev) rev.classList.remove('show');
+}
+function clearMockProgress(){
+  // 只清 mock: 前缀的存档，不动其他模块（挖空/默写/题库等）的进度
+  for(const k of Object.keys(userAnswers)){
+    if(k.startsWith('mock:')) delete userAnswers[k];
+  }
+  persistAnswers();
+  if(typeof mode!=='undefined' && mode==='mock') renderMock();
+  const sum=document.getElementById('mockSummary');
+  if(sum){ sum.textContent='已清除本模块所有填写记录'; sum.className='verdict'; }
+}
+
+/* ---------- global handlers ---------- */
+function toggleCode(id){ document.getElementById(id).classList.toggle('show'); }
+function toggleAllCode(){ document.querySelectorAll('[id^="code_"]').forEach(el=>el.classList.toggle('show')); }
+function copyText(t){
+  // 优先用异步剪贴板 API（https 环境）；file:// 等非安全上下文回退到 execCommand
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(t).then(()=>true).catch(()=>fallbackCopy(t));
+  }
+  return Promise.resolve(fallbackCopy(t));
+}
+function fallbackCopy(t){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=t; ta.style.position='fixed'; ta.style.top='-9999px'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function copyCode(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const clone=el.cloneNode(true);
+  const btn=clone.querySelector('.copy'); if(btn) btn.remove();
+  const t=clone.textContent;
+  const b=el.querySelector('.copy');
+  const o=b?b.textContent:'复制';
+  copyText(t).then(ok=>{
+    if(b){ b.textContent=ok?'已复制':'复制失败'; setTimeout(()=>b.textContent=o,1200); }
+  });
+}
+function toggleMaster(id, el){
+  if(el.checked) master.add(id); else master.delete(id);
+  saveMaster();
+  const card=document.getElementById(id);
+  if(card) card.classList.toggle('done', el.checked);
+}
+function renderTheory(){
+  const kw = $('#search').value.trim().toLowerCase();
+  let html = '<div style="margin-bottom:10px;color:var(--muted);font-size:13px">📖 理论 / 分析题：3.1.x 数据分析与优化 + 4.x 理论填空（补充学习目标），共 '
+    + THEORY.length + ' 题。点“显示答案”自测，可标记掌握。</div>';
+  THEORY.forEach((t, idx)=>{
+    const hay = (t.code + ' ' + t.title + ' ' + t.content + ' ' + t.answer).toLowerCase();
+    if(kw && !hay.includes(kw)) return;
+    const id = 'th' + idx;
+    const isM = master.has('t' + t.code);
+    html += '<div class="thcard" id="' + id + '">'
+      + '<div class="thhead"><b>' + esc(t.code) + '</b> ' + esc(t.title)
+      + ' <span class="thkind">' + (t.kind==='analysis'?'数据分析与优化':'理论填空') + '</span></div>'
+      + '<pre class="thbody">' + esc(t.content) + '</pre>'
+      + '<div class="acts" style="margin-top:10px">'
+      + '<button class="btn" onclick="toggleAns(\'ans_' + id + '\')">显示答案</button>'
+      + '<label class="master"><input type="checkbox" ' + (isM?'checked':'') + ' onchange="toggleMaster(\'t' + t.code + '\',this)"> 标记掌握</label>'
+      + '</div>'
+      + '<div class="reveal" id="ans_' + id + '"><pre>' + esc(t.answer) + '</pre></div>'
+      + '</div>';
+  });
+  if(kw && !THEORY.some(t=>(t.code+' '+t.title+' '+t.content+' '+t.answer).toLowerCase().includes(kw)))
+    html += '<div style="color:var(--muted);padding:20px">无匹配结果。</div>';
+  main.innerHTML = html;
+}
+function toggleAns(id){ const e=document.getElementById(id); if(e) e.classList.toggle('show'); }
+/* ===== 考点提示面板（分值取自 EXAM_HINTS；必背/易错/关键词为复习要点） ===== */
+const TIPS = {
+"1.1.1":{
+ must:["np.where(条件,'高风险患者','低风险患者')——三参数：条件/真值/假值，类似 Excel 的 IF","高风险占比 = risk_counts['高风险患者'] / len(data)"],
+ pit:["value_counts 必须带括号 ()，漏写只是方法对象不是结果","pd.cut(...,right=False) 是左闭右开 [a,b)，别写反区间方向","groupby 后算比例用 .apply(lambda x:(x=='高风险患者').mean())"],
+ kw:["np.where","pd.cut","groupby","value_counts","占比=计数/总数"],snip:["risk_counts = data['RiskLevel'].value_counts()","data['BMIRange'] = pd.cut(data['BMI'], bins=bmi_bins, labels=bmi_labels, right=False)"]
+},
+"1.1.2":{
+ must:["分组统计 groupby('SensorType')['Value'].agg(['count','mean'])","缺失值填补 fillna(method='ffill') 再 fillna(method='bfill')——前向+后向共 4 分常考"],
+ pit:["异常标记用双等号 == ：data['SensorType']=='Temperature'","is_abnormal 用 np.where 多条件需 & 连接且每个条件加括号","保存 cleaned_data.to_csv(...,index=False)"],
+ kw:["groupby","agg","fillna(ffill/bfill)","np.where","异常值标记"],snip:["data['Value'].fillna(method='ffill', inplace=True)","data['Value'].fillna(method='bfill', inplace=True)"]
+},
+"1.1.3":{
+ must:["合理性审核：data['Age'].between(18,70) 返回 True/False，建 is_age_valid 列","缺失/重复统计：isnull().sum()、duplicated().sum()"],
+ pit:["between 含边界；多条件用 & 连接且每个条件加圆括号","标准化 (x-x.mean())/x.std()，注意列名大小写与空格(如 'ReviewScore')","审核题套路：给每个字段建一个 is_xxx_valid 列"],
+ kw:["between","isnull/duplicated","astype","标准化","合理性审核"],snip:["missing_values = data.isnull().sum()","duplicate_values = data.duplicated().sum()","data['is_age_valid'] = data['Age'].between(18, 70)"]
+},
+"1.1.4":{
+ must:["流程：读数据→head→删缺失→转类型(astype int/float)→标准化→统计","分组聚合：data.groupby('购买类别')['用户数'].count()"],
+ pit:["astype(int) 转整型、astype(float) 转浮点，别混用","标准化 (x-x.mean())/x.std()；保存 to_csv(index=False)","统计不同性别平均购买金额用 groupby('性别')['金额'].mean()"],
+ kw:["dropna","astype","标准化","groupby 聚合","value_counts"],snip:["data['Age'] = data['Age'].astype(int)","data['PurchaseAmount'] = (data['PurchaseAmount'] - data['PurchaseAmount'].mean()) / data['PurchaseAmount'].std()","gender_purchase_amount_mean = data.groupby('Gender')['PurchaseAmount'].mean()"]
+},
+"1.1.5":{
+ must:["读数据(中文可能乱码加 encoding='gbk')→head→删缺失→转类型→审核→统计","统计交通事件发生次数用 value_counts()，注意列名大小写与空格"],
+ pit:["列名常带空格(如 'Travel Time')，用 df['列名'] 精确匹配，别用 df. 点号误写","统计不同性别平均车速/距离/时间 → groupby('性别').mean()","审核字段合理性：between / 比较运算符建 is_valid 列"],
+ kw:["encoding='gbk'","value_counts","groupby.mean","between","审核"],snip:["traffic_event_counts = data['TrafficEvent'].value_counts()","gender_stats = data.groupby('Gender').agg({'Speed':'mean','TravelDistance':'mean','TravelTime':'mean'})","age_group_counts = data['AgeGroup'].value_counts()"]
+},
+"2.1.1":{
+ must:["读数据→head→'horsepower' 转数值 pd.to_numeric(...,errors='coerce')→dropna","标准化后选特征 X=df[...]、目标 y=df['mpg']、train_test_split(训练集 8 成)"],
+ pit:["to_numeric 转失败的用 errors='coerce' 置空再 dropna","特征选择按 Excel 列区间(如 B~H 列)对应，别选错列","保存 index=False；清洗/标注规范各答要点(最高 2~3 分)"],
+ kw:["pd.to_numeric","dropna","StandardScaler","train_test_split","清洗/标注规范"],snip:["X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"]
+},
+"2.1.2":{
+ must:["data.dropna() 删缺失、data.drop_duplicates() 删重复(各 1 分)","X=data[selected_features]、y=目标列、train_test_split(test_size=0.2)"],
+ pit:["selected_features 是题目给定特征列列表，别漏列","划分后顺序固定 X_train,X_test,y_train,y_test","保存合并数据 index=False；规范题要答『为什么这么清洗』"],
+ kw:["dropna/drop_duplicates","selected_features","train_test_split","get_dummies","清洗规范"],snip:["X = data[selected_features]","X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"]
+},
+"2.1.3":{
+ must:["IQR 处理异常值(上四分位+1.5×IQR 为界)→删异常→去重","X=data_cleaned.drop(columns=[target])、y=data_cleaned[target]"],
+ pit:["drop(columns=[target]) 方括号包列名；目标是字符串变量","特征工程规范要答：如何处理缺失/异常/编码","训练集占 80%，test_size=0.2"],
+ kw:["IQR 异常值","drop(columns)","train_test_split","get_dummies","特征工程规范"],snip:["Q1 = data[numeric_cols].quantile(0.25)","Q3 = data[numeric_cols].quantile(0.75)","IQR = Q3 - Q1","data_cleaned = data[~((data[numeric_cols] < (Q1 - 1.5 * IQR)) | (data[numeric_cols] > (Q3 + 1.5 * IQR))).any(axis=1)]"]
+},
+"2.1.4":{
+ must:["读数据指定 encoding='gbk'；info() 看结构；rename 改名","增列(诊断延迟/病程)；删不合理；去重并记录删除行数；归一化；画图(柱状/散点)"],
+ pit:["列名有中文/特殊字符，改名用 rename(columns={...})","绘图：先 plt 画图再保存；归一化 (x-x.min())/(x.max()-x.min())","『背诵』类步骤常考，记流程顺序"],
+ kw:["encoding='gbk'","rename","drop_duplicates","归一化","柱状图/散点图"],snip:["data.rename(columns={'病人ID':'患者ID'}, inplace=True)","data[columns_to_normalize] = scaler.fit_transform(data[columns_to_normalize])","treatment_outcome_distribution.plot(kind='bar', stacked=True)"]
+},
+"2.1.5":{
+ must:["读数据→info→空缺值数量 isnull().sum()→删缺失→转类型(astype int)→去重→归一化→饼图→划分→保存","'Yourage' 等列名带大小写，转类型/处理异常要精确"],
+ pit:["列名大小写敏感('Your age' vs 'Yourage')，以 Excel 表头为准","归一化后划分训练集 test_size=0.2","饼图 plt.pie()，向上复制柱状图代码改类型"],
+ kw:["isnull().sum","astype","归一化","饼图","train_test_split"],snip:["data_cleaned.loc[:,'Your age'] = pd.to_numeric(data_cleaned['Your age'], errors='coerce')","exercise_frequency_counts.plot.pie(autopct='%1.1f%%', startangle=90)","train_data, test_data = train_test_split(data_filled, test_size=0.2, random_state=42)"]
+},
+"2.2.1":{
+ must:["train_test_split(X,y,test_size=0.2,random_state=42) 死记常考","LogisticRegression(max_iter=1000)；model.fit(X_train,y_train)；y_pred=model.predict(X_test)"],
+ pit:["score(X_test,y_test) 参数是 X 和 y，不是 y_pred","评估函数 真实值在前(y_test)、预测值在后(y_pred)","不平衡数据用 SMOTE(random_state=42) 重采样，重训练变量名变 X_,y_ 注意替代","分类报告 classification_report(y_test,y_pred)、混淆矩阵 confusion_matrix(y_test,y_pred) 也常考，真实值在前"],
+ kw:["LogisticRegression","train_test_split","fit/predict","score","SMOTE 重采样"],snip:["X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)","model = LogisticRegression(max_iter=1000)","X_resampled, y_resampled = smote.fit_resample(X_train, y_train)"]
+},
+"2.2.2":{
+ must:["Pipeline([('scaler',StandardScaler()),('linreg',LinearRegression())])——P 大写","随机森林 RandomForestRegressor(n_estimators=100,random_state=42)；pickle.dump 保存"],
+ pit:["管道两步首字母都大写 StandardScaler / LinearRegression","保存用 pickle.dump(pipeline,model_file)，读取 pickle.load","随机森林常考 n_estimators=100；predict 后 results.to_csv(index=False,sep='\\t')"],
+ kw:["Pipeline","StandardScaler","RandomForestRegressor","pickle","train_test_split"],snip:["pipeline = Pipeline([('scaler', StandardScaler()), ('linreg', LinearRegression())])","pickle.dump(pipeline, model_file)"]
+},
+"2.2.3":{
+ must:["get_dummies 独热编码分类变量；年龄段转数值 df['Your age'].apply(lambda x:int(x.split(' ')[0]))","train_test_split(0.2,42)→RandomForestRegressor(100)→fit→predict→保存→评估"],
+ pit:["apply 里 lambda 拆分字符串取整数，注意空格 split(' ')","评估 score / mse / r2 真实值都在前：rf_model.score(X_test,y_test)","进阶 XGBoost：xgb.XGBRegressor(n_estimators=100)，复制上面步骤","分类报告 classification_report(y_test,y_pred)、混淆矩阵 confusion_matrix(y_test,y_pred) 也是常考评估输出"],
+ kw:["get_dummies","apply(lambda)","RandomForestRegressor","score/mse/r2","XGBoost"],snip:["X = pd.get_dummies(X)","y = df['Your age'].apply(lambda x: int(x.split(' ')[0]))"]
+},
+"2.2.4":{
+ must:["删不必要列 data.drop(columns=['序号','所用时间'])；get_dummies(drop_first=True)","LinearRegression()；fit→predict；results.to_csv(sep='\\t',index=False)"],
+ pit:["get_dummies 后目标用 data_cleaned[target] 取，X 用 drop(columns=[target])","评估 r2_score(y_test,y_pred) 括号配对别漏","进阶 XGBoost：n_estimators=1000,learning_rate=0.05,max_depth=5","分类报告 classification_report(y_test,y_pred)、混淆矩阵 confusion_matrix(y_test,y_pred) 常考评估输出"],
+ kw:["drop(columns)","get_dummies","LinearRegression","r2_score","XGBoost"],snip:["X = data_cleaned.drop(columns=[target])","model = LinearRegression()","y_pred = model.predict(X_test)","results.to_csv(results_filename, index=False)"]
+},
+"2.2.5":{
+ must:["DecisionTreeRegressor(random_state=42)；model.fit→predict","结果存 DataFrame({'实际值':y_test,'预测值':y_pred})，to_csv(sep='\\t',index=False)"],
+ pit:["with open(report_filename,'w') as f: 文件名变量与字符串别混(注意大小写)","评估含 均方误差/平均绝对误差/决定系数 三者","决策树回归用 .fit(X_train,y_train)，喂训练集","分类报告 classification_report(y_test,y_pred)、混淆矩阵 confusion_matrix(y_test,y_pred) 也是常考评估输出"],
+ kw:["DecisionTreeRegressor","fit/predict","mean_absolute_error","to_csv(sep='\\t')","评估报告"],snip:["dt_model = DecisionTreeRegressor(random_state=42)","dt_model.fit(X_train, y_train)","pickle.dump(dt_model, model_file)","y_pred = dt_model.predict(X_test)"]
+},
+"3.2.1":{
+ must:["模型加载 ort.InferenceSession('resnet.onnx')；标签 open('labels.txt')","session.run([output_name],{input_name:img})[0]；softmax 后 np.argsort 取 Top5"],
+ pit:["input_name=session.get_inputs()[0].name；output_name=get_outputs()[0].name","预处理：resize(256→crop224)→/255→减均值除标准差→transpose(CHW)→reshape(1,*)","softmax 用 scipy.special.softmax(output,axis=-1)"],
+ kw:["onnxruntime","preprocess_image","session.run","softmax","argsort Top5"],snip:["session = ort.InferenceSession('resnet.onnx')","output = session.run([output_name], {input_name: processed_image})[0]"]
+},
+"3.2.2":{
+ must:["Image.open(...).convert('L') 转灰度；resize((28,28))","np.expand_dims 两次：先加 batch 维再加 channel 维","predicted_class=np.argmax(ort_outs[0])"],
+ pit:["expand_dims 顺序：先 axis=0(batch) 再 axis=0(channel)，别反","ONNX 模型用 onnxruntime.InferenceSession，别和 onnx 库混淆","ort_inputs={ort_session.get_inputs()[0].name: image_array}"],
+ kw:["Image.open convert('L')","resize(28,28)","np.expand_dims×2","argmax","onnxruntime"],snip:["image_array = np.expand_dims(image_array, axis=0)  # 添加 batch 维度","image_array = np.expand_dims(image_array, axis=0)  # 添加通道维度"]
+},
+"3.2.3":{
+ must:["emotion_table 字典映射情感→数字标签；preprocess 输出形状 (1,1,64,64)","ort_session.run(None,ort_inputs)；predicted_label=np.argmax(ort_outs[0])"],
+ pit:["灰度 convert('L')；resize((64,64))；两次 expand_dims(先 batch 再 channel)","assert img_data.shape==input_shape 保证形状匹配","取情感名 list(emotion_table.keys())[predicted_label]"],
+ kw:["emotion_table","preprocess","expand_dims×2","argmax","onnxruntime"],snip:["ort_session = ort.InferenceSession('emotion-ferplus.onnx')","ort_outs = ort_session.run(None, ort_inputs)","predicted_label = np.argmax(ort_outs[0])"]
+},
+"3.2.4":{
+ must:["与 3.2.1 同套流程：InferenceSession→labels→preprocess→run→softmax→argmax","cv2 读取与 resize(320,240)；归一化 (img-image_mean)/128"],
+ pit:["OpenCV 读图 cv2.imread 是 BGR，需 cv2.cvtColor(img,cv2.COLOR_BGR2RGB)","图像归一化均值数组 np.array([127,127,127])，除以 128","predicted_idx=np.argmax；概率转百分比 *100"],
+ kw:["onnxruntime","cv2 读取/resize","BGR2RGB","softmax","argmax 百分比"],snip:["session = ort.InferenceSession('flower-detection.onnx')","output = session.run([output_name], {input_name: processed_image})[0]","accuracy = scipy.special.softmax(output, axis=-1)","predicted_idx = np.argmax(accuracy[0])"]
+},
+"3.2.5":{
+ must:["class_names 从标签文件逐行 strip()；ort_session=InferenceSession('version-RFB-320.onnx')","predict() 后处理：hard_nms 非极大抑制得到框/标签/置信度"],
+ pit:["cv2.resize(image,(320,240))；image_mean=np.array([127,127,127])，减均值除 128","transpose([2,0,1]) 再 expand_dims(axis=0) 变 (1,C,H,W)","遍历目录 os.listdir；结果 cv2.rectangle 画框、cv2.imwrite 保存"],
+ kw:["onnxruntime","cv2 检测","hard_nms","BGR2RGB","rectangle/imwrite"],snip:["image = cv2.resize(image, (320, 240))","image_mean = np.array([127, 127, 127])","image = np.expand_dims(image, axis=0)"]
+}
+};
+function tipSec(label,cls,arr){
+  let h='<div class="tip-sec"><span class="tip-badge '+cls+'">'+label+'</span><ul class="tip-list">';
+  if(arr&&arr.length) arr.forEach(function(x){ h+='<li>'+esc(x)+'</li>'; });
+  else h+='<li class="tip-muted">—</li>';
+  return h+'</ul></div>';
+}
+let tipsFilter='all';
+function setTipsFilter(f){ tipsFilter=f; renderTips(); }
+function toggleStar(code){
+  if(starSet.has(code)) starSet.delete(code); else starSet.add(code);
+  saveStar();   // 不再在此刷新视图：由调用方决定刷新当前面板还是练习页
+}
+function copySnip(btn){
+  const t=btn.dataset.code||'';
+  const o=btn.textContent;
+  copyText(t).then(function(ok){ btn.textContent=ok?'已复制':'复制失败'; setTimeout(function(){ btn.textContent=o; },1200); });
+}
+function fltBtn(f,label){
+  return '<button class="btn '+(tipsFilter===f?'primary':'')+'" onclick="setTipsFilter(\''+f+'\')">'+label+'</button>';
+}
+// 练习页（小测验/模拟考试）标题区显示的重点/错题徽章 + 可点击⭐（点⭐在当前练习页内刷新，不跳走）
+function tipBadges(code){
+  const isStar=starSet.has(code), isWrong=wrongSet.has(code);
+  let h='<span class="tip-mini">';
+  h+='<button class="tip-star-mini" title="标为重点 / 取消" onclick="toggleStar(\''+code+'\');render();event.preventDefault();event.stopPropagation();return false">'+(isStar?'⭐':'☆')+'</button>';
+  if(isStar) h+='<span class="tip-badge b-star">🟡 重点</span>';
+  if(isWrong) h+='<span class="tip-badge b-wrong">🔴 错题</span>';
+  h+='</span>';
+  return h;
+}
+function renderTips(){
+  const starN=starSet.size, wrongN=wrongSet.size;
+  let html='<div class="tips-bar">';
+  html+='<span class="cat" style="margin:0">💡 考点提示<span class="cnt">覆盖 '+QUESTIONS.length+' 道编码题</span></span>';
+  html+='<span class="tips-filters">'+fltBtn('all','全部')+fltBtn('star','⭐ 重点 '+starN)+fltBtn('wrong','🔴 错题 '+wrongN)+'</span>';
+  if(wrongN>0) html+='<button class="btn tip-clear" onclick="clearWrong()" title="清空错题集">🧹 清空错题集</button>';
+  html+='</div>';
+  let rendered=0;
+  QUESTIONS.forEach(function(q){
+    const code=q.code, t=TIPS[code]||{must:[],pit:[],kw:[],snip:[]};
+    if(tipsFilter==='star' && !starSet.has(code)) return;
+    if(tipsFilter==='wrong' && !wrongSet.has(code)) return;
+    rendered++;
+    const hints=(typeof EXAM_HINTS!=='undefined'&&EXAM_HINTS[code])?EXAM_HINTS[code].filter(Boolean):[];
+    const isStar=starSet.has(code), isWrong=wrongSet.has(code);
+    let badges='';
+    if(isStar) badges+='<span class="tip-badge b-star">🟡 重点</span>';
+    if(isWrong) badges+='<span class="tip-badge b-wrong">🔴 错题</span>';
+    html+='<details class="card tip-card" open>';
+    html+='<summary class="tip-sum">';
+    html+='<button class="tip-star" title="标为重点 / 取消" onclick="toggleStar(\''+code+'\');renderTips();event.preventDefault();event.stopPropagation();return false">'+(isStar?'⭐':'☆')+'</button>';
+    html+='<b>'+esc(code)+'</b> '+esc(q.title)+' '+badges;
+    if(isWrong) html+='<button class="tip-rm" title="从错题移除" onclick="unmarkWrong(\''+code+'\');renderTips();event.preventDefault();event.stopPropagation();return false">✕ 移除</button>';
+    html+='</summary>';
+    html+='<div class="tip-body">';
+    html+='<div class="tip-sec"><span class="tip-badge b-score">📊 分值分布</span><ul class="tip-list">';
+    if(hints.length) hints.forEach(function(h){ html+='<li>'+esc(h.replace(/^#\s*/,''))+'</li>'; });
+    else html+='<li class="tip-muted">（暂无分值标注）</li>';
+    html+='</ul></div>';
+    html+=tipSec('🧠 必背 / 死记','b-must',t.must);
+    if(t.snip&&t.snip.length){
+      html+='<div class="tip-sec"><span class="tip-badge b-snip">📋 样板句</span>';
+      t.snip.forEach(function(s){
+        html+='<div class="tip-snip"><pre class="tip-pre">'+esc(s)+'</pre><button class="tip-copy" data-code="'+escAttr(s)+'" onclick="copySnip(this)">复制</button></div>';
+      });
+      html+='</div>';
+    }
+    html+=tipSec('⚠️ 易错点','b-pit',t.pit);
+    html+='<div class="tip-sec"><span class="tip-badge b-kw">🔑 关键词</span><div class="tip-kw">';
+    if(t.kw&&t.kw.length) t.kw.forEach(function(k){ html+='<span class="tip-tag">'+esc(k)+'</span>'; });
+    else html+='<span class="tip-muted">—</span>';
+    html+='</div></div>';
+    html+='</div></details>';
+  });
+  if(rendered===0){
+    html+='<div class="empty">当前筛选下没有题目。'+(tipsFilter==='star'?'还没标⭐——点卡片上的 ☆ 即可标记重点。':'去「小测验 / 模拟考试」做错后会自动归入这里。')+'</div>';
+  }
+  main.innerHTML=html;
+}
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.tab').forEach(t=>{
+    const sel = t.dataset.mode===m;
+    t.classList.toggle('active', sel);
+    t.setAttribute('aria-selected', sel?'true':'false');
+    t.tabIndex = sel?0:-1;
+  });
+  const labels={study:'学习卡',cloze:'挖空自测',recall:'默写自测',bank:'全量题库',errata:'PDF勘误',exam:'小测验',mock:'模拟考试',theory:'理论',tips:'考点提示'};
+  $('#modeBadge').textContent=labels[m];
+  updateControls();
+  render();
+}
+function updateControls(){
+  const studyLike=(mode==='study'||mode==='cloze'||mode==='recall');
+  $('#catFilter').style.display=studyLike?'':'none';
+  $('#shuffleBtn').style.display=studyLike?'':'none';
+  $('#search').style.display=(mode==='errata'||mode==='exam'||mode==='mock'||mode==='tips')?'none':'';
+  document.querySelector('.progress-wrap').style.display=studyLike?'':'none';
+  if(!studyLike) $('#catFilter').value='';
+  if(mode==='errata'||mode==='exam'||mode==='mock') $('#search').value='';
+}
+function render(){
+  if(mode==='study') renderStudy();
+  else if(mode==='cloze') renderCloze();
+  else if(mode==='recall') renderRecall();
+  else if(mode==='errata') renderErrata();
+  else if(mode==='exam') renderExam();
+  else if(mode==='mock') renderMock();
+  else if(mode==='theory') renderTheory();
+  else if(mode==='tips') renderTips();
+  else renderBank();
+}
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setMode(t.dataset.mode)));
+// 键盘可达性：← → 在 tab 间移动并切换，Enter / 空格 激活当前 tab
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('keydown', e=>{
+  const tabs=[...document.querySelectorAll('.tab')];
+  const i=tabs.indexOf(t);
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+    e.preventDefault();
+    const dir=e.key==='ArrowRight'?1:-1;
+    const j=(i+dir+tabs.length)%tabs.length;
+    tabs[j].focus(); setMode(tabs[j].dataset.mode);
+  } else if(e.key==='Enter'||e.key===' '){
+    e.preventDefault(); setMode(t.dataset.mode);
+  }
+}));
+// 实时保存用户作答（切 tab / 刷新都不丢）。监听器挂在 main 上，重建 innerHTML 不影响它
+main.addEventListener('input', e=>{ saveBlank(e.target); });
+$('#search').addEventListener('input', render);
+$('#catFilter').addEventListener('change', render);
+$('#shuffleBtn').addEventListener('click', ()=>{
+  const cards = filteredCards();
+  if(!cards.length) return;
+  const c = cards[Math.floor(Math.random()*cards.length)];
+  if(mode==='bank'){ /* jump to first question containing it is complex; ignore */ }
+  const el=document.getElementById('c'+c.n)||document.getElementById('cz'+c.n)||document.getElementById('rc'+c.n);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--brand)'; setTimeout(()=>el.style.outline='',1500); }
+});
+$('#resetBtn').addEventListener('click', ()=>{
+  if(confirm('确定清空所有“已掌握”标记？')){ master.clear(); saveMaster(); render(); }
+});
+
+buildCatFilter();
+updateProgress();
+updateControls();
+render();
+</script>
+<script src="/assets/js/nav.js"></script>
+</body>
+</html>
