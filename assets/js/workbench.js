@@ -348,6 +348,7 @@
         desc: '上机代码复习 + 单选/多选/判断专项 + 综合题库合集，在线刷题、自动判分。',
         tag: '备考资料',
         coverChar: 'AI',
+        cover: '/assets/covers/ai-trainer.jpg',
         milestones: [
           { date: '2026-06-27', text: '题库整理起步：单选 / 多选 / 判断题集完成' },
           { date: '2026-07-15', text: '题库合集页上线，三题型在线刷题' },
@@ -380,8 +381,12 @@
       '<h2>火哥的项目</h2>' +
       '<p class="sub">我做过的项目都放在这里 · 持续更新中</p>' +
       '<div class="proj-grid">' + projects.map(function (p) {
+        var ch = esc(p.coverChar || p.name.charAt(0));
+        var coverHtml = p.cover
+          ? '<div class="proj-cover hasimg"><img class="cover-img" src="' + esc(p.cover) + '" alt="' + esc(p.name) + '"></div>'
+          : '<div class="proj-cover"><span class="cv">' + ch + '</span></div>';
         return '<a class="proj-card" href="' + p.url + '">' +
-          '<div class="proj-cover">' + esc(p.coverChar || p.name.charAt(0)) + '</div>' +
+          coverHtml +
           '<div class="proj-body">' +
             '<div class="tag">' + esc(p.tag) + '</div>' +
             '<div class="name">' + esc(p.name) + '</div>' +
