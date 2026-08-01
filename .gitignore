@@ -13,3 +13,7 @@ Thumbs.db
 # 本地重复内容：泰国自驾游线上版在 thailand-road-trip/，识字游戏线上版在 literacy-game/
 2026泰国自驾游/
 儿童识字游戏/
+
+# 调试临时文件
+wb-online.js
+sw-online.js
