@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>字精灵 · 识字游戏（Web 原型）</title>
+<!-- PWA / 全屏：iPad Safari「添加到主屏幕」后隐藏工具栏，像 App（见适配报告 B 项） -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="字精灵" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<!-- 字体（美术圣经 §4；woff2 缺失时自动回退系统字体，见 css/fonts.css） -->
+<link rel="stylesheet" href="css/fonts.css" />
+<style>
+  /* 视觉严格取自 art/art-bible.md §2/§4/§5；圆角 ≥12pt、主色天空蓝、CTA 阳光黄。 */
+  :root {
+    --sky: #6FC3E4; --sky-deep: #3E9FC9; --sun: #FFC93C;
+    --ink: #2E3A4B; --fog: #6B7686; --cream: #FFF8F0; --cloud: #FFFFFF;
+    --coral: #FF9E80;
+    /* 字体栈（美术圣经 §4）：优先 web 字体，缺失时回退系统字体 */
+    --font-kai: "LXGW WenKai", "PingFang SC", "KaiTi", "STKaiti", "Kaiti SC", "SimSun", serif;
+    --font-ui:  "ZCOOL KuaiLe", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Heiti SC", sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--cream); }
+  body {
+    font-family: var(--font-ui);
+    color: var(--ink);
+    min-height: 100vh;       /* 兜底：不支持 dvh 的旧浏览器 */
+    min-height: 100dvh;      /* iPad Safari 工具栏伸缩时用 dvh，消除布局跳动 */
+    display: flex; flex-direction: column;
+  }
+  #app {
+    width: 100%; max-width: min(640px, 96vw); margin: 0 auto;
+    display: flex; flex-direction: column; flex: 1;
+    /* 安全区内边距：mini 6 全面屏圆角/底部 home 指示区；mini 5 有 home 键 env 为 0 无影响 */
+    padding:
+      calc(8px  + env(safe-area-inset-top, 0px))
+      calc(12px + env(safe-area-inset-right, 0px))
+      calc(18px + env(safe-area-inset-bottom, 0px))
+      calc(12px + env(safe-area-inset-left, 0px));
+  }
+  #topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 4px 10px;
+  }
+  #title { font-size: 28px; font-weight: 800; color: var(--sky-deep); letter-spacing: 2px; font-family: var(--font-kai); }
+  #stage {
+    width: min(600px, 92vw); display: block; margin: 0 auto;
+    aspect-ratio: 480 / 600;       /* 等比缩放：横屏放大不被压扁（原 canvas 属性 480×600） */
+    height: auto;
+    border-radius: 24px; background: #EAF7FB;
+    box-shadow: 0 4px 12px rgba(46,58,75,0.08);
+    touch-action: none;            /* 描红时禁用页面滚动 */
+  }
+  #controls { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .btn {
+    min-height: 88px;              /* ≥ 主操作 72pt(≈96px) 下限；远超最小 48pt */
+    border: none; border-radius: 20px; font-size: 30px; font-weight: 700;
+    width: 100%; cursor: pointer; padding: 0 16px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: transform .08s ease;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); filter: brightness(0.96); }
+  .btn-primary { background: var(--sun); color: var(--ink); }
+  .btn-secondary { background: var(--cloud); color: var(--sky-deep); box-shadow: inset 0 0 0 3px var(--sky); min-height: 72px; font-size: 26px; }
+  #attrib {
+    margin-top: 16px; font-size: 12px; line-height: 1.6; color: var(--fog);
+    text-align: center; padding: 0 8px;
+  }
+  /* 关于浮层 */
+  #about {
+    position: fixed; inset: 0; background: rgba(46,58,75,0.35);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 10;
+  }
+  #about.show { display: flex; }
+  #about .card {
+    background: var(--cloud); border-radius: 24px; padding: 22px; max-width: 420px;
+    box-shadow: 0 4px 12px rgba(46,58,75,0.08);
+  }
+  #about h2 { margin: 0 0 10px; font-size: 22px; color: var(--sky-deep); }
+  #about p { font-size: 14px; line-height: 1.7; color: var(--ink); margin: 8px 0; }
+  #about .close { margin-top: 12px; }
+</style>
+</head>
+<body>
+  <div id="app">
+    <div id="topbar">
+      <span id="title">字精灵</span>
+      <button id="aboutBtn" class="btn btn-secondary" style="min-height:48px;width:auto;font-size:18px;padding:0 16px;">关于</button>
+    </div>
+
+    <canvas id="stage" width="480" height="600"></canvas>
+
+    <div id="controls"><!-- 按钮由 main.js 按状态注入 --></div>
+
+    <footer id="attrib">
+      本应用使用的汉字笔顺数据来自 Make Me a Hanzi 与 Hanzi Writer，原始字体由文鼎科技（Arphic Technology Co., Ltd.）以 Arphic Public License 开源发布。字体：霞鹜文楷（OFL）、站酷快乐体。
+    </footer>
+  </div>
+
+  <div id="about">
+    <div class="card">
+      <h2>关于这个原型</h2>
+      <p>这是面向 5 岁儿童的识字游戏 <b>Web(HTML5) 垂直切片原型</b>，用于验证「认字 → 描红 → 结算 → 节奏 → 存档」核心循环是否好玩。</p>
+      <p>笔迹中位线数据（Arphic Public License）与字源表均直接复用已有资产；判定/节奏算法严格对齐 GDD。字精灵与真人发音为占位，Sprint 02 接入。</p>
+      <p style="color:var(--fog);font-size:12px;">平台：Web / 双击 index.html 即玩（零安装，file:// 可直接运行）。</p>
+      <button id="aboutClose" class="btn btn-primary close">知道啦</button>
+    </div>
+  </div>
+
+  <!-- 经典脚本：全局变量，禁止 fetch / ES module import，file:// 双击即可用 -->
+  <script src="js/tolerance.js"></script>
+  <script src="js/tracing.js"></script>
+  <script src="js/rhythm.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/strokes-bundle.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

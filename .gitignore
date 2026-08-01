@@ -6,3 +6,10 @@
 Thumbs.db
 .idea/
 .vscode/
+
+# WorkBuddy 工具数据（本地记忆，不上传）
+.workbuddy/
+
+# 本地重复内容：泰国自驾游线上版在 thailand-road-trip/，识字游戏线上版在 literacy-game/
+2026泰国自驾游/
+儿童识字游戏/

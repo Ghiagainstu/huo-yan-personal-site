@@ -1,0 +1,24 @@
+/*
+ * fonts.css — 字体加载机制（美术圣经 §4）。
+ * 描红/认字用霞鹜文楷（LXGW WenKai，SIL OFL）；UI 用站酷快乐体（ZCOOL KuaiLe，免费）。
+ * 字体文件缺失时，index.html 的 --font-kai / --font-ui 会自动回退系统字体，功能与布局不受影响。
+ * 把对应的 woff2 放到 web/fonts/ 即自动生效（详见 web/fonts/README.md），无需改代码。
+ */
+
+/* 描红 / 认字字体：霞鹜文楷 LXGW WenKai（SIL OFL 开源，笔顺规范） */
+@font-face {
+  font-family: "LXGW WenKai";
+  src: url("../fonts/lxgw-wenkai.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;   /* 加载期间先用系统字体，避免闪烁/阻塞 */
+}
+
+/* UI 字体：站酷快乐体 ZCOOL KuaiLe（免费，圆润趣味，匹配低龄调性） */
+@font-face {
+  font-family: "ZCOOL KuaiLe";
+  src: url("../fonts/zcool-kuaile.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
