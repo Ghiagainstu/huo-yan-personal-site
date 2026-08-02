@@ -1,0 +1,222 @@
+/* ============ 赤火燎原 · 人物图鉴 ============ */
+body.char-page{overflow-x:hidden;background:#080808}
+
+/* 头部 */
+.char-head{
+  padding:26px 28px 30px;
+  border-bottom:1px solid rgba(212,160,23,.18);
+  text-align:center;
+  position:relative;
+}
+.char-head .back{
+  position:absolute;top:22px;left:24px;
+  font-size:13px;color:var(--sub);
+  padding:6px 14px;border:1px solid rgba(245,233,211,.25);
+  border-radius:18px;background:rgba(10,10,10,.4);
+  letter-spacing:2px;transition:all .2s;
+}
+.char-head .back:hover{border-color:var(--flame-2);color:var(--flame-1)}
+.char-kicker{
+  font-size:11px;letter-spacing:6px;
+  color:var(--gold);opacity:.8;
+  margin-bottom:12px;
+}
+.char-title{
+  font-family:"STKaiti","KaiTi","STSong",serif;
+  font-size:clamp(30px,5vw,44px);
+  font-weight:900;letter-spacing:10px;
+  background:linear-gradient(180deg,#ffd27a 0%,#ff6a3d 50%,#c8102e 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 0 30px rgba(255,106,61,.3);
+}
+.char-sub{font-size:13px;color:var(--sub);margin-top:10px;letter-spacing:1px}
+
+.char-main{max-width:860px;margin:0 auto;padding:44px 28px 70px}
+
+/* 分组标题 */
+.cgroup{margin-bottom:40px}
+.cgroup-title{
+  display:flex;align-items:center;gap:10px;
+  font-size:16px;font-weight:600;letter-spacing:3px;
+  color:var(--ink);
+  margin-bottom:16px;
+  font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(212,160,23,.2);
+}
+.cg-ico{
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  color:var(--flame-1);
+  background:rgba(255,106,61,.1);
+  border:1px solid rgba(255,106,61,.35);
+  padding:3px 8px;
+  border-radius:4px;
+  font-family:-apple-system,"SF Mono","Menlo","Consolas",monospace;
+  min-width:34px;text-align:center;
+}
+
+/* 人物卡片 */
+.char-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;
+}
+.char-card{
+  background:rgba(245,233,211,.035);
+  border:1px solid rgba(212,160,23,.18);
+  border-radius:10px;
+  padding:18px 20px;
+  transition:border-color .2s,transform .2s;
+}
+.char-card:hover{border-color:rgba(255,106,61,.45);transform:translateY(-2px)}
+.char-card.lead{
+  grid-column:1/-1;
+  border-color:rgba(255,106,61,.35);
+  background:linear-gradient(135deg,rgba(255,106,61,.07) 0%,rgba(10,10,10,.2) 60%);
+}
+.char-card.enemy{border-color:rgba(200,16,46,.35)}
+.char-card.minor{background:rgba(245,233,211,.02)}
+.cc-top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.cc-avatar{
+  width:52px;height:52px;flex:none;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:700;
+  color:#f5f5f7;
+  background:linear-gradient(135deg,var(--ac,#ff6a3d),var(--ac,#c8102e));
+  box-shadow:0 4px 14px rgba(255,106,61,.25);
+  font-family:"STKaiti","KaiTi",serif;
+}
+.cc-id{flex:1;min-width:0}
+.cc-name{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:1px}
+.cc-alias{font-size:13px;color:var(--sub);font-weight:400}
+.cc-role{font-size:12.5px;color:var(--gold);margin-top:3px;letter-spacing:.5px}
+.cc-body p{
+  font-size:14px;line-height:1.85;color:#cdc4ab;
+  margin-bottom:8px;
+  font-family:"Noto Serif SC","STSong","SimSun",serif;
+}
+.cc-body p b{color:var(--flame-1);font-weight:600}
+.cc-scenes{
+  background:rgba(212,160,23,.06);
+  border-left:2px solid var(--flame-2);
+  border-radius:0 6px 6px 0;
+  padding:10px 14px;
+  margin:10px 0 8px;
+  display:flex;flex-direction:column;gap:4px;
+  font-size:13px;color:#cdc4ab;
+}
+.scene-tag{
+  font-size:11px;color:var(--flame-1);
+  letter-spacing:2px;font-weight:600;
+}
+.cc-hint{font-size:13.5px!important}
+.spoiler{
+  font-size:12.5px;color:#8a7d5c;
+  border:1px dashed rgba(212,160,23,.35);
+  padding:1px 8px;border-radius:3px;
+  margin-left:4px;white-space:nowrap;
+}
+
+/* 折叠组 */
+.fold{margin-bottom:24px}
+.fold-summary{
+  cursor:pointer;user-select:none;
+  border:1px solid rgba(212,160,23,.25);
+  border-radius:8px;
+  padding:14px 18px;
+  background:rgba(212,160,23,.04);
+}
+.fold-summary:hover{border-color:rgba(255,106,61,.5);background:rgba(212,160,23,.08)}
+.fold-summary::-webkit-details-marker{display:none}
+.fold-summary::after{
+  content:'▾';margin-left:auto;color:var(--flame-2);
+  transition:transform .2s;
+}
+.fold[open] .fold-summary::after{transform:rotate(180deg)}
+.fold-tag{
+  margin-left:10px;
+  font-size:11px;font-weight:400;letter-spacing:1px;
+  color:var(--flame-2);
+  border:1px solid rgba(255,106,61,.4);
+  padding:2px 10px;border-radius:12px;
+}
+.fold-note{
+  font-size:13px;color:var(--sub);
+  margin:12px 2px 14px;
+}
+.fold[open] .char-grid{margin-top:14px}
+
+/* 关系速览 */
+.rel-wrap{
+  background:rgba(245,233,211,.03);
+  border:1px solid rgba(212,160,23,.18);
+  border-radius:10px;
+  padding:26px 22px;
+}
+.rel-center{
+  text-align:center;
+  padding-bottom:20px;
+  margin-bottom:18px;
+  border-bottom:1px dashed rgba(212,160,23,.25);
+}
+.rel-avatar{
+  width:64px;height:64px;margin:0 auto 10px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:700;color:#f5f5f7;
+  background:linear-gradient(135deg,var(--ac,#ff6a3d),var(--ac,#c8102e));
+  box-shadow:0 6px 20px rgba(255,106,61,.35);
+  font-family:"STKaiti","KaiTi",serif;
+}
+.rel-name{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:3px}
+.rel-role{font-size:12.5px;color:var(--gold);margin-top:4px}
+.rel-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.rel-group{
+  background:rgba(10,10,10,.4);
+  border:1px solid rgba(245,233,211,.1);
+  border-radius:8px;
+  padding:14px 16px;
+}
+.rg-label{
+  font-size:12px;color:var(--flame-2);
+  letter-spacing:3px;margin-bottom:10px;
+  font-weight:600;
+}
+.rg-list{display:flex;flex-direction:column;gap:7px}
+.rg-list span{
+  font-size:13px;color:#d5cdb5;
+  line-height:1.6;
+}
+.rg-list span b{color:var(--flame-1)}
+
+.char-foot{
+  text-align:center;color:var(--sub);
+  font-size:12.5px;letter-spacing:2px;
+  margin-top:46px;
+}
+
+/* 移动端 */
+@media (max-width:768px){
+  .char-head{padding:18px 14px 24px}
+  .char-head .back{position:static;display:inline-block;margin-bottom:16px}
+  .char-title{letter-spacing:5px}
+  .char-kicker{letter-spacing:4px}
+  .char-sub{font-size:12px;padding:0 8px}
+  .char-main{padding:32px 16px 56px}
+  .char-grid{grid-template-columns:1fr;gap:12px}
+  .char-card{padding:15px 16px}
+  .cc-top{gap:12px}
+  .cc-avatar{width:46px;height:46px;font-size:21px}
+  .cc-name{font-size:15.5px}
+  .cc-body p{font-size:13.5px;line-height:1.8}
+  .cgroup-title{font-size:14.5px;letter-spacing:2px}
+  .fold-tag{margin-left:8px;font-size:10px;padding:2px 8px}
+  .spoiler{white-space:normal;display:inline-block;margin-top:4px}
+  .rel-groups{grid-template-columns:1fr 1fr}
+  .rel-avatar{width:54px;height:54px;font-size:26px}
+  .rel-name{font-size:17px}
+}
+@media (max-width:380px){
+  .rel-groups{grid-template-columns:1fr}
+  .char-title{letter-spacing:3px}
+}

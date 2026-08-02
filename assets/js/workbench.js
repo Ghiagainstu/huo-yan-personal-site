@@ -60,6 +60,10 @@
     bilibili: [ { title: 'B站热门示例：AI 训练营全套教程', hot: '320万' }, { title: 'B站热门示例：从零搭建个人网站', hot: '280万' }, { title: 'B站热门示例：程序员的一天 Vlog', hot: '210万' }, { title: 'B站热门示例：年度科技盘点', hot: '180万' }, { title: 'B站热门示例：效率工具合集', hot: '150万' } ]
   };
   var currentView = 'plan', currentKbTab = 'inbox', currentNewsTab = 'weibo';
+  (function () {
+    var h = (location.hash || '').replace('#', '');
+    if (['plan', 'kb', 'news', 'projects', 'settings'].indexOf(h) >= 0) currentView = h;
+  })();
   var newsCache = {};   // tab -> {data, at}
   var selectedNews = null;
 
@@ -119,6 +123,9 @@
     items.forEach(function (it) {
       it.classList.toggle('active', it.getAttribute('data-view') === currentView);
     });
+    if (location.hash !== '#' + currentView) {
+      try { history.replaceState(null, '', '#' + currentView); } catch (e) { location.hash = currentView; }
+    }
   }
 
   function renderPlan() {
@@ -376,6 +383,17 @@
         milestones: [
           { date: '2026-08-01', text: '识字游戏 Web 原型完成，并入「火哥的个人站」' }
         ]
+      },
+      {
+        url: '/chihuoliaoyuan/',
+        name: '《赤火燎原》长篇小说连载',
+        desc: '元史博士穿越成蒙古旧族幼童，指灶火改姓"火"，从百曲灶台烧起，燎尽元末江南。',
+        tag: '小说连载',
+        coverChar: '赤',
+        cover: '/assets/covers/chihuoliaoyuan.png',
+        milestones: [
+          { date: '2026-08-02', text: '小说站上线：卷一《灶火》第 01 章《灶膛里的火》开放阅读' }
+        ]
       }
       // —— 以后新增项目：复制一个对象，填 url / name / desc / tag / coverChar / milestones ——
     ];
@@ -541,6 +559,9 @@
     items.forEach(function (it) {
       it.addEventListener('click', function () {
         currentView = it.getAttribute('data-view');
+        if (location.hash !== '#' + currentView) {
+          try { history.replaceState(null, '', '#' + currentView); } catch (e) { location.hash = currentView; }
+        }
         menuActivate();
         window.scrollTo(0, 0);
         render();

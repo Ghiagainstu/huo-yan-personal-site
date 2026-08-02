@@ -1,0 +1,177 @@
+/* ============ 赤火燎原 · 阅读页（书页风） ============ */
+body.reader{
+  background:#0a0a0a;
+  color:#e8dfc9;
+  overflow-x:hidden;
+}
+
+.reader-head{
+  position:relative;
+  padding:22px 28px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(212,160,23,.18);
+}
+.reader-head .back{
+  position:static;
+  font-size:13px;color:var(--sub);
+  padding:6px 14px;border:1px solid rgba(245,233,211,.25);
+  border-radius:18px;background:rgba(10,10,10,.4);
+  letter-spacing:2px;
+  transition:all .2s;
+}
+.reader-head .back:hover{border-color:var(--flame-2);color:var(--flame-1)}
+.reader-head .char-back{margin-right:auto;margin-left:14px}
+.vol-tag{
+  font-family:"STKaiti","KaiTi",serif;
+  font-size:14px;letter-spacing:5px;
+  color:var(--flame-1);
+  opacity:.8;
+}
+
+.reader-page{
+  max-width:700px;
+  margin:0 auto;
+  padding:48px 32px 80px;
+}
+
+.ch-mark{
+  text-align:center;
+  font-size:13px;letter-spacing:8px;
+  color:var(--flame-1);
+  margin-bottom:18px;
+  font-weight:300;
+  font-family:"STKaiti","KaiTi",serif;
+}
+
+.ch-title{
+  text-align:center;
+  font-family:"STKaiti","KaiTi","STSong",serif;
+  font-size:42px;font-weight:600;
+  letter-spacing:10px;
+  color:var(--ink);
+  margin-bottom:48px;
+  padding-bottom:36px;
+  border-bottom:1px solid rgba(212,160,23,.25);
+  position:relative;
+  word-break:break-word;
+  overflow-wrap:break-word;
+}
+.ch-title::after{
+  content:'';position:absolute;
+  left:50%;bottom:-5px;
+  transform:translateX(-50%);
+  width:6px;height:6px;
+  background:var(--flame-2);
+  border-radius:50%;
+  box-shadow:0 0 12px rgba(255,106,61,.5);
+}
+
+.ch-body p{
+  font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+  font-size:17.5px;
+  line-height:2.05;
+  color:#ddd4ba;
+  margin-bottom:1.4em;
+  text-align:justify;
+  text-justify:inter-character;
+  letter-spacing:.5px;
+  word-break:break-word;
+  overflow-wrap:break-word;
+}
+.ch-body p:first-letter{
+  /* 不强加首字下沉，避免段首引号字变形 */
+}
+
+.system-block{
+  margin:28px 0;
+  padding:22px 28px;
+  background:rgba(212,160,23,.06);
+  border-left:3px solid var(--flame-2);
+  border-radius:0 6px 6px 0;
+  font-family:"Noto Serif SC","STSong",serif;
+}
+.system-block p{
+  font-size:15.5px!important;
+  line-height:1.9!important;
+  color:var(--flame-1)! important;
+  margin-bottom:4px!important;
+}
+.system-block p b{
+  color:#ffd27a;
+  font-weight:600;
+  letter-spacing:2px;
+}
+
+.ch-end{
+  text-align:center;
+  margin:60px 0 40px;
+  position:relative;
+  color:var(--sub);
+  font-size:14px;letter-spacing:6px;
+}
+.ch-end span{
+  background:var(--bg-dark);
+  padding:0 22px;
+  position:relative;z-index:1;
+  font-family:"STKaiti","KaiTi",serif;
+}
+.ch-end::before{
+  content:'';position:absolute;
+  left:0;right:0;top:50%;
+  height:1px;
+  background:linear-gradient(to right,transparent,rgba(212,160,23,.3),transparent);
+}
+
+.ch-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;flex-wrap:wrap;
+  padding:24px 4px;
+  border-top:1px solid rgba(245,233,211,.1);
+  border-bottom:1px solid rgba(245,233,211,.1);
+  margin-top:20px;
+}
+.ch-nav a{
+  font-size:13px;
+  color:var(--flame-2);
+  padding:8px 16px;
+  border:1px solid rgba(212,160,23,.3);
+  border-radius:18px;
+  letter-spacing:1.5px;
+  transition:all .2s;
+}
+.ch-nav a:hover{
+  background:rgba(212,160,23,.08);
+  border-color:var(--flame-2);
+}
+.ch-nav .disabled{
+  color:#5a5544;
+  border-color:rgba(245,233,211,.08);
+  cursor:not-allowed;
+}
+.ch-nav .disabled:hover{
+  background:transparent;border-color:rgba(245,233,211,.08);
+}
+
+.back-foot{
+  text-align:center;
+  margin-top:40px;
+  font-size:13px;
+}
+.back-foot a{
+  color:var(--flame-1);
+  border-bottom:1px solid rgba(255,179,71,.3);
+  padding-bottom:2px;
+}
+
+/* 移动端 */
+@media (max-width:768px){
+  .reader-page{padding:30px 16px 56px}
+  .ch-title{font-size:26px;letter-spacing:4px;margin-bottom:32px;padding-bottom:24px}
+  .ch-body p{font-size:15.5px;line-height:1.95;letter-spacing:0}
+  .reader-head{padding:14px 14px 10px;flex-direction:column;gap:8px;align-items:flex-start}
+  .vol-tag{font-size:13px;letter-spacing:3px}
+  .ch-mark{font-size:12px;letter-spacing:5px;margin-bottom:14px}
+  .system-block{padding:16px 18px;margin:22px 0}
+  .system-block p{font-size:14.5px!important;line-height:1.85!important}
+  .ch-nav a{padding:7px 12px;font-size:12px;letter-spacing:1px}
+}
