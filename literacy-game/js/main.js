@@ -38,6 +38,8 @@
   var currentHex = null, currentData = null, currentMeta = null;
   var order = [];
   var doneCount = 0;
+  var passCount = 0;      // 当前字已写完的遍数
+  var TOTAL_PASSES = 3;   // 每个字写几遍（练习强度）
   var perStroke = [];     // 成功笔画的 {C,D}
   var written = [];       // 成功笔画的用户轨迹点（1024 空间），用于"写满"效果
   var drawing = false, activePointer = null;
@@ -96,7 +98,7 @@
 
   function startTrace() {
     screen = 'TRACE';
-    doneCount = 0; perStroke = []; written = [];
+    doneCount = 0; passCount = 0; perStroke = []; written = [];
     curPts = []; drawing = false; activePointer = null;
     liveCD = null; lastStrokeFailed = false; message = '';
     demo.active = false;
@@ -184,9 +186,21 @@
       doneCount++;
       playSound('ding');
       curPts = []; liveCD = null; lastStrokeFailed = false;
-      message = (doneCount < order.length) ? '这一笔写好啦！' : '全部写好啦！';
-      if (doneCount >= order.length) finishChar();
-      else buildControls();
+      if (doneCount >= order.length) {
+        // 一个字写满 TOTAL_PASSES 遍才算完成
+        passCount++;
+        if (passCount < TOTAL_PASSES) {
+          doneCount = 0;
+          message = '第 ' + passCount + ' 遍写好啦！准备写下一遍～';
+          buildControls();
+        } else {
+          message = '全部写好啦！';
+          finishChar();
+        }
+      } else {
+        message = '这一笔写好啦！';
+        buildControls();
+      }
     } else {
       // 覆盖不足 / 偏差大：不罚，再试（GDD §4.5 零惩罚）
       lastStrokeFailed = true;
@@ -335,11 +349,18 @@
   }
   function buildControls() {
     if (screen === 'HOME') {
-      setControls([
-        { label: '开始今日任务', cls: 'primary', onClick: startTask },
-        { label: '（调试）明天再来', cls: 'secondary', onClick: function () { dayOffset++; ensurePlan(); buildControls(); } },
-        { label: '重置存档', cls: 'secondary', onClick: function () { if (window.confirm('确定清空进度？')) { Storage.reset(); location.reload(); } } }
-      ]);
+      var allDone = plan.items.length > 0 && plan.items.every(function (i) { return i.state === 'DONE'; });
+      if (allDone) {
+        setControls([
+          { label: '明天再来玩', cls: 'primary', onClick: function () { dayOffset++; ensurePlan(); buildControls(); } },
+          { label: '重置存档', cls: 'secondary', onClick: function () { if (window.confirm('确定清空进度？')) { Storage.reset(); location.reload(); } } }
+        ]);
+      } else {
+        setControls([
+          { label: '开始今日任务', cls: 'primary', onClick: startTask },
+          { label: '重置存档', cls: 'secondary', onClick: function () { if (window.confirm('确定清空进度？')) { Storage.reset(); location.reload(); } } }
+        ]);
+      }
     } else if (screen === 'RECOGNIZE') {
       setControls([
         { label: '开始描红', cls: 'primary', onClick: startTrace },
@@ -396,7 +417,7 @@
     var rc = currentData._render_center;
     Render.drawChar(ctx, 64, 46, currentData.char, 40, Render.PALETTE.ink);
     Render.drawText(ctx, (currentMeta && currentMeta.pinyin) || '', 104, 46, 26, Render.PALETTE.sky, '400');
-    Render.drawText(ctx, '第 ' + (doneCount + 1) + ' / ' + order.length + ' 笔', 410, 46, 22, Render.PALETTE.fog, '400');
+    Render.drawText(ctx, '第 ' + (passCount + 1) + '/' + TOTAL_PASSES + ' 遍 · 第 ' + (doneCount + 1) + '/' + order.length + ' 笔', 410, 46, 18, Render.PALETTE.fog, '400');
 
     Render.drawGrid(ctx);
 
