@@ -35,15 +35,20 @@
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
 
-  // 笔迹 1024 空间坐标 -> 屏幕逻辑坐标（用 _render_center 居中，严格按 hanzi-writer 变换）
+  // 笔迹 1024 空间坐标 -> 屏幕逻辑坐标。
+  // ⚠️ 朝向勘误（ADR-002 §4 原判断有误，2026-08-03 订正）：
+  // hanzi-writer-data / makemeahanzi 的 medians 是 **y-up** 坐标系（原点左下、y 向上），
+  // 而 Canvas 是 y-down。必须翻转 Y，否则汉字上下颠倒。
+  // 笔迹数据在 build 期已做包围盒居中（bbox 中心≈0.5），直接按 [0,1] 映射到描红框即可，
+  // 无需再减 _render_center（数据本身已居中；减 rc 反而错位）。rc 仅保留形参兼容调用方。
   function glyphToScreen(gx, gy, rc) {
     var nx = gx / 1024, ny = gy / 1024;
-    return [(nx - rc[0]) * BOX.size + BOX.x, (ny - rc[1]) * BOX.size + BOX.y];
+    return [BOX.x + nx * BOX.size, BOX.y + (1 - ny) * BOX.size];
   }
-  // 屏幕逻辑坐标 -> 笔迹 1024 空间坐标（指针输入用）
+  // 屏幕逻辑坐标 -> 笔迹 1024 空间坐标（指针输入用；glyphToScreen 的严格逆变换，必须同步翻转 Y）
   function screenToGlyph(sx, sy, rc) {
-    var nx = (sx - BOX.x) / BOX.size + rc[0];
-    var ny = (sy - BOX.y) / BOX.size + rc[1];
+    var nx = (sx - BOX.x) / BOX.size;
+    var ny = 1 - (sy - BOX.y) / BOX.size;
     return [nx * 1024, ny * 1024];
   }
 
