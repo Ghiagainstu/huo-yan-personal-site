@@ -230,11 +230,12 @@ body.char-page{overflow-x:hidden;background:#080808}
   display:grid;
   grid-template-columns:220px 1fr;
   gap:18px;
-  align-items:start;             /* 两列顶部对齐（不要 stretch，姓名留在顶部） */
+  align-items:stretch;             /* 行高 = max(文字, 立绘)，卡内不留黑 */
 }
 .char-card.has-art .cc-art{
   grid-column:1;
   width:220px;
+  align-self:stretch;              /* 立绘容器拉伸到行高（=文字高度） */
   border-radius:10px;
   overflow:hidden;
   background:#0a0a0a;
@@ -242,15 +243,15 @@ body.char-page{overflow-x:hidden;background:#080808}
 .char-card.has-art .cc-art img{
   display:block;
   width:100%;
-  height:auto;
-  aspect-ratio:3/4;
+  height:100%;                     /* 填满容器，cover 不变形裁剪 */
   object-fit:cover;
-  object-position:center top;
+  object-position:center top;      /* 保留头顶，裁剪脚部 */
 }
 .char-card.has-art .cc-top,
 .char-card.has-art .cc-body{
   grid-column:2;
   min-width:0;
+  align-self:start;                /* 文字顶部对齐（不被拉伸居中） */
 }
 .char-card.has-art .cc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px}
 .char-card.has-art .cc-id{flex:1}
