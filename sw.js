@@ -1,5 +1,5 @@
 /* 火哥的个人站 · Service Worker（网络优先，保证更新及时） */
-var CACHE = 'hg-site-v14';
+var CACHE = 'hg-site-v15';
 var CORE = [
   '/',
   '/assets/css/workbench.css',

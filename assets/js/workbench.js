@@ -402,6 +402,7 @@
         desc: '一整月午餐 / 晚餐规划，每天配好食材与调料清单，做饭不用再想。',
         tag: '家庭生活',
         coverChar: '餐',
+        cover: '/assets/covers/month-menu.jpg',
         milestones: [
           { date: '2026-08-06', text: '月菜单总览页上线，并入「火哥的个人站」' }
         ]
