@@ -46,6 +46,14 @@
     padding: 6px 4px 10px;
   }
   #title { font-size: 28px; font-weight: 800; color: var(--sky-deep); letter-spacing: 2px; font-family: var(--font-kai); }
+  /* 吉祥物 + hero 横幅（美术圣经配色；圆角/阴影与卡片一致） */
+  #mascot { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 2px 6px rgba(46,58,75,0.15); flex: 0 0 auto; background: var(--cloud); }
+  #hero {
+    width: 100%; display: block; margin: 4px auto 0;
+    height: 172px; border-radius: 20px; object-fit: cover;
+    box-shadow: 0 4px 12px rgba(46,58,75,0.10);
+    background: var(--sky);
+  }
   #stage {
     width: min(600px, 92vw); display: block; margin: 0 auto;
     aspect-ratio: 480 / 600;       /* 等比缩放：横屏放大不被压扁（原 canvas 属性 480×600） */
@@ -97,9 +105,12 @@
 <body>
   <div id="app">
     <div id="topbar">
+      <img id="mascot" src="img/mascot_zijingling.png" alt="字精灵" />
       <span id="title">字精灵</span>
       <button id="aboutBtn" class="btn btn-secondary" style="min-height:48px;width:auto;font-size:18px;padding:0 16px;">关于</button>
     </div>
+
+    <img id="hero" src="img/hero_entry.png" alt="字精灵识字游戏" />
 
     <canvas id="stage" width="480" height="600"></canvas>
 
