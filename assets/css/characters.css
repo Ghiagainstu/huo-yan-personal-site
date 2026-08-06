@@ -222,15 +222,16 @@ body.char-page{overflow-x:hidden;background:#080808}
 }
 /* ===== 核心角色立绘（has-art 双栏） ===== */
 .char-card.has-art{
-  grid-column:1/-1;             /* 立绘卡独占整行，避免与普通卡混排溢出 */
+  grid-column:span 2;            /* 跨 2 列（与普通 3 列卡混排，不独占整行） */
   display:grid;
-  grid-template-columns:180px 1fr;
-  gap:22px;
+  grid-template-columns:170px 1fr;
+  gap:20px;
   align-items:start;
 }
 .char-card.has-art .cc-art{
   grid-column:1;
-  width:180px;
+  width:170px;
+  align-self:stretch;           /* 高度跟随 grid 行高（与文字同高） */
   border-radius:10px;
   overflow:hidden;
   border:1px solid rgba(212,160,23,.32);
@@ -243,6 +244,7 @@ body.char-page{overflow-x:hidden;background:#080808}
   height:auto;
   aspect-ratio:3/4;
   object-fit:cover;
+  object-position:center top;
 }
 .char-card.has-art .cc-top,
 .char-card.has-art .cc-body{
@@ -250,20 +252,23 @@ body.char-page{overflow-x:hidden;background:#080808}
   min-width:0;                 /* 防止 grid 内容溢出 */
 }
 .char-card.has-art .cc-top{display:flex;align-items:center;gap:14px}
-/* 主角卡立绘略大 */
-.char-card.lead.has-art{grid-template-columns:220px 1fr}
+/* 主角立绘略大且仍占全宽作为 hero */
+.char-card.lead.has-art{
+  grid-column:1/-1;
+  grid-template-columns:220px 1fr;
+}
 .char-card.lead.has-art .cc-art{width:220px}
 @media (max-width:760px){
   .char-card.has-art{
-    grid-template-columns:150px 1fr;
-    gap:16px;
+    grid-column:1/-1;
+    grid-template-columns:140px 1fr;
+    gap:14px;
   }
-  .char-card.has-art .cc-art{width:150px}
-  .char-card.lead.has-art{grid-template-columns:180px 1fr}
+  .char-card.has-art .cc-art{width:140px}
   .char-card.lead.has-art .cc-art{width:180px}
 }
 @media (max-width:480px){
   .char-card.has-art{display:block}
   .char-card.has-art .cc-art{width:100%;margin-bottom:14px}
-  .char-card.has-art .cc-art img{aspect-ratio:16/9;object-fit:cover}
+  .char-card.has-art .cc-art img{aspect-ratio:16/9;height:auto;object-fit:cover}
 }
