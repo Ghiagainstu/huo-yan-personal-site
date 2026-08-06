@@ -20,3 +20,4 @@ sw-online.js
 
 # Dumate 工具的本地缓存（不应入库）
 chihuoliaoyuan/.dumate/
+.dumate/
