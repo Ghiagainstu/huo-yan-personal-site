@@ -229,24 +229,22 @@ body.char-page{overflow-x:hidden;background:#080808}
   grid-column:span 2;            /* 跨 2 列（与普通 3 列卡混排，不独占整行） */
   display:grid;
   grid-template-columns:220px 1fr;
-  gap:20px;
-  align-items:start;
+  gap:18px;
+  align-items:stretch;           /* 左右两栏高度一致（图=文字） */
 }
 .char-card.has-art .cc-art{
   grid-column:1;
   width:220px;
+  align-self:stretch;            /* 立绘容器高度=文字高度，消除下方留空 */
   border-radius:10px;
   overflow:hidden;
-  border:1px solid rgba(212,160,23,.28);
-  /* 去掉独立阴影，避免与卡片边框+立绘边框的多重视觉嵌套 */
-  background:#0a0a0a;
+  background:#0a0a0a;            /* 去掉 border：避免与卡片边框双重嵌套 */
 }
 .char-card.has-art .cc-art img{
   display:block;
   width:100%;
-  height:auto;
-  aspect-ratio:3/4;
-  object-fit:cover;
+  height:100%;                   /* 填满容器高度 */
+  object-fit:cover;              /* 不变形裁切，顶部对齐保留人脸 */
   object-position:center top;
 }
 .char-card.has-art .cc-top,
@@ -254,8 +252,8 @@ body.char-page{overflow-x:hidden;background:#080808}
   grid-column:2;               /* 文字区固定在第二列 */
   min-width:0;                 /* 防止 grid 内容溢出 */
 }
-.char-card.has-art .cc-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.char-card.has-art .cc-body p{margin-top:4px}
+.char-card.has-art .cc-top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.char-card.has-art .cc-body p{margin-top:3px}
 .char-card.has-art .cc-body p:first-child{margin-top:0}
 /* 主角立绘 240px（比其他略大） */
 .char-card.lead.has-art{
