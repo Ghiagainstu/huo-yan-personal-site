@@ -391,7 +391,7 @@
         desc: '元史博士穿越成蒙古旧族幼童，指灶火改姓"火"，从百曲灶台烧起，燎尽元末江南。',
         tag: '小说连载',
         coverChar: '赤',
-        cover: '/assets/covers/chihuoliaoyuan.png',
+        cover: '/assets/covers/chihuoliaoyuan.jpg',
         milestones: [
           { date: '2026-08-02', text: '小说站上线：卷一《灶火》第 01 章《灶膛里的火》开放阅读' }
         ]
