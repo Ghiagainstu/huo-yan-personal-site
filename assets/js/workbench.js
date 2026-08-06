@@ -380,7 +380,6 @@
         name: '字精灵 · 识字游戏',
         desc: '面向 5 岁儿童的识字游戏：认字 → 描红 → 结算 → 节奏 → 存档，艾宾浩斯复习调度，纯前端零依赖。',
         tag: '亲子教育',
-        cover: '/assets/covers/literacy-game.jpg',
         coverChar: '字',
         milestones: [
           { date: '2026-08-01', text: '识字游戏 Web 原型完成，并入「火哥的个人站」' }
