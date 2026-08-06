@@ -64,7 +64,7 @@ body.char-page{overflow-x:hidden;background:#080808}
   background:rgba(245,233,211,.035);
   border:1px solid rgba(212,160,23,.18);
   border-radius:10px;
-  padding:18px 20px;
+  padding:14px 16px;
   transition:border-color .2s,transform .2s;
 }
 .char-card:hover{border-color:rgba(255,106,61,.45);transform:translateY(-2px)}
@@ -75,7 +75,7 @@ body.char-page{overflow-x:hidden;background:#080808}
 }
 .char-card.enemy{border-color:rgba(200,16,46,.35)}
 .char-card.minor{background:rgba(245,233,211,.02)}
-.cc-top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.cc-top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
 .cc-avatar{
   width:52px;height:52px;flex:none;
   border-radius:50%;
@@ -91,11 +91,12 @@ body.char-page{overflow-x:hidden;background:#080808}
 .cc-alias{font-size:13px;color:var(--sub);font-weight:400}
 .cc-role{font-size:12.5px;color:var(--gold);margin-top:3px;letter-spacing:.5px}
 .cc-body p{
-  font-size:14px;line-height:1.85;color:#cdc4ab;
-  margin-bottom:8px;
+  font-size:13.5px;line-height:1.65;color:#cdc4ab;
+  margin-bottom:3px;
   font-family:"Noto Serif SC","STSong","SimSun",serif;
 }
-.cc-body p b{color:var(--flame-1);font-weight:600}
+.cc-body p b{color:var(--flame-1);font-weight:600;margin-right:2px}
+.scene-tag+.cc-hint{margin-top:4px}
 .cc-scenes{
   background:rgba(212,160,23,.06);
   border-left:2px solid var(--flame-2);
@@ -231,7 +232,6 @@ body.char-page{overflow-x:hidden;background:#080808}
 .char-card.has-art .cc-art{
   grid-column:1;
   width:170px;
-  align-self:stretch;           /* 高度跟随 grid 行高（与文字同高） */
   border-radius:10px;
   overflow:hidden;
   border:1px solid rgba(212,160,23,.32);
@@ -251,7 +251,8 @@ body.char-page{overflow-x:hidden;background:#080808}
   grid-column:2;               /* 文字区固定在第二列 */
   min-width:0;                 /* 防止 grid 内容溢出 */
 }
-.char-card.has-art .cc-top{display:flex;align-items:center;gap:14px}
+.char-card.has-art .cc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.char-card.has-art .cc-body p{margin-bottom:5px}  /* 紧凑段落间距 */
 /* 主角立绘略大且仍占全宽作为 hero */
 .char-card.lead.has-art{
   grid-column:1/-1;
