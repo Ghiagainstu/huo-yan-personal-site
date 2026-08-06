@@ -36,6 +36,7 @@
   var plan = null, taskIndex = 0;
   var screen = 'HOME';
   var currentHex = null, currentData = null, currentMeta = null;
+  var spiritImg = null;   // 当前字的字精灵配图（Image 对象），无图/加载失败时为 null，回退抽象团子
   var order = [];
   var doneCount = 0;
   var passCount = 0;      // 当前字已写完的遍数
@@ -90,6 +91,14 @@
     currentHex = item.char_id;
     currentData = STROKE_DATA[currentHex];
     currentMeta = CHAR_META[currentHex];
+    // 预载字精灵配图（file:// 与 https 均可用，无 fetch；加载失败自动回退）
+    spiritImg = null;
+    if (typeof IMG_MAP !== 'undefined' && IMG_MAP[currentHex]) {
+      var im = new Image();
+      im.onerror = function () { spiritImg = null; };
+      im.src = 'img/' + IMG_MAP[currentHex];
+      spiritImg = im;
+    }
     order = currentData.order;
     screen = 'RECOGNIZE';
     playSound('char'); // 占位发音钩子（D1 真实人声延后）
@@ -407,7 +416,12 @@
   }
   function drawRecognize(t) {
     var mc = currentMeta || {};
-    Render.drawSprite(ctx, 240, 168, 78, mc.main_color || Render.PALETTE.sky, mc.accent_color || Render.PALETTE.sun, 'happy', t);
+    // 字精灵配图优先；未就绪/无图/加载失败回退抽象团子（不阻断认字）
+    if (spiritImg && spiritImg.complete && spiritImg.naturalWidth) {
+      ctx.drawImage(spiritImg, 240 - 75, 168 - 75, 150, 150);
+    } else {
+      Render.drawSprite(ctx, 240, 168, 78, mc.main_color || Render.PALETTE.sky, mc.accent_color || Render.PALETTE.sun, 'happy', t);
+    }
     Render.drawChar(ctx, 240, 312, currentData.char, 120, Render.PALETTE.ink);
     Render.drawText(ctx, mc.pinyin || '', 240, 392, 36, Render.PALETTE.sky);
     Render.drawText(ctx, mc.meaning || '', 240, 436, 24, Render.PALETTE.fog);
