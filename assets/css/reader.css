@@ -175,3 +175,30 @@ body.reader{
   .system-block p{font-size:14.5px!important;line-height:1.85!important}
   .ch-nav a{padding:7px 12px;font-size:12px;letter-spacing:1px}
 }
+/* 章节题图（章首配图） */
+.ch-cover{
+  margin:0 auto 36px;
+  max-width:880px;
+  border-radius:6px;
+  overflow:hidden;
+  border:1px solid rgba(212,160,23,.22);
+  box-shadow:0 6px 28px rgba(0,0,0,.45);
+  background:#0a0a0a;
+}
+.ch-cover img{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:16/9;
+  object-fit:cover;
+}
+.ch-cover figcaption,
+.ch-cover .cap{
+  display:block;
+  padding:8px 14px;
+  font-size:12px;
+  color:var(--sub);
+  background:linear-gradient(180deg,rgba(20,20,20,.7),#0a0a0a);
+  letter-spacing:1px;
+  text-align:center;
+}
