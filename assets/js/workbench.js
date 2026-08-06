@@ -395,6 +395,16 @@
         milestones: [
           { date: '2026-08-02', text: '小说站上线：卷一《灶火》第 01 章《灶膛里的火》开放阅读' }
         ]
+      },
+      {
+        url: '/month-menu/',
+        name: '一个月菜单总览 · 含食材调料',
+        desc: '一整月午餐 / 晚餐规划，每天配好食材与调料清单，做饭不用再想。',
+        tag: '家庭生活',
+        coverChar: '餐',
+        milestones: [
+          { date: '2026-08-06', text: '月菜单总览页上线，并入「火哥的个人站」' }
+        ]
       }
       // —— 以后新增项目：复制一个对象，填 url / name / desc / tag / coverChar / milestones ——
     ];
