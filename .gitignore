@@ -21,3 +21,7 @@ sw-online.js
 # Dumate 工具的本地缓存（不应入库）
 chihuoliaoyuan/.dumate/
 .dumate/
+
+# Dumate 出图的原始大文件（PNG，工作产物，最终压缩版本在 img/）
+chihuoliaoyuan/ch*-*.png
+chihuoliaoyuan/char-*.png
