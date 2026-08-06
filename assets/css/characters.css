@@ -230,12 +230,12 @@ body.char-page{overflow-x:hidden;background:#080808}
   display:grid;
   grid-template-columns:220px 1fr;
   gap:18px;
-  align-items:stretch;             /* 行高 = max(文字, 立绘)，卡内不留黑 */
+  align-items:stretch;             /* 立绘与文字区同高 */
 }
 .char-card.has-art .cc-art{
   grid-column:1;
   width:220px;
-  align-self:stretch;              /* 立绘容器拉伸到行高（=文字高度） */
+  align-self:stretch;              /* 立绘容器高度=文字高度 */
   border-radius:10px;
   overflow:hidden;
   background:#0a0a0a;
@@ -243,22 +243,23 @@ body.char-page{overflow-x:hidden;background:#080808}
 .char-card.has-art .cc-art img{
   display:block;
   width:100%;
-  height:100%;                     /* 填满容器，cover 不变形裁剪 */
+  height:100%;
   object-fit:cover;
-  object-position:center top;      /* 保留头顶，裁剪脚部 */
+  object-position:center top;
 }
-.char-card.has-art .cc-top,
-.char-card.has-art .cc-body{
-  grid-column:2;
+.char-card.has-art .cc-text{
+  grid-column:2;                   /* 文字区整体放第二列 */
+  display:flex;
+  flex-direction:column;           /* 名字→描述→字段 上下堆叠 */
   min-width:0;
-  align-self:start;                /* 文字顶部对齐（不被拉伸居中） */
+  align-self:start;                /* 文字区顶部对齐 */
 }
-.char-card.has-art .cc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px}
-.char-card.has-art .cc-id{flex:1}
-.char-card.has-art .cc-name{margin-bottom:2px;line-height:1.3}
-.char-card.has-art .cc-role{margin-top:0;line-height:1.45}
-.char-card.has-art .cc-body p{margin-top:3px}
-.char-card.has-art .cc-body p:first-child{margin-top:0}
+.char-card.has-art .cc-text .cc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:4px}
+.char-card.has-art .cc-text .cc-id{flex:1}
+.char-card.has-art .cc-text .cc-name{margin-bottom:2px;line-height:1.3}
+.char-card.has-art .cc-text .cc-role{margin-top:0;line-height:1.45}
+.char-card.has-art .cc-text .cc-body p{margin-top:3px}
+.char-card.has-art .cc-text .cc-body p:first-child{margin-top:0}
 /* 主角立绘 240px（比其他略大） */
 .char-card.lead.has-art{
   grid-column:1/-1;
