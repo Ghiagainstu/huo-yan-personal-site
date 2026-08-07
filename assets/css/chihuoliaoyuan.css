@@ -283,7 +283,7 @@ a{color:inherit;text-decoration:none}
 @media (max-width:768px){
   .hero{height:60vh;min-height:360px}
   .page{padding:36px 16px 56px}
-  .block p{font-size:15px}
+  .block p{font-size:15px;line-height:1.85}
   .one-line{font-size:16px;padding:16px 4px;line-height:1.85}
   .title{letter-spacing:4px;font-size:clamp(48px,14vw,72px)}
   .subtitle{font-size:13.5px;letter-spacing:1.5px;margin-top:16px}
@@ -293,13 +293,27 @@ a{color:inherit;text-decoration:none}
   .series{letter-spacing:4px;font-size:12px;margin-bottom:14px}
   .hero-content{padding:0 16px}
   .volumes li{padding:11px 2px;gap:10px}
-  .chapters a, .chapters li.locked{padding:13px 2px;gap:10px}
-  .ch-num{min-width:60px;font-size:12px}
-  .ch-name{font-size:15px}
+  .chapters a, .chapters li.locked{padding:14px 4px;gap:10px}
+  .ch-num{min-width:60px;font-size:13px}
+  .ch-name{font-size:16px}
   .block h3{font-size:13px;letter-spacing:3px}
   .vol-name{letter-spacing:2px}
+  .ch-go{font-size:11.5px;letter-spacing:1px}
+}
+@media (max-width:480px){
+  /* ≤480px（手机）：进一步缩 */
+  .hero{min-height:300px}
+  .page{padding:28px 14px 48px}
+  .title{font-size:clamp(40px,13vw,60px);letter-spacing:3px}
+  .one-line{font-size:15.5px;padding:14px 2px}
+  .block p{font-size:14.5px;line-height:1.85}
+  .volumes li, .chapters a{padding:13px 4px}
+  .ch-name{font-size:15.5px}
+  .types{gap:6px;flex-wrap:wrap}
+  .types span{font-size:10.5px;padding:3px 9px}
 }
 @media (max-width:380px){
-  .title{letter-spacing:2px}
-  .ch-num{min-width:54px}
+  .title{letter-spacing:2px;font-size:clamp(36px,12vw,52px)}
+  .ch-num{min-width:54px;font-size:12.5px}
+  .ch-name{font-size:14.5px}
 }

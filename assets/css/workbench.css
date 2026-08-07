@@ -178,13 +178,53 @@ textarea{min-height:74px;resize:vertical}
 /* ---------- 移动端 ---------- */
 @media (max-width:768px){
   #app{flex-direction:column}
-  #sidebar{width:100%;max-width:none;height:auto;position:sticky;top:0;z-index:50;
-    border-right:none;border-bottom:1px solid var(--line);background:#fff}
-  .brand{padding:12px 14px 4px}
+  #sidebar{
+    width:100%;max-width:none;height:auto;
+    position:sticky;top:0;z-index:50;
+    border-right:none;border-bottom:1px solid var(--line);
+    background:#fff;
+  }
+  .brand{padding:10px 14px 6px;text-align:left;display:flex;align-items:center;gap:10px}
   .brand-name{font-size:16px}
   .brand-sub{display:none}
-  #menu{flex-direction:row;overflow-x:auto;padding:6px 10px 8px;gap:4px}
-  .menu-item{white-space:nowrap;padding:8px 12px;width:auto}
+  /* 顶部 nav：横向滚动条 + 触摸滑动提示 */
+  #menu{
+    flex-direction:row;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:4px 10px 10px;
+    gap:4px;
+    scrollbar-width:none;
+  }
+  #menu::-webkit-scrollbar{display:none}
+  .menu-item{
+    white-space:nowrap;
+    padding:7px 12px;
+    width:auto;
+    font-size:13.5px;
+    flex:none;
+  }
+  .menu-item .mi{display:none}
   .menu-spacer{display:none}
-  #content{width:100%;padding:20px 14px 60px}
+  #content{width:100%;padding:18px 14px 56px}
+  /* 卡片内 padding 缩小 */
+  .card{padding:16px 16px;margin-bottom:14px}
+  /* 表格布局优化 */
+  .add-line{flex-wrap:wrap}
+  .add-line input[type=text]{min-width:0;flex:1 1 100%}
+  /* 项目卡片网格：手机 2 列 */
+  .proj-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .proj-cover{height:96px}
+  .proj-cover .cv{font-size:36px}
+  .proj-body{padding:12px 14px 14px}
+  /* Tab bar（知识库内的 tab） */
+  .tabbar{padding:0 4px;margin-bottom:14px}
+  .tab{padding:8px 10px;font-size:13px}
+}
+@media (max-width:420px){
+  /* 极小屏幕：待办、时间字段垂直 */
+  .todo-row{flex-wrap:wrap}
+  .todo-row .time{font-size:11.5px;width:100%;padding-left:20px}
+  .form-row{flex-direction:column}
+  .form-row input[type=datetime-local]{width:100%}
 }

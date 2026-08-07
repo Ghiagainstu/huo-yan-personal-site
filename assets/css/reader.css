@@ -165,15 +165,27 @@ body.reader{
 
 /* 移动端 */
 @media (max-width:768px){
-  .reader-page{padding:30px 16px 56px}
-  .ch-title{font-size:26px;letter-spacing:4px;margin-bottom:32px;padding-bottom:24px}
-  .ch-body p{font-size:15.5px;line-height:1.95;letter-spacing:0}
-  .reader-head{padding:14px 14px 10px;flex-direction:column;gap:8px;align-items:flex-start}
+  .reader-page{padding:24px 16px 56px}
+  .ch-title{font-size:28px;letter-spacing:4px;margin-bottom:30px;padding-bottom:22px}
+  .ch-body p{font-size:16px;line-height:2;letter-spacing:0;margin-bottom:1.3em}
+  .reader-head{padding:12px 14px 8px;flex-direction:column;gap:6px;align-items:flex-start}
+  .reader-head .back{font-size:12px;padding:5px 12px}
+  .reader-head .char-back{margin-left:8px}
   .vol-tag{font-size:13px;letter-spacing:3px}
   .ch-mark{font-size:12px;letter-spacing:5px;margin-bottom:14px}
   .system-block{padding:16px 18px;margin:22px 0}
   .system-block p{font-size:14.5px!important;line-height:1.85!important}
   .ch-nav a{padding:7px 12px;font-size:12px;letter-spacing:1px}
+  .ch-cover{margin:0 auto 28px;border-radius:4px}
+  .ch-nav{flex-direction:row;gap:8px}
+}
+@media (max-width:420px){
+  /* 极小屏：标题再缩、padding 更紧凑 */
+  .reader-page{padding:20px 14px 48px}
+  .ch-title{font-size:24px;letter-spacing:3px}
+  .ch-body p{font-size:15.5px;line-height:1.95}
+  .system-block{padding:14px 14px}
+  .system-block p{font-size:14px!important}
 }
 /* 章节题图（章首配图） */
 .ch-cover{
