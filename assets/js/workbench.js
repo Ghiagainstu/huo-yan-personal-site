@@ -407,6 +407,17 @@
         milestones: [
           { date: '2026-08-06', text: '月菜单总览页上线，并入「火哥的个人站」' }
         ]
+      },
+      {
+        url: '/chiangmai/',
+        name: '2027 清迈旅居 · 亲子一个月',
+        desc: '2027 春节前后清迈旅居一个月，两大一小。工作日送幼儿园、周末近郊游，攻略与实况持续更新。',
+        tag: '旅行攻略',
+        coverChar: '清',
+        cover: '/assets/covers/chiangmai-2027.jpg',
+        milestones: [
+          { date: '2026-08-07', text: '清迈旅居规划启动：亲子行程与近郊游方案完成' }
+        ]
       }
       // —— 以后新增项目：复制一个对象，填 url / name / desc / tag / coverChar / milestones ——
     ];
