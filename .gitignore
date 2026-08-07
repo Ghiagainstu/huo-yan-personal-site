@@ -1,27 +1,29 @@
 # Cloudflare 凭证 —— 严禁提交到仓库
 .cloudflare.env
-
 # 系统 / 编辑器
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-
 # WorkBuddy 工具数据（本地记忆，不上传）
 .workbuddy/
-
 # 本地重复内容：泰国自驾游线上版在 thailand-road-trip/，识字游戏线上版在 literacy-game/
 2026泰国自驾游/
 儿童识字游戏/
-
 # 调试临时文件
 wb-online.js
 sw-online.js
-
 # Dumate 工具的本地缓存（不应入库）
 chihuoliaoyuan/.dumate/
 .dumate/
-
 # Dumate 出图的原始大文件（PNG，工作产物，最终压缩版本在 img/）
 chihuoliaoyuan/ch*-*.png
 chihuoliaoyuan/char-*.png
+# 损坏的旧 .git 目录（mv 备份用，避免误入库）
+.git.corrupt/
+# 小说源文件（工作用，HTML 是成品）
+chihuoliaoyuan/00_创作大纲与设定.md
+chihuoliaoyuan/人物图鉴_网站版.md
+chihuoliaoyuan/小说简介_网站版.md
+chihuoliaoyuan/第[0-9][0-9]章*.md
+chihuoliaoyuan/附录*.md
