@@ -46,6 +46,20 @@
   .cover .emoji{font-size:50px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
   .cover .loc{position:absolute;top:10px;left:10px;font-size:11px;color:#fff;background:rgba(0,0,0,.32);
     padding:3px 9px;border-radius:999px;backdrop-filter:blur(4px);font-weight:500}
+  .cover .cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .cover .ovl{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.42),rgba(0,0,0,0) 52%);z-index:1}
+  .cover .loc{z-index:2}
+  .cover.has-img .emoji{position:absolute;right:10px;bottom:9px;font-size:32px;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));z-index:2}
+  /* 详情图廊 + 灯箱 */
+  .gallery{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;margin-top:4px;-webkit-overflow-scrolling:touch}
+  .gallery img{flex:0 0 auto;width:140px;height:96px;object-fit:cover;border-radius:8px;
+    border:1px solid var(--line);cursor:pointer;transition:transform .12s}
+  .gallery img:active{transform:scale(.97)}
+  .lb{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:80;display:none;
+    align-items:center;justify-content:center;padding:20px}
+  .lb.open{display:flex}
+  .lb img{max-width:100%;max-height:100%;border-radius:8px}
   .card .body{padding:14px 16px 16px}
   .card .name{font-size:16px;font-weight:700}
   .card .en{font-size:11.5px;color:var(--sub);margin-top:1px;letter-spacing:.02em}
@@ -104,84 +118,99 @@
   <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
 </div>
 
+<div class="lb" id="lb"><img id="lbImg" alt=""></div>
+
 <script>
   var SPOTS = [
     {
-      emoji:"💧", grad:"linear-gradient(135deg,#3aa0a8,#1f6f78)", loc:"湄林",
+      emoji:"💧", grad:"linear-gradient(135deg,#3aa0a8,#1f6f78)", loc:"湄登",
       name:"黏黏瀑布", en:"Buatong / Sticky Waterfall",
       tag:"能爬的钙化瀑布，免费玩水一整天",
+      imgs:["img/sticky-1.jpg","img/sticky-2.jpg","img/sticky-3.jpg"],
       meta:[
-        ["位置","湄林 Mae Rim，市区约 1 小时车程"],
-        ["门票","免费（停车免费，无需预约）"],
-        ["开放","08:00–17:00"]
+        ["位置","湄登县 Si Lanna 国家公园（Mae Taeng，市区西北约 60km）"],
+        ["门票","免费（入口登记姓名+车牌，停车免费）"],
+        ["开放","08:00–17:00"],
+        ["游玩","约 2–3 小时（攀爬+玩水）"]
       ],
       hi:[
-        "石灰岩含碳酸钙，踩上去粗糙防滑，可像蜘蛛人一样逆流攀爬",
-        "水源是山泉，出口对面有泉水（碳酸钙源头）可看",
-        "可与蓝庙、大象咖啡厅、天使瀑布排成一日游"
+        "瀑布含碳酸氢钙泉（Nam Phu Chet Si），水流经处沉积石灰华，岩面粗糙如砂纸，赤脚踩上去不打滑，可像蜘蛛人一样逆流攀爬",
+        "共 4 层，主瀑段爬升约 20–45 分钟，难度轻松~中等，两侧有绳索借力；5 岁娃可由家长牵手体验浅水段",
+        "顶层有天然水池可泡脚/游泳；对岸是七彩泉眼源头，水质清透可看"
       ],
       tips:[
-        "5 岁属「幼童」：建议只在浅水区玩水，或爸爸抱着体验一小段；国小生以上才可自己爬",
-        "装备：泳衣/速干衣、沙滩袜或溯溪鞋（防滑不硌脚）、换洗衣物毛巾、手机防水袋（景区约 25 铢）",
-        "安全：避开绿色青苔（极滑）；陡坡抓绳借力别猛拽；上午或中午前到，下午 2 点后人多",
-        "景区有免费更衣室淋浴；寄存柜约 30 铢"
+        "交通：自驾/包车约 1–1.5 小时；可与同区的湄登大象营（Mae Taeng）排成一日游",
+        "装备：水鞋或溯溪鞋（防滑不硌脚）、泳衣/速干衣、换洗衣物毛巾、手机防水袋（景区约 25 铢）",
+        "最佳时间：11–2 月水量与气温最佳（正合此行）；平日或上午早到最清净，周末 11:00–15:00 人最多",
+        "安全：避开绿色青苔区（极滑）；陡处抓绳借力别猛拽；景区有免费更衣室/淋浴，寄存柜约 30 铢"
       ]
     },
     {
       emoji:"🌿", grad:"linear-gradient(135deg,#4caf6a,#2e7d4f)", loc:"近郊",
-      name:"丛林飞跃 Skyline", en:"Zipline · 刺激型",
-      tag:"雨林上空滑索，青少年最爱的冒险",
+      name:"丛林飞跃 Skyline", en:"Zipline Adventure",
+      tag:"雨林上空滑索，5 岁起可玩（身高≥120cm）",
       meta:[
-        ["位置","清迈近郊（进山车程 1 小时+）"],
-        ["套餐","含酒店接送 + 自助餐，可选出发时段"],
-        ["时长","全程约 3–4 小时"]
+        ["位置","清迈西北山区（古城约 5km 起含免费接送）"],
+        ["门票","含接送+泰式自助午餐+保险+中/英导游"],
+        ["开放","周二休（周一及周三–日）；接驳 07:00–13:30"],
+        ["游玩","全程约 3–5 小时"]
       ],
       hi:[
-        "Skyline 较火、较刺激（非最刺激，青少年可玩），有丛林飞跃、卡丁车、秋千",
-        "一组配两位教练，一前一后护航；穿梭雨林上空，大部分滑索无失重感",
-        "可附加跟拍，不用忙着拍照也能留念"
+        "38 个平台、21 条滑索（最长 900m）、2100m 丛林旱滑（过山车式）、9m 巨型秋千、15m 速降、5 座高空桥",
+        "一组配两位教练前后护航，穿梭雨林上空，大部分滑索无失重感，体验流畅安全",
+        "可加购跟拍，轻松留念不耽误玩"
       ],
       tips:[
-        "5 岁注意：笔记里最小孩子是 7 岁、10 岁；Skyline 偏刺激，5 岁大概率不合适 → 建议改选更亲子线（如 Phoenix），或直接确认年龄/身高下限再决定",
+        "年龄身高：5–65 岁、身高 ≥120cm、体重 20–110kg → 5 岁娃若身高达标即可参与（出发前务必现场复核下限）",
+        "装备：穿运动鞋+长裤（防擦伤），现场也可租借鞋",
         "后半段山路弯道多易晕车，备晕车贴；出发前别吃太饱",
-        "鞋子不合适可现场租借，但更建议穿运动鞋"
+        "周二不营业，规划行程时避开"
       ]
     },
     {
-      emoji:"🌈", grad:"linear-gradient(135deg,#7c6bd6,#4b3f9e)", loc:"近郊",
+      emoji:"🌈", grad:"linear-gradient(135deg,#7c6bd6,#4b3f9e)", loc:"三鹏",
       name:"彩虹溶洞", en:"Mae Sap Cave",
-      tag:"不用爬山暴汗，轻松出片的神仙溶洞",
+      tag:"不用暴汗，灯光映出天然彩纹的神仙溶洞",
+      imgs:["img/cave-1.jpg","img/cave-2.jpg"],
       meta:[
-        ["位置","清迈近郊（ถ้ำหลวงแม่สาบ）"],
-        ["玩法","打卡 3 个溶洞，彩虹洞最出片"],
-        ["适合","全家 / 懒人，不暴汗"]
+        ["位置","坤 Khan 国家公园（Samoeng，市区西南约 1 小时车程）"],
+        ["门票","100–150 铢 + 强制头盔 20–30 铢 + 停车费"],
+        ["开放","约 08:00–17:00"],
+        ["游玩","溶洞 1–1.5h + 1.2km 步道"]
       ],
       hi:[
-        "肉眼看到的颜色真实神奇，原图直出无滤镜",
-        "回程可买路边草莓"
+        "泰国「Unseen Thailand」奇观：洞内矿物质在灯光下折射出红/绿/蓝天然彩纹，原图直出无滤镜",
+        "4 个洞厅（入口厅/礼佛厅/祖母绿厅/钻石厅），海拔 620m、洞长 144m，尺度适中不累",
+        "回程路边常有草莓摊，可顺手买"
       ],
       tips:[
-        "⚠️ 去前先确认当天是否开门，免得扑空",
-        "相对轻松，适合不想爬山的日子"
+        "装备：运动鞋 + 头灯/小手电（自备更亮）、轻便透气衣物",
+        "最佳光线：10:00–14:00 自然光最好；11–2 月最适宜，雨季（6–10 月）易积水避免",
+        "路况：步道约 1.2km，其中 200m 较陡、路面不平，牵好娃；包车约 1500 铢/天",
+        "去前确认当天开放（偶有维护），避免扑空"
       ]
     },
     {
       emoji:"🔨", grad:"linear-gradient(135deg,#b08d57,#7a5c34)", loc:"古城南门",
       name:"打铁片手工", en:"Lanna Artisans",
       tag:"古城南门 50 铢，敲出专属旅行纪念",
+      imgs:["img/smith-1.jpg","img/smith-2.jpg","img/smith-3.jpg"],
       meta:[
-        ["位置","古城南门银庙（Wat Sri Suphan）旁"],
-        ["价格","50 泰铢/个（≈11 元），仅现金"],
-        ["成品","钥匙扣 / 戒指 / 手镯"]
+        ["位置","古城南门银庙（Wat Sri Suphan）旁，Wua Lai Rd"],
+        ["价格","铝片 50 铢/件；铜戒指 70、手镯 110 铢（仅现金）"],
+        ["开放","每日 09:00–17:00"],
+        ["游玩","约 1 小时（做 2 件）"]
       ],
       hi:[
-        "画图案或选模板 → 复写纸拓印到铁片 → 小锤敲打 → 店员打磨上油抛光打孔",
-        "手工爱好者狂喜，自用或当伴手礼都特别有意义"
+        "画图案或选模板 → 复写纸拓印到铁片 → 小锤敲打 → 店员打磨上油抛光打孔，6 步成品",
+        "钥匙扣/戒指/手镯任选，做完当场带走，自用或伴手礼都特别有意义",
+        "家族经营、半露天工坊，有风扇+免费饮水，氛围松弛"
       ],
       tips:[
-        "上午 9 点开门或下午 2 点后去人少",
-        "提前用手机想好简单图案，现场不会手忙脚乱",
-        "谷歌地图搜 Lanna Artisans Art Gallery"
+        "支付：仅收现金（泰铢），备好零钱",
+        "时间：上午 9 点开门或下午 2 点后去人少，体验更从容",
+        "提前用手机想好简单图案（线条越简单越好敲），现场不慌",
+        "谷歌地图搜「Lanna Artisans Art Gallery」即可定位"
       ]
     },
     {
@@ -189,18 +218,20 @@
       name:"大象自然保护公园", en:"Elephant Nature Park",
       tag:"无接触大象救助营，给孩子保护自然的视角",
       meta:[
-        ["位置","清迈北面，市区约 1 小时"],
-        ["门票","相对贵，官网预定"],
-        ["时长","半天到一天"]
+        ["位置","湄登县（Mae Taeng），市区约 90 分钟车程"],
+        ["门票","半日 2,500 / 全日 SkyWalk 3,500 / 过夜 5,800 铢（儿童 3–11 半价；官网预订）"],
+        ["开放","每日（需预约，含接送）"],
+        ["游玩","半日约 4h / 全日整天"]
       ],
       hi:[
-        "大象庇护救助中心，无表演、主张「无接触」大象",
-        "陪大象散步、看游泳、帮做饭；向导讲被救助故事（来自马戏团 / 伐木场）",
-        "场地大，有老弱残疾象，适合亲子生命教育"
+        "由 Lek Chailert 创立的救助营，主张「无接触」：不骑乘、不表演、不触摸，尊重象的自主",
+        "喂香蕉/甘蔗、看象群河里洗澡、听被救助故事（来自马戏团/伐木场）；素食自助午餐",
+        "场地大、有无障碍通道，适合亲子生命教育与自然教育"
       ],
       tips:[
-        "场地有泥地，选好鞋；带驱蚊",
-        "有英文向导，建议官网提前订"
+        "只通过官网预订（含古城接送），名额有限提前约",
+        "装备：泥地多穿好走鞋+驱蚊；带防晒",
+        "半日场最亲子友好、节奏适中；想深度可选项目过夜"
       ]
     },
     {
@@ -208,37 +239,42 @@
       name:"山顶绵羊牧场", en:"Maekee Sheep House",
       tag:"湄林山顶童话牧场，5 岁娃能玩半天",
       meta:[
-        ["位置","湄林 Mae Rim 山顶"],
-        ["别称","山顶绵羊咖啡 / 绵羊农场"],
-        ["适合","低龄亲子，强烈推荐"]
+        ["位置","湄林区 Pong Yang 山顶（市区约 45 分钟–1h20）"],
+        ["门票","约 100 铢（外国游客 200 / 儿童 50 / 110cm 以下免费，部分含胡萝卜桶）"],
+        ["开放","07:30–18:00"],
+        ["游玩","约 2–3 小时"]
       ],
       hi:[
-        "羊群干净亲人，可近距离抚摸投喂；胆大孩子可骑羊漫步；小羊羔可抱怀里拍照",
-        "还有羊驼、山羊、牧羊犬；开阔草甸直面蓝天，随手出片",
-        "孩子们常玩 2–3 小时舍不得走"
+        "约 10 英亩草甸，白羊成群干净亲人，可近距离抚摸投喂；还有 2 只羊驼、山羊、牧羊犬",
+        "胆大孩子可骑羊漫步、抱小羊羔拍照；开阔草甸直面蓝天随手出片",
+        "网红秋千+风车打卡点，配咖啡馆，适合全家慢悠悠待半天"
       ],
       tips:[
-        "⚠️ 喂食时部分羊会站起来抢食，小心被扑到",
-        "工作人员热情，会鼓励合影"
+        "最佳时间：下午 3 点后光线柔、人相对少，拍照更好看",
+        "可顺路排蒙占山（Mon Cham）一日游",
+        "喂食时部分羊会站起来抢食，牵好娃、小心被扑到；工作人员热情会帮合影"
       ]
     },
     {
       emoji:"🌙", grad:"linear-gradient(135deg,#2b3a67,#16213e)", loc:"素贴山下",
       name:"夜间动物园", en:"Chiang Mai Night Safari",
       tag:"亚洲唯二夜间动物园，坐车喂长颈鹿",
+      imgs:["img/night-1.jpg","img/night-2.jpg"],
       meta:[
-        ["位置","素贴山下，市中心约 15km"],
-        ["门票","全园含车 成人约 800 / 儿童 400 铢（非泰籍）"],
-        ["开放","约 11:00–22:00"]
+        ["位置","Hang Dong（素贴山脚下），市中心约 12–15km / 20–30 分钟"],
+        ["门票","外国游客约 1,200 铢成人 / 600 铢儿童（101–140cm），100cm 以下免费"],
+        ["开放","11:00–22:00"],
+        ["游玩","约 4–5 小时"]
       ],
       hi:[
-        "分步行区、草食/肉食观光车区、动物表演区",
-        "坐无玻璃游览车近距离喂长颈鹿/斑马（蔬果篮 30 铢），5 岁极兴奋",
-        "灯光水幕秀 + 民族舞蹈表演"
+        "三大区：步行区（Jaguar Trail）、草食动物观光车（Savanna）、肉食猎手区（Predator Prowl）",
+        "坐无玻璃游览车近距离喂长颈鹿/斑马（蔬果篮 30 铢），5 岁娃极兴奋",
+        "灯光水幕秀 + 民族舞蹈/老虎表演（约 18:10 起）"
       ],
       tips:[
-        "建议下午 5 点前入园：先逛步行区亮天拍照，再夜场车游 + 灯光秀",
-        "防蚊必备；游览车每区只坐一次，规划好时间"
+        "最佳到达：15:30–16:00 入园，先亮天逛步行区拍照，再夜场车游+灯光秀，一气呵成",
+        "防蚊必备；每区游览车只坐一次，先规划好动线（步行区→草食车→肉食车）",
+        "带娃注意夜间降温，备薄外套"
       ]
     }
   ];
@@ -249,7 +285,9 @@
 
   grid.innerHTML = SPOTS.map(function(s, i){
     return '<a class="card" data-i="'+i+'">' +
-      '<div class="cover" style="background:'+s.grad+'">' +
+      '<div class="cover'+(s.imgs?' has-img':'')+'" style="background:'+s.grad+'">' +
+        (s.imgs ? '<img class="cover-img" src="'+s.imgs[0]+'" alt="'+s.name+'" loading="lazy">' : '') +
+        (s.imgs ? '<div class="ovl"></div>' : '') +
         '<span class="loc">'+s.loc+'</span>' +
         '<span class="emoji">'+s.emoji+'</span>' +
       '</div>' +
@@ -280,16 +318,30 @@
       '<div class="meta">'+meta+'</div>' +
       '<div class="sec-title">亮点</div>'+hi+
       '<div class="sec-title">实用贴士</div>'+tp+
+      (s.imgs ? '<div class="sec-title">参考图</div>'+
+        '<div class="gallery">'+s.imgs.map(function(im){return '<img src="'+im+'" alt="'+s.name+'" data-full="'+im+'">';}).join('')+'</div>' : '')+
       (s.name.indexOf('彩虹溶洞')>=0 || s.name.indexOf('黏黏瀑布')>=0
         ? '<div class="warn">提示：溶洞 / 瀑布去前建议确认开放状态，避免扑空。</div>' : '');
     document.getElementById('closeBtn').addEventListener('click', closeSheet);
+    var gimgs = sheet.querySelectorAll('.gallery img');
+    gimgs.forEach(function(g){
+      g.addEventListener('click', function(){
+        document.getElementById('lbImg').src = this.getAttribute('data-full');
+        document.getElementById('lb').classList.add('open');
+      });
+    });
     mask.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
   function closeSheet(){
     mask.classList.remove('open');
+    document.getElementById('lb').classList.remove('open');
     document.body.style.overflow = '';
   }
+
+  document.getElementById('lb').addEventListener('click', function(){
+    this.classList.remove('open');
+  });
 
   grid.addEventListener('click', function(e){
     var c = e.target.closest('.card');
