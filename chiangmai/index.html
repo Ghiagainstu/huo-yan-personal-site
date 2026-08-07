@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>清迈亲子景点手册 · 火哥的个人站</title>
+<meta name="description" content="清迈亲子游景点卡片：黏黏瀑布、丛林飞跃、彩虹溶洞、打铁手工、大象自然保护公园、山顶绵羊牧场、夜间动物园。点击卡片看详情。">
+<meta name="theme-color" content="#ffffff">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1XSB4FETFN');
+</script>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#fafafa; --ink:#1a1a1a; --sub:#8a8a8e;
+    --line:#e5e5e7; --gold:#E8A33D; --gold-dark:#B87A1E; --gold-bg:#FBF3E2;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,"SF Pro Text","SF Pro Display","PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;letter-spacing:.01em;
+  }
+  .wrap{max-width:620px;margin:0 auto;padding:20px 16px 56px;padding-top:calc(20px + env(safe-area-inset-top))}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .back{font-size:13px;color:var(--gold-dark);text-decoration:none;font-weight:600}
+  .back:hover{opacity:.8}
+  header h1{font-size:23px;font-weight:700;letter-spacing:.01em}
+  header .sub{font-size:13px;color:var(--sub);margin:6px 0 20px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+  .card{
+    border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    background:#fff;text-decoration:none;color:inherit;display:block;
+    transition:transform .15s,border-color .15s,box-shadow .15s;cursor:pointer;
+  }
+  .card:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.06)}
+  .card:active{transform:translateY(0)}
+  .cover{height:118px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .cover .emoji{font-size:50px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
+  .cover .loc{position:absolute;top:10px;left:10px;font-size:11px;color:#fff;background:rgba(0,0,0,.32);
+    padding:3px 9px;border-radius:999px;backdrop-filter:blur(4px);font-weight:500}
+  .card .body{padding:14px 16px 16px}
+  .card .name{font-size:16px;font-weight:700}
+  .card .en{font-size:11.5px;color:var(--sub);margin-top:1px;letter-spacing:.02em}
+  .card .tag{font-size:13px;color:var(--sub);margin-top:8px;line-height:1.5}
+  .card .more{font-size:13px;font-weight:600;color:var(--gold-dark);margin-top:10px;display:inline-block}
+  /* ---------- 底部弹层 ---------- */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;visibility:hidden;
+    transition:opacity .22s;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+  .mask.open{opacity:1;visibility:visible}
+  .sheet{background:#fff;width:100%;max-width:620px;max-height:88vh;overflow-y:auto;
+    border-radius:18px 18px 0 0;padding:22px 20px calc(26px + env(safe-area-inset-bottom));
+    transform:translateY(100%);transition:transform .26s cubic-bezier(.22,1,.36,1);
+    -webkit-overflow-scrolling:touch}
+  .mask.open .sheet{transform:translateY(0)}
+  .sheet-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+  .sheet-head .big{font-size:40px;line-height:1}
+  .sheet-head .t{flex:1}
+  .sheet-head .t .n{font-size:19px;font-weight:700}
+  .sheet-head .t .e{font-size:12px;color:var(--sub);margin-top:2px}
+  .close{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+    background:#fff;color:var(--sub);font-size:18px;cursor:pointer;line-height:1}
+  .close:hover{background:var(--panel)}
+  .meta{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
+  .meta .row{display:flex;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .meta .row:last-child{border-bottom:none}
+  .meta .k{flex:0 0 64px;color:var(--sub);font-size:13px}
+  .meta .v{flex:1;font-size:14px}
+  .sec-title{font-size:13px;font-weight:700;color:var(--gold-dark);margin:16px 0 8px;
+    display:flex;align-items:center;gap:6px}
+  .sec-title::before{content:"";width:3px;height:13px;background:var(--gold);border-radius:2px;display:inline-block}
+  ul.list{list-style:none}
+  ul.list li{position:relative;padding-left:16px;font-size:14px;margin-bottom:7px;color:#333}
+  ul.list li::before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;
+    border-radius:50%;background:var(--gold)}
+  .warn{background:var(--gold-bg);border:1px solid #f0d9a8;border-radius:10px;padding:10px 13px;
+    font-size:13.5px;color:#7a5a1e;margin-top:6px}
+  footer{margin-top:30px;text-align:center;font-size:12px;color:var(--sub)}
+  footer a{color:var(--gold-dark);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="/">← 返回火哥的个人站</a>
+    <span style="font-size:12px;color:var(--sub)">清迈 · 亲子</span>
+  </div>
+  <header>
+    <h1>清迈亲子景点手册</h1>
+    <p class="sub">两大一小 · 5 岁友好 · 点击卡片看详情与实用贴士</p>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer>资料整理自小红书笔记与实地攻略 · <a href="/">火哥的个人站</a></footer>
+</div>
+
+<div class="mask" id="mask">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+  var SPOTS = [
+    {
+      emoji:"💧", grad:"linear-gradient(135deg,#3aa0a8,#1f6f78)", loc:"湄林",
+      name:"黏黏瀑布", en:"Buatong / Sticky Waterfall",
+      tag:"能爬的钙化瀑布，免费玩水一整天",
+      meta:[
+        ["位置","湄林 Mae Rim，市区约 1 小时车程"],
+        ["门票","免费（停车免费，无需预约）"],
+        ["开放","08:00–17:00"]
+      ],
+      hi:[
+        "石灰岩含碳酸钙，踩上去粗糙防滑，可像蜘蛛人一样逆流攀爬",
+        "水源是山泉，出口对面有泉水（碳酸钙源头）可看",
+        "可与蓝庙、大象咖啡厅、天使瀑布排成一日游"
+      ],
+      tips:[
+        "5 岁属「幼童」：建议只在浅水区玩水，或爸爸抱着体验一小段；国小生以上才可自己爬",
+        "装备：泳衣/速干衣、沙滩袜或溯溪鞋（防滑不硌脚）、换洗衣物毛巾、手机防水袋（景区约 25 铢）",
+        "安全：避开绿色青苔（极滑）；陡坡抓绳借力别猛拽；上午或中午前到，下午 2 点后人多",
+        "景区有免费更衣室淋浴；寄存柜约 30 铢"
+      ]
+    },
+    {
+      emoji:"🌿", grad:"linear-gradient(135deg,#4caf6a,#2e7d4f)", loc:"近郊",
+      name:"丛林飞跃 Skyline", en:"Zipline · 刺激型",
+      tag:"雨林上空滑索，青少年最爱的冒险",
+      meta:[
+        ["位置","清迈近郊（进山车程 1 小时+）"],
+        ["套餐","含酒店接送 + 自助餐，可选出发时段"],
+        ["时长","全程约 3–4 小时"]
+      ],
+      hi:[
+        "Skyline 较火、较刺激（非最刺激，青少年可玩），有丛林飞跃、卡丁车、秋千",
+        "一组配两位教练，一前一后护航；穿梭雨林上空，大部分滑索无失重感",
+        "可附加跟拍，不用忙着拍照也能留念"
+      ],
+      tips:[
+        "5 岁注意：笔记里最小孩子是 7 岁、10 岁；Skyline 偏刺激，5 岁大概率不合适 → 建议改选更亲子线（如 Phoenix），或直接确认年龄/身高下限再决定",
+        "后半段山路弯道多易晕车，备晕车贴；出发前别吃太饱",
+        "鞋子不合适可现场租借，但更建议穿运动鞋"
+      ]
+    },
+    {
+      emoji:"🌈", grad:"linear-gradient(135deg,#7c6bd6,#4b3f9e)", loc:"近郊",
+      name:"彩虹溶洞", en:"Mae Sap Cave",
+      tag:"不用爬山暴汗，轻松出片的神仙溶洞",
+      meta:[
+        ["位置","清迈近郊（ถ้ำหลวงแม่สาบ）"],
+        ["玩法","打卡 3 个溶洞，彩虹洞最出片"],
+        ["适合","全家 / 懒人，不暴汗"]
+      ],
+      hi:[
+        "肉眼看到的颜色真实神奇，原图直出无滤镜",
+        "回程可买路边草莓"
+      ],
+      tips:[
+        "⚠️ 去前先确认当天是否开门，免得扑空",
+        "相对轻松，适合不想爬山的日子"
+      ]
+    },
+    {
+      emoji:"🔨", grad:"linear-gradient(135deg,#b08d57,#7a5c34)", loc:"古城南门",
+      name:"打铁片手工", en:"Lanna Artisans",
+      tag:"古城南门 50 铢，敲出专属旅行纪念",
+      meta:[
+        ["位置","古城南门银庙（Wat Sri Suphan）旁"],
+        ["价格","50 泰铢/个（≈11 元），仅现金"],
+        ["成品","钥匙扣 / 戒指 / 手镯"]
+      ],
+      hi:[
+        "画图案或选模板 → 复写纸拓印到铁片 → 小锤敲打 → 店员打磨上油抛光打孔",
+        "手工爱好者狂喜，自用或当伴手礼都特别有意义"
+      ],
+      tips:[
+        "上午 9 点开门或下午 2 点后去人少",
+        "提前用手机想好简单图案，现场不会手忙脚乱",
+        "谷歌地图搜 Lanna Artisans Art Gallery"
+      ]
+    },
+    {
+      emoji:"🐘", grad:"linear-gradient(135deg,#5b8c5a,#3a5f3a)", loc:"清迈北面",
+      name:"大象自然保护公园", en:"Elephant Nature Park",
+      tag:"无接触大象救助营，给孩子保护自然的视角",
+      meta:[
+        ["位置","清迈北面，市区约 1 小时"],
+        ["门票","相对贵，官网预定"],
+        ["时长","半天到一天"]
+      ],
+      hi:[
+        "大象庇护救助中心，无表演、主张「无接触」大象",
+        "陪大象散步、看游泳、帮做饭；向导讲被救助故事（来自马戏团 / 伐木场）",
+        "场地大，有老弱残疾象，适合亲子生命教育"
+      ],
+      tips:[
+        "场地有泥地，选好鞋；带驱蚊",
+        "有英文向导，建议官网提前订"
+      ]
+    },
+    {
+      emoji:"🐑", grad:"linear-gradient(135deg,#e8c46a,#c99a3a)", loc:"湄林山顶",
+      name:"山顶绵羊牧场", en:"Maekee Sheep House",
+      tag:"湄林山顶童话牧场，5 岁娃能玩半天",
+      meta:[
+        ["位置","湄林 Mae Rim 山顶"],
+        ["别称","山顶绵羊咖啡 / 绵羊农场"],
+        ["适合","低龄亲子，强烈推荐"]
+      ],
+      hi:[
+        "羊群干净亲人，可近距离抚摸投喂；胆大孩子可骑羊漫步；小羊羔可抱怀里拍照",
+        "还有羊驼、山羊、牧羊犬；开阔草甸直面蓝天，随手出片",
+        "孩子们常玩 2–3 小时舍不得走"
+      ],
+      tips:[
+        "⚠️ 喂食时部分羊会站起来抢食，小心被扑到",
+        "工作人员热情，会鼓励合影"
+      ]
+    },
+    {
+      emoji:"🌙", grad:"linear-gradient(135deg,#2b3a67,#16213e)", loc:"素贴山下",
+      name:"夜间动物园", en:"Chiang Mai Night Safari",
+      tag:"亚洲唯二夜间动物园，坐车喂长颈鹿",
+      meta:[
+        ["位置","素贴山下，市中心约 15km"],
+        ["门票","全园含车 成人约 800 / 儿童 400 铢（非泰籍）"],
+        ["开放","约 11:00–22:00"]
+      ],
+      hi:[
+        "分步行区、草食/肉食观光车区、动物表演区",
+        "坐无玻璃游览车近距离喂长颈鹿/斑马（蔬果篮 30 铢），5 岁极兴奋",
+        "灯光水幕秀 + 民族舞蹈表演"
+      ],
+      tips:[
+        "建议下午 5 点前入园：先逛步行区亮天拍照，再夜场车游 + 灯光秀",
+        "防蚊必备；游览车每区只坐一次，规划好时间"
+      ]
+    }
+  ];
+
+  var grid = document.getElementById('grid');
+  var mask = document.getElementById('mask');
+  var sheet = document.getElementById('sheet');
+
+  grid.innerHTML = SPOTS.map(function(s, i){
+    return '<a class="card" data-i="'+i+'">' +
+      '<div class="cover" style="background:'+s.grad+'">' +
+        '<span class="loc">'+s.loc+'</span>' +
+        '<span class="emoji">'+s.emoji+'</span>' +
+      '</div>' +
+      '<div class="body">' +
+        '<div class="name">'+s.name+'</div>' +
+        '<div class="en">'+s.en+'</div>' +
+        '<div class="tag">'+s.tag+'</div>' +
+        '<span class="more">查看详情 →</span>' +
+      '</div>' +
+    '</a>';
+  }).join('');
+
+  function openSheet(i){
+    var s = SPOTS[i];
+    var meta = s.meta.map(function(m){
+      return '<div class="row"><div class="k">'+m[0]+'</div><div class="v">'+m[1]+'</div></div>';
+    }).join('');
+    var hi = '<ul class="list">'+s.hi.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>';
+    var tp = '<ul class="list">'+s.tips.map(function(t){
+      return '<li>'+t.replace('⚠️ ','<span style="color:#c0392b;font-weight:600">⚠️ </span>')+'</li>';
+    }).join('')+'</ul>';
+    sheet.innerHTML =
+      '<div class="sheet-head">' +
+        '<span class="big">'+s.emoji+'</span>' +
+        '<div class="t"><div class="n">'+s.name+'</div><div class="e">'+s.en+'</div></div>' +
+        '<button class="close" id="closeBtn" aria-label="关闭">×</button>' +
+      '</div>' +
+      '<div class="meta">'+meta+'</div>' +
+      '<div class="sec-title">亮点</div>'+hi+
+      '<div class="sec-title">实用贴士</div>'+tp+
+      (s.name.indexOf('彩虹溶洞')>=0 || s.name.indexOf('黏黏瀑布')>=0
+        ? '<div class="warn">提示：溶洞 / 瀑布去前建议确认开放状态，避免扑空。</div>' : '');
+    document.getElementById('closeBtn').addEventListener('click', closeSheet);
+    mask.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSheet(){
+    mask.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  grid.addEventListener('click', function(e){
+    var c = e.target.closest('.card');
+    if(c) openSheet(parseInt(c.getAttribute('data-i'),10));
+  });
+  mask.addEventListener('click', function(e){ if(e.target===mask) closeSheet(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSheet(); });
+</script>
+</body>
+</html>
