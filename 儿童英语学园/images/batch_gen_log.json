@@ -1,0 +1,18 @@
+{
+  "completed": [],
+  "failed": [
+    {
+      "slug": "alligator",
+      "error": "all_models_failed"
+    },
+    {
+      "slug": "anteater",
+      "error": "all_models_failed"
+    },
+    {
+      "slug": "bear",
+      "error": "all_models_failed"
+    }
+  ],
+  "skipped": []
+}

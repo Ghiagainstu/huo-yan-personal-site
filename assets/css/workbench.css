@@ -132,7 +132,7 @@ textarea{min-height:74px;resize:vertical}
 .proj-card:hover{border-color:var(--gold);transform:translateY(-2px)}
 .proj-cover::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);z-index:2}
 .proj-cover{
-  height:132px;background:linear-gradient(135deg,#17171a 0%,#2e2e31 55%,#444448 100%);
+  aspect-ratio:16/9;background:linear-gradient(135deg,#17171a 0%,#2e2e31 55%,#444448 100%);
   display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
 }
 .proj-cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(255,255,255,.18)}
@@ -214,7 +214,6 @@ textarea{min-height:74px;resize:vertical}
   .add-line input[type=text]{min-width:0;flex:1 1 100%}
   /* 项目卡片网格：手机 2 列 */
   .proj-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .proj-cover{height:96px}
   .proj-cover .cv{font-size:36px}
   .proj-body{padding:12px 14px 14px}
   /* Tab bar（知识库内的 tab） */

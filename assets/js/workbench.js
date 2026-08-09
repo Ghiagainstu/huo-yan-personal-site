@@ -418,6 +418,29 @@
         milestones: [
           { date: '2026-08-07', text: '清迈旅居规划启动：亲子行程与近郊游方案完成' }
         ]
+      },
+      {
+        url: '/english-wonderland/',
+        name: '👋 儿童英语学习乐园',
+        desc: '上海幼小衔接英语启蒙：807 词 · 23 类生活主题，卡片跟读 + 闯关游戏 + 打卡看板。',
+        tag: '亲子教育',
+        coverChar: '英',
+        cover: '/assets/covers/english-wonderland.jpg',
+        milestones: [
+          { date: '2026-08-09', text: '英语学习乐园立项：单词卡片配图完成，页面开发启动' },
+          { date: '2026-08-09', text: '项目卡片更新：807 词 / 23 类主题 + 卡片 / 游戏 / 看板三大模块说明' }
+        ]
+      },
+      {
+        url: '/poetry-garden/',
+        name: '古诗学习乐园 · 幼小衔接20首',
+        desc: '精选最基础的20首古诗，图文结合、诗意场景可视化，帮助幼小衔接阶段孩子轻松启蒙国学。',
+        tag: '亲子教育',
+        coverChar: '诗',
+        cover: '/assets/covers/poetry-garden.jpg',
+        milestones: [
+          { date: '2026-08-09', text: '古诗学习乐园立项：封面配图完成，20首古诗内容整理启动' }
+        ]
       }
       // —— 以后新增项目：复制一个对象，填 url / name / desc / tag / coverChar / milestones ——
     ];
