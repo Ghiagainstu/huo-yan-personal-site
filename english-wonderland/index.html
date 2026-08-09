@@ -1,0 +1,3129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>儿童英语学习乐园 | Kids English Playground</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2258%22%20height%3D%2258%22%20rx%3D%2213%22%20fill%3D%22%23FFD54F%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M32%2022%20C%2025%2016%2015%2016%2012%2019%20L%2012%2044%20C%2015%2041%2025%2041%2032%2047%20Z%22%20fill%3D%22%23FFF8E1%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M32%2022%20C%2039%2016%2049%2016%2052%2019%20L%2052%2044%20C%2049%2041%2039%2041%2032%2047%20Z%22%20fill%3D%22%23FFF8E1%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%222.5%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2215%22%20fill%3D%22%233E2723%22%3EABC%3C%2Ftext%3E%3C%2Fsvg%3E">
+<style>
+/* ============================================================
+   儿童英语学习乐园 —— 工具 + 游戏的合并版
+   原始来源: 儿童学习工具.html (300词卡 + 12古诗) + kids-english-game.html
+   v2 修复:
+     1) 英语卡片字母(y 的下伸笔画)被截掉 — flexbox min-height:auto 陷阱
+     2) 分类栏不能拖动 — 加 mousedown 拖动滑动
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Microsoft YaHei','Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent;}
+body{background:#f5f7fa;color:#333;min-height:100vh;}
+/* ===== 顶部 ===== */
+.header{background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);color:#fff;padding:20px 16px 16px;text-align:center;position:relative;}
+.header h1{font-size:24px;margin-bottom:4px;}
+.header .sub{font-size:13px;opacity:.9;}
+.top-right{position:absolute;top:14px;right:14px;display:flex;gap:8px;align-items:center;z-index:30;}
+.star-pill{background:rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;font-size:16px;font-weight:bold;cursor:default;}
+/* ===== Tab 导航 ===== */
+.tab-nav{display:flex;gap:10px;padding:14px 16px 0;max-width:640px;margin:0 auto;flex-wrap:wrap;}
+.tab-btn{flex:1 1 0;min-width:130px;padding:14px;border:none;border-radius:12px;background:#fff;font-size:16px;font-weight:bold;color:#555;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.06);transition:all .25s;}
+.tab-btn.active{background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;transform:translateY(-2px);box-shadow:0 6px 14px rgba(56,239,125,.35);}
+.module{display:none;max-width:640px;margin:0 auto;padding:16px 16px 40px;}
+.module.active{display:block;}
+/* ===== 关于按钮 & 弹窗 ===== */
+.about-btn{background:rgba(255,255,255,.25);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;z-index:31;}
+.about-btn:active{background:rgba(255,255,255,.42);}
+.about-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9000;padding:16px;}
+.about-modal.show{display:flex;}
+.about-box{background:#fff;border-radius:18px;max-width:480px;width:100%;padding:24px 22px;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:86vh;overflow:auto;}
+.about-box h2{font-size:20px;margin-bottom:10px;color:#11998e;}
+.about-box p{font-size:14px;line-height:1.75;color:#444;margin-bottom:8px;}
+.about-box ul{margin:6px 0 8px 18px;}
+.about-box li{font-size:14px;line-height:1.7;color:#444;margin-bottom:6px;}
+.about-box .tip{margin-top:10px;font-size:13px;color:#888;}
+.about-close{position:absolute;top:12px;right:12px;border:none;background:#f0f2f5;color:#888;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;line-height:1;}
+.about-close:active{background:#e2e6ea;}
+/* ===== 类别 & 筛选 chips ===== */
+.chip-scroll{display:flex;gap:8px;overflow-x:auto;padding:6px 4px 12px 4px;margin:6px 0;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;user-select:none;}
+.chip-scroll.dragging{cursor:grabbing;scroll-behavior:auto;}
+.chip-scroll::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0;padding:8px 14px;border-radius:20px;border:2px solid #e0e0e0;background:#fff;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;
+  /* hover/click 仍可用,但拖动距离 > 6px 则屏蔽点击 */
+}
+.chip.active{border-color:#11998e;background:#11998e;color:#fff;}
+.chip .cnt{font-size:11px;opacity:.75;margin-left:4px;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;}
+.filter-chip{flex:1;padding:9px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;}
+.filter-chip.active{background:#2575fc;color:#fff;}
+/* ===== 单词搜索 ===== */
+.search-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:8px 12px;margin:8px 0 6px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.search-row:focus-within{border-color:#2575fc;}
+.search-ico{font-size:18px;flex-shrink:0;}
+.search-input{flex:1;border:none;outline:none;font-size:16px;color:#2d3436;background:transparent;min-width:0;}
+.search-input::placeholder{color:#b2bec3;}
+.search-clear{border:none;background:#f0f2f5;color:#888;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;flex-shrink:0;}
+.search-clear:active{background:#e2e6ea;}
+.search-results{margin:4px 0 10px;}
+.search-info{font-size:13px;color:#888;margin-bottom:8px;}
+.search-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.search-tag{border:2px solid #e0e0e0;background:#fff;border-radius:18px;padding:7px 12px;font-size:14px;font-weight:bold;color:#2d3436;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-family:inherit;}
+.search-tag .zh{font-size:12px;color:#11998e;font-weight:normal;}
+.search-tag.active{border-color:#2575fc;background:#2575fc;color:#fff;}
+.search-tag.active .zh{color:#e3f2fd;}
+.search-tag:active{transform:scale(.95);}
+/* ===== 总进度条 ===== */
+.overall-progress{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.overall-progress .txt{font-size:13px;color:#666;margin-bottom:6px;display:flex;justify-content:space-between;}
+.progress-track{height:10px;background:#e9ecef;border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#11998e,#38ef7d);border-radius:5px;transition:width .4s;}
+/* ===== 翻转卡片 (固定长方体) ===== */
+.card-stage{perspective:1200px;margin-bottom:14px;}
+.card-inner{position:relative;width:100%;height:460px;transform-style:preserve-3d;transition:transform .55s;cursor:pointer;}
+.card-inner.flipped{transform:rotateY(180deg);}
+/* ★ v2 修复点1(关键):min-height:0 让 flex item 服从 basis 比例,
+   不被 SVG 的宽高比反推撑高,这才是不卡的真正一行 */
+.card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column;}
+.card-back{transform:rotateY(180deg);}
+.card-art{flex:0 0 56%;min-height:0;display:flex;align-items:center;justify-content:center;}
+.card-art svg{width:100%;height:100%;display:block;}
+.card-face.card-back .card-art{flex-basis:40%;}
+.card-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:10px;}
+/* ★ v2 修复点1(关键):显式 line-height,给 descender 留空间,避开过度紧凑的渲染截切 */
+.word-en{font-size:46px;font-weight:bold;color:#2d3436;letter-spacing:1px;line-height:1.18;padding:2px 0;}
+.word-zh{font-size:30px;font-weight:bold;color:#11998e;line-height:1.2;}
+.word-example{font-size:17px;color:#636e72;font-style:italic;text-align:center;line-height:1.35;}
+.tap-hint{font-size:12px;color:#b2bec3;}
+.speak-btn{border:none;border-radius:24px;padding:10px 22px;font-size:16px;font-weight:bold;background:#2575fc;color:#fff;cursor:pointer;transition:transform .15s;}
+.speak-btn:active{transform:scale(.94);}
+.speak-btn.speaking{animation:pulse .8s infinite;background:#e17055;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+/* ===== 音标 (英音 / 美音) ===== */
+.phon-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.phon-pill{display:inline-flex;align-items:center;gap:5px;border:2px solid #e0e0e0;background:#f8fafc;border-radius:18px;padding:5px 12px;cursor:pointer;font-size:15px;color:#37474f;transition:all .18s;font-family:'Segoe UI',Arial,sans-serif;}
+.phon-pill .flag{font-size:16px;}
+.phon-pill .ipa{font-weight:bold;letter-spacing:.5px;}
+.phon-pill.uk{border-color:#5b8def;}
+.phon-pill.uk:active{background:#5b8def;color:#fff;}
+.phon-pill.us{border-color:#ef6b6b;}
+.phon-pill.us:active{background:#ef6b6b;color:#fff;}
+.phon-pill.speaking{animation:pulse .8s infinite;}
+.accent-row{display:flex;gap:10px;justify-content:center;width:100%;}
+.accent-btn{flex:1;border:none;border-radius:24px;padding:10px;font-size:15px;font-weight:bold;color:#fff;cursor:pointer;transition:transform .15s;}
+.accent-btn.uk{background:#5b8def;}
+.accent-btn.us{background:#ef6b6b;}
+.accent-btn:active{transform:scale(.94)}
+.accent-btn.speaking{animation:pulse .8s infinite;}
+.mastery-dots{display:flex;gap:6px;}
+.mastery-dots span{width:14px;height:14px;border-radius:50%;background:#e0e0e0;}
+.mastery-dots span.on{background:#38ef7d;}
+/* ===== 操作按钮 ===== */
+.action-row{display:flex;gap:10px;margin-bottom:12px;}
+.action-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;transition:transform .15s;}
+.action-btn:active{transform:scale(.95)}
+.btn-review{background:#ffeaa7;color:#d35400;}
+.btn-know{background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;}
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.nav-btn{width:56px;height:48px;border:none;border-radius:12px;background:#fff;font-size:22px;color:#2575fc;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);}
+.nav-btn:active{transform:scale(.92)}
+.card-counter{font-size:15px;color:#888;font-weight:bold;}
+.empty-state{background:#fff;border-radius:16px;padding:50px 20px;text-align:center;font-size:16px;color:#888;box-shadow:0 4px 12px rgba(0,0,0,.06);}
+.empty-state .big{font-size:52px;margin-bottom:12px;}
+/* ===== 古诗词 ===== */
+.poem-card{background:#fff;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden;margin-bottom:14px;}
+.poem-art{height:200px;}
+.poem-art svg{width:100%;height:100%;display:block;}
+.poem-art img{width:100%;height:100%;object-fit:cover;display:block;}
+.poem-head{text-align:center;padding:14px 16px 6px;}
+.poem-title{font-size:26px;color:#8d6e63;font-weight:bold;}
+.poem-author{font-size:14px;color:#aaa;margin-top:4px;}
+.poem-status{display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:12px;background:#eceff1;color:#90a4ae;}
+.poem-status.s1{background:#e3f2fd;color:#1976d2;}
+.poem-status.s2{background:#fff8e1;color:#f39c12;}
+.poem-lines{padding:10px 20px 16px;}
+.poem-line{text-align:center;margin-bottom:12px;cursor:pointer;border-radius:10px;padding:4px;transition:background .2s;}
+.poem-line:hover{background:#f8f9fa;}
+.poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:4px;}
+.poem-line .py{font-size:13px;color:#b0bec5;margin-top:2px;letter-spacing:.5px;}
+.poem-note{margin:0 16px 16px;background:#fffde7;border-left:4px solid #ffd600;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.7;color:#666;}
+/* ===== 星星弹窗 ===== */
+.star-toast{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:30px 40px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);z-index:9999;transition:transform .3s cubic-bezier(.68,-.55,.27,1.55);pointer-events:none;}
+.star-toast.show{transform:translate(-50%,-50%) scale(1)}
+.star-toast .big{font-size:64px}
+.star-toast .msg{font-size:20px;font-weight:bold;color:#f39c12;margin-top:8px}
+/* ============================================================
+   ★ 游戏 TAB 的样式 (沿用 kids-english-game 风格)
+   ============================================================ */
+#modGame{background:linear-gradient(135deg,#a0e9ff22,#ffd6f522);border-radius:16px;padding-top:18px;padding-bottom:30px;margin-top:8px;}
+.game-top{background:#fff;border-radius:14px;padding:10px 14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px;font-weight:bold;}
+.game-top .pill{background:#f4f6ff;border-radius:999px;padding:6px 12px;}
+.game-stage{display:flex;flex-direction:column;align-items:center;}
+.game-scene{background:#fff;border-radius:24px;box-shadow:0 8px 22px rgba(80,80,140,.18);padding:24px 20px;width:100%;min-height:420px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;}
+.game-h1{font-size:24px;color:#5a5a8a;margin-top:2px;}
+.game-h2{font-size:15px;color:#9a9ac0;font-weight:normal;}
+.gameart{width:130px;height:130px;display:flex;align-items:center;justify-content:center;border-radius:24px;overflow:hidden;flex-shrink:0;}
+.gameart.emoji{font-size:96px;line-height:1;background:#f4f6ff;}
+.gameart.lettertile{font-size:84px;font-weight:bold;background:#fff;border:6px solid #ffb74d;color:#ff8f00;}
+.gameart.colorcircle{border-radius:50%;background:#ff6b6b;box-shadow:inset 0 -12px 22px rgba(0,0,0,.15);}
+.gameart.shape{background:#f4f6ff;padding:14px;}
+.gameart.shape svg{width:100%;height:100%;display:block;}
+.gameart.num{background:#fff;border:6px solid #64b5f6;border-radius:50%;color:#1e88e5;font-weight:bold;font-size:80px;}
+.gameart.img{background:transparent;padding:8px;}
+.gameart.img img{width:100%;height:100%;object-fit:contain;display:block;}
+.game-speak{font-size:46px;cursor:pointer;background:#eef0ff;border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(80,80,140,.18);transition:transform .1s;}
+.game-speak:active{transform:scale(.93)}
+.game-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;margin-top:8px;}
+.game-opt{background:#f4f6ff;border-radius:22px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;border:4px solid transparent;transition:transform .1s;min-height:80px;justify-content:center;}
+.game-opt:active{transform:scale(.95)}
+.game-opt .word-en{font-size:22px;font-weight:bold;color:#2d3436;line-height:1.2;}
+.game-opt.correct{border-color:#34c759;background:#e8ffef;animation:pop .4s;}
+.game-opt.wrong{border-color:#ff6b6b;background:#ffecec;animation:shake .4s;}
+.game-sentence{font-size:24px;font-weight:bold;color:#5a5a8a;display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:center;text-align:center;}
+.game-sentence .blank{display:inline-block;min-width:90px;border-bottom:4px solid #c7c9ef;color:#4aa3ff;padding:0 6px;}
+.game-drag{display:flex;gap:18px;width:100%;align-items:center;justify-content:center;flex-wrap:wrap;}
+.game-drag-src{display:flex;flex-direction:column;gap:10px;align-items:center;}
+.game-drag-zone{min-width:140px;min-height:140px;display:flex;align-items:center;justify-content:center;border:4px dashed #c7c9ef;border-radius:24px;padding:10px;background:#fafbff;}
+.game-drag-zone.over{background:#eaf7ff;border-color:#34c759;}
+.game-chip{background:linear-gradient(180deg,#fff,#eef0ff);border-radius:16px;padding:10px 16px;font-size:22px;font-weight:bold;box-shadow:0 4px 10px rgba(80,80,140,.12);cursor:grab;border:3px solid #dfe2ff;}
+.game-chip.selected{border-color:#4aa3ff;}
+.game-btn{border:none;cursor:pointer;border-radius:18px;padding:14px 24px;font-size:18px;font-weight:bold;background:linear-gradient(180deg,#7cc6ff,#4aa3ff);color:#fff;box-shadow:0 6px 14px rgba(80,80,140,.18);transition:transform .08s;}
+.game-btn:active{transform:scale(.94)}
+.game-btn.green{background:linear-gradient(180deg,#7be3a0,#34c759);}
+.game-btn.ghost{background:#eef0ff;color:#5a5a8a;box-shadow:none;}
+.game-fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9000;}
+.game-confetti{position:absolute;font-size:30px;animation:fall 1.1s ease-out forwards;}
+.game-praise{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:46px;font-weight:bold;color:#ff7ad1;text-shadow:0 3px 0 #fff;opacity:0;pointer-events:none;z-index:9001;}
+.game-praise.show{animation:praisePop .9s ease-out;}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:0}}
+@keyframes praisePop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}30%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-60%) scale(1);opacity:0}}
+@media (max-width:480px){
+  .card-inner{height:420px}
+  .word-en{font-size:38px}
+  .poem-line .zi{font-size:26px;letter-spacing:2px}
+  .header h1{font-size:20px}
+  .gameart{width:110px;height:110px}
+  .gameart.emoji{font-size:80px}
+  .gameart.lettertile{font-size:72px}
+  .game-sentence{font-size:20px}
+  .tab-btn{min-width:0;font-size:14px;padding:10px 6px;white-space:nowrap}
+  .about-btn{font-size:12px;padding:4px 9px}
+  .star-pill{font-size:14px;padding:5px 10px}
+  .header h1{font-size:19px}
+}
+/* ===== 统计看板 📊 ===== */
+.dash-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+.dash-hero{background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;text-align:center;}
+.dash-hero .big{font-size:46px;font-weight:bold;line-height:1.1;}
+.dash-hero .sub{font-size:14px;opacity:.95;margin-top:4px;}
+.dash-hero .rate{font-size:30px;font-weight:bold;margin-top:6px;}
+.dash-hero .rate small{font-size:14px;font-weight:normal;opacity:.9;}
+.dash-mini{display:flex;gap:10px;flex-wrap:wrap;}
+.dash-mini .m{flex:1 1 40%;background:#fff;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+.dash-mini .m .ic{font-size:26px;}
+.dash-mini .m .v{font-size:24px;font-weight:bold;color:#2d3436;margin-top:2px;}
+.dash-mini .m .l{font-size:12px;color:#888;margin-top:2px;}
+.dash-title{font-size:16px;font-weight:bold;color:#2d3436;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.dash-cat{margin-bottom:10px;}
+.dash-cat-top{display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:4px;}
+.dash-cat-cnt{font-weight:bold;color:#11998e;}
+.dash-dist{display:flex;gap:10px;justify-content:space-around;align-items:flex-end;height:150px;}
+.dash-dist-item{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+.dash-dist-bar{width:40px;height:96px;background:#f0f3f5;border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;}
+.dash-dist-fill{border-radius:8px 8px 0 0;transition:height .4s;min-height:2px;}
+.dash-dist-cnt{font-size:14px;font-weight:bold;margin-top:6px;color:#2d3436;}
+.dash-dist-name{font-size:11px;color:#888;}
+.dash-trend{display:flex;gap:8px;align-items:flex-end;height:120px;margin-bottom:4px;}
+.dash-trend-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+.dash-trend-fill{width:60%;background:linear-gradient(180deg,#38ef7d,#11998e);border-radius:6px 6px 0 0;transition:height .4s;min-height:2px;}
+.dash-trend-cnt{font-size:11px;color:#888;margin-top:4px;font-weight:bold;}
+.dash-trend-labels{display:flex;gap:8px;margin-top:2px;}
+.dash-trend-labels span{flex:1;text-align:center;font-size:11px;color:#999;}
+.dash-rows{display:flex;flex-direction:column;gap:10px;}
+.dash-row{display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:12px;padding:12px 16px;font-size:14px;color:#555;}
+.dash-row .v{font-size:20px;font-weight:bold;color:#2d3436;}
+.dash-row .v small{font-size:13px;color:#999;font-weight:normal;}
+.dash-empty{font-size:13px;color:#b2bec3;text-align:center;padding:8px 0;}
+</style>
+</head>
+<body>
+<div class="header">
+    <div class="top-right">
+      <div class="star-pill">⭐ <span id="starCount">0</span></div>
+      <button class="about-btn" onclick="showAbout()">ℹ️ 关于</button>
+    </div>
+    <h1>🎓 儿童英语学习乐园</h1>
+    <div class="sub">英语单词 808 · 🎮 闯关游戏</div>
+</div>
+<div class="about-modal" id="aboutModal" onclick="if(event.target===this)closeAbout()">
+  <div class="about-box">
+    <button class="about-close" onclick="closeAbout()" aria-label="关闭">✕</button>
+    <h2>👋 关于儿童英语学习乐园</h2>
+    <p>这是一份专为 <strong>上海幼儿园大班 / 幼小衔接</strong> 小朋友设计的英语启蒙小工具，用 <strong>808 个单词</strong>、<strong>23 类</strong> 贴近生活的主题陪孩子轻松入门。</p>
+    <ul>
+      <li>🃏 <strong>英语卡片</strong>：点一下翻到中文，跟读英美双发音，标记「已掌握」。</li>
+      <li>🎮 <strong>英语小游戏</strong>：拼词、指认、听音选图，闯关赢星星。</li>
+      <li>📊 <strong>统计看板</strong>：掌握进度、连续打卡、本周新学一目了然。</li>
+    </ul>
+    <p class="tip">💡 建议每天 5–10 分钟，先翻卡再闯关，坚持就有惊喜！</p>
+  </div>
+</div>
+<div class="tab-nav">
+    <button class="tab-btn active" id="tabEn" onclick="switchTab('en')">🃏 英语卡片</button>
+    <button class="tab-btn" id="tabGame" onclick="switchTab('game')">🎮 英语小游戏</button>
+    <button class="tab-btn" id="tabStat" onclick="switchTab('stat')">📊 统计看板</button>
+</div>
+<!-- ================= 英语卡片 ================= -->
+<div class="module active" id="modEn">
+        <div class="overall-progress">
+        <div class="txt"><span>🏆 已掌握 Mastered</span><span id="enMasteredTxt">0 / 808</span></div>
+        <div class="progress-track"><div class="progress-fill" id="enProgressFill" style="width:0%"></div></div>
+    </div>
+    <div class="chip-scroll" id="catChips"></div>
+    <div class="search-row">
+      <span class="search-ico">🔍</span>
+      <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文，例如 cat 或 猫…" oninput="doSearch()" />
+      <button id="searchClear" class="search-clear" type="button" onclick="clearSearch()" title="清除">✕</button>
+    </div>
+    <div id="searchResults" class="search-results" style="display:none"></div>
+    <div class="filter-row">
+        <button class="filter-chip active" data-f="all" onclick="setFilter('all')">全部</button>
+        <button class="filter-chip" data-f="todo" onclick="setFilter('todo')">📖 待学习</button>
+        <button class="filter-chip" data-f="done" onclick="setFilter('done')">✅ 已掌握</button>
+        <button class="filter-chip" id="shuffleChip" onclick="toggleShuffle()">🔀 打乱</button>
+    </div>
+    <div id="enCardArea"></div>
+</div>
+<!-- ================= 英语小游戏 ================= -->
+<div class="module" id="modGame">
+    <div class="game-top">
+        <span class="pill">⭐ <span id="gStarCount">0</span> 星星</span>
+        <span class="pill">📚 已掌握 <span id="gMastered">0</span>/<span id="gTotal">685</span></span>
+        <span class="pill" id="gPhase">准备开始</span>
+        <span class="pill">⏱ <span id="gTimer">00:00</span></span>
+    </div>
+    <div class="game-stage" id="gameStage"></div>
+</div>
+<!-- ================= 统计看板 ================= -->
+<div class="module" id="modStat">
+    <div id="dashArea"></div>
+</div>
+<div class="star-toast" id="starToast">
+    <div class="big">⭐</div>
+    <div class="msg" id="starToastMsg">+1 星星！</div>
+</div>
+<div class="game-fx" id="gameFx"></div>
+<div class="game-praise" id="gamePraise"></div>
+<script>
+/* ============================================================
+   808 英语单词 (23 类)
+   ============================================================ */
+const PHON={'dog':['/dɒɡ/','/dɔɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/dog-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dog-us.mp3'],
+'cat':['/kæt/','/kæt/','https://api.dictionaryapi.dev/media/pronunciations/en/cat-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cat-us.mp3'],
+'pig':['/ˈpɪɡ/','/ˈpɪɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/pig-1-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pig-1-us.mp3'],
+'cow':['/kaʊ/','/kaʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/cow-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cow-us.mp3'],
+'duck':['/dʌk/','/dʌk/','https://api.dictionaryapi.dev/media/pronunciations/en/duck-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/duck-us.mp3'],
+'hen':['/hen/','/hen/','https://api.dictionaryapi.dev/media/pronunciations/en/hen-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hen-us.mp3'],
+'bird':['/bɜːd/','/bɜːrd/','','https://api.dictionaryapi.dev/media/pronunciations/en/bird-us.mp3'],
+'fish':['/fɪʃ/','/fɪʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/fish-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/fish-us.mp3'],
+'frog':['/frɒɡ/','/frɑːɡ/','','https://api.dictionaryapi.dev/media/pronunciations/en/frog-us.mp3'],
+'rabbit':['/ˈræbɪt/','/ˈræbɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/rabbit-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/rabbit-us.mp3'],
+'monkey':['/ˈmʌŋki/','/ˈmʌŋki/','https://api.dictionaryapi.dev/media/pronunciations/en/monkey-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/monkey-us.mp3'],
+'elephant':['/ˈeləfənt/','/ˈeləfənt/','https://api.dictionaryapi.dev/media/pronunciations/en/elephant-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/elephant-us.mp3'],
+'tiger':['/ˈtaɪɡə/','/ˈtaɪɡər/','','https://api.dictionaryapi.dev/media/pronunciations/en/tiger-1-us.mp3'],
+'lion':['/ˈlaɪən/','/ˈlaɪən/','https://api.dictionaryapi.dev/media/pronunciations/en/lion-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/lion-us.mp3'],
+'bear':['/beə/','/ber/','','https://api.dictionaryapi.dev/media/pronunciations/en/bear-us.mp3'],
+'panda':['/ˈpændə/','/ˈpændə/','https://api.dictionaryapi.dev/media/pronunciations/en/panda-2-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/panda-1-us.mp3'],
+'snake':['/ˈsneɪk/','/ˈsneɪk/','https://api.dictionaryapi.dev/media/pronunciations/en/snake-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/snake-us.mp3'],
+'turtle':['/ˈtɜːtəl/','/ˈtɜːrtəl/','','https://api.dictionaryapi.dev/media/pronunciations/en/turtle-us.mp3'],
+'horse':['/hɔːs/','/hɔːrs/','','https://api.dictionaryapi.dev/media/pronunciations/en/horse-us.mp3'],
+'sheep':['/ʃiːp/','/ʃip/','https://api.dictionaryapi.dev/media/pronunciations/en/sheep-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sheep-us.mp3'],
+'chicken':['/ˈtʃɪkɪn/','/ˈtʃɪkɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/chicken-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/chicken-us.mp3'],
+'mouse':['/maʊs/','/maʊs/','',''],
+'ant':['/ænt/','/ænt/','','https://api.dictionaryapi.dev/media/pronunciations/en/ant-us.mp3'],
+'bee':['/ˈbiː/','/ˈbiː/','https://api.dictionaryapi.dev/media/pronunciations/en/bee-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bee-us.mp3'],
+'butterfly':['/ˈbʌtəflaɪ/','/ˈbʌtərflaɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/butterfly-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/butterfly-au.mp3'],
+'spider':['/ˈspaɪdə/','/ˈspaɪdər/','','https://api.dictionaryapi.dev/media/pronunciations/en/spider-us.mp3'],
+'dolphin':['/ˈdɒlfɪn/','/ˈdɑlfɪn/','','https://api.dictionaryapi.dev/media/pronunciations/en/dolphin-us.mp3'],
+'whale':['/weɪl/','/weɪl/','https://api.dictionaryapi.dev/media/pronunciations/en/whale-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/whale-us.mp3'],
+'shark':['/ʃɑːk/','/ʃɑːrk/','','https://api.dictionaryapi.dev/media/pronunciations/en/shark-us.mp3'],
+'deer':['/dɪə/','/dɪr/','','https://api.dictionaryapi.dev/media/pronunciations/en/deer-us.mp3'],
+'camel':['/ˈkæməl/','/ˈkæməl/','https://api.dictionaryapi.dev/media/pronunciations/en/camel-1-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/camel-1-us.mp3'],
+'gorilla':['/ɡəˈrɪl.ə/','/ɡəˈrɪl.ə/','https://api.dictionaryapi.dev/media/pronunciations/en/gorilla-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/gorilla-us.mp3'],
+'kangaroo':['/ˌkæŋɡəˈruː/','/ˌkæŋɡəˈruː/','https://api.dictionaryapi.dev/media/pronunciations/en/kangaroo-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/kangaroo-us.mp3'],
+'zebra':['/ˈziːbrə/','/ˈziːbrə/','https://api.dictionaryapi.dev/media/pronunciations/en/zebra-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/zebra-uk.mp3'],
+'apple':['/ˈæp.əl/','/ˈæp.əl/','https://api.dictionaryapi.dev/media/pronunciations/en/apple-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/apple-us.mp3'],
+'banana':['/bəˈnɑːnə/','/bəˈnænə/','https://api.dictionaryapi.dev/media/pronunciations/en/banana-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/banana-us.mp3'],
+'orange':['/ˈɒrɪndʒ/','/ˈɔːrɪndʒ/','',''],
+'grape':['/ɡreɪp/','/ɡreɪp/','https://api.dictionaryapi.dev/media/pronunciations/en/grape-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/grape-us.mp3'],
+'watermelon':['/ˈwɔːtəˌmelən/','/ˈwɔtərˌmelən/','','https://api.dictionaryapi.dev/media/pronunciations/en/watermelon-us.mp3'],
+'strawberry':['/ˈstrɔːbəri/','/ˈstrɔːberi/','',''],
+'mango':['/ˈmæŋɡəʊ/','/ˈmæŋɡoʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/mango-us.mp3'],
+'peach':['/piːtʃ/','/piːtʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/peach-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/peach-us.mp3'],
+'pear':['/peə(r)/','/per/','https://api.dictionaryapi.dev/media/pronunciations/en/pear-uk.mp3',''],
+'cherry':['/ˈtʃeri/','/ˈtʃeri/','https://api.dictionaryapi.dev/media/pronunciations/en/cherry-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cherry-us.mp3'],
+'lemon':['/ˈlemən/','/ˈlemən/','https://api.dictionaryapi.dev/media/pronunciations/en/lemon-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/lemon-uk.mp3'],
+'pineapple':['/ˈpaɪnəpəl/','/ˈpaɪnəpəl/','https://api.dictionaryapi.dev/media/pronunciations/en/pineapple-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pineapple-us.mp3'],
+'blueberry':['/ˈbluːb(ə)ri/','/ˈblu.ˌbe.ri/','','https://api.dictionaryapi.dev/media/pronunciations/en/blueberry-us.mp3'],
+'kiwi':['/ˈkiːwi/','/ˈkiːwi/','https://api.dictionaryapi.dev/media/pronunciations/en/kiwi-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/kiwi-au.mp3'],
+'coconut':['/ˈkəʊ.kə.nʌt/','/ˈkoʊ.kə.nʌt/','',''],
+'lychee':['/ˈlaɪtʃiː/','/ˈliːtʃiː/','',''],
+'papaya':['/pəˈpaɪə/','/pəˈpaɪə/','https://api.dictionaryapi.dev/media/pronunciations/en/papaya-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/papaya-uk.mp3'],
+'plum':['/plʌm/','/plʌm/','https://api.dictionaryapi.dev/media/pronunciations/en/plum-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/plum-us.mp3'],
+'fig':['/fɪɡ/','/fɪɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/fig-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/fig-us.mp3'],
+'melon':['/ˈmelən/','/ˈmelən/','https://api.dictionaryapi.dev/media/pronunciations/en/melon-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/melon-us.mp3'],
+'pomegranate':['/ˈpɒm.ɪˌɡræn.ɪt/','/ˈpɑm.ɪˌɡræn.ɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/pomegranate-uk.mp3',''],
+'avocado':['/ævəˈkɑːdəʊ/','/ævəˈkɑdoʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/avocado-us.mp3'],
+'raspberry':['/ˈrɑːzbri/','/ˈræzˌberi/','https://api.dictionaryapi.dev/media/pronunciations/en/raspberry-uk.mp3',''],
+'blackberry':['/ˈblækbəri/','/ˈblækberi/','','https://api.dictionaryapi.dev/media/pronunciations/en/blackberry-us.mp3'],
+'pomelo':['/pəˈmeləʊ/','/ˈpɑməloʊ/','',''],
+'durian':['/ˈdjʊəriən/','/ˈdʊriən/','',''],
+'guava':['/ˈɡwɑːvə/','/ˈɡwɑvə/','',''],
+'tomato':['/təˈmɑːtəʊ/','/təˈmeɪtoʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/tomato-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tomato-us.mp3'],
+'potato':['/pəˈteɪ.təʊ/','/pəˈteɪ.toʊ/','',''],
+'carrot':['/ˈkær.ət/','/ˈkær.ət/','https://api.dictionaryapi.dev/media/pronunciations/en/carrot-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/carrot-us.mp3'],
+'cucumber':['/ˈkjuːˌkʌmbə/','/ˈkjuːˌkʌmbər/','','https://api.dictionaryapi.dev/media/pronunciations/en/cucumber-us.mp3'],
+'corn':['/kɔːn/','/kɔːrn/','https://api.dictionaryapi.dev/media/pronunciations/en/corn-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/corn-us.mp3'],
+'broccoli':['/ˈbrɒ.kə.li/','/ˈbrɑ.kə.li/','','https://api.dictionaryapi.dev/media/pronunciations/en/broccoli-us.mp3'],
+'pumpkin':['/ˈpʌmpkɪn/','/ˈpʌmpkɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/pumpkin-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pumpkin-us.mp3'],
+'onion':['/ˈʌnjən/','/ˈʌnjən/','https://api.dictionaryapi.dev/media/pronunciations/en/onion-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/onion-us.mp3'],
+'mushroom':['/ˈmʌʃˌruːm/','/ˈmʌʃˌruːm/','https://api.dictionaryapi.dev/media/pronunciations/en/mushroom-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/mushroom-us.mp3'],
+'pepper':['/ˈpepə/','/ˈpepər/','https://api.dictionaryapi.dev/media/pronunciations/en/pepper-uk.mp3',''],
+'cabbage':['/ˈkæbɪdʒ/','/ˈkæbɪdʒ/','https://api.dictionaryapi.dev/media/pronunciations/en/cabbage-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cabbage-us.mp3'],
+'pea':['/piː/','/piː/','https://api.dictionaryapi.dev/media/pronunciations/en/pea-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pea-us.mp3'],
+'eggplant':['/ˈeɡplɑːnt/','/ˈeɡplænt/','','https://api.dictionaryapi.dev/media/pronunciations/en/eggplant-us.mp3'],
+'celery':['/ˈsel.ə.ri/','/ˈsel.ə.ri/','https://api.dictionaryapi.dev/media/pronunciations/en/celery-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/celery-us.mp3'],
+'garlic':['/ˈɡɑːlɪk/','/ˈɡɑrlɪk/','https://api.dictionaryapi.dev/media/pronunciations/en/garlic-uk.mp3',''],
+'lettuce':['/ˈletəs/','/ˈletəs/','https://api.dictionaryapi.dev/media/pronunciations/en/lettuce-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/lettuce-us.mp3'],
+'radish':['/ˈrædɪʃ/','/ˈrædɪʃ/','','https://api.dictionaryapi.dev/media/pronunciations/en/radish-us.mp3'],
+'spinach':['/ˈspɪnɪdʒ/','/ˈspɪnɪdʒ/','',''],
+'green bean':['/ɡriːn ˈbiːn/','/ɡriːn ˈbiːn/','',''],
+'cauliflower':['/ˈkɒl.i.flaʊ.ə/','/ˈkɔl.əˌflaʊ.ər/','','https://api.dictionaryapi.dev/media/pronunciations/en/cauliflower-us.mp3'],
+'sweet potato':['/swiːt pəˈteɪtəʊ/','/swiːt pəˈteɪtoʊ/','',''],
+'leek':['/liːk/','/liːk/','',''],
+'bamboo shoot':['/ˌbæmˈbuː ˈʃuːt/','/ˌbæmˈbuː ˈʃuːt/','',''],
+'bread':['/bred/','/bred/','https://api.dictionaryapi.dev/media/pronunciations/en/bread-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bread-us.mp3'],
+'rice':['/raɪs/','/raɪs/','https://api.dictionaryapi.dev/media/pronunciations/en/rice-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/rice-us.mp3'],
+'noodle':['/ˈnuːdəl/','/ˈnuːdəl/','https://api.dictionaryapi.dev/media/pronunciations/en/noodle-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/noodle-us.mp3'],
+'egg':['/eɪɡ/','/eɪɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/egg-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/egg-us.mp3'],
+'milk':['/mɪlk/','/mɪlk/','https://api.dictionaryapi.dev/media/pronunciations/en/milk-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/milk-us.mp3'],
+'water':['/ˈwɔːtə/','/ˈwɔtər/','https://api.dictionaryapi.dev/media/pronunciations/en/water-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/water-us.mp3'],
+'juice':['/dʒuːs/','/dʒuːs/','','https://api.dictionaryapi.dev/media/pronunciations/en/juice-1-us.mp3'],
+'cake':['/keɪk/','/keɪk/','https://api.dictionaryapi.dev/media/pronunciations/en/cake-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cake-1-us.mp3'],
+'cookie':['/ˈkuːki/','/ˈkuːki/','https://api.dictionaryapi.dev/media/pronunciations/en/cookie-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cookie-au.mp3'],
+'candy':['/ˈkændi/','/ˈkændi/','https://api.dictionaryapi.dev/media/pronunciations/en/candy-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/candy-us.mp3'],
+'chocolate':['/ˈtʃɒklət/','/ˈtʃɑːklət/','https://api.dictionaryapi.dev/media/pronunciations/en/chocolate-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/chocolate-us.mp3'],
+'pizza':['/ˈpiːt.sə/','/ˈpitsə/','',''],
+'hamburger':['/ˈhæm.bə.ɡə/','/ˈhæm.bər.ɡər/','',''],
+'sandwich':['/ˈsænwɪdʒ/','/ˈsænwɪtʃ/','','https://api.dictionaryapi.dev/media/pronunciations/en/sandwich-us.mp3'],
+'ice cream':['/aɪs kriːm/','/aɪs kriːm/','',''],
+'tea':['/tiː/','/ti/','https://api.dictionaryapi.dev/media/pronunciations/en/tea-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tea-1-us.mp3'],
+'coffee':['/ˈkɒ.fi/','/ˈkɔ.fi/','https://api.dictionaryapi.dev/media/pronunciations/en/coffee-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/coffee-us.mp3'],
+'soup':['/suːp/','/sup/','https://api.dictionaryapi.dev/media/pronunciations/en/soup-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/soup-us.mp3'],
+'cheese':['/tʃiːz/','/tʃiːz/','https://api.dictionaryapi.dev/media/pronunciations/en/cheese-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cheese-us.mp3'],
+'butter':['/ˈbʌtə/','/ˈbʌtər/','',''],
+'jam':['/ˈdʒæm/','/ˈdʒæm/','https://api.dictionaryapi.dev/media/pronunciations/en/jam-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/jam-us.mp3'],
+'honey':['/ˈhʌni/','/ˈhʌni/','https://api.dictionaryapi.dev/media/pronunciations/en/honey-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/honey-us.mp3'],
+'yogurt':['/ˈjɒɡət/','/ˈjoʊɡərt/','','https://api.dictionaryapi.dev/media/pronunciations/en/yogurt-us.mp3'],
+'popcorn':['/ˈpɒp.kɔː(r)n/','/ˈpɑp.kɔrn/','',''],
+'sausage':['/ˈsɒsɪdʒ/','/ˈsɔːsɪdʒ/','','https://api.dictionaryapi.dev/media/pronunciations/en/sausage-us.mp3'],
+'dumpling':['/ˈdʌmplɪŋ/','/ˈdʌmplɪŋ/','https://api.dictionaryapi.dev/media/pronunciations/en/dumpling-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dumpling-us.mp3'],
+'fries':['/fraɪz/','/fraɪz/','',''],
+'meat':['/miːt/','/mit/','https://api.dictionaryapi.dev/media/pronunciations/en/meat-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/meat-us.mp3'],
+'red':['/red/','/red/','https://api.dictionaryapi.dev/media/pronunciations/en/red-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/red-us.mp3'],
+'blue':['/bluː/','/blu/','https://api.dictionaryapi.dev/media/pronunciations/en/blue-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/blue-us.mp3'],
+'yellow':['/ˈjel.əʊ/','/ˈjel.oʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/yellow-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/yellow-us.mp3'],
+'green':['/ɡriːn/','/ɡriːn/','https://api.dictionaryapi.dev/media/pronunciations/en/green-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/green-us.mp3'],
+'purple':['/ˈpɜː(r).pəl/','/ˈpɜːrpəl/','','https://api.dictionaryapi.dev/media/pronunciations/en/purple-us.mp3'],
+'pink':['/pɪŋk/','/pɪŋk/','https://api.dictionaryapi.dev/media/pronunciations/en/pink-uk.mp3',''],
+'black':['/blæk/','/blæk/','https://api.dictionaryapi.dev/media/pronunciations/en/black-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/black-uk.mp3'],
+'white':['/waɪt/','/waɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/white-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/white-us.mp3'],
+'brown':['/braʊn/','/braʊn/','https://api.dictionaryapi.dev/media/pronunciations/en/brown-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/brown-us.mp3'],
+'gray':['/ɡreɪ/','/ɡreɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/gray-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/gray-1-us.mp3'],
+'gold':['/ɡɒʊld/','/ɡoʊld/','https://api.dictionaryapi.dev/media/pronunciations/en/gold-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/gold-1-us.mp3'],
+'silver':['/ˈsɪl.və/','/ˈsɪl.vər/','','https://api.dictionaryapi.dev/media/pronunciations/en/silver-us.mp3'],
+'circle':['/ˈsɜːkəl/','/ˈsɜːrkəl/','https://api.dictionaryapi.dev/media/pronunciations/en/circle-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/circle-us.mp3'],
+'square':['/skweə(r)/','/skweər/','','https://api.dictionaryapi.dev/media/pronunciations/en/square-us.mp3'],
+'triangle':['/ˈtraɪəŋɡəl/','/ˈtraɪˌæŋɡəl/','','https://api.dictionaryapi.dev/media/pronunciations/en/triangle-us.mp3'],
+'rectangle':['/ˈrektæŋɡ(ə)l/','/ˈrekˌtæŋɡəl/','','https://api.dictionaryapi.dev/media/pronunciations/en/rectangle-us.mp3'],
+'star':['/stɑː(r)/','/stɑr/','https://api.dictionaryapi.dev/media/pronunciations/en/star-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/star-us.mp3'],
+'heart':['/hɑːt/','/hɑrt/','https://api.dictionaryapi.dev/media/pronunciations/en/heart-uk.mp3',''],
+'diamond':['/ˈdaɪ(ə)mənd/','/ˈdaɪ(ə)mənd/','https://api.dictionaryapi.dev/media/pronunciations/en/diamond-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/diamond-us.mp3'],
+'navy':['/ˈneɪvi/','/ˈneɪvi/','https://api.dictionaryapi.dev/media/pronunciations/en/navy-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/navy-us.mp3'],
+'mint':['/mɪnt/','/mɪnt/','https://api.dictionaryapi.dev/media/pronunciations/en/mint-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/mint-us.mp3'],
+'one':['/wʌn/','/wʌn/','https://api.dictionaryapi.dev/media/pronunciations/en/one-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/one-us.mp3'],
+'two':['/tuː/','/tu/','https://api.dictionaryapi.dev/media/pronunciations/en/two-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/two-us.mp3'],
+'three':['/θriː/','/θriː/','https://api.dictionaryapi.dev/media/pronunciations/en/three-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/three-us.mp3'],
+'four':['/fɔː/','/fɔːr/','','https://api.dictionaryapi.dev/media/pronunciations/en/four-us.mp3'],
+'five':['/faɪv/','/faɪv/','','https://api.dictionaryapi.dev/media/pronunciations/en/five-us.mp3'],
+'six':['/sɪks/','/sɪks/','https://api.dictionaryapi.dev/media/pronunciations/en/six-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/six-us.mp3'],
+'seven':['/ˈsev.ən/','/ˈsev.ən/','https://api.dictionaryapi.dev/media/pronunciations/en/seven-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/seven-us.mp3'],
+'eight':['/eɪt/','/eɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/eight-1-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/eight-1-us.mp3'],
+'nine':['/naɪn/','/naɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/nine-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/nine-us.mp3'],
+'ten':['/ten/','/ten/','https://api.dictionaryapi.dev/media/pronunciations/en/ten-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ten-us.mp3'],
+'eleven':['/ɪˈlev.ən/','/iˈlev.ən/','','https://api.dictionaryapi.dev/media/pronunciations/en/eleven-us.mp3'],
+'twelve':['/twelv/','/twelv/','https://api.dictionaryapi.dev/media/pronunciations/en/twelve-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/twelve-us.mp3'],
+'thirteen':['/ˌθɜːˈtiːn/','/ˌθɜːrˈtiːn/','','https://api.dictionaryapi.dev/media/pronunciations/en/thirteen-us-stressed.mp3'],
+'fourteen':['/ˌfɔːˈtiːn/','/ˌfɔːrˈtiːn/','',''],
+'fifteen':['/fɪfˈtiːn/','/fɪfˈtiːn/','',''],
+'twenty':['/ˈtwenti/','/ˈtweni/','https://api.dictionaryapi.dev/media/pronunciations/en/twenty-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/twenty-us.mp3'],
+'thirty':['/ˈθɜːti/','/ˈθɜːrti/','https://api.dictionaryapi.dev/media/pronunciations/en/thirty-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/thirty-us.mp3'],
+'hundred':['/ˈhʌndərd/','/ˈhʌndərd/','https://api.dictionaryapi.dev/media/pronunciations/en/hundred-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hundred-us.mp3'],
+'zero':['/ˈzɪərəʊ/','/ˈzɪroʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/zero-us.mp3'],
+'sixteen':['/ˈsɪks.tiːn/','/ˈsɪks.tiːn/','',''],
+'head':['/hed/','/hed/','https://api.dictionaryapi.dev/media/pronunciations/en/head-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/head-us.mp3'],
+'eye':['/aɪ/','/aɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/eye-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/eye-us.mp3'],
+'ear':['/ɪə/','/ir/','https://api.dictionaryapi.dev/media/pronunciations/en/ear-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ear-us.mp3'],
+'nose':['/nəʊz/','/noʊz/','https://api.dictionaryapi.dev/media/pronunciations/en/nose-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/nose-us.mp3'],
+'mouth':['/maʊθ/','/maʊθ/','https://api.dictionaryapi.dev/media/pronunciations/en/mouth-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/mouth-us.mp3'],
+'tooth':['/tuːθ/','/tuːθ/','https://api.dictionaryapi.dev/media/pronunciations/en/tooth-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tooth-us.mp3'],
+'tongue':['/tɒŋɡ/','/tʌŋ/','https://api.dictionaryapi.dev/media/pronunciations/en/tongue-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tongue-us.mp3'],
+'face':['/feɪs/','/feɪs/','https://api.dictionaryapi.dev/media/pronunciations/en/face-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/face-us.mp3'],
+'hair':['/heə/','/her/','https://api.dictionaryapi.dev/media/pronunciations/en/hair-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hair-us.mp3'],
+'neck':['/nek/','/nek/','https://api.dictionaryapi.dev/media/pronunciations/en/neck-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/neck-us.mp3'],
+'shoulder':['/ˈʃəʊldə/','/ˈʃoʊldər/','','https://api.dictionaryapi.dev/media/pronunciations/en/shoulder-us.mp3'],
+'arm':['/ɑːm/','/ɑrm/','','https://api.dictionaryapi.dev/media/pronunciations/en/arm-us.mp3'],
+'hand':['/hænd/','/hænd/','https://api.dictionaryapi.dev/media/pronunciations/en/hand-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hand-us.mp3'],
+'finger':['/ˈfɪŋɡə/','/ˈfɪŋɡər/','','https://api.dictionaryapi.dev/media/pronunciations/en/finger-us.mp3'],
+'leg':['/leɡ/','/leɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/leg-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/leg-1-us.mp3'],
+'knee':['/niː/','/ni/','','https://api.dictionaryapi.dev/media/pronunciations/en/knee-us.mp3'],
+'foot':['/fʊt/','/fʊt/','https://api.dictionaryapi.dev/media/pronunciations/en/foot-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/foot-us.mp3'],
+'toe':['/təʊ/','/toʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/toe-us.mp3'],
+'tummy':['/ˈtʌm.i/','/ˈtʌm.i/','https://api.dictionaryapi.dev/media/pronunciations/en/tummy-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tummy-au.mp3'],
+'back':['/bæk/','/bæk/','https://api.dictionaryapi.dev/media/pronunciations/en/back-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/back-us.mp3'],
+'chin':['/tʃɪn/','/tʃɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/chin-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/chin-us.mp3'],
+'cheek':['/tʃiːk/','/tʃiːk/','https://api.dictionaryapi.dev/media/pronunciations/en/cheek-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cheek-us.mp3'],
+'father':['/ˈfɑːðə(r)/','/ˈfɑðər/','https://api.dictionaryapi.dev/media/pronunciations/en/father-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/father-us.mp3'],
+'mother':['/ˈmʌðə(r)/','/ˈmʌðər/','https://api.dictionaryapi.dev/media/pronunciations/en/mother-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/mother-us.mp3'],
+'brother':['/ˈbrʌðə(r)/','/ˈbrʌðər/','https://api.dictionaryapi.dev/media/pronunciations/en/brother-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/brother-us.mp3'],
+'sister':['/ˈsɪs.tə/','/ˈsɪs.tər/','https://api.dictionaryapi.dev/media/pronunciations/en/sister-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sister-us.mp3'],
+'baby':['/ˈbeɪbi/','/ˈbeɪbi/','https://api.dictionaryapi.dev/media/pronunciations/en/baby-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/baby-us.mp3'],
+'grandma':['/ˈɡrænmɑː/','/ˈɡrænmɑː/','',''],
+'grandpa':['/ˈɡrænpɑː/','/ˈɡrænpɑː/','',''],
+'uncle':['/ˈʌŋ.kəl/','/ˈʌŋ.kəl/','https://api.dictionaryapi.dev/media/pronunciations/en/uncle-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/uncle-us.mp3'],
+'aunt':['/ɑːnt/','/ænt/','','https://api.dictionaryapi.dev/media/pronunciations/en/aunt-us.mp3'],
+'cousin':['/ˈkʌzən/','/ˈkʌzən/','',''],
+'son':['/sʌn/','/sʌn/','https://api.dictionaryapi.dev/media/pronunciations/en/son-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/son-us.mp3'],
+'daughter':['/ˈdɔːtə(r)/','/ˈdɔ.tər/','https://api.dictionaryapi.dev/media/pronunciations/en/daughter-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/daughter-us.mp3'],
+'husband':['/ˈhʌz.bənd/','/ˈhʌz.bənd/','https://api.dictionaryapi.dev/media/pronunciations/en/husband-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/husband-us.mp3'],
+'wife':['/waɪf/','/waɪf/','https://api.dictionaryapi.dev/media/pronunciations/en/wife-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/wife-us.mp3'],
+'family':['/ˈfæm(ɪ)li/','/ˈfæm(ə)li/','https://api.dictionaryapi.dev/media/pronunciations/en/family-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/family-us.mp3'],
+'shirt':['/ʃɜːt/','/ʃɜːrt/','https://api.dictionaryapi.dev/media/pronunciations/en/shirt-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/shirt-us.mp3'],
+'pants':['/pænts/','/pænts/','https://api.dictionaryapi.dev/media/pronunciations/en/pants-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pants-us.mp3'],
+'dress':['/dres/','/dres/','https://api.dictionaryapi.dev/media/pronunciations/en/dress-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dress-us.mp3'],
+'skirt':['/skɜːt/','/skɜːrt/','https://api.dictionaryapi.dev/media/pronunciations/en/skirt-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/skirt-us.mp3'],
+'coat':['/kəʊt/','/koʊt/','https://api.dictionaryapi.dev/media/pronunciations/en/coat-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/coat-us.mp3'],
+'jacket':['/ˈdʒæk.ɪt/','/ˈdʒækət/','','https://api.dictionaryapi.dev/media/pronunciations/en/jacket-us.mp3'],
+'hat':['/hæt/','/hæt/','https://api.dictionaryapi.dev/media/pronunciations/en/hat-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hat-us.mp3'],
+'shoe':['/ʃuː/','/ʃuː/','https://api.dictionaryapi.dev/media/pronunciations/en/shoe-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/shoe-us.mp3'],
+'sock':['/sɒk/','/sɑk/','','https://api.dictionaryapi.dev/media/pronunciations/en/sock-us.mp3'],
+'T-shirt':['/ˈtiː ʃɜːt/','/ˈtiː ʃɜːrt/','',''],
+'shorts':['/ʃɔː(r)ts/','/ʃɔː(r)ts/','',''],
+'sweater':['/ˈswetə/','/ˈswetər/','','https://api.dictionaryapi.dev/media/pronunciations/en/sweater-us.mp3'],
+'scarf':['/skɑːf/','/skɑːrf/','',''],
+'glove':['/ɡlʌv/','/ɡlʌv/','https://api.dictionaryapi.dev/media/pronunciations/en/glove-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/glove-us.mp3'],
+'boot':['/buːt/','/but/','','https://api.dictionaryapi.dev/media/pronunciations/en/boot-us.mp3'],
+'jeans':['/dʒiːnz/','/dʒiːnz/','https://api.dictionaryapi.dev/media/pronunciations/en/jeans-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/jeans-uk.mp3'],
+'vest':['/vest/','/vest/','https://api.dictionaryapi.dev/media/pronunciations/en/vest-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/vest-us.mp3'],
+'belt':['/belt/','/belt/','https://api.dictionaryapi.dev/media/pronunciations/en/belt-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/belt-us.mp3'],
+'sun':['/sʌn/','/sʌn/','https://api.dictionaryapi.dev/media/pronunciations/en/sun-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sun-us.mp3'],
+'moon':['/muːn/','/muːn/','https://api.dictionaryapi.dev/media/pronunciations/en/moon-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/moon-us.mp3'],
+'cloud':['/klaʊd/','/klaʊd/','https://api.dictionaryapi.dev/media/pronunciations/en/cloud-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cloud-us.mp3'],
+'rain':['/reɪn/','/reɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/rain-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/rain-us.mp3'],
+'snow':['/snəʊ/','/snoʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/snow-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/snow-1-us.mp3'],
+'wind':['/ˈwaɪnd/','/ˈwaɪnd/','https://api.dictionaryapi.dev/media/pronunciations/en/wind-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/wind-1-us.mp3'],
+'rainbow':['/ˈreɪnbəʊ/','/ˈreɪnboʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/rainbow-us.mp3'],
+'sky':['/skaɪ/','/skaɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/sky-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sky-us.mp3'],
+'tree':['/triː/','/triː/','https://api.dictionaryapi.dev/media/pronunciations/en/tree-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tree-us.ogg'],
+'flower':['/ˈflaʊ.ə/','/ˈflaʊ.ər/','https://api.dictionaryapi.dev/media/pronunciations/en/flower-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/flower-1-us.mp3'],
+'grass':['/ɡrɑːs/','/ɡræs/','https://api.dictionaryapi.dev/media/pronunciations/en/grass-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/grass-us.mp3'],
+'leaf':['/liːf/','/liːf/','https://api.dictionaryapi.dev/media/pronunciations/en/leaf-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/leaf-us.mp3'],
+'river':['/ˈrɪvə/','/ˈrɪvər/','https://api.dictionaryapi.dev/media/pronunciations/en/river-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/river-1-us.mp3'],
+'mountain':['/ˈmaʊntɪn/','/ˈmaʊntən/','https://api.dictionaryapi.dev/media/pronunciations/en/mountain-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/mountain-us.mp3'],
+'ocean':['/ˈəʊ.ʃən/','/ˈoʊ.ʃən/','','https://api.dictionaryapi.dev/media/pronunciations/en/ocean-us.mp3'],
+'beach':['/biːtʃ/','/biːtʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/beach-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/beach-us.mp3'],
+'rock':['/rɒk/','/rɑk/','','https://api.dictionaryapi.dev/media/pronunciations/en/rock-us.mp3'],
+'fire':['/ˈfaɪə/','/ˈfaɪər/','','https://api.dictionaryapi.dev/media/pronunciations/en/fire-us.mp3'],
+'ice':['/aɪs/','/aɪs/','https://api.dictionaryapi.dev/media/pronunciations/en/ice-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ice-us.mp3'],
+'island':['/ˈaɪlənd/','/ˈaɪlənd/','https://api.dictionaryapi.dev/media/pronunciations/en/island-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/island-us.mp3'],
+'volcano':['/vɒlˈkeɪnəʊ/','/vɑlˈkeɪnoʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/volcano-us.mp3'],
+'snowman':['/ˈsnəʊ.mæn/','/ˈsnoʊ.mæn/','','https://api.dictionaryapi.dev/media/pronunciations/en/snowman-us.mp3'],
+'tornado':['/tɔː(r)ˈneɪ.dəʊ/','/tɔː(r)ˈneɪ.dəʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/tornado-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tornado-us.mp3'],
+'book':['/buːk/','/buːk/','https://api.dictionaryapi.dev/media/pronunciations/en/book-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/book-us.mp3'],
+'pen':['/pen/','/pen/','https://api.dictionaryapi.dev/media/pronunciations/en/pen.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pen.mp3'],
+'pencil':['/ˈpensɪl/','/ˈpensəl/','','https://api.dictionaryapi.dev/media/pronunciations/en/pencil-us.mp3'],
+'paper':['/ˈpeɪpə/','/ˈpeɪpər/','https://api.dictionaryapi.dev/media/pronunciations/en/paper-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/paper-us.mp3'],
+'bag':['/ˈbæːɡ/','/ˈbeɪɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/bag-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bag-us.mp3'],
+'table':['/ˈteɪbəl/','/ˈteɪbəl/','https://api.dictionaryapi.dev/media/pronunciations/en/table-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/table-us.mp3'],
+'chair':['/tʃeə(r)/','/tʃeər/','https://api.dictionaryapi.dev/media/pronunciations/en/chair-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/chair-us.mp3'],
+'bed':['/bed/','/bed/','https://api.dictionaryapi.dev/media/pronunciations/en/bed-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bed-us.mp3'],
+'door':['/dɔː/','/dɔr/','https://api.dictionaryapi.dev/media/pronunciations/en/door-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/door-us.mp3'],
+'window':['/ˈwɪndəʊ/','/ˈwɪndoʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/window-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/window-us.mp3'],
+'clock':['/klɒk/','/klɑk/','https://api.dictionaryapi.dev/media/pronunciations/en/clock-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/clock-us.mp3'],
+'phone':['/fəʊn/','/foʊn/','https://api.dictionaryapi.dev/media/pronunciations/en/phone-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/phone-us.mp3'],
+'key':['/kiː/','/ki/','https://api.dictionaryapi.dev/media/pronunciations/en/key-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/key-us.mp3'],
+'cup':['/kʌp/','/kʌp/','https://api.dictionaryapi.dev/media/pronunciations/en/cup-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cup-us.mp3'],
+'plate':['/pleɪt/','/pleɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/plate-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/plate-us.mp3'],
+'spoon':['/spuːn/','/spun/','https://api.dictionaryapi.dev/media/pronunciations/en/spoon-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/spoon-us.mp3'],
+'fork':['/fɔːk/','/fɔrk/','https://api.dictionaryapi.dev/media/pronunciations/en/fork-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/fork-us.mp3'],
+'knife':['/naɪf/','/naɪf/','https://api.dictionaryapi.dev/media/pronunciations/en/knife-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/knife-us.mp3'],
+'bottle':['/ˈbɒ.təl/','/ˈbɑ.təl/','https://api.dictionaryapi.dev/media/pronunciations/en/bottle-uk.mp3',''],
+'box':['/bɒks/','/bɑks/','','https://api.dictionaryapi.dev/media/pronunciations/en/box-us.mp3'],
+'ball':['/bɔːl/','/bɔːl/','https://api.dictionaryapi.dev/media/pronunciations/en/ball-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ball-us.mp3'],
+'toy':['/tɔɪ/','/tɔɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/toy-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/toy-us.mp3'],
+'doll':['/dɒl/','/dɑl/','','https://api.dictionaryapi.dev/media/pronunciations/en/doll-us.mp3'],
+'kite':['/kaɪt/','/kaɪt/','',''],
+'umbrella':['/ʌmˈbrelə/','/ʌmˈbrelə/','https://api.dictionaryapi.dev/media/pronunciations/en/umbrella-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/umbrella-us.mp3'],
+'lamp':['/læmp/','/læmp/','https://api.dictionaryapi.dev/media/pronunciations/en/lamp-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/lamp-us.mp3'],
+'radio':['/ˈreɪdiˌəʊ/','/ˈreɪdiˌoʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/radio-us.mp3'],
+'computer':['/kəmˈpjuːtə/','/kəmˈpjutər/','https://api.dictionaryapi.dev/media/pronunciations/en/computer-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/computer-us.mp3'],
+'watch':['/wɒtʃ/','/wɑtʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/watch-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/watch-us.mp3'],
+'car':['/kɑː/','/kɑr/','https://api.dictionaryapi.dev/media/pronunciations/en/car-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/car-us.mp3'],
+'bus':['/bʌs/','/bʌs/','https://api.dictionaryapi.dev/media/pronunciations/en/bus-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bus-us.mp3'],
+'bike':['/baɪk/','/baɪk/','','https://api.dictionaryapi.dev/media/pronunciations/en/bike-us.mp3'],
+'train':['/treɪn/','/treɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/train-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/train-1-us.mp3'],
+'plane':['/pleɪn/','/pleɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/plane-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/plane-us.mp3'],
+'boat':['/bəʊt/','/boʊt/','','https://api.dictionaryapi.dev/media/pronunciations/en/boat-us.mp3'],
+'ship':['/ʃɪp/','/ʃɪp/','https://api.dictionaryapi.dev/media/pronunciations/en/ship-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ship-us.mp3'],
+'truck':['/trʌk/','/trʌk/','https://api.dictionaryapi.dev/media/pronunciations/en/truck-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/truck-us.mp3'],
+'taxi':['/ˈtæk.si/','/ˈtæk.si/','https://api.dictionaryapi.dev/media/pronunciations/en/taxi-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/taxi-us.mp3'],
+'helicopter':['/ˈhelɪkɒptə/','/ˈhelɪkɑːptər/','https://api.dictionaryapi.dev/media/pronunciations/en/helicopter-au.mp3',''],
+'rocket':['/ˈrɒkɪt/','/ˈrɑkɪt/','','https://api.dictionaryapi.dev/media/pronunciations/en/rocket-us.mp3'],
+'submarine':['/sʌb.məˈriːn/','/ˈsʌb.mə.rin/','',''],
+'motorcycle':['/ˈməʊtəˌsaɪkəl/','/ˈmoʊtərˌsaɪkəl/','',''],
+'ambulance':['/ˈæm.bjə.ləns/','/ˈæm.bjə.ləns/','https://api.dictionaryapi.dev/media/pronunciations/en/ambulance-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ambulance-us.mp3'],
+'fire truck':['/ˈfaɪə trʌk/','/ˈfaɪər trʌk/','',''],
+'skateboard':['/ˈskeɪtbɔːd/','/ˈskeɪtbɔːrd/','','https://api.dictionaryapi.dev/media/pronunciations/en/skateboard-us.mp3'],
+'ferry':['/ˈferi/','/ˈferi/','','https://api.dictionaryapi.dev/media/pronunciations/en/ferry-us.mp3'],
+'van':['/væn/','/væn/','https://api.dictionaryapi.dev/media/pronunciations/en/van-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/van-us.mp3'],
+'tram':['/træm/','/træm/','',''],
+'run':['/rʌn/','/rʌn/','','https://api.dictionaryapi.dev/media/pronunciations/en/run-us.mp3'],
+'jump':['/dʒʌmp/','/dʒʌmp/','https://api.dictionaryapi.dev/media/pronunciations/en/jump-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/jump-us.mp3'],
+'walk':['/wɔːk/','/wɔk/','https://api.dictionaryapi.dev/media/pronunciations/en/walk-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/walk-us.mp3'],
+'swim':['/swɪm/','/swɪm/','https://api.dictionaryapi.dev/media/pronunciations/en/swim-1-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/swim-1-us.mp3'],
+'fly':['/flaɪ/','/flaɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/fly-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/fly-us.mp3'],
+'eat':['/iːt/','/it/','https://api.dictionaryapi.dev/media/pronunciations/en/eat-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/eat-us.mp3'],
+'drink':['/drɪŋk/','/drɪŋk/','https://api.dictionaryapi.dev/media/pronunciations/en/drink-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/drink-us.mp3'],
+'sleep':['/sliːp/','/slip/','','https://api.dictionaryapi.dev/media/pronunciations/en/sleep-us.mp3'],
+'read':['/riːd/','/riːd/','https://api.dictionaryapi.dev/media/pronunciations/en/read-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/read-2-us.mp3'],
+'write':['/raɪt/','/raɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/write-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/write-us.mp3'],
+'draw':['/drɔː/','/drɔː/','',''],
+'sing':['/sɪŋ/','/sɪŋ/','https://api.dictionaryapi.dev/media/pronunciations/en/sing-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sing-us.mp3'],
+'dance':['/dɑːns/','/dæns/','https://api.dictionaryapi.dev/media/pronunciations/en/dance-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dance-us.mp3'],
+'play':['/pleɪ/','/pleɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/play-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/play-us.mp3'],
+'open':['/ˈəʊ.pən/','/ˈoʊ.pən/','https://api.dictionaryapi.dev/media/pronunciations/en/open-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/open-us.mp3'],
+'close':['/kləʊs/','/kloʊz/','https://api.dictionaryapi.dev/media/pronunciations/en/close-2-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/close-1-us.mp3'],
+'sit':['/sɪt/','/sɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/sit-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sit-us.mp3'],
+'stand':['/stænd/','/stænd/','https://api.dictionaryapi.dev/media/pronunciations/en/stand-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/stand-us.mp3'],
+'clap':['/klæp/','/klæp/','https://api.dictionaryapi.dev/media/pronunciations/en/clap.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/clap.mp3'],
+'wash':['/wɒʃ/','/wɑʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/wash-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/wash-us.mp3'],
+'push':['/pʊʃ/','/pʊʃ/','','https://api.dictionaryapi.dev/media/pronunciations/en/push-1-us.mp3'],
+'pull':['/pʊl/','/pʊl/','https://api.dictionaryapi.dev/media/pronunciations/en/pull-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/pull-us.mp3'],
+'catch':['/kætʃ/','/kætʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/catch-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/catch-us.mp3'],
+'throw':['/θrəʊ/','/θroʊ/','','https://api.dictionaryapi.dev/media/pronunciations/en/throw-us.mp3'],
+'cry':['/kraɪ/','/kraɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/cry.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cry.mp3'],
+'bake':['/beɪk/','/beɪk/','https://api.dictionaryapi.dev/media/pronunciations/en/bake-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bake-us.mp3'],
+'sweep':['/swiːp/','/swiːp/','https://api.dictionaryapi.dev/media/pronunciations/en/sweep-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sweep-us.mp3'],
+'hug':['/hʌɡ/','/hʌɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/hug-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hug-us.mp3'],
+'happy':['/ˈhæpiː/','/ˈhæpi/','https://api.dictionaryapi.dev/media/pronunciations/en/happy-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/happy-us.mp3'],
+'sad':['/sæd/','/sæd/','https://api.dictionaryapi.dev/media/pronunciations/en/sad-1-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/sad-1-us.mp3'],
+'big':['/bɪɡ/','/bɪɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/big-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/big-us.ogg'],
+'small':['/smɔːl/','/smɔl/','https://api.dictionaryapi.dev/media/pronunciations/en/small-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/small-us.mp3'],
+'hot':['/hɒt/','/hɑt/','https://api.dictionaryapi.dev/media/pronunciations/en/hot-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hot-us.mp3'],
+'cold':['/kɔʊld/','/koʊld/','https://api.dictionaryapi.dev/media/pronunciations/en/cold-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cold-us.mp3'],
+'fast':['/fæst/','/fæst/','https://api.dictionaryapi.dev/media/pronunciations/en/fast-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/fast-us.mp3'],
+'slow':['/sləʊ/','/sloʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/slow-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/slow-us.mp3'],
+'new':['/njuː/','/n(j)u/','https://api.dictionaryapi.dev/media/pronunciations/en/new-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/new-us.ogg'],
+'old':['/ˈɒʊld/','/ˈoʊld/','https://api.dictionaryapi.dev/media/pronunciations/en/old-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/old-us.mp3'],
+'clean':['/kliːn/','/klin/','https://api.dictionaryapi.dev/media/pronunciations/en/clean-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/clean-us.mp3'],
+'dirty':['/ˈdɜːti/','/ˈdɜːrti/','https://api.dictionaryapi.dev/media/pronunciations/en/dirty-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dirty-us.mp3'],
+'tall':['/tɔːl/','/tɑl/','https://api.dictionaryapi.dev/media/pronunciations/en/tall-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tall-us-cot-caught%20merger.mp3'],
+'short':['/ʃɔːt/','/ʃɔrt/','https://api.dictionaryapi.dev/media/pronunciations/en/short-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/short-us.mp3'],
+'good':['/ɡʊd/','/ɡʊd/','https://api.dictionaryapi.dev/media/pronunciations/en/good-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/good-us.mp3'],
+'bad':['/bæd/','/beəd/','https://api.dictionaryapi.dev/media/pronunciations/en/bad-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bad-us.mp3'],
+'beautiful':['/ˈbjuːtɪfəl/','/ˈbjuːtɪfəl/','https://api.dictionaryapi.dev/media/pronunciations/en/beautiful-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/beautiful-us.mp3'],
+'funny':['/ˈfʌni/','/ˈfʌni/','https://api.dictionaryapi.dev/media/pronunciations/en/funny-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/funny-us.mp3'],
+'hungry':['/ˈhʌŋ.ɡri/','/ˈhʌŋ.ɡri/','https://api.dictionaryapi.dev/media/pronunciations/en/hungry-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hungry-us.mp3'],
+'thirsty':['/ˈθɜː(r)st.i/','/ˈθɜː(r)st.i/','https://api.dictionaryapi.dev/media/pronunciations/en/thirsty-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/thirsty-us.mp3'],
+'tired':['/taɪəd/','/taɪərd/','https://api.dictionaryapi.dev/media/pronunciations/en/tired-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/tired-us.mp3'],
+'home':['/(h)əʊm/','/hoʊm/','','https://api.dictionaryapi.dev/media/pronunciations/en/home-us.mp3'],
+'school':['/skuːl/','/skuːl/','https://api.dictionaryapi.dev/media/pronunciations/en/school-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/school-uk.mp3'],
+'park':['/pɑːk/','/pɑːrk/','','https://api.dictionaryapi.dev/media/pronunciations/en/park-us.mp3'],
+'zoo':['/zuː/','/zuː/','https://api.dictionaryapi.dev/media/pronunciations/en/zoo-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/zoo-us.mp3'],
+'store':['/stɔː/','/stɔr/','','https://api.dictionaryapi.dev/media/pronunciations/en/store-us.mp3'],
+'hospital':['/ˈhɒspɪtəl/','/ˈhɑːspɪtəl/','https://api.dictionaryapi.dev/media/pronunciations/en/hospital-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/hospital-us.mp3'],
+'library':['/ˈlaɪbrəri/','/ˈlaɪbreri/','','https://api.dictionaryapi.dev/media/pronunciations/en/library-us.mp3'],
+'garden':['/ˈɡɑːdən/','/ˈɡɑːrdən/','https://api.dictionaryapi.dev/media/pronunciations/en/garden-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/garden-us.mp3'],
+'farm':['/fɑːm/','/fɑːrm/','https://api.dictionaryapi.dev/media/pronunciations/en/farm-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/farm-us.mp3'],
+'kitchen':['/ˈkɪtʃən/','/ˈkɪtʃən/','https://api.dictionaryapi.dev/media/pronunciations/en/kitchen-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/kitchen-us.mp3'],
+'bathroom':['/ˈbæθ.ruːm/','/ˈbæθ.ruːm/','https://api.dictionaryapi.dev/media/pronunciations/en/bathroom-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bathroom-us.mp3'],
+'bedroom':['/ˈbedrʊm/','/ˈbedrʊm/','https://api.dictionaryapi.dev/media/pronunciations/en/bedroom-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bedroom-us.mp3'],
+'supermarket':['/ˌsuːpəˈmɑːkɪt/','/ˌsuːpəˈmɑːkɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/supermarket-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/supermarket-uk.mp3'],
+'restaurant':['/ˈres.t(ə).r(ə)nt/','/ˈres.t(ə).rənt/','https://api.dictionaryapi.dev/media/pronunciations/en/restaurant-uk.mp3',''],
+'cinema':['/ˈsɪn.ɪ.mɑː/','/ˈsɪn.ə.mə/','https://api.dictionaryapi.dev/media/pronunciations/en/cinema-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cinema-us.mp3'],
+'teacher':['/ˈtiːtʃə/','/ˈtitʃər/','https://api.dictionaryapi.dev/media/pronunciations/en/teacher-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/teacher-us.mp3'],
+'doctor':['/ˈdɒktə/','/ˈdɑktər/','https://api.dictionaryapi.dev/media/pronunciations/en/doctor-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/doctor-us.mp3'],
+'nurse':['/nɜːs/','/nɜːrs/','','https://api.dictionaryapi.dev/media/pronunciations/en/nurse-us.mp3'],
+'farmer':['/ˈfɑːmə/','/ˈfɑːrmər/','https://api.dictionaryapi.dev/media/pronunciations/en/farmer-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/farmer-us.mp3'],
+'cook':['/kuːk/','/kuːk/','https://api.dictionaryapi.dev/media/pronunciations/en/cook-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cook-us.mp3'],
+'driver':['/ˈdraɪ.və(r)/','/ˈdraɪvər/','','https://api.dictionaryapi.dev/media/pronunciations/en/driver-us.mp3'],
+'police':['/pəˈliːs/','/pəˈliːs/','https://api.dictionaryapi.dev/media/pronunciations/en/police-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/police-us.mp3'],
+'firefighter':['/ˈfaɪə(r)ˌfaɪt.ə(r)/','/ˈfaɪə(r)ˌfaɪt.ə(r)/','',''],
+'pilot':['/ˈpaɪlət/','/ˈpaɪlət/','',''],
+'singer':['/ˈsɪŋə/','/ˈsɪŋər/','https://api.dictionaryapi.dev/media/pronunciations/en/singer-1-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/singer-1-us.mp3'],
+'dancer':['/ˈdæns.ə(r)/','/ˈdæns.ə(r)/','',''],
+'fisherman':['/ˈfɪʃəmən/','/ˈfɪʃərmən/','https://api.dictionaryapi.dev/media/pronunciations/en/fisherman-uk.mp3',''],
+'astronaut':['/ˈæstrəˌnɒt/','/ˈæstrəˌnɔt/','https://api.dictionaryapi.dev/media/pronunciations/en/astronaut-ca.mp3',''],
+'postman':['/ˈpəʊsmən/','/ˈpəʊsmən/','',''],
+'piano':['/piˈænəʊ/','/piˈɑnoʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/piano-1-uk.mp3',''],
+'drum':['/ˈdrʌm/','/ˈdrʌm/','https://api.dictionaryapi.dev/media/pronunciations/en/drum-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/drum-us.mp3'],
+'guitar':['/ɡɪˈtɑː(r)/','/ɡɪˈtɑr/','https://api.dictionaryapi.dev/media/pronunciations/en/guitar-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/guitar-us.mp3'],
+'violin':['/ˌvaɪəˈlɪn/','/ˌvaɪəˈlɪn/','','https://api.dictionaryapi.dev/media/pronunciations/en/violin-us.mp3'],
+'trumpet':['/ˈtrʌmpɪt/','/ˈtrʌmpɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/trumpet-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/trumpet-us.mp3'],
+'saxophone':['/ˈsæksəfoʊn/','/ˈsæksəfoʊn/','https://api.dictionaryapi.dev/media/pronunciations/en/saxophone-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/saxophone-us.mp3'],
+'bell':['/bel/','/bel/','https://api.dictionaryapi.dev/media/pronunciations/en/bell-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/bell-us.mp3'],
+'flute':['/fluːt/','/fluːt/','https://api.dictionaryapi.dev/media/pronunciations/en/flute-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/flute-us.mp3'],
+'soccer':['/ˈsɒk.ə/','/ˈsɑk.ər/','',''],
+'basketball':['/ˈbɑːs.kɪt.bɔːl/','/ˈbæs.kɪt.bɔːl/','','https://api.dictionaryapi.dev/media/pronunciations/en/basketball-us.mp3'],
+'baseball':['/ˈbeɪs.bɔːl/','/ˈbeɪs.bɑl/','','https://api.dictionaryapi.dev/media/pronunciations/en/baseball-us.mp3'],
+'tennis':['/ˈten.ɪs/','/ˈten.ɪs/','',''],
+'volleyball':['/ˈvɒlibɔːl/','/ˈvɑːlibɔːl/','https://api.dictionaryapi.dev/media/pronunciations/en/volleyball-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/volleyball-us.mp3'],
+'badminton':['/ˈbæd.mɪn.tən/','/ˈbæd.mɪn.tən/','https://api.dictionaryapi.dev/media/pronunciations/en/badminton-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/badminton-us.mp3'],
+'bowling':['/ˈbəʊlɪŋ/','/ˈboʊliŋ/','',''],
+'golf':['/ɡɒlf/','/ɡɑlf/','','https://api.dictionaryapi.dev/media/pronunciations/en/golf-us.mp3'],
+'skating':['/ˈskeɪtɪŋ/','/ˈskeɪtɪŋ/','',''],
+'skiing':['/ˈskiɪŋ/','/ˈskiɪŋ/','',''],
+'mosquito':['/məˈskiːtəʊ/','/məˈskiːtoʊ/','https://api.dictionaryapi.dev/media/pronunciations/en/mosquito-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/mosquito-us.mp3'],
+'housefly':['/ˈhaʊsflaɪ/','/ˈhaʊsflaɪ/','',''],
+'insect':['/ˈɪnsekt/','/ˈɪnsekt/','',''],
+'alligator':['/ˈælɪɡeɪtə/','/ˈælɪɡeɪtər/','',''],
+'ladybug':['/ˈleɪ.di.bʌɡ/','/ˈleɪ.di.bʌɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/ladybug-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/ladybug-us.mp3'],
+'cricket':['/ˈkrɪk.ɪt/','/ˈkrɪk.ɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/cricket-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cricket-us.mp3'],
+'caterpillar':['/ˈkætəˌpɪlə/','/ˈkætərˌpɪlər/','','https://api.dictionaryapi.dev/media/pronunciations/en/caterpillar-us.mp3'],
+'worm':['/wɜːm/','/wɜːrm/','','https://api.dictionaryapi.dev/media/pronunciations/en/worm-us.mp3'],
+'snail':['/sneɪl/','/sneɪl/','https://api.dictionaryapi.dev/media/pronunciations/en/snail-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/snail-us.mp3'],
+'beetle':['/ˈbiːtəl/','/ˈbiːtəl/','','https://api.dictionaryapi.dev/media/pronunciations/en/beetle-us.mp3'],
+'dragonfly':['/ˈdræɡənˌflaɪ/','/ˈdræɡənˌflaɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/dragonfly-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dragonfly-us.mp3'],
+'Monday':['/ˈmʌndeɪ/','/ˈmʌndeɪ/','',''],
+'Tuesday':['/ˈtjuːzdeɪ/','/ˈtuːzdeɪ/','',''],
+'Wednesday':['/ˈwenzdeɪ/','/ˈwenzdeɪ/','',''],
+'Thursday':['/ˈθɜːzdeɪ/','/ˈθɜːrzdeɪ/','',''],
+'Friday':['/ˈfraɪdeɪ/','/ˈfraɪdeɪ/','',''],
+'Saturday':['/ˈsætədeɪ/','/ˈsætərdeɪ/','',''],
+'Sunday':['/ˈsʌndeɪ/','/ˈsʌndeɪ/','',''],
+'spring':['/sprɪŋ/','/sprɪŋ/','https://api.dictionaryapi.dev/media/pronunciations/en/spring-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/spring-us.mp3'],
+'summer':['/ˈsʌmə(r)/','/ˈsʌmər/','','https://api.dictionaryapi.dev/media/pronunciations/en/summer-us.mp3'],
+'autumn':['/ˈɔːtəm/','/ˈɔtəm/','https://api.dictionaryapi.dev/media/pronunciations/en/autumn-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/autumn-us.mp3'],
+'winter':['/ˈwɪntər/','/ˈwɪntər/','https://api.dictionaryapi.dev/media/pronunciations/en/winter-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/winter-us.mp3'],
+'morning':['/ˈmɔːnɪŋ/','/ˈmɔrnɪŋ/','https://api.dictionaryapi.dev/media/pronunciations/en/morning-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/morning-us.mp3'],
+'noon':['/nuːn/','/nuːn/','https://api.dictionaryapi.dev/media/pronunciations/en/noon-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/noon-us.mp3'],
+'evening':['/ˈivnɪŋ/','/ˈivnɪŋ/','https://api.dictionaryapi.dev/media/pronunciations/en/evening-1-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/evening-1-us.mp3'],
+'night':['/naɪt/','/naɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/night-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/night-us.mp3'],
+'April':['/ˈeɪprəl/','/ˈeɪprəl/','',''],
+'April Fools\' Day':['/ˈeɪprəl fuːlz deɪ/','/ˈeɪprəl fuːlz deɪ/','',''],
+'August':['/ˈɔːɡəst/','/ˈɔːɡəst/','',''],
+'Children\'s Day':['/ˈtʃɪldrənz deɪ/','/ˈtʃɪldrənz deɪ/','',''],
+'December':['/dɪˈsembə/','/dɪˈsembər/','',''],
+'Double Ninth Festival':['/ˈdʌbəl naɪnθ ˈfestəvəl/','/ˈdʌbəl naɪnθ ˈfestəvəl/','',''],
+'Dragon Boat Festival':['/ˈdræɡən bəʊt ˈfestəvəl/','/ˈdræɡən boʊt ˈfestəvəl/','',''],
+'Easter':['/ˈiːstə/','/ˈiːstər/','',''],
+'February':['/ˈfebrʊəri/','/ˈfebrʊeri/','',''],
+'Halloween':['/ˌhæləʊˈiːn/','/ˌhæloʊˈiːn/','',''],
+'Jack-o-lantern':['/ˌdʒæk ə ˈlæntən/','/ˌdʒæk ə ˈlæntərn/','',''],
+'January':['/ˈdʒænjuəri/','/ˈdʒænjueri/','',''],
+'July':['/dʒuˈlaɪ/','/dʒuˈlaɪ/','',''],
+'June':['/dʒuːn/','/dʒuːn/','',''],
+'Lantern Festival':['/ˈlæntən ˈfestəvəl/','/ˈlæntərn ˈfestəvəl/','',''],
+'March':['/mɑːtʃ/','/mɑːrtʃ/','',''],
+'May':['/meɪ/','/meɪ/','',''],
+'Mid-Autumn Festival':['/mɪd ˈɔːtəm ˈfestəvəl/','/mɪd ˈɔːtəm ˈfestəvəl/','',''],
+'Mother\'s Day':['/ˈmʌðəz deɪ/','/ˈmʌðərz deɪ/','',''],
+'National Day':['/ˈnæʃənəl deɪ/','/ˈnæʃənəl deɪ/','',''],
+'New Year':['/njuː jɪə/','/nuː jɪr/','',''],
+'New Year\'s Eve':['/njuː jɪəz iːv/','/nuː jɪrz iːv/','',''],
+'November':['/nəʊˈvembə/','/noʊˈvembər/','',''],
+'October':['/ɒkˈtəʊbə/','/ɑːkˈtoʊbər/','',''],
+'September':['/sepˈtembə/','/sepˈtembər/','',''],
+'Spring Festival':['/sprɪŋ ˈfestəvəl/','/sprɪŋ ˈfestəvəl/','',''],
+'TV':['/ˌtiː ˈviː/','/ˌtiː ˈviː/','',''],
+'Teachers\' Day':['/ˈtiːtʃəz deɪ/','/ˈtiːtʃərz deɪ/','',''],
+'Thanksgiving':['/ˈθæŋksˌɡɪvɪŋ/','/ˈθæŋksˌɡɪvɪŋ/','',''],
+'afternoon':['/ˌɑːftəˈnuːn/','/ˌæftərˈnuːn/','',''],
+'airport':['/ˈeəpɔːt/','/ˈerpɔːrt/','',''],
+'alpaca':['/ælˈpækə/','/ælˈpækə/','',''],
+'anteater':['/ˈæntiːtə/','/ˈæntiːtər/','',''],
+'apartment':['/əˈpɑːtmənt/','/əˈpɑːrtmənt/','',''],
+'apricot':['/ˈeɪprɪkɒt/','/ˈeɪprɪkɑːt/','',''],
+'aquarium':['/əˈkweəriəm/','/əˈkweriəm/','',''],
+'asparagus':['/əˈspærəɡəs/','/əˈspærəɡəs/','',''],
+'bank':['/bæŋk/','/bæŋk/','',''],
+'bat':['/bæt/','/bæt/','',''],
+'bean sprouts':['/biːn spaʊts/','/biːn spaʊts/','',''],
+'beef':['/biːf/','/biːf/','',''],
+'billiards':['/ˈbɪliədz/','/ˈbɪljərdz/','',''],
+'birthday':['/ˈbɜːθdeɪ/','/ˈbɜːrθdeɪ/','',''],
+'bitter melon':['/ˈbɪtə ˈmelən/','/ˈbɪtər ˈmelən/','',''],
+'blue whale':['/bluː weɪl/','/bluː weɪl/','',''],
+'bookstore':['/ˈbʊkstɔː/','/ˈbʊkstɔːr/','',''],
+'bow':['/baʊ/','/baʊ/','',''],
+'bowl':['/bəʊl/','/boʊl/','',''],
+'branch':['/brɑːntʃ/','/bræntʃ/','',''],
+'breeze':['/briːz/','/briːz/','',''],
+'brown bear':['/braʊn beə/','/braʊn ber/','',''],
+'buck':['/bʌk/','/bʌk/','',''],
+'bull':['/bʊl/','/bʊl/','',''],
+'bus stop':['/bʌs stɒp/','/bʌs stɑːp/','',''],
+'bush':['/bʊʃ/','/bʊʃ/','',''],
+'cantaloupe':['/ˈkæntəluːp/','/ˈkæntəluːp/','',''],
+'carnation':['/kɑːˈneɪʃən/','/kɑːrˈneɪʃən/','',''],
+'cave':['/keɪv/','/keɪv/','',''],
+'centipede':['/ˈsentɪpiːd/','/ˈsentɪpiːd/','',''],
+'chameleon':['/kəˈmiːliən/','/kəˈmiːliən/','',''],
+'chess':['/tʃes/','/tʃes/','',''],
+'chicken meat':['/ˈtʃɪkɪn miːt/','/ˈtʃɪkɪn miːt/','',''],
+'chili':['/ˈtʃɪli/','/ˈtʃɪli/','',''],
+'chimpanzee':['/ˌtʃɪmpænˈziː/','/ˌtʃɪmpænˈziː/','',''],
+'chinese dragon':['/ˌtʃaɪˈniːz ˈdræɡən/','/ˌtʃaɪˈniːz ˈdræɡən/','',''],
+'chives':['/tʃaɪvz/','/tʃaɪvz/','',''],
+'chopsticks':['/ˈtʃɒpstɪks/','/ˈtʃɑːpstɪks/','',''],
+'cicada':['/sɪˈkɑːdə/','/sɪˈkeɪdə/','',''],
+'cilantro':['/sɪˈlæntrəʊ/','/sɪˈlæntroʊ/','',''],
+'cloudy':['/ˈklaʊdi/','/ˈklaʊdi/','',''],
+'clownfish':['/ˈklaʊnfɪʃ/','/ˈklaʊnfɪʃ/','',''],
+'cola':['/ˈkəʊlə/','/ˈkoʊlə/','',''],
+'cone':['/kəʊn/','/kəʊn/','',''],
+'cool':['/kuːl/','/kuːl/','',''],
+'crab':['/kræb/','/kræb/','',''],
+'crocodile':['/ˈkrɒkədaɪl/','/ˈkrɑːkədaɪl/','',''],
+'cube':['/kjuːb/','/kjuːb/','',''],
+'cuboid':['/ˈkjuːbɔɪd/','/ˈkjuːbɔɪd/','',''],
+'cuttlefish':['/ˈkʌtəlfɪʃ/','/ˈkʌtəlfɪʃ/','',''],
+'cycling':['/ˈsaɪklɪŋ/','/ˈsaɪklɪŋ/','',''],
+'cylinder':['/ˈsɪlɪndə(r)/','/ˈsɪlɪndə(r)/','',''],
+'desert':['/ˈdezət/','/ˈdezərt/','',''],
+'desk':['/desk/','/desk/','',''],
+'dessert':['/dɪˈzɜːt/','/dɪˈzɜːrt/','',''],
+'dinosaur':['/ˈdaɪnəsɔː/','/ˈdaɪnəsɔːr/','',''],
+'diving':['/ˈdaɪvɪŋ/','/ˈdaɪvɪŋ/','',''],
+'donkey':['/ˈdɒŋki/','/ˈdɔːŋki/','',''],
+'dragon':['/ˈdræɡən/','/ˈdræɡən/','',''],
+'dragon fruit':['/ˈdræɡən fruːt/','/ˈdræɡən fruːt/','',''],
+'e-bike':['/ˈiː baɪk/','/ˈiː baɪk/','',''],
+'eagle':['/ˈiːɡəl/','/ˈiːɡəl/','',''],
+'eighth':['/eɪtθ/','/eɪtθ/','',''],
+'elf':['/elf/','/elf/','',''],
+'excavator':['/ˈekskəveɪtə/','/ˈekskəveɪtər/','',''],
+'factory':['/ˈfæktri/','/ˈfæktəri/','',''],
+'fifth':['/fɪft/','/fɪft/','',''],
+'firecrackers':['/ˈfaɪəˌkrækəz/','/ˈfaɪərˌkrækərz/','',''],
+'fireworks':['/ˈfaɪəwɜːks/','/ˈfaɪərwɜːrks/','',''],
+'first':['/fɜːst/','/fɜːrst/','',''],
+'fish meat':['/fɪʃ miːt/','/fɪʃ miːt/','',''],
+'fishing':['/ˈfɪʃɪŋ/','/ˈfɪʃɪŋ/','',''],
+'floor':['/flɔː/','/flɔːr/','',''],
+'fog':['/fɒɡ/','/fɑːɡ/','',''],
+'foggy':['/ˈfɒɡi/','/ˈfɔːɡi/','',''],
+'forest':['/ˈfɒrɪst/','/ˈfɔːrɪst/','',''],
+'fourth':['/fɔːθ/','/fɔːθ/','',''],
+'fox':['/fɒks/','/fɑːks/','',''],
+'fridge':['/frɪdʒ/','/frɪdʒ/','',''],
+'frost':['/frɒst/','/frɔːst/','',''],
+'fruit':['/fruːt/','/fruːt/','',''],
+'gift':['/ɡɪft/','/ɡɪft/','',''],
+'ginger':['/ˈdʒɪndʒə/','/ˈdʒɪndʒər/','',''],
+'giraffe':['/dʒɪˈrɑːf/','/dʒəˈræf/','',''],
+'glass':['/ɡlɑːs/','/ɡlæs/','',''],
+'glasses':['/ˈɡlɑːsɪz/','/ˈɡlæsɪz/','',''],
+'goat':['/ɡəʊt/','/ɡoʊt/','',''],
+'greeting':['/ˈɡriːtɪŋ/','/ˈɡriːtɪŋ/','',''],
+'gymnastics':['/dʒɪmˈnæs.tɪks/','/dʒɪmˈnæs.tɪks/','',''],
+'hail':['/heɪl/','/heɪl/','',''],
+'hawthorn':['/ˈhɔːθɔːn/','/ˈhɔːθɔːrn/','',''],
+'hedgehog':['/ˈhedʒhɒɡ/','/ˈhedʒhɔːɡ/','',''],
+'high jump':['/haɪ dʒʌmp/','/haɪ dʒʌmp/','',''],
+'high-speed train':['/haɪ spiːd treɪn/','/haɪ spiːd treɪn/','',''],
+'hill':['/hɪl/','/hɪl/','',''],
+'hippo':['/ˈhɪpəʊ/','/ˈhɪpoʊ/','',''],
+'horseshoe crab':['/ˈhɔːsʃuː kræb/','/ˈhɔːrsʃuː kræb/','',''],
+'hot air balloon':['/hɒt eə bəˈluːn/','/hɑːt er bəˈluːn/','',''],
+'hotel':['/həʊˈtel/','/hoʊˈtel/','',''],
+'ice cube':['/aɪs kjuːb/','/aɪs kjuːb/','',''],
+'jeep':['/dʒiːp/','/dʒiːp/','',''],
+'jelly':['/ˈdʒeli/','/ˈdʒeli/','',''],
+'jellyfish':['/ˈdʒelɪfɪʃ/','/ˈdʒelifɪʃ/','',''],
+'koala':['/kəʊˈɑːlə/','/koʊˈɑːlə/','',''],
+'lake':['/leɪk/','/leɪk/','',''],
+'lifeboat':['/ˈlaɪfbəʊt/','/ˈlaɪfboʊt/','',''],
+'lightning':['/ˈlaɪtnɪŋ/','/ˈlaɪtnɪŋ/','',''],
+'living room':['/ˈlɪvɪŋ ruːm/','/ˈlɪvɪŋ ruːm/','',''],
+'lizard':['/ˈlɪzəd/','/ˈlɪzərd/','',''],
+'gecko':['/ˈɡekəʊ/','/ˈɡekoʊ/','',''],
+'iguana':['/ɪˈɡwɑːnə/','/ɪˈɡwɑːnə/','',''],
+'komodo dragon':['/kəˈməʊdəʊ ˈdræɡən/','/kəˈmoʊdoʊ ˈdræɡən/','',''],
+'goldfish':['/ˈɡəʊldfɪʃ/','/ˈɡoʊldfɪʃ/','',''],
+'eel':['/iːl/','/iːl/','',''],
+'lobster':['/ˈlɒbstə/','/ˈlɑːbstər/','',''],
+'long jump':['/lɒŋ dʒʌmp/','/lɔːŋ dʒʌmp/','',''],
+'longan':['/ˈlɒŋɡən/','/ˈlɑːŋɡən/','',''],
+'longicorn':['/ˈlɒŋɡɪkɔːn/','/ˈlɔːŋɡɪkɔːrn/','',''],
+'lotus root':['/ˈləʊtəs ruːt/','/ˈloʊtəs ruːt/','',''],
+'mammoth':['/ˈmæməθ/','/ˈmæməθ/','',''],
+'mandrill':['/mænˈdrɪl/','/mænˈdrɪl/','',''],
+'marmot':['/ˈmɑːmət/','/ˈmɑːrmət/','',''],
+'groundhog':['/ˈɡraʊndhɒɡ/','/ˈɡraʊndhɔːɡ/','',''],
+'mirror':['/ˈmɪrə/','/ˈmɪrər/','',''],
+'molamola':['/ˈməʊləˌməʊlə/','/ˈmoʊləˌmoʊlə/','',''],
+'mug':['/mʌɡ/','/mʌɡ/','',''],
+'museum':['/mjuːˈzɪəm/','/mjuːˈziːəm/','',''],
+'muskox':['/ˈmʌskɒks/','/ˈmʌskɑːks/','',''],
+'mutton':['/ˈmʌtən/','/ˈmʌtən/','',''],
+'ninth':['/naɪnθ/','/naɪnθ/','',''],
+'octopus':['/ˈɒktəpəs/','/ˈɑːktəpəs/','',''],
+'ostrich':['/ˈɒstrɪtʃ/','/ˈɑːstrɪtʃ/','',''],
+'otter':['/ˈɒtə/','/ˈɑːtər/','',''],
+'owl':['/aʊl/','/aʊl/','',''],
+'pangolin':['/pæŋˈɡəʊlɪn/','/pæŋˈɡoʊlɪn/','',''],
+'parallelogram':['/ˌpærəˈleləɡræm/','/ˌpærəˈleləɡræm/','',''],
+'penguin':['/ˈpeŋɡwɪn/','/ˈpeŋɡwɪn/','',''],
+'pillow':['/ˈpɪləʊ/','/ˈpɪloʊ/','',''],
+'bed-sheet':['/ˈbed ʃiːt/','/ˈbed ʃiːt/','',''],
+'persimmon':['/ˈpɜːsɪmən/','/ˈpɜːrsɪmən/','',''],
+'pharmacy':['/ˈfɑːməsi/','/ˈfɑːrməsi/','',''],
+'phone call':['/fəʊn kɔːl/','/foʊn kɔːl/','',''],
+'pie':['/paɪ/','/paɪ/','',''],
+'police station':['/pəˈliːs ˈsteɪʃən/','/pəˈliːs ˈsteɪʃən/','',''],
+'pond':['/pɒnd/','/pɑːnd/','',''],
+'pork':['/pɔːk/','/pɔːrk/','',''],
+'post office':['/pəʊst ˈɒfɪs/','/poʊst ˈɔːfɪs/','',''],
+'proboscis monkey':['/prəˈbɒsɪs ˈmʌŋki/','/proʊˈbɑːsɪs ˈmʌŋki/','',''],
+'puddle':['/ˈpʌdəl/','/ˈpʌdəl/','',''],
+'pufferfish':['/ˈpʌfəfɪʃ/','/ˈpʌfərfɪʃ/','',''],
+'puzzle':['/ˈpʌzəl/','/ˈpʌzəl/','',''],
+'pyramid':['/ˈpɪrəmɪd/','/ˈpɪrəmɪd/','',''],
+'python':['/ˈpaɪθən/','/ˈpaɪθɑːn/','',''],
+'quilt':['/kwɪlt/','/kwɪlt/','',''],
+'raccoon':['/ræˈkuːn/','/ræˈkuːn/','',''],
+'race':['/reɪs/','/reɪs/','',''],
+'raincoat':['/ˈreɪnkəʊt/','/ˈreɪnkoʊt/','',''],
+'raindrop':['/ˈreɪndrɒp/','/ˈreɪndrɑːp/','',''],
+'rainy':['/ˈreɪni/','/ˈreɪni/','',''],
+'rat':['/ræt/','/ræt/','',''],
+'ray fish':['/reɪ fɪʃ/','/reɪ fɪʃ/','',''],
+'red envelope':['/red ˈenvələʊp/','/red ˈenvəloʊp/','',''],
+'rhino':['/ˈraɪnəʊ/','/ˈraɪnoʊ/','',''],
+'root':['/ruːt/','/ruːt/','',''],
+'rowing':['/ˈrəʊɪŋ/','/ˈroʊɪŋ/','',''],
+'running shoes':['/ˈrʌnɪŋ ʃuːz/','/ˈrʌnɪŋ ʃuːz/','',''],
+'sabertooth':['/ˈseɪbətuːθ/','/ˈseɪbərtuːθ/','',''],
+'sailboat':['/ˈseɪlbəʊt/','/ˈseɪlboʊt/','',''],
+'salad':['/ˈsæləd/','/ˈsæləd/','',''],
+'scallion':['/ˈskæliən/','/ˈskæliən/','',''],
+'school bus':['/skuːl bʌs/','/skuːl bʌs/','',''],
+'scooter':['/ˈskuːtə/','/ˈskuːtər/','',''],
+'scuba diving':['/ˈskuːbə ˈdaɪvɪŋ/','/ˈskuːbə ˈdaɪvɪŋ/','',''],
+'sea cucumber':['/siː ˈkjuːkʌmbə/','/siː ˈkjuːkʌmbər/','',''],
+'sea lion':['/siː ˈlaɪən/','/siː ˈlaɪən/','',''],
+'sea monster':['/siː ˈmɒnstə/','/siː ˈmɑːnstər/','',''],
+'sea turtle':['/siː ˈtɜːtəl/','/siː ˈtɜːrtəl/','',''],
+'sea urchin':['/siː ˈɜːtʃɪn/','/siː ˈɜːrtʃɪn/','',''],
+'seagull':['/ˈsiːɡʌl/','/ˈsiːɡʌl/','',''],
+'seahorse':['/ˈsiːhɔːs/','/ˈsiːhɔːrs/','',''],
+'seal':['/siːl/','/siːl/','',''],
+'second':['/ˈsekɪnd/','/ˈsekɪnd/','',''],
+'sea':['/siː/','/siː/','',''],
+'seed':['/siːd/','/siːd/','',''],
+'seesaw':['/ˈsiːsɔː/','/ˈsiːsɔː/','',''],
+'seventh':['/ˈsev.ənθ/','/ˈsev.ənθ/','',''],
+'shopping mall':['/ˈʃɒpɪŋ mɔːl/','/ˈʃɑːpɪŋ mɔːl/','',''],
+'sixth':['/sɪk(s)θ/','/sɪk(s)θ/','',''],
+'slide':['/slaɪd/','/slaɪd/','',''],
+'slippers':['/ˈslɪpəz/','/ˈslɪpərz/','',''],
+'slope':['/sləʊp/','/sloʊp/','',''],
+'sloth':['/sləʊθ/','/sloʊθ/','',''],
+'sneakers':['/ˈsniːkəz/','/ˈsniːkərz/','',''],
+'snorkeling':['/ˈsnɔːkəlɪŋ/','/ˈsnɔːrkəlɪŋ/','',''],
+'snowflake':['/ˈsnəʊfleɪk/','/ˈsnoʊfleɪk/','',''],
+'snowy':['/ˈsnəʊi/','/ˈsnoʊi/','',''],
+'sofa':['/ˈsəʊfə/','/ˈsoʊfə/','',''],
+'soil':['/sɔɪl/','/sɔɪl/','',''],
+'spaceship':['/ˈspeɪsʃɪp/','/ˈspeɪsʃɪp/','',''],
+'sphere':['/sfɪə/','/sfɪr/','',''],
+'sprout':['/spraʊt/','/spraʊt/','',''],
+'squid':['/skwɪd/','/skwɪd/','',''],
+'squirrel':['/ˈskwɪrəl/','/ˈskwɜːrəl/','',''],
+'stadium':['/ˈsteɪdiəm/','/ˈsteɪdiəm/','',''],
+'starfish':['/ˈstɑːfɪʃ/','/ˈstɑːrfɪʃ/','',''],
+'storm':['/stɔːm/','/stɔːrm/','',''],
+'stream':['/striːm/','/striːm/','',''],
+'subway':['/ˈsʌbweɪ/','/ˈsʌbweɪ/','',''],
+'sugarcane':['/ˈʃʊɡəkeɪn/','/ˈʃʊɡərkeɪn/','',''],
+'sunflower':['/ˈsʌnflaʊə/','/ˈsʌnflaʊər/','',''],
+'sunny':['/ˈsʌni/','/ˈsʌni/','',''],
+'sunshine':['/ˈsʌnʃaɪn/','/ˈsʌnʃaɪn/','',''],
+'swimsuit':['/ˈswɪmsuːt/','/ˈswɪmsuːt/','',''],
+'swing':['/ˈswɪŋ/','/ˈswɪŋ/','',''],
+'table tennis':['/ˈteɪbəl ˈtenɪs/','/ˈteɪbəl ˈtenɪs/','',''],
+'tangerine':['/ˌtændʒəˈriːn/','/ˌtændʒəˈriːn/','',''],
+'tenth':['/tenθ/','/tenθ/','',''],
+'theater':['/ˈθɪətə/','/ˈθiːətər/','',''],
+'third':['/θɜːd/','/θɜːrd/','',''],
+'thousand':['/ˈθaʊzənd/','/ˈθaʊzənd/','',''],
+'thunder':['/ˈθʌndə/','/ˈθʌndər/','',''],
+'toad':['/təʊd/','/toʊd/','',''],
+'today':['/təˈdeɪ/','/təˈdeɪ/','',''],
+'tomorrow':['/təˈmɒrəʊ/','/təˈmɔːroʊ/','',''],
+'toothbrush':['/ˈtuːθbrʌʃ/','/ˈtuːθbrʌʃ/','',''],
+'tortoise':['/ˈtɔːtəs/','/ˈtɔːrtəs/','',''],
+'touch':['/tʌtʃ/','/tʌtʃ/','',''],
+'tractor':['/ˈtræktə/','/ˈtræktər/','',''],
+'train station':['/treɪn ˈsteɪʃən/','/treɪn ˈsteɪʃən/','',''],
+'trapezoid':['/ˈtræpɪzɔɪd/','/ˈtræpɪzɔɪd/','',''],
+'tricycle':['/ˈtraɪsɪkəl/','/ˈtraɪsɪkəl/','',''],
+'trunk':['/trʌŋk/','/trʌŋk/','',''],
+'turkey':['/ˈtɜːki/','/ˈtɜːki/','',''],
+'typhoon':['/taɪˈfuːn/','/taɪˈfuːn/','',''],
+'unicorn':['/ˈjuːnɪkɔːn/','/ˈjuːnɪkɔːrn/','',''],
+'uniform':['/ˈjuːnɪfɔːm/','/ˈjuːnɪfɔːrm/','',''],
+'university':['/ˌjuːnɪˈvɜːsəti/','/ˌjuːnɪˈvɜːrsəti/','',''],
+'viper':['/ˈvaɪpə/','/ˈvaɪpər/','',''],
+'visit':['/ˈvɪzɪt/','/ˈvɪzɪt/','',''],
+'wall':['/wɔːl/','/wɔːl/','',''],
+'walrus':['/ˈwɔːlrəs/','/ˈwɔːlrəs/','',''],
+'warm':['/wɔːm/','/wɔːrm/','',''],
+'buffalo':['/ˈbʌfələʊ/','/ˈbʌfəloʊ/','',''],
+'waterfall':['/ˈwɔːtəfɔːl/','/ˈwɔːtərfɔːl/','',''],
+'wave':['/weɪv/','/weɪv/','',''],
+'weather':['/ˈweðə/','/ˈweðər/','',''],
+'wild boar':['/waɪld bɔː/','/waɪld bɔːr/','',''],
+'windy':['/ˈwɪndi/','/ˈwɪndi/','',''],
+'winter melon':['/ˈwɪntə ˈmelən/','/ˈwɪntər ˈmelən/','',''],
+'wolf':['/wʊlf/','/wʊlf/','',''],
+'yacht':['/jɒt/','/jɑːt/','',''],
+'yam':['/jæm/','/jæm/','',''],
+'yesterday':['/ˈjestədeɪ/','/ˈjestədeɪ/','',''],
+'yo-yo':['/ˈjəʊjəʊ/','/ˈjoʊjoʊ/','',''],
+'yoga':['/ˈjoʊɡə/','/ˈjoʊɡə/','',''],
+'monster':['/ˈmɒnstə/','/ˈmɑnstɚ/','','https://api.dictionaryapi.dev/media/pronunciations/en/monster-us.mp3'],
+'phoenix':['/ˈfiːnɪks/','/ˈfiːnɪks/','',''],
+'fairy':['/ˈfeəri/','/ˈferi/','','https://api.dictionaryapi.dev/media/pronunciations/en/fairy-us.mp3'],
+'mermaid':['/ˈmɜːmeɪd/','/ˈmɝmeɪd/','','https://api.dictionaryapi.dev/media/pronunciations/en/mermaid-us.mp3'],
+'wizard':['/ˈwɪzəd/','/ˈwɪzɚd/','','https://api.dictionaryapi.dev/media/pronunciations/en/wizard-us.mp3'],
+'witch':['/wɪtʃ/','/wɪtʃ/','','https://api.dictionaryapi.dev/media/pronunciations/en/witch-us.mp3'],
+'giant':['/ˈdʒaɪənt/','/ˈdʒaɪənt/','','https://api.dictionaryapi.dev/media/pronunciations/en/giant-us.mp3'],
+'ghost':['/ɡəʊst/','/ɡoʊst/','','https://api.dictionaryapi.dev/media/pronunciations/en/ghost-us.mp3'],
+'princess':['/ˈprɪnses/','/ˈprɪnsɛs/','','https://api.dictionaryapi.dev/media/pronunciations/en/princess-us.mp3'],
+'zucchini':['/zuˈkiːni/','/zuˈkiːni/','',''],'toothpaste':['/ˈtuːθpeɪst/','/ˈtuːθpeɪst/','',''],
+'polar bear':['/ˈpəʊlə beə(r)/','/ˈpoʊlər ber/','',''],
+'wasp':['/wɒsp/','/wɑsp/','','https://api.dictionaryapi.dev/media/pronunciations/en/wasp-us.mp3'],
+'hare':['/heə(r)/','/her/','','https://api.dictionaryapi.dev/media/pronunciations/en/hare-us.mp3'],
+'rooster':['/ˈruːstə(r)/','/ˈruːstər/','','https://api.dictionaryapi.dev/media/pronunciations/en/rooster-us.mp3'],
+'flame':['/fleɪm/','/fleɪm/','','https://api.dictionaryapi.dev/media/pronunciations/en/flame-us.mp3'],'peacock':['/ˈpiːkɒk/','/ˈpiːkɑːk/','','https://api.dictionaryapi.dev/media/pronunciations/en/peacock-us.mp3'],'parrot':['/ˈpærət/','/ˈpærət/','','https://api.dictionaryapi.dev/media/pronunciations/en/parrot-us.mp3'],'lanternfish':['/ˈlæntənfɪʃ/','/ˈlæntərnfɪʃ/','',''],'skate':['/skeɪt/','/skeɪt/','','https://api.dictionaryapi.dev/media/pronunciations/en/skate-us.mp3'],'stingray':['/ˈstɪŋreɪ/','/ˈstɪŋreɪ/','',''],'manta ray':['/ˈmæntəreɪ/','/ˈmæntəreɪ/','',''],'jet':['/dʒet/','/dʒet/','',''],'scorpion':['/ˈskɔːrpiən/','/ˈskɔːrpiən/','',''],'mantis':['/ˈmæntɪs/','/ˈmæntɪs/','','https://api.dictionaryapi.dev/media/pronunciations/en/mantis-us.mp3'],
+'seventeen':['/ˌsevnˈtiːn/','/ˌsevnˈtiːn/','',''],
+'eighteen':['/ˌeɪˈtiːn/','/ˌeɪˈtiːn/','',''],
+'nineteen':['/ˌnaɪnˈtiːn/','/ˌnaɪnˈtiːn/','',''],
+'forty':['/ˈfɔːti/','/ˈfɔːrti/','',''],
+'fifty':['/ˈfɪfti/','/ˈfɪfti/','',''],
+'sixty':['/ˈsɪksti/','/ˈsɪksti/','',''],
+'seventy':['/ˈsevnti/','/ˈsevnti/','',''],
+'eighty':['/ˈeɪti/','/ˈeɪti/','',''],
+'ninety':['/ˈnaɪnti/','/ˈnaɪnti/','',''],
+'ruler':['/ˈruːlə(r)/','/ˈruːlər/','',''],
+'eraser':['/ɪˈreɪzə(r)/','/ɪˈreɪsər/','',''],
+'crayon':['/ˈkreɪən/','/ˈkreɪɑːn/','',''],
+'sharpener':['/ˈʃɑːpnə(r)/','/ˈʃɑːrpnər/','',''],
+'scissors':['/ˈsɪzəz/','/ˈsɪzərz/','',''],
+'glue':['/ɡluː/','/ɡluː/','',''],
+'blackboard':['/ˈblækbɔːd/','/ˈblækbɔːrd/','',''],
+'pencil case':['/ˈpensl keɪs/','/ˈpensl keɪs/','',''],
+'classroom':['/ˈklɑːsruːm/','/ˈklæsruːm/','',''],
+'go':['/ɡəʊ/','/ɡoʊ/','',''],
+'come':['/kʌm/','/kʌm/','',''],
+'rose':['/ɹəʊz/','/ɹoʊz/','https://api.dictionaryapi.dev/media/pronunciations/en/rose-1-uk.mp3',''],
+'see':['/siː/','/siː/','',''],
+'look':['/lʊk/','/lʊk/','',''],
+'hear':['/hɪə(r)/','/hɪr/','',''],
+'listen':['/ˈlɪsn/','/ˈlɪsn/','',''],
+'like':['/laɪk/','/laɪk/','',''],
+'have':['/hæv/','/hæv/','',''],
+'want':['/wɒnt/','/wɑːnt/','',''],
+'help':['/help/','/help/','',''],
+'give':['/ɡɪv/','/ɡɪv/','',''],
+'take':['/teɪk/','/teɪk/','',''],
+'make':['/meɪk/','/meɪk/','',''],
+'find':['/faɪnd/','/faɪnd/','',''],
+'ride':['/raɪd/','/raɪd/','',''],
+'learn':['/lɜːn/','/lɜːrn/','',''],
+'think':['/θɪŋk/','/θɪŋk/','',''],
+'show':['/ʃəʊ/','/ʃoʊ/','',''],
+'put':['/pʊt/','/pʊt/','',''],
+'wear':['/weə(r)/','/wer/','',''],
+'paint':['/peɪnt/','/peɪnt/','',''],
+'climb':['/klaɪm/','/klaɪm/','',''],
+'fat':['/fæt/','/fæt/','',''],
+'thin':['/θɪn/','/θɪn/','',''],
+'long':['/lɒŋ/','/lɔːŋ/','',''],
+'round':['/raʊnd/','/raʊnd/','',''],
+'heavy':['/ˈhevi/','/ˈhevi/','',''],
+'light':['/laɪt/','/laɪt/','',''],
+'hard':['/hɑːd/','/hɑːrd/','',''],
+'soft':['/sɒft/','/sɔːft/','',''],
+'young':['/jʌŋ/','/jʌŋ/','',''],
+'full':['/fʊl/','/fʊl/','',''],
+'empty':['/ˈempti/','/ˈempti/','',''],
+'cute':['/kjuːt/','/kjuːt/','',''],
+'little':['/ˈlɪtl/','/ˈlɪtl/','',''],
+'loud':['/laʊd/','/laʊd/','',''],
+'quiet':['/ˈkwaɪət/','/ˈkwaɪət/','',''],
+'wet':['/wet/','/wet/','',''],
+'dry':['/draɪ/','/draɪ/','',''],
+'dark':['/dɑːk/','/dɑːrk/','',''],
+'bright':['/braɪt/','/braɪt/','',''],
+'sweet':['/swiːt/','/swiːt/','',''],
+'sour':['/ˈsaʊə(r)/','/ˈsaʊər/','',''],
+'salty':['/ˈsɔːlti/','/ˈsɔːlti/','',''],
+'worker':['/ˈwɜːkə(r)/','/ˈwɜːrkər/','',''],
+'builder':['/ˈbɪldə(r)/','/ˈbɪldər/','',''],
+'painter':['/ˈpeɪntə(r)/','/ˈpeɪntər/','',''],
+'writer':['/ˈraɪtə(r)/','/ˈraɪtər/','',''],
+'reporter':['/rɪˈpɔːtə(r)/','/rɪˈpɔːrtər/','',''],
+'soldier':['/ˈsəʊldʒə(r)/','/ˈsoʊldʒər/','',''],
+'waiter':['/ˈweɪtə(r)/','/ˈweɪtər/','',''],
+'waitress':['/ˈweɪtrəs/','/ˈweɪtrəs/','',''],
+'dentist':['/ˈdentɪst/','/ˈdentɪst/','',''],
+'vet':['/vet/','/vet/','',''],
+'scientist':['/ˈsaɪəntɪst/','/ˈsaɪəntɪst/','',''],
+'engineer':['/ˌendʒɪˈnɪə(r)/','/ˌendʒɪˈnɪr/','',''],
+'actor':['/ˈæktə(r)/','/ˈæktər/','',''],
+'baker':['/ˈbeɪkə(r)/','/ˈbeɪkər/','',''],
+'king':['/kɪŋ/','/kɪŋ/','',''],
+'queen':['/kwiːn/','/kwiːn/','',''],
+'harmonica':['/hɑːˈmɒnɪkə/','/hɑːrˈmɑːnɪkə/','',''],
+'harp':['/hɑːp/','/hɑːrp/','',''],
+'recorder':['/rɪˈkɔːdə(r)/','/rɪˈkɔːrdər/','',''],
+'organ':['/ˈɔːɡən/','/ˈɔːrɡən/','',''],
+'tambourine':['/ˌtæmbəˈriːn/','/ˌtæmbəˈriːn/','',''],
+'cymbals':['/ˈsɪmbəlz/','/ˈsɪmbəlz/','',''],
+'tofu':['/ˈtəʊfuː/','/ˈtoʊfuː/','',''],
+'steamed bun':['/stimd bʌn/','/stimd bʌn/','',''],
+'porridge':['/ˈpɒrɪdʒ/','/ˈpɔːrɪdʒ/','',''],
+'goose':['/ɡuːs/','/ɡuːs/','',''],
+'swan':['/swɒn/','/swɑːn/','',''],
+'puppy':['/ˈpʌpi/','/ˈpʌpi/','',''],
+'kitten':['/ˈkɪtn/','/ˈkɪtn/','',''],
+  'grandparents': ['/ˈɡrænˌpeərənts/', '/ˈɡrænˌperənts/', '', ''],
+  'pitaya': ['/pɪˈtaɪə/', '/pɪˈtaɪə/', '', ''],
+  'mangosteen': ['/ˈmæŋɡəstiːn/', '/ˈmæŋɡəstiːn/', '', ''],
+'indigo':['/ˈɪndɪɡəʊ/','/ˈɪndɪɡoʊ/','',''],
+'violet':['/ˈvaɪələt/','/ˈvaɪələt/','',''],
+  'marker':['/ˈmɑːkə(r)/','/ˈmɑːrkər/','','']
+};
+const IMG_BASE='images/';
+const HAVE_IMG=new Set(['airport','alpaca','apartment','autumn','bake','bamboo-shoot','bank','bat','bathroom','bean-sprouts','beautiful','bed-sheet','bird','birthday','book','bow','bowl','box','bread','bull','cabbage','car','carrot','cat','caterpillar','chess','chocolate','chopsticks','cinema','classroom','clean','cloudy','coat','cold','computer','cookie','cow','crab','crayon','cry','cute','dance','december','door','draw','drink','drum','e-bike','ear','easter','eat','eel','eight','eighth','eleven','elf','empty','evening','fat','fifteen','fifth','finger','fire','fire-truck','firecrackers','fireworks','first','fishing','five','flame','fly','foggy','four','fourteen','fourth','fries','frog','full','gecko','ghost','giant','goat','gold','golf','goose','grandparents','grape','grass','hair','halloween','hamburger','hand','happy','hare','hat','hedgehog','high-speed-train','home','hot','hotel','hundred','hungry','husband','ice-cream','jack-o-lantern','jacket','jeans','jet','jump','kite','kitten','komodo-dragon','lamp','lantern-festival','lanternfish','lemon','library','lifeboat','look','loud','manta-ray','mantis','mermaid','monkey','monster','morning','mother','mother-s-day','motorcycle','mountain','mouth','museum','mushroom','night','nine','ninth','noodle','noon','nose','old','one','open','panda','pants','paper','parrot','peach','peacock','pear','pen','pencil','pencil-case','penguin','pepper','pharmacy','phoenix','phone','phone-call','piano','pie','pig','pillow','pilot','pineapple','pitaya','pizza','plane','plate','play','poem-baidi','poem-cao','poem-chilege','poem-chishang','poem-chunxiao','poem-chunyexiyu','poem-cunju','poem-dengguanque','poem-feng','poem-gulang','poem-hua','poem-huaji','poem-jiangnan','poem-jiangxue','poem-jingyesi','poem-jiuyuejiu','poem-jueju','poem-luoshanpubu','poem-luzhai','poem-minnong','poem-suojian','poem-xiangsi','poem-xiaochi','poem-xiaoer','poem-xunyinzhe','poem-yeshu','poem-yonge','poem-zengwanglun','polar-bear','police','police-station','popcorn','pork','porridge','post-office','postman','potato','pufferfish','pumpkin','puppy','push','put','puzzle','queen','rabbit','raccoon','race','rain','rainbow','raindrop','rainy','raspberry','rat','ray','ray-fish','read','recorder','red-envelope','reporter','restaurant','rhino','ride','river','rooster','root','rose','rowing','ruler','run','sad','sailboat','salad','sandwich','sausage','saxophone','scarf','school','school-bus','scissors','scooter','scorpion','scuba-diving','sea','seal','second','see','seven','seventeen','seventh','seventy','shark','sharpener','sheep','ship','shirt','shoe','shopping-mall','short','shorts','shoulder','show','sing','singer','sister','sit','six','sixteen','sixth','sixty','skate','skateboard','skating','skiing','sleep','slide','slippers','slope','slow','small','snail','snake','sneakers','snorkeling','snowy','soccer','sock','sofa','soft','soldier','son','soup','sour','spaceship','sphere','spider','spring-festival','sprout','squid','squirrel','stadium','stand','star','stars','stingray','storm','strawberry','subway','summer','sun','sunflower','sunny','sunshine','supermarket','swan','sweater','sweep','sweet','sweet-potato','swim','swimsuit','t-shirt','table-tennis','take','tall','tambourine','taxi','tea','teacher','teachers-day','ten','tennis','tenth','thanksgiving','theater','thin','think','third','thirsty','thirteen','thirty','thousand','three','throw','thunder','tiger','tired','tomato','tongue','tooth','toothbrush','toothpaste','tornado','touch','toy','tractor','train','train-station','tram','tree','truck','trumpet','turkey','turtle','tv','twelve','twenty','two','typhoon','umbrella','uncle','unicorn','uniform','university','van','vest','violin','visit','volcano','volleyball','waiter','waitress','walk','wall','want','wash','wasp','watch','water','watermelon','wave','weather','western-dragon','wet','whale','wife','wild-boar','wind','window','windy','witch','wizard','wolf','worker','worm','write','writer','yacht','yo-yo','yoga','young','zebra','zero','zucchini']);
+
+const CATS = [
+{id:'animals', zh:'动物', en:'Animals', tint:['#E0F7FA','#B2EBF2'], tpls:['I see {a} {w}.', 'Look at the {w}.', 'The {w} is cute.', 'I like {a} {w}.', 'The {w} says hello.'], words:[
+    ['alligator','短吻鳄', 'img:alligator'],
+    ['alpaca','羊驼','img:alpaca'],
+    ['anteater','食蚁兽','img:anteater'],
+    ['bat','蝙蝠','img:bat'],
+    ['bear','熊','img:bear'],
+    ['bird','鸟','img:bird'],
+    ['blue whale','蓝鲸','img:blue-whale'],
+    ['brown bear','棕熊','img:brown-bear'],
+    ['buck','雄鹿','img:buck'],
+    ['buffalo','水牛','img:buffalo'],
+    ['bull','公牛','img:bull'],
+    ['camel','骆驼','img:camel'],
+    ['cat','猫','img:cat'],
+    ['chameleon','变色龙','img:chameleon'],
+    ['chicken','小鸡','img:chicken'],
+    ['chimpanzee','黑猩猩','img:chimpanzee'],
+    ['clownfish','小丑鱼','img:clownfish'],
+    ['cow','奶牛','img:cow'],
+    ['crab','螃蟹','img:crab'],
+    ['crocodile','鳄鱼','img:crocodile'],
+    ['cuttlefish','乌贼','img:cuttlefish'],
+    ['deer','鹿','img:deer'],
+    ['dinosaur','恐龙','img:dinosaur'],
+    ['dog','狗','img:dog'],
+    ['dolphin','海豚','img:dolphin'],
+    ['donkey','驴子','img:donkey'],
+    ['duck','鸭子','img:duck'],
+    ['eagle','白头鹰','img:eagle'],
+    ['eel','鳗鱼','img:eel'],
+    ['elephant','大象','img:elephant'],
+    ['fish','鱼','img:fish'],
+    ['fox','狐狸','img:fox'],
+    ['frog','青蛙','img:frog'],
+    ['gecko','壁虎','img:gecko'],
+    ['giraffe','长颈鹿','img:giraffe'],
+    ['goat','山羊','img:goat'],
+    ['goldfish','金鱼','img:goldfish'],
+    ['goose','鹅','img:goose'],
+    ['gorilla','大猩猩','img:gorilla'],
+    ['groundhog','土拨鼠','img:groundhog'],
+    ['hare','野兔','img:hare'],
+    ['hedgehog','刺猬','img:hedgehog'],
+    ['hen','母鸡','img:hen'],
+    ['hippo','河马','img:hippo'],
+    ['horse','马','img:horse'],
+    ['horseshoe crab','鲎','img:horseshoe-crab'],
+    ['iguana','鬣蜥','img:iguana'],
+    ['jellyfish','水母','img:jellyfish'],
+    ['kangaroo','袋鼠','img:kangaroo'],
+    ['kitten','小猫','img:kitten'],
+    ['koala','考拉','img:koala'],
+    ['komodo dragon','科莫多龙','img:komodo-dragon'],
+    ['lanternfish','灯笼鱼','img:lanternfish'],
+    ['lion','狮子','img:lion'],
+    ['lizard','蜥蜴','img:lizard'],
+    ['lobster','龙虾','img:lobster'],
+    ['mammoth','猛犸象','img:mammoth'],
+    ['mandrill','山魈','img:mandrill'],
+    ['manta ray','鲼','img:manta-ray'],
+    ['marmot','土拨鼠','img:marmot'],
+    ['molamola','翻车鱼','img:ocean-sunfish'],
+    ['monkey','猴子','img:monkey'],
+    ['mouse','老鼠','img:mouse'],
+    ['muskox','麝牛','img:muskox'],
+    ['octopus','章鱼','img:octopus'],
+    ['ostrich','鸵鸟','img:ostrich'],
+    ['otter','水獭','img:otter'],
+    ['owl','猫头鹰','img:owl'],
+    ['panda','熊猫','img:panda'],
+    ['pangolin','穿山甲','img:pangolin'],
+    ['parrot','鹦鹉','img:parrot'],
+    ['peacock','孔雀','img:peacock'],
+    ['penguin','企鹅','img:penguin'],
+    ['pig','猪','img:pig'],
+    ['polar bear','北极熊','img:polar-bear'],
+    ['proboscis monkey','长鼻猴','img:proboscis-monkey'],
+    ['pufferfish','河豚','img:pufferfish'],
+    ['puppy','小狗','img:puppy'],
+    ['python','蟒蛇','img:python'],
+    ['rabbit','兔子','img:rabbit'],
+    ['raccoon','浣熊','img:raccoon'],
+    ['rat','大老鼠','img:rat'],
+    ['ray fish','鳐鱼','img:ray-fish'],
+    ['rhino','犀牛','img:rhino'],
+    ['rooster','公鸡','img:rooster'],
+    ['sabertooth','剑齿虎','img:sabertooth'],
+    ['sea cucumber','海参','img:sea-cucumber'],
+    ['sea lion','海狮','img:sea-lion'],
+    ['sea turtle','海龟','img:sea-turtle'],
+    ['sea urchin','海胆','img:sea-urchin'],
+    ['seagull','海鸥','img:seagull'],
+    ['seahorse','海马','img:seahorse'],
+    ['seal','海豹','img:seal'],
+    ['shark','鲨鱼','img:shark'],
+    ['sheep','绵羊','img:sheep'],
+    ['skate','鳐','img:skate'],
+    ['sloth','树懒','img:sloth'],
+    ['snake','蛇','img:snake'],
+    ['squid','鱿鱼','img:squid'],
+    ['squirrel','松鼠','img:squirrel'],
+    ['starfish','海星','img:starfish'],
+    ['stingray','魟','img:stingray'],
+    ['swan','天鹅','img:swan'],
+    ['tiger','老虎','img:tiger'],
+    ['toad','蟾蜍','img:toad'],
+    ['tortoise','陆龟','img:tortoise'],
+    ['turtle','乌龟','img:turtle'],
+    ['viper','毒蛇','img:venomous-snake'],
+    ['walrus','海象','img:walrus'],
+    ['whale','鲸鱼','img:whale'],
+    ['wild boar','野猪','img:wild-boar'],
+    ['wolf','狼','img:wolf'],
+    ['zebra','斑马','img:zebra']
+  ]} ,
+{id:'fantasy', zh:'童话幻想', en:'Fantasy', tint:['#EDE7F6','#D1C4E9'], tpls:['I see {a} {w}.', 'The {w} is magic!', 'Look at the {w}.'], words:[
+    ['chinese dragon','中国龙','img:chinese-dragon'],
+    ['dragon','龙','img:western-dragon'],
+    ['elf','精灵','img:elf'],
+    ['fairy','仙子','img:fairy'],
+    ['ghost','幽灵','img:ghost'],
+    ['giant','巨人','img:giant'],
+    ['mermaid','美人鱼','img:mermaid'],
+    ['monster','怪物','img:monster'],
+    ['phoenix','凤凰','img:phoenix'],
+    ['princess','公主','img:princess'],
+    ['sea monster','海怪','img:sea-monster'],
+    ['unicorn','独角兽','img:unicorn'],
+    ['witch','女巫','img:witch'],
+    ['wizard','巫师','img:wizard']
+  ]} ,
+{id:'fruits', zh:'水果', en:'Fruits', tint:['#FFF3E0','#FFE0B2'], tpls:['The {w} is yummy.', 'I eat {a} {w}.', 'I like {w}.', 'The {w} is sweet.', 'Yummy {w}!'], words:[
+    ['apple','苹果','img:apple'],
+    ['apricot','杏','img:apricot'],
+    ['avocado','牛油果','img:avocado'],
+    ['banana','香蕉','img:banana'],
+    ['blackberry','黑莓','img:blackberry'],
+    ['blueberry','蓝莓','img:blueberry'],
+    ['cantaloupe','哈密瓜','img:cantaloupe'],
+    ['cherry','樱桃','img:cherry'],
+    ['coconut','椰子','img:coconut'],
+    ['dragon fruit','火龙果','img:dragon-fruit'],
+    ['durian','榴莲','img:durian'],
+    ['fig','无花果','img:fig'],
+    ['grape','葡萄','img:grape'],
+    ['guava','番石榴','img:guava'],
+    ['hawthorn','山楂','img:hawthorn'],
+    ['kiwi','猕猴桃','img:kiwi'],
+    ['lemon','柠檬','img:lemon'],
+    ['longan','桂圆','img:longan'],
+    ['fruit','果实','img:fruit'],
+    ['lychee','荔枝','img:lychee'],
+    ['mango','芒果','img:mango'],
+    ['mangosteen','山竹','img:mangosteen'],
+    ['melon','甜瓜','img:melon'],
+    ['orange','橙子','img:orange'],
+    ['papaya','木瓜','img:papaya'],
+    ['peach','桃子','img:peach'],
+    ['pear','梨','img:pear'],
+    ['persimmon','柿子','img:persimmon'],
+    ['pineapple','菠萝','img:pineapple'],
+    ['pitaya','火龙果','img:pitaya'],
+    ['plum','李子','img:plum'],
+    ['pomegranate','石榴','img:pomegranate'],
+    ['pomelo','柚子','img:pomelo'],
+    ['raspberry','树莓','img:raspberry'],
+    ['strawberry','草莓','img:strawberry'],
+    ['sugarcane','甘蔗','img:sugarcane'],
+    ['tangerine','橘子','img:tangerine'],
+    ['watermelon','西瓜','img:watermelon']
+  ]} ,
+{id:'vegetables', zh:'蔬菜', en:'Vegetables', tint:['#F1F8E9','#DCEDC8'], tpls:['I like {w}.', 'I eat {w}.', 'Mom cooks {w}.', 'The {w} is tasty.', 'Healthy {w}!'], words:[
+    ['asparagus','芦笋','img:asparagus'],
+    ['bamboo shoot','竹笋','img:bamboo-shoot'],
+    ['bean sprouts','豆芽','img:bean-sprouts'],
+    ['bitter melon','苦瓜','img:bitter-melon'],
+    ['broccoli','西兰花','img:broccoli'],
+    ['cabbage','卷心菜','img:cabbage'],
+    ['carrot','胡萝卜','img:carrot'],
+    ['cauliflower','花椰菜','img:cauliflower'],
+    ['celery','芹菜','img:celery'],
+    ['chili','辣椒','img:chili'],
+    ['chives','韭菜','img:chives'],
+    ['cilantro','香菜','img:cilantro'],
+    ['corn','玉米','img:corn'],
+    ['cucumber','黄瓜','img:cucumber'],
+    ['eggplant','茄子','img:eggplant'],
+    ['garlic','大蒜','img:garlic'],
+    ['ginger','姜','img:ginger'],
+    ['green bean','四季豆','img:green-bean'],
+    ['leek','大葱','img:leek'],
+    ['lettuce','生菜','img:lettuce'],
+    ['lotus root','莲藕','img:lotus-root'],
+    ['mushroom','蘑菇','img:mushroom'],
+    ['onion','洋葱','img:onion'],
+    ['pea','豌豆','img:pea'],
+    ['pepper','青椒','img:pepper'],
+    ['potato','土豆','img:potato'],
+    ['pumpkin','南瓜','img:pumpkin'],
+    ['radish','萝卜','img:radish'],
+    ['scallion','葱','img:scallion'],
+    ['spinach','菠菜','img:spinach'],
+    ['sweet potato','红薯','img:sweet-potato'],
+    ['tomato','西红柿','img:tomato'],
+    ['winter melon','冬瓜','img:winter-melon'],
+    ['yam','山药','img:yam'],
+    ['zucchini','西葫芦','img:zucchini']
+  ]} ,
+{id:'food', zh:'食物饮品', en:'Food & Drinks', tint:['#FFF8E1','#FFECB3'], tpls:['I like {w}.', 'I eat {w}.', 'The {w} is tasty.', 'Yummy {w}!', 'Thank you for {w}.'], words:[
+    ['beef','牛肉','img:beef'],
+    ['bread','面包','img:bread'],
+    ['butter','黄油','img:butter'],
+    ['cake','蛋糕','img:cake'],
+    ['candy','糖果','img:candy'],
+    ['cheese','奶酪','img:cheese'],
+    ['chicken meat','鸡肉','img:chicken-meat'],
+    ['chocolate','巧克力','img:chocolate'],
+    ['coffee','咖啡','img:coffee'],
+    ['cola','可乐','img:cola'],
+    ['cookie','饼干','img:cookie'],
+    ['dessert','甜点','img:dessert'],
+    ['dumpling','饺子','img:dumpling'],
+    ['egg','鸡蛋','img:egg'],
+    ['fish meat','鱼肉','img:fish-meat'],
+    ['fries','薯条','img:fries'],
+    ['hamburger','汉堡包','img:hamburger'],
+    ['honey','蜂蜜','img:honey'],
+    ['ice cream','冰淇淋','img:ice-cream'],
+    ['jam','果酱','img:jam'],
+    ['jelly','果冻','img:jelly'],
+    ['juice','果汁','img:juice'],
+    ['meat','肉','img:meat'],
+    ['milk','牛奶','img:milk'],
+    ['mutton','羊肉','img:mutton'],
+    ['noodle','面条','img:noodle'],
+    ['pie','派','img:pie'],
+    ['pizza','披萨','img:pizza'],
+    ['popcorn','爆米花','img:popcorn'],
+    ['pork','猪肉','img:pork'],
+    ['porridge','粥','img:porridge'],
+    ['rice','米饭','img:rice'],
+    ['salad','色拉','img:salad'],
+    ['sandwich','三明治','img:sandwich'],
+    ['sausage','香肠','img:sausage'],
+    ['soup','汤','img:soup'],
+    ['steamed bun','包子','img:steamed-bun'],
+    ['tea','茶','img:tea'],
+    ['tofu','豆腐','img:tofu'],
+    ['water','水','img:water'],
+    ['yogurt','酸奶','img:yogurt']
+  ]} ,
+{id:'colors', zh:'颜色', en:'Colors', tint:['#F3E5F5','#E1BEE7'], tpls:['I like {w}.', 'This is {w}.', 'The {w} is pretty.', 'Look at the {w}!'], words:[
+    ['black','黑色','#212121'],
+    ['blue','蓝色','#2196F3'],
+    ['brown','棕色','#795548'],
+    ['gold','金色','img:gold'],
+    ['gray','灰色','#9E9E9E'],
+    ['green','绿色','#4CAF50'],
+    ['mint','薄荷绿','#98FB98'],
+    ['navy','深蓝色','#000080'],
+    ['orange','橙色','#FF9800'],
+    ['pink','粉色','#F48FB1'],
+    ['purple','紫色','#9C27B0'],
+    ['red','红色','#F44336'],
+    ['silver','银色','img:silver'],
+    ['white','白色','#FFFFFF'],
+    ['yellow','黄色','#FFEB3B']
+  ]} ,
+{id:'shapes', zh:'形状', en:'Shapes', tint:['#E8EAF6','#C5CAE9'], tpls:['This is a {w}.', 'I see a {w}.', 'Draw a {w}.', 'The {w} is cool.'], words:[
+    ['circle','圆形','@circle'],
+    ['cone','圆锥体','@cone'],
+    ['cube','立方体','@cube'],
+    ['cuboid','长方体','@cuboid'],
+    ['cylinder','圆柱体','@cylinder'],
+    ['diamond','菱形','@diamond'],
+    ['heart','心形','@heart'],
+    ['parallelogram','平行四边形','@parallelogram'],
+    ['pyramid','锥体','@pyramid'],
+    ['rectangle','长方形','@rect'],
+    ['square','正方形','@square'],
+    ['sphere','球体','img:sphere'],
+    ['star','星形', 'img:star'],
+    ['trapezoid','梯形','@trapezoid'],
+    ['triangle','三角形','@triangle']
+  ]} ,
+{id:'numbers', zh:'数字', en:'Numbers', tint:['#E3F2FD','#BBDEFB'], tpls:['Show me {w}.', 'I have {w}.', 'Count to {w}.', 'I see {w} stars.'], words:[
+    ['eight','八','img:eight'],
+    ['eighteen','十八','img:eighteen'],
+    ['eighth','第八','img:eighth'],
+    ['eighty','八十','img:eighty'],
+    ['eleven','十一','img:eleven'],
+    ['fifteen','十五','img:fifteen'],
+    ['fifth','第五','img:fifth'],
+    ['fifty','五十','img:fifty'],
+    ['first','第一','img:first'],
+    ['five','五','img:five'],
+    ['forty','四十','img:forty'],
+    ['four','四','img:four'],
+    ['fourteen','十四','img:fourteen'],
+    ['fourth','第四','img:fourth'],
+    ['hundred','一百','img:hundred'],
+    ['nine','九','img:nine'],
+    ['nineteen','十九','img:nineteen'],
+    ['ninety','九十','img:ninety'],
+    ['ninth','第九','img:ninth'],
+    ['one','一','img:one'],
+    ['second','第二','img:second'],
+    ['seven','七','img:seven'],
+    ['seventeen','十七','img:seventeen'],
+    ['seventh','第七','img:seventh'],
+    ['seventy','七十','img:seventy'],
+    ['six','六','img:six'],
+    ['sixteen','十六','img:sixteen'],
+    ['sixth','第六','img:sixth'],
+    ['sixty','六十','img:sixty'],
+    ['ten','十','img:ten'],
+    ['tenth','第十','img:tenth'],
+    ['third','第三','img:third'],
+    ['thirteen','十三','img:thirteen'],
+    ['thirty','三十','img:thirty'],
+    ['thousand','一千','img:thousand'],
+    ['three','三','img:three'],
+    ['twelve','十二','img:twelve'],
+    ['twenty','二十','img:twenty'],
+    ['two','二','img:two'],
+    ['zero','零','img:zero']
+  ]} ,
+{id:'body', zh:'身体', en:'Body Parts', tint:['#FBE9E7','#FFCCBC'], tpls:['This is my {w}.', 'I wash my {w}.', 'Touch your {w}.', 'I have {a} {w}.'], words:[
+    ['arm','手臂','img:arm'],
+    ['back','背','img:back'],
+    ['cheek','脸颊','img:cheek'],
+    ['chin','下巴','img:chin'],
+    ['ear','耳朵', 'img:ear'],
+    ['eye','眼睛', 'img:eye'],
+    ['face','脸', 'img:face'],
+    ['finger','手指', 'img:finger'],
+    ['foot','脚', 'img:foot'],
+    ['hair','头发','img:hair'],
+    ['hand','手', 'img:hand'],
+    ['head','头','img:head'],
+    ['knee','膝盖','img:knee'],
+    ['leg','腿', 'img:leg'],
+    ['mouth','嘴', 'img:mouth'],
+    ['neck','脖子','img:neck'],
+    ['nose','鼻子', 'img:nose'],
+    ['shoulder','肩膀','img:shoulder'],
+    ['toe','脚趾','img:toe'],
+    ['tongue','舌头', 'img:tongue'],
+    ['tooth','牙齿', 'img:tooth'],
+    ['tummy','肚子','img:tummy']
+  ]} ,
+{id:'family', zh:'家庭', en:'Family', tint:['#FCE4EC','#F8BBD0'], tpls:['I love my {w}.', 'This is my {w}.', 'My {w} hugs me.', 'I play with my {w}.'], words:[
+    ['aunt','阿姨', 'img:aunt'],
+    ['baby','宝宝', 'img:baby'],
+    ['brother','兄弟', 'img:brother'],
+    ['cousin','表兄弟', 'img:cousin'],
+    ['daughter','女儿', 'img:daughter'],
+    ['family','家庭', 'img:family'],
+    ['father','爸爸', 'img:father'],
+    ['grandma','奶奶', 'img:grandma'],
+    ['grandpa','爷爷', 'img:grandpa'],
+    ['grandparents','祖父母', 'img:grandparents'],
+    ['husband','丈夫', 'img:husband'],
+    ['mother','妈妈', 'img:mother'],
+    ['sister','姐妹', 'img:sister'],
+    ['son','儿子', 'img:son'],
+    ['uncle','叔叔', 'img:uncle'],
+    ['wife','妻子', 'img:wife']
+  ]} ,
+{id:'clothes', zh:'衣物', en:'Clothes', tint:['#EDE7F6','#D1C4E9'], tpls:['I wear my {w}.', 'Put on your {w}.', 'I like my {w}.', 'My {w} is nice.'], words:[
+    ['belt','腰带','img:belt'],
+    ['boot','靴子', 'img:boot'],
+    ['coat','外套', 'img:coat'],
+    ['dress','连衣裙', 'img:dress'],
+    ['glasses','眼镜', 'img:glasses'],
+    ['glove','手套', 'img:glove'],
+    ['hat','帽子', 'img:hat'],
+    ['jacket','夹克','img:jacket'],
+    ['jeans','牛仔裤','img:jeans'],
+    ['pants','裤子', 'img:pants'],
+    ['raincoat','雨衣','img:raincoat'],
+    ['running shoes','跑步鞋','img:running-shoes'],
+    ['scarf','围巾', 'img:scarf'],
+    ['shirt','衬衫','img:shirt'],
+    ['shoe','鞋子', 'img:shoe'],
+    ['shorts','短裤', 'img:shorts'],
+    ['skirt','短裙','img:skirt'],
+    ['slippers','拖鞋', 'img:slippers'],
+    ['sneakers','运动鞋','img:sneakers'],
+    ['sock','袜子', 'img:sock'],
+    ['sweater','毛衣', 'img:sweater'],
+    ['swimsuit','游泳衣', 'img:swimsuit'],
+    ['T-shirt','T恤衫', 'img:t-shirt'],
+    ['uniform','制服', 'img:uniform'],
+    ['vest','背心','img:vest']
+  ]} ,
+{id:'nature', zh:'天气自然', en:'Weather & Nature', tint:['#E0F2F1','#B2DFDB'], tpls:['I see the {w}.', 'Look at the {w}.', 'The {w} is here.', 'Wow, the {w}!'], words:[
+    ['beach','海滩', 'img:beach'],
+    ['branch','树枝','img:branch'],
+    ['breeze','微风', 'img:breeze'],
+    ['bush','灌木丛','img:bush'],
+    ['carnation','康乃馨','img:carnation'],
+    ['cave','洞穴','img:cave'],
+    ['cloud','云', 'img:cloud'],
+    ['cloudy','多云的', 'img:cloudy'],
+    ['desert','沙漠', 'img:desert'],
+    ['fire','火', 'img:fire'],
+    ['flame','火焰','img:flame'],
+    ['flower','花', 'img:flower'],
+    ['fog','雾', 'img:fog'],
+    ['foggy','有雾的', 'img:foggy'],
+    ['forest','森林','img:forest'],
+    ['frost','霜','img:frost'],
+    ['grass','草', 'img:grass'],
+    ['hail','冰雹','img:hail'],
+    ['hill','山丘','img:hill'],
+    ['ice','冰', 'img:ice'],
+    ['ice cube','冰块', 'img:ice-cube'],
+    ['island','小岛', 'img:island'],
+    ['lake','湖泊','img:lake'],
+    ['leaf','叶子', 'img:leaf'],
+    ['lightning','闪电', 'img:lightning'],
+    ['moon','月亮', 'img:moon'],
+    ['mountain','山', 'img:mountain'],
+    ['ocean','大海', 'img:ocean'],
+    ['pond','池塘','img:pond'],
+    ['puddle','水坑','img:puddle'],
+    ['rain','雨', 'img:rain'],
+    ['rainbow','彩虹', 'img:rainbow'],
+    ['raindrop','雨滴', 'img:raindrop'],
+    ['rainy','多雨的', 'img:rainy'],
+    ['river','河流', 'img:river'],
+    ['rock','石头', 'img:rock'],
+    ['root','根','img:root'],
+    ['rose','玫瑰','img:rose'],
+    ['sea','海','img:sea'],
+    ['seed','种子','img:seed'],
+    ['sky','天空', 'img:sky'],
+    ['slope','山坡','img:slope'],
+    ['snow','雪', 'img:snow'],
+    ['snowflake','雪花', 'img:snowflake'],
+    ['snowman','雪人', 'img:snowman'],
+    ['snowy','下雪的', 'img:snowy'],
+    ['soil','泥土','img:soil'],
+    ['sprout','发芽', 'img:sprout'],
+    ['star','星星', 'img:stars'],
+    ['storm','暴风雨', 'img:storm'],
+    ['stream','溪流','img:stream'],
+    ['sun','太阳', 'img:sun'],
+    ['sunflower','向日葵', 'img:sunflower'],
+    ['sunny','晴朗的', 'img:sunny'],
+    ['sunshine','阳光', 'img:sunshine'],
+    ['thunder','雷电', 'img:thunder'],
+    ['tornado','龙卷风', 'img:tornado'],
+    ['tree','树', 'img:tree'],
+    ['trunk','树干','img:trunk'],
+    ['typhoon','台风', 'img:typhoon'],
+    ['volcano','火山', 'img:volcano'],
+    ['waterfall','瀑布','img:waterfall'],
+    ['weather','天气', 'img:weather'],
+    ['wind','风', 'img:wind'],
+    ['windy','有风的', 'img:windy']
+  ]} ,
+{id:'objects', zh:'日常物品', en:'Everyday Objects', tint:['#E8EAF6','#C5CAE9'], tpls:['I see {a} {w}.', 'This is my {w}.', 'I use {a} {w}.', 'Where is the {w}?'], words:[
+    ['bag','书包', 'img:bag'],
+    ['ball','球', 'img:ball'],
+    ['bed','床', 'img:bed'],
+    ['bed-sheet','床单','img:bed-sheet'],
+    ['blackboard','黑板','img:blackboard'],
+    ['book','书', 'img:book'],
+    ['bottle','瓶子','img:bottle'],
+    ['bowl','碗', 'img:bowl'],
+    ['box','盒子', 'img:box'],
+    ['chair','椅子', 'img:chair'],
+    ['chopsticks','筷子', 'img:chopsticks'],
+    ['clock','时钟', 'img:clock'],
+    ['computer','电脑', 'img:computer'],
+    ['crayon','蜡笔','img:crayon'],
+    ['cup','杯子','img:cup'],
+    ['desk','书桌','img:desk'],
+    ['doll','玩偶','img:doll'],
+    ['door','门', 'img:door'],
+    ['eraser','橡皮','img:eraser'],
+    ['floor','地板','img:floor'],
+    ['fork','叉子', 'img:fork'],
+    ['fridge','冰箱','img:fridge'],
+    ['glass','玻璃杯','img:glass'],
+    ['glue','胶水','img:glue'],
+    ['key','钥匙', 'img:key'],
+    ['kite','风筝', 'img:kite'],
+    ['knife','刀', 'img:knife'],
+    ['lamp','台灯','img:lamp'],
+    ['mirror','镜子', 'img:mirror'],
+    ['mug','马克杯','img:mug'],
+    ['paper','纸', 'img:paper'],
+    ['marker','马克笔','img:marker'],
+    ['pen','钢笔', 'img:pen'],
+    ['pencil','铅笔', 'img:pencil'],
+    ['pencil case','铅笔盒','img:pencil-case'],
+    ['phone','电话', 'img:phone'],
+    ['pillow','枕头','img:pillow'],
+    ['plate','盘子', 'img:plate'],
+    ['quilt','被子','img:quilt'],
+    ['radio','收音机', 'img:radio'],
+    ['ruler','尺子','img:ruler'],
+    ['scissors','剪刀','img:scissors'],
+    ['sharpener','卷笔刀','img:sharpener'],
+    ['sofa','沙发', 'img:sofa'],
+    ['spoon','勺子', 'img:spoon'],
+    ['table','桌子','img:table'],
+    ['toothbrush','牙刷', 'img:toothbrush'],
+    ['toothpaste','牙膏', 'img:toothpaste'],
+    ['toy','玩具','img:toy'],
+    ['TV','电视机', 'img:tv'],
+    ['umbrella','雨伞', 'img:umbrella'],
+    ['wall','墙壁', 'img:wall'],
+    ['watch','手表', 'img:watch'],
+    ['window','窗户', 'img:window']
+  ]} ,
+{id:'transport', zh:'交通工具', en:'Transportation', tint:['#ECEFF1','#CFD8DC'], tpls:['The {w} is fast.', 'I ride the {w}.', 'The {w} goes vroom!', 'I see {a} {w}.'], words:[
+    ['ambulance','救护车', 'img:ambulance'],
+    ['bike','自行车', 'img:bike'],
+    ['boat','小船', 'img:boat'],
+    ['bus','公交车', 'img:bus'],
+    ['car','汽车', 'img:car'],
+    ['e-bike','电动自行车', 'img:e-bike'],
+    ['excavator','挖掘机','img:excavator'],
+    ['ferry','渡轮', 'img:ferry'],
+    ['fire truck','消防车', 'img:fire-truck'],
+    ['helicopter','直升机', 'img:helicopter'],
+    ['high-speed train','高铁', 'img:high-speed-train'],
+    ['hot air balloon','热气球', 'img:hot-air-balloon'],
+    ['jeep','吉普车', 'img:jeep'],
+    ['jet','喷气飞机','img:jet'],
+    ['lifeboat','救生艇', 'img:lifeboat'],
+    ['motorcycle','摩托车', 'img:motorcycle'],
+    ['plane','飞机', 'img:plane'],
+    ['rocket','火箭', 'img:rocket'],
+    ['sailboat','帆船', 'img:sailboat'],
+    ['school bus','校车', 'img:school-bus'],
+    ['ship','轮船', 'img:ship'],
+    ['skateboard','滑板', 'img:skateboard'],
+    ['spaceship','宇宙飞船', 'img:spaceship'],
+    ['submarine','潜水艇','img:submarine'],
+    ['subway','地铁', 'img:subway'],
+    ['taxi','出租车', 'img:taxi'],
+    ['tractor','拖拉机', 'img:tractor'],
+    ['train','火车', 'img:train'],
+    ['tram','电车', 'img:tram'],
+    ['tricycle','三轮车','img:tricycle'],
+    ['truck','卡车', 'img:truck'],
+    ['van','面包车', 'img:van'],
+    ['yacht','游艇', 'img:yacht']
+  ]} ,
+{id:'verbs', zh:'动作', en:'Verbs', tint:['#FFFDE7','#FFF9C4'], tpls:['I can {w}.', 'We can {w}!', 'Can you {w}?', 'We {w} together.'], words:[
+    ['bake','烤', 'img:bake'],
+    ['catch','接住', 'img:catch'],
+    ['clap','拍手', 'img:clap'],
+    ['climb','爬','img:climb'],
+    ['close','关上', 'img:close'],
+    ['come','来','img:come'],
+    ['cry','哭', 'img:cry'],
+    ['cycling','骑自行车', 'img:cycling'],
+    ['dance','跳舞', 'img:dance'],
+    ['draw','画画', 'img:draw'],
+    ['drink','喝', 'img:drink'],
+    ['eat','吃', 'img:eat'],
+    ['find','找到','img:find'],
+    ['fly','飞', 'img:fly'],
+    ['give','给','img:give'],
+    ['go','走','img:go'],
+    ['have','有','img:have'],
+    ['hear','听见','img:hear'],
+    ['help','帮助','img:help'],
+    ['hug','拥抱', 'img:hug'],
+    ['jump','跳', 'img:jump'],
+    ['learn','学习','img:learn'],
+    ['like','喜欢','img:like'],
+    ['listen','听','img:listen'],
+    ['look','看','img:look'],
+    ['make','做','img:make'],
+    ['open','打开', 'img:open'],
+    ['paint','画画','img:paint'],
+    ['play','玩', 'img:play'],
+    ['pull','拉','img:pull'],
+    ['push','推','img:push'],
+    ['put','放','img:put'],
+    ['read','读书', 'img:read'],
+    ['ride','骑','img:ride'],
+    ['run','跑', 'img:run'],
+    ['see','看见','img:see'],
+    ['show','展示','img:show'],
+    ['sing','唱歌', 'img:sing'],
+    ['sit','坐', 'img:sit'],
+    ['sleep','睡觉', 'img:sleep'],
+    ['stand','站', 'img:stand'],
+    ['sweep','扫地', 'img:sweep'],
+    ['swim','游泳', 'img:swim'],
+    ['take','拿','img:take'],
+    ['think','想','img:think'],
+    ['throw','扔', 'img:throw'],
+    ['walk','走', 'img:walk'],
+    ['want','想要','img:want'],
+    ['wash','洗', 'img:wash'],
+    ['wear','穿','img:wear'],
+    ['write','写字', 'img:write']
+  ]} ,
+{id:'adjectives', zh:'感受描述', en:'Adjectives', tint:['#F9FBE7','#F0F4C3'], tpls:['I am {w}.', 'You are {w}.', 'I feel {w}.', 'The bear is {w}.'], words:[
+    ['bad','坏的', 'img:bad'],
+    ['beautiful','美丽的', 'img:beautiful'],
+    ['big','大的', 'img:big'],
+    ['bright','明亮的','img:bright'],
+    ['clean','干净的', 'img:clean'],
+    ['cold','冷的', 'img:cold'],
+    ['cool','凉爽的','img:cool'],
+    ['cute','可爱的','img:cute'],
+    ['dark','暗的','img:dark'],
+    ['dirty','脏的', 'img:dirty'],
+    ['dry','干的','img:dry'],
+    ['empty','空的','img:empty'],
+    ['fast','快的', 'img:fast'],
+    ['fat','胖的','img:fat'],
+    ['full','满的','img:full'],
+    ['funny','有趣的', 'img:funny'],
+    ['good','好的', 'img:good'],
+    ['happy','开心的', 'img:happy'],
+    ['hard','硬的','img:hard'],
+    ['heavy','重的','img:heavy'],
+    ['hot','热的', 'img:hot'],
+    ['hungry','饿的','img:hungry'],
+    ['light','轻的','img:light'],
+    ['little','小的','img:little'],
+    ['long','长的','img:long'],
+    ['loud','大声的','img:loud'],
+    ['new','新的', 'img:new'],
+    ['old','旧的', 'img:old'],
+    ['quiet','安静的','img:quiet'],
+    ['round','圆的','img:round'],
+    ['sad','难过的', 'img:sad'],
+    ['salty','咸的','img:salty'],
+    ['short','矮的', 'img:short'],
+    ['slow','慢的', 'img:slow'],
+    ['small','小的', 'img:small'],
+    ['soft','软的','img:soft'],
+    ['sour','酸的','img:sour'],
+    ['sweet','甜的','img:sweet'],
+    ['tall','高的', 'img:tall'],
+    ['thin','瘦的','img:thin'],
+    ['thirsty','渴的','img:thirsty'],
+    ['tired','累的', 'img:tired'],
+    ['warm','温暖的','img:warm'],
+    ['wet','湿的','img:wet'],
+    ['young','年轻的','img:young']
+  ]} ,
+{id:'places', zh:'地点', en:'Places', tint:['#EFEBE9','#D7CCC8'], tpls:['I go to the {w}.', 'We visit the {w}.', 'The {w} is fun.', 'We go to the {w}!'], words:[
+    ['airport','机场', 'img:airport'],
+    ['apartment','公寓', 'img:apartment'],
+    ['aquarium','海洋馆', 'img:aquarium'],
+    ['bank','银行', 'img:bank'],
+    ['bathroom','浴室', 'img:bathroom'],
+    ['bedroom','卧室', 'img:bedroom'],
+    ['bookstore','书店','img:bookstore'],
+    ['bus stop','公交车站', 'img:bus-stop'],
+    ['cinema','电影院', 'img:cinema'],
+    ['classroom','教室','img:classroom'],
+    ['factory','工厂', 'img:factory'],
+    ['farm','农场','img:farm'],
+    ['garden','花园', 'img:garden'],
+    ['home','家', 'img:home'],
+    ['hospital','医院', 'img:hospital'],
+    ['hotel','酒店', 'img:hotel'],
+    ['kitchen','厨房', 'img:kitchen'],
+    ['library','图书馆','img:library'],
+    ['living room','客厅', 'img:living-room'],
+    ['museum','博物馆', 'img:museum'],
+    ['park','公园','img:park'],
+    ['pharmacy','药店', 'img:pharmacy'],
+    ['police station','警察局', 'img:police-station'],
+    ['post office','邮局', 'img:post-office'],
+    ['restaurant','餐厅', 'img:restaurant'],
+    ['school','学校', 'img:school'],
+    ['shopping mall','购物中心', 'img:shopping-mall'],
+    ['stadium','体育馆', 'img:stadium'],
+    ['store','商店', 'img:store'],
+    ['supermarket','超市', 'img:supermarket'],
+    ['theater','剧院', 'img:theater'],
+    ['train station','火车站', 'img:train-station'],
+    ['university','大学', 'img:university'],
+    ['zoo','动物园','img:zoo']
+  ]} ,
+{id:'festivals', zh:'节日活动', en:'Festivals & Activities', tint:['#FCE4EC','#F8BBD0'], tpls:['I celebrate {w}.','{w} is fun!','We eat {w}.','Happy {w}!','I like {w}.'], words:[
+    ['April Fools\' Day','愚人节', 'img:april-fools-day'],
+    ['birthday','生日', 'img:birthday'],
+    ['bow','鞠躬', 'img:bow'],
+    ['Children\'s Day','儿童节', 'img:children-s-day'],
+    ['Double Ninth Festival','重阳节', 'img:double-ninth-festival'],
+    ['Dragon Boat Festival','端午节', 'img:dragon-boat-festival'],
+    ['Easter','复活节', 'img:easter'],
+    ['firecrackers','鞭炮', 'img:firecrackers'],
+    ['fireworks','烟花', 'img:fireworks'],
+    ['gift','礼物', 'img:gift'],
+    ['greeting','问好', 'img:greeting'],
+    ['Halloween','万圣节', 'img:halloween'],
+    ['Jack-o-lantern','南瓜灯', 'img:jack-o-lantern'],
+    ['Lantern Festival','元宵节', 'img:lantern-festival'],
+    ['Mid-Autumn Festival','中秋节', 'img:mid-autumn-festival'],
+    ['Mother\'s Day','母亲节', 'img:mother-s-day'],
+    ['National Day','国庆节', 'img:national-day'],
+    ['New Year','新年', 'img:new-year'],
+    ['New Year\'s Eve','除夕', 'img:new-year-s-eve'],
+    ['phone call','打电话', 'img:phone-call'],
+    ['red envelope','红包', 'img:red-envelope'],
+    ['Spring Festival','春节', 'img:spring-festival'],
+    ['Teachers\' Day','教师节', 'img:teachers-day'],
+    ['Thanksgiving','感恩节', 'img:thanksgiving'],
+    ['touch','触碰', 'img:touch'],
+    ['turkey','火鸡','img:turkey'],
+    ['visit','拜访', 'img:visit'],
+    ['wave','挥手', 'img:wave']
+  ]} ,
+{id:'jobs', zh:'职业', en:'Jobs', tint:['#FFF8E1','#FFECB3'], tpls:['I want to be {a} {w}.', 'My {w} helps people.', 'A {w} is brave.', 'I like {a} {w}.'], words:[
+    ['actor','演员','img:actor'],
+    ['astronaut','宇航员', 'img:astronaut'],
+    ['baker','面包师','img:baker'],
+    ['builder','建筑工人','img:builder'],
+    ['cook','厨师', 'img:cook'],
+    ['dancer','舞蹈家', 'img:dancer'],
+    ['dentist','牙医','img:dentist'],
+    ['doctor','医生', 'img:doctor'],
+    ['driver','司机','img:driver'],
+    ['engineer','工程师','img:engineer'],
+    ['farmer','农民', 'img:farmer'],
+    ['firefighter','消防员', 'img:firefighter'],
+    ['fisherman','渔夫', 'img:fisherman'],
+    ['king','国王','img:king'],
+    ['nurse','护士', 'img:nurse'],
+    ['painter','画家','img:painter'],
+    ['pilot','飞行员', 'img:pilot'],
+    ['police','警察', 'img:police'],
+    ['postman','邮递员', 'img:postman'],
+    ['queen','王后','img:queen'],
+    ['reporter','记者','img:reporter'],
+    ['scientist','科学家','img:scientist'],
+    ['singer','歌手', 'img:singer'],
+    ['soldier','士兵','img:soldier'],
+    ['teacher','老师', 'img:teacher'],
+    ['vet','兽医','img:vet'],
+    ['waiter','男服务员','img:waiter'],
+    ['waitress','女服务员','img:waitress'],
+    ['worker','工人','img:worker'],
+    ['writer','作家','img:writer']
+  ]} ,
+{id:'instruments', zh:'乐器', en:'Musical Instruments', tint:['#F3E5F5','#E1BEE7'], tpls:['I can play the {w}.', 'The {w} makes music.', 'I hear the {w}.', 'I like the {w}.'], words:[
+    ['bell','铃铛', 'img:bell'],
+    ['cymbals','镲','img:cymbals'],
+    ['drum','鼓', 'img:drum'],
+    ['flute','笛子','img:flute'],
+    ['guitar','吉他', 'img:guitar'],
+    ['harmonica','口琴','img:harmonica'],
+    ['harp','竖琴','img:harp'],
+    ['organ','风琴','img:organ'],
+    ['piano','钢琴', 'img:piano'],
+    ['recorder','竖笛','img:recorder'],
+    ['saxophone','萨克斯', 'img:saxophone'],
+    ['tambourine','铃鼓','img:tambourine'],
+    ['trumpet','小号', 'img:trumpet'],
+    ['violin','小提琴', 'img:violin']
+  ]} ,
+{id:'sports', zh:'运动', en:'Sports', tint:['#E8F5E9','#C8E6C9'], tpls:['I like {w}.', 'I play {w}.', '{w} is fun!', 'We play {w}!'], words:[
+    ['badminton','羽毛球', 'img:badminton'],
+    ['baseball','棒球', 'img:baseball'],
+    ['basketball','篮球', 'img:basketball'],
+    ['billiards','台球', 'img:billiards'],
+    ['bowling','保龄球', 'img:bowling'],
+    ['chess','国际象棋', 'img:chess'],
+    ['diving','跳水','img:diving'],
+    ['fishing','钓鱼', 'img:fishing'],
+    ['golf','高尔夫', 'img:golf'],
+    ['gymnastics','体操','img:gymnastics'],
+    ['high jump','跳高','img:high-jump'],
+    ['long jump','跳远','img:long-jump'],
+    ['puzzle','拼图', 'img:puzzle'],
+    ['race','赛跑', 'img:race'],
+    ['rowing','划船','img:rowing'],
+    ['scooter','滑板车', 'img:scooter'],
+    ['scuba diving','潜水', 'img:scuba-diving'],
+    ['seesaw','跷跷板','img:seesaw'],
+    ['skating','滑冰', 'img:skating'],
+    ['skiing','滑雪', 'img:skiing'],
+    ['slide','滑滑梯', 'img:slide'],
+    ['snorkeling','浮潜','img:snorkeling'],
+    ['soccer','足球','img:soccer'],
+    ['swing','秋千','img:swing'],
+    ['table tennis','乒乓球', 'img:table-tennis'],
+    ['tennis','网球', 'img:tennis'],
+    ['volleyball','排球', 'img:volleyball'],
+    ['yo-yo','溜溜球', 'img:yo-yo'],
+    ['yoga','瑜伽', 'img:yoga']
+  ]} ,
+{id:'insects', zh:'昆虫', en:'Insects', tint:['#E0F7FA','#B2EBF2'], tpls:['I see {a} {w}.', 'Look at the {w}.', 'The {w} is small.', 'I found {a} {w}.'], words:[
+    ['ant','蚂蚁','img:ant'],
+    ['bee','蜜蜂','img:bee'],
+    ['beetle','甲虫', 'img:beetle'],
+    ['butterfly','蝴蝶','img:butterfly'],
+    ['caterpillar','毛毛虫', 'img:caterpillar'],
+    ['centipede','蜈蚣','img:centipede'],
+    ['cicada','知了','img:cicada'],
+    ['cricket','蟋蟀', 'img:cricket'],
+    ['dragonfly','蜻蜓','img:dragonfly'],
+    ['housefly','苍蝇', 'img:housefly'],
+    ['insect','昆虫', 'img:insect'],
+    ['ladybug','瓢虫', 'img:ladybug'],
+    ['longicorn','天牛','img:longhorn-beetle'],
+    ['mantis','螳螂','img:mantis'],
+    ['mosquito','蚊子', 'img:mosquito'],
+    ['scorpion','蝎子','img:scorpion'],
+    ['snail','蜗牛', 'img:snail'],
+    ['spider','蜘蛛','img:spider'],
+    ['wasp','黄蜂','img:wasp'],
+    ['worm','虫子', 'img:worm']
+  ]} ,
+{id:'time', zh:'时间季节', en:'Time & Seasons', tint:['#FFF3E0','#FFE0B2'], tpls:['It is {w}.', 'I like {w}.', 'The {w} is fun.', 'Yay, {w}!'], words:[
+    ['afternoon','下午','img:afternoon'],
+    ['April','四月','img:april'],
+    ['August','八月','img:august'],
+    ['autumn','秋天', 'img:autumn'],
+    ['December','十二月','img:december'],
+    ['evening','傍晚', 'img:evening'],
+    ['February','二月','img:february'],
+    ['Friday','星期五','img:friday'],
+    ['January','一月','img:january'],
+    ['July','七月','img:july'],
+    ['June','六月','img:june'],
+    ['March','三月','img:march'],
+    ['May','五月','img:may'],
+    ['Monday','星期一','img:monday'],
+    ['morning','早上', 'img:morning'],
+    ['night','晚上', 'img:night'],
+    ['noon','中午', 'img:noon'],
+    ['November','十一月','img:november'],
+    ['October','十月','img:october'],
+    ['Saturday','星期六','img:saturday'],
+    ['September','九月','img:september'],
+    ['spring','春天', 'img:spring'],
+    ['summer','夏天', 'img:summer'],
+    ['Sunday','星期日','img:sunday'],
+    ['Thursday','星期四','img:thursday'],
+    ['today','今天','img:today'],
+    ['tomorrow','明天','img:tomorrow'],
+    ['Tuesday','星期二','img:tuesday'],
+    ['Wednesday','星期三','img:wednesday'],
+    ['winter','冬天', 'img:winter'],
+    ['yesterday','昨天','img:yesterday']
+  ]}
+];;;;
+;
+;
+const SHAPES_GAME = {
+circle:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#5C6BC0"/></svg>',
+square:'<svg viewBox="0 0 100 100"><rect x="14" y="14" width="72" height="72" rx="6" fill="#5C6BC0"/></svg>',
+triangle:'<svg viewBox="0 0 100 100"><polygon points="50,12 88,88 12,88" fill="#5C6BC0"/></svg>',
+rect:'<svg viewBox="0 0 100 100"><rect x="10" y="32" width="80" height="36" rx="6" fill="#5C6BC0"/></svg>',
+star:'<svg viewBox="0 0 100 100"><polygon points="50,8 62,38 95,38 68,58 78,90 50,72 22,90 32,58 5,38 38,38" fill="#FFCA28"/></svg>',
+heart:'<svg viewBox="0 0 100 100"><path d="M50 88 C20 65 10 45 10 30 C10 18 20 10 30 10 C40 10 48 18 50 28 C52 18 60 10 70 10 C80 10 90 18 90 30 C90 45 80 65 50 88 Z" fill="#EF5350"/></svg>',
+diamond:'<svg viewBox="0 0 100 100"><polygon points="50,8 88,50 50,92 12,50" fill="#4DD0E1"/></svg>',
+parallelogram:'<svg viewBox="0 0 100 100"><polygon points="50,24 75,24 50,41 25,41" fill="#5C6BC0"/></svg>',
+trapezoid:'<svg viewBox="0 0 100 100"><polygon points="37,24 63,24 74,41 26,41" fill="#5C6BC0"/></svg>',
+cube:'<svg viewBox="0 0 100 100"><rect x="36" y="29" width="19" height="19" fill="#5C6BC0"/><polygon points="36,29 55,29 64,22 45,22" fill="#8DA0E0"/><polygon points="55,29 64,22 64,41 55,48" fill="#3F51B5"/></svg>',
+cuboid:'<svg viewBox="0 0 100 100"><rect x="32" y="30" width="25" height="18" fill="#5C6BC0"/><polygon points="32,30 41,23 66,23 57,30" fill="#8DA0E0"/><polygon points="57,30 66,23 66,41 57,48" fill="#3F51B5"/></svg>',
+cone:'<svg viewBox="0 0 100 100"><polygon points="50,19 38,46 62,46" fill="#5C6BC0"/><ellipse cx="50" cy="46" rx="12" ry="3" fill="#3F51B5"/></svg>',
+pyramid:'<svg viewBox="0 0 100 100"><polygon points="50,19 38,46 62,46" fill="#5C6BC0"/><polygon points="50,19 62,46 70,40" fill="#3F51B5"/></svg>',
+sphere:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#5C6BC0"/><ellipse cx="44" cy="40" rx="11" ry="6" fill="rgba(255,255,255,0.35)"/></svg>',
+cylinder:'<svg viewBox="0 0 100 100"><rect x="35" y="25" width="30" height="18" fill="#5C6BC0"/><ellipse cx="50" cy="25" rx="15" ry="4" fill="#8DA0E0"/><ellipse cx="50" cy="43" rx="15" ry="4" fill="#3F51B5"/></svg>'
+};
+/* ============================================================
+   状态 + 存储
+   ============================================================ */
+const LS_EN = 'kids_english_progress';
+const LS_POEM = 'kids_poetry_progress';
+const LS_STAR = 'kids_stars';
+const LS_REVIEW = 'kids_game_review';
+const LS_POS = 'kids_card_pos';
+const LS_SHUFFLE = 'kids_card_shuffle';
+const LS_LEARNED = 'kids_english_learned';
+const POEM_TOTAL = 28; // 古诗总数
+  // 每词首次学会(从0→1)的时间戳 wordKey -> ts
+let engProgress = loadObj(LS_EN);
+let poemProgress = loadObj(LS_POEM);
+let stars = parseInt(localStorage.getItem(LS_STAR) || '0', 10);
+let review = loadObj(LS_REVIEW);
+let learnedMap = loadObj(LS_LEARNED);
+/* 记录某词首次学会时间(仅 level 0->1 时写入一次) */
+function recordLearned(key){
+  if(!learnedMap[key]){learnedMap[key]=Date.now();saveObj(LS_LEARNED,learnedMap);}
+}
+let curTab = 'en';
+let curShuffle = localStorage.getItem(LS_SHUFFLE)==='1';   // 🔀 英语卡片顺序打乱(持久化)
+let curCat = 'all';
+let curFilter = 'all';
+let cardList = [];
+let curSearch = '';   // 🔍 单词搜索关键字(已小写);为空表示不搜索
+let cardIdx = 0;
+let flipped = false;
+let poemIdx = 0;
+let currentExample = '';
+let currentWord = '';
+let gameQueue = [];
+let gameIdx = 0;
+let gameStartTime = 0;
+let gameCurrent = null;
+let gameSessionStars = 0;
+let gameTimerInt = null;
+const GAME_MS = 14*60*1000;
+const GAME_PER_SESSION = 10;
+function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{}}}
+function saveObj(key,obj){localStorage.setItem(key,JSON.stringify(obj))}
+function poemMemorizedCount(){let n=0;for(const k in poemProgress) if(poemProgress[k]===2) n++;return n}
+function wordKey(catId,w){return catId+':'+w}
+function getLevel(catId,w){return engProgress[wordKey(catId,w)]||0}
+function findByKey(key){
+  for(const c of CATS){
+    for(const w of c.words){ if(wordKey(c.id,w[0])===key) return {cat:c, w:w}; }
+  }
+  return null;
+}
+/* 记忆上次学习到的卡片：保存 分类 + 筛选 + 单词键，下次进入时从这张卡继续 */
+function savePos(){
+  if(!cardList.length || !cardList[cardIdx]) return;
+  const item=cardList[cardIdx];
+  saveObj(LS_POS,{cat:item.cat.id, filter:curFilter, key:wordKey(item.cat.id,item.w[0])});
+}
+function restorePos(){
+  const p=loadObj(LS_POS);
+  curCat='all'; curFilter='all'; cardIdx=0; flipped=false;
+  if(p&&p.key){
+    curCat = p.cat||'all';
+    curFilter = p.filter||'all';
+    buildList();
+    const idx = cardList.findIndex(it=>wordKey(it.cat.id,it.w[0])===p.key);
+    if(idx>=0) cardIdx=idx;
+  } else {
+    buildList();
+  }
+}
+function syncFilterChips(){
+  document.querySelectorAll('.filter-chip[data-f]').forEach(b=>b.classList.toggle('active',b.dataset.f===curFilter));
+}
+/* ============================================================
+   语音合成 (工具 + 游戏共用)
+   ============================================================ */
+let voices = [];
+function loadVoices(){voices = window.speechSynthesis ? speechSynthesis.getVoices() : []}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+let speakingBtn = null;
+function speak(text,lang,btn){
+  if(!('speechSynthesis' in window)){return}
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = lang.indexOf('zh')===0 ? 0.75 : 0.85;
+    const prefix = lang.split('-')[0];
+    let v = voices.find(vv=>vv.lang && vv.lang.toLowerCase()===lang.toLowerCase());
+    if(!v) v = voices.find(vv=>vv.lang && vv.lang.toLowerCase().indexOf(prefix)===0);
+    if(v) u.voice = v;
+    if(btn){
+      if(speakingBtn) speakingBtn.classList.remove('speaking');
+      speakingBtn = btn;
+      btn.classList.add('speaking');
+      u.onend = u.onerror = function(){
+        btn.classList.remove('speaking');
+        if(speakingBtn===btn) speakingBtn=null;
+      };
+    }
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+/* ============================================================
+   ★ 游戏 音频 (WebAudio 合成)
+   ============================================================ */
+let gameAudio = null;
+function gAc(){if(!gameAudio) gameAudio=new (window.AudioContext||window.webkitAudioContext)(); return gameAudio}
+function gTone(freqs,dur,type,gain){
+  const c=gAc(); const now=c.currentTime;
+  freqs.forEach((f,i)=>{
+    const o=c.createOscillator(),g=c.createGain();
+    o.type=type||'sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(gain||0.18,now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    o.connect(g); g.connect(c.destination); o.start(now+i*0.06); o.stop(now+i*0.06+dur);
+  });
+}
+function gGood(){gTone([523,659,784,1047],0.14)}
+function gWrong(){gTone([200,150],0.16,'square',0.12)}
+const G_PRAISE=['Good job!','Awesome!','Great!','You did it!','Super!'];
+function gPraise(){
+  const t=G_PRAISE[Math.floor(Math.random()*G_PRAISE.length)];
+  try{ const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=1.0; u.pitch=1.15; speechSynthesis.speak(u);}catch(e){}
+  const el=document.getElementById('gamePraise');
+  el.textContent=t; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  gBurst();
+}
+function gBurst(){
+  const fx=document.getElementById('gameFx');
+  const icons=['⭐','🌟','✨','💛','🎉','🌈'];
+  for(let i=0;i<22;i++){
+    const s=document.createElement('div');
+    s.className='game-confetti'; s.textContent=icons[i%icons.length];
+    s.style.left=Math.random()*100+'vw'; s.style.top='-40px';
+    s.style.animationDelay=(Math.random()*0.2)+'s';
+    fx.appendChild(s); setTimeout(()=>s.remove(),1400);
+  }
+}
+/* ============================================================
+   星星系统 (主顶部 + 游戏顶部 + 工具累计)
+   ============================================================ */
+function earnedStars(){
+  let m=0; for(const k in engProgress) if(engProgress[k]>=3) m++;
+  let p=0; for(const k in poemProgress) if(poemProgress[k]===2) p++;
+  return Math.floor(m/5) + p*2;
+}
+function refreshStars(){
+  const e=earnedStars();
+  if(e>stars){
+    const d=e-stars; stars=e; localStorage.setItem(LS_STAR,String(stars));
+    showStarToast(d);
+  }
+  document.getElementById('starCount').textContent=stars;
+}
+function showStarToast(d){
+  const t=document.getElementById('starToast');
+  document.getElementById('starToastMsg').textContent='+'+d+' 星星！太棒了！';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+/* ============================================================
+   ★ v2 修复点2: 分类栏鼠标拖动滑动
+   ============================================================ */
+function enableDragScroll(el){
+  let isDown=false,startX=0,startScroll=0,moved=false;
+  el.addEventListener('mousedown',e=>{
+    if(e.button!==0) return;
+    isDown=true;startX=e.pageX;startScroll=el.scrollLeft;moved=false;
+    el.classList.add('dragging');
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!isDown) return;
+    e.preventDefault();
+    const dx=e.pageX-startX;
+    if(Math.abs(dx)>5) moved=true;
+    el.scrollLeft=startScroll-dx;
+  });
+  window.addEventListener('mouseup',()=>{
+    if(isDown){isDown=false;el.classList.remove('dragging')}
+  });
+  el.addEventListener('click',e=>{
+    if(moved){e.preventDefault();e.stopPropagation();moved=false}
+  },true);
+  // 触摸设备
+  let tStartX=0,tStartScroll=0,tDown=false;
+  el.addEventListener('touchstart',e=>{tDown=true;tStartX=e.touches[0].pageX;tStartScroll=el.scrollLeft},{passive:true});
+  el.addEventListener('touchmove',e=>{if(!tDown) return;el.scrollLeft=tStartScroll-(e.touches[0].pageX-tStartX)},{passive:true});
+  el.addEventListener('touchend',()=>{tDown=false});
+}
+/* ============================================================
+   英语卡片
+   ============================================================ */
+function article(w){return /^[aeiou]/i.test(w)?'an':'a'}
+const EXAMPLES = {
+  'sports|badminton': 'We play badminton in the park.',
+  'sports|baseball': 'We play baseball after school.',
+  'sports|basketball': 'I shoot the basketball.',
+  'sports|billiards': 'We play billiards on the table.',
+  'sports|bowling': 'I like to go bowling.',
+  'sports|chess': 'I play chess with my dad.',
+  'sports|diving': 'The diver dives into the pool.',
+  'sports|fishing': 'We go fishing by the lake.',
+  'sports|golf': 'We play golf on the grass.',
+  'sports|gymnastics': 'I do gymnastics at school.',
+  'sports|high jump': 'I can do the high jump.',
+  'sports|long jump': 'I can do the long jump.',
+  'sports|puzzle': 'I put the puzzle together.',
+  'sports|race': 'I run fast in the race.',
+  'sports|rowing': 'We row the boat on the lake.',
+  'sports|scooter': 'I ride my scooter outside.',
+  'sports|scuba diving': 'We go scuba diving in the sea.',
+  'sports|seesaw': 'I play on the seesaw.',
+  'sports|skating': 'I skate fast on the ice.',
+  'sports|skiing': 'I ski down the hill.',
+  'sports|slide': 'I slide down the slide.',
+  'sports|snorkeling': 'We go snorkeling in the sea.',
+  'sports|soccer': 'I kick the soccer ball.',
+  'sports|swing': 'I swing on the swing.',
+  'sports|table tennis': 'I play table tennis.',
+  'sports|tennis': 'We play tennis on the court.',
+  'sports|volleyball': 'We play volleyball at the beach.',
+  'sports|yo-yo': 'I play with my yo-yo.',
+  'sports|yoga': 'I do yoga in the morning.',
+  'food|beef': 'I eat beef with rice.',
+  'food|bread': 'I eat bread for breakfast.',
+  'food|butter': 'I spread butter on bread.',
+  'food|cake': 'We eat cake on birthdays.',
+  'food|candy': 'I eat candy after lunch.',
+  'food|cheese': 'I eat cheese on crackers.',
+  'food|chicken meat': 'I eat chicken for dinner.',
+  'food|chocolate': 'I eat a piece of chocolate.',
+  'food|coffee': 'Grown-ups drink coffee.',
+  'food|cola': 'I drink cola with pizza.',
+  'food|cookie': 'I eat a cookie with milk.',
+  'food|dessert': 'I eat dessert after dinner.',
+  'food|dumpling': 'We eat dumplings at home.',
+  'food|egg': 'I eat a boiled egg.',
+  'food|fish meat': 'I eat fish for lunch.',
+  'food|fries': 'I eat fries with my burger.',
+  'food|hamburger': 'I eat a hamburger.',
+  'food|honey': 'I put honey on toast.',
+  'food|ice cream': 'I eat an ice cream cone.',
+  'food|jam': 'I spread jam on toast.',
+  'food|jelly': 'I eat jelly for dessert.',
+  'food|juice': 'I drink orange juice.',
+  'food|meat': 'I eat meat with rice.',
+  'food|milk': 'I drink milk every morning.',
+  'food|mutton': 'I eat mutton with potatoes.',
+  'food|noodle': 'We eat noodles at home.',
+  'food|pie': 'I eat a slice of pie.',
+  'food|pizza': 'I eat a slice of pizza.',
+  'food|popcorn': 'I eat popcorn at the movies.',
+  'food|pork': 'I eat pork with rice.',
+  'food|porridge': 'I eat porridge for breakfast.',
+  'food|rice': 'I eat rice with my meal.',
+  'food|salad': 'I eat a fresh salad.',
+  'food|sandwich': 'I eat a sandwich for lunch.',
+  'food|sausage': 'I eat a sausage for breakfast.',
+  'food|soup': 'I eat soup when it is cold.',
+  'food|steamed bun': 'I eat a steamed bun.',
+  'food|tea': 'I drink tea in the afternoon.',
+  'food|tofu': 'I eat tofu with vegetables.',
+  'food|water': 'I drink water every day.',
+  'food|yogurt': 'I eat yogurt with fruit.',
+  'fruits|apple': 'I eat a red apple.',
+  'fruits|apricot': 'I eat an apricot.',
+  'fruits|avocado': 'I eat avocado on toast.',
+  'fruits|banana': 'I eat a banana.',
+  'fruits|blackberry': 'I pick blackberries.',
+  'fruits|blueberry': 'I eat blueberries in yogurt.',
+  'fruits|cantaloupe': 'I eat cantaloupe in summer.',
+  'fruits|cherry': 'I eat a cherry.',
+  'fruits|coconut': 'I drink coconut water.',
+  'fruits|dragon fruit': 'I eat dragon fruit.',
+  'fruits|durian': 'The durian smells strong.',
+  'fruits|fig': 'I eat a fig.',
+  'fruits|grape': 'I eat a grape.',
+  'fruits|guava': 'I eat guava at home.',
+  'fruits|hawthorn': 'The hawthorn is red.',
+  'fruits|kiwi': 'I eat a kiwi.',
+  'fruits|lemon': 'The lemon is sour.',
+  'fruits|longan': 'I eat longan.',
+  'fruits|fruit': 'An apple is a fruit.',
+  'fruits|lychee': 'I eat lychees.',
+  'fruits|mango': 'I eat a mango.',
+  'fruits|mangosteen': 'I eat mangosteen.',
+  'fruits|melon': 'I eat melon in summer.',
+  'fruits|orange': 'I eat an orange.',
+  'fruits|papaya': 'I eat papaya.',
+  'fruits|peach': 'I eat a peach.',
+  'fruits|pear': 'I eat a pear.',
+  'fruits|persimmon': 'I eat a persimmon.',
+  'fruits|pineapple': 'I eat pineapple.',
+  'fruits|pitaya': 'I eat pitaya.',
+  'fruits|plum': 'I eat a plum.',
+  'fruits|pomegranate': 'I eat pomegranate seeds.',
+  'fruits|pomelo': 'I eat pomelo.',
+  'fruits|raspberry': 'I eat raspberries.',
+  'fruits|strawberry': 'I eat a strawberry.',
+  'fruits|sugarcane': 'I chew sugarcane.',
+  'fruits|tangerine': 'I eat a tangerine.',
+  'fruits|watermelon': 'I eat watermelon in summer.',
+  'vegetables|asparagus': 'I eat asparagus.',
+  'vegetables|bamboo shoot': 'I eat bamboo shoots.',
+  'vegetables|bean sprouts': 'I eat bean sprouts.',
+  'vegetables|bitter melon': 'I eat bitter melon.',
+  'vegetables|broccoli': 'I eat broccoli.',
+  'vegetables|cabbage': 'I eat cabbage.',
+  'vegetables|carrot': 'The rabbit eats a carrot.',
+  'vegetables|cauliflower': 'I eat cauliflower.',
+  'vegetables|celery': 'I eat celery.',
+  'vegetables|chili': 'The chili is spicy.',
+  'vegetables|chives': 'I eat chives.',
+  'vegetables|cilantro': 'I eat cilantro.',
+  'vegetables|corn': 'I eat corn on the cob.',
+  'vegetables|cucumber': 'I eat cucumber in salad.',
+  'vegetables|eggplant': 'I eat eggplant.',
+  'vegetables|garlic': 'I eat garlic with noodles.',
+  'vegetables|ginger': 'I eat ginger in soup.',
+  'vegetables|green bean': 'I eat green beans.',
+  'vegetables|leek': 'I eat leek.',
+  'vegetables|lettuce': 'I eat lettuce in salad.',
+  'vegetables|lotus root': 'I eat lotus root.',
+  'vegetables|mushroom': 'I eat mushrooms.',
+  'vegetables|onion': 'I eat onion in soup.',
+  'vegetables|pea': 'I eat peas.',
+  'vegetables|pepper': 'I eat green pepper.',
+  'vegetables|potato': 'I eat a potato.',
+  'vegetables|pumpkin': 'I eat pumpkin soup.',
+  'vegetables|radish': 'I eat radish.',
+  'vegetables|scallion': 'I eat scallion.',
+  'vegetables|spinach': 'I eat spinach.',
+  'vegetables|sweet potato': 'I eat sweet potato.',
+  'vegetables|tomato': 'I eat a tomato.',
+  'vegetables|winter melon': 'I eat winter melon soup.',
+  'vegetables|yam': 'I eat yam.',
+  'vegetables|zucchini': 'I eat zucchini.',
+};
+function makeExample(cat,w){
+  const en = Array.isArray(w) ? w[0] : w;
+  if (EXAMPLES[cat.id + '|' + en]) return EXAMPLES[cat.id + '|' + en];
+  const arr = (cat.tpls && cat.tpls.length) ? cat.tpls : (cat.tpl ? [cat.tpl] : ['']);
+  const t = arr[Math.floor(Math.random()*arr.length)];
+  return t.replace('{a}',article(en)).replace('{w}',en);
+}
+function totalWords(){return CATS.reduce((s,c)=>s+c.words.length,0)}
+function masteredCount(){let n=0;for(const k in engProgress) if(engProgress[k]>=3) n++;return n}
+function catMastered(cat){return cat.words.filter(w=>getLevel(cat.id,w[0])>=3).length}
+function renderCatChips(){
+  const box = document.getElementById('catChips');
+  let html = '<button class="chip'+(curCat==='all'?' active':'')+'" onclick="setCat(\'all\')">📚 全部<span class="cnt">'+masteredCount()+'/'+totalWords()+'</span></button>';
+  CATS.forEach(c=>{
+    html += '<button class="chip'+(curCat===c.id?' active':'')+'" onclick="setCat(\''+c.id+'\')">'+c.zh+' '+c.en+'<span class="cnt">'+catMastered(c)+'/'+c.words.length+'</span></button>';
+  });
+  box.innerHTML = html;
+}
+function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();buildList();renderCard()}
+function setFilter(f){
+  curFilter=f;cardIdx=0;flipped=false;
+  document.querySelectorAll('.filter-chip[data-f]').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+  buildList();renderCard();
+}
+function toggleShuffle(){
+  curShuffle=!curShuffle;
+  try{localStorage.setItem(LS_SHUFFLE,curShuffle?'1':'0');}catch(e){}
+  cardIdx=0;flipped=false;
+  buildList();renderCard();renderCatChips();
+  const chip=document.getElementById('shuffleChip');
+  if(chip) chip.classList.toggle('active',curShuffle);
+}
+/* ===== 单词搜索(英文或中文) ===== */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function doSearch(){
+  const inp=document.getElementById('wordSearch');
+  curSearch=inp.value.trim().toLowerCase();
+  if(curSearch && curCat!=='all'){ curCat='all'; renderCatChips(); }
+  cardIdx=0;flipped=false;
+  buildList();renderCard();renderSearchResults();
+}
+function clearSearch(){
+  const inp=document.getElementById('wordSearch');
+  inp.value='';curSearch='';
+  cardIdx=0;flipped=false;
+  buildList();renderCard();renderSearchResults();
+}
+function renderSearchResults(){
+  const box=document.getElementById('searchResults');
+  if(!curSearch){ box.style.display='none'; box.innerHTML=''; return; }
+  if(!cardList.length){ box.style.display='block'; box.innerHTML='<div class="search-info">🔍 未找到与「'+esc(curSearch)+'」匹配的单词</div>'; return; }
+  let html='<div class="search-info">🔍 找到 '+cardList.length+' 个匹配</div><div class="search-tags">';
+  cardList.forEach((it,i)=>{
+    html+='<button class="search-tag'+(i===cardIdx?' active':'')+'" onclick="jumpToResult('+i+')">'+esc(it.w[0])+'<span class="zh">'+esc(it.w[1])+'</span></button>';
+  });
+  html+='</div>';
+  box.style.display='block';
+  box.innerHTML=html;
+}
+function jumpToResult(i){ cardIdx=i;flipped=false;renderCard();renderSearchResults(); }
+
+const ORDER_SEQ = {
+  numbers: ['one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety','hundred','thousand','zero','first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth'],
+  days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+  months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+  seasons: ['spring','summer','autumn','winter'],
+  dayparts: ['morning','noon','afternoon','evening','night'],
+  relative: ['today','tomorrow','yesterday'],
+  festivals: ["New Year","Spring Festival","Lantern Festival","Easter","April Fools' Day","Mother's Day","Children's Day","Dragon Boat Festival","Teachers' Day","Mid-Autumn Festival","Double Ninth Festival","National Day","Halloween","Thanksgiving","New Year's Eve","birthday"]
+};
+const ORDER_CLUSTERS = {
+  adjectives: [
+    ['big','small','little'],
+    ['tall','short','long'],
+    ['fat','thin'],
+    ['fast','slow'],
+    ['hot','cold','warm','cool'],
+    ['full','empty'],
+    ['clean','dirty'],
+    ['new','old','young'],
+    ['happy','sad'],
+    ['good','bad'],
+    ['hard','soft'],
+    ['heavy','light'],
+    ['wet','dry'],
+    ['sweet','sour','salty'],
+    ['loud','quiet'],
+    ['bright','dark'],
+    ['hungry','thirsty']
+  ]
+};
+const ORDER_GROUPS = {
+  animals: [
+    ["cat","dog","puppy","kitten","rabbit","hare","goldfish","fish","horse","cow","pig","sheep","goat","chicken","duck","hen","rooster","goose","donkey","buffalo","bull","mouse","rat","turtle"],
+    ["bear","brown bear","polar bear","panda","elephant","giraffe","lion","tiger","monkey","zebra","hippo","deer","buck","fox","wolf","camel","alpaca","kangaroo","koala","squirrel","raccoon","otter","hedgehog","sloth","rhino"],
+    ["groundhog","marmot","muskox","wild boar","anteater","pangolin","bat","proboscis monkey","mandrill","chimpanzee","gorilla"],
+    ["bird","eagle","owl","parrot","peacock","penguin","ostrich","seagull","swan"],
+    ["clownfish","lanternfish","molamola","pufferfish","ray fish","manta ray","skate","stingray","seahorse","shark","eel"],
+    ["alligator","crocodile","chameleon","gecko","iguana","komodo dragon","lizard","snake","python","viper","frog","toad","tortoise","sea turtle"],
+    ["blue whale","whale","dolphin","seal","sea lion","walrus","octopus","squid","cuttlefish","crab","lobster","horseshoe crab","jellyfish","starfish","sea cucumber","sea urchin"],
+    ["dinosaur","mammoth","sabertooth"]
+  ],
+  festivalsItems: ["firecrackers","fireworks","red envelope","gift","Jack-o-lantern","turkey"],
+  festivalsActions: ["bow","touch","wave","visit","phone call","greeting"]
+};
+const ORDER_BY_CAT = {
+  numbers: [ORDER_SEQ.numbers],
+  time: [ORDER_SEQ.days, ORDER_SEQ.months, ORDER_SEQ.seasons, ORDER_SEQ.dayparts, ORDER_SEQ.relative],
+  adjectives: ORDER_CLUSTERS.adjectives,
+  animals: ORDER_GROUPS.animals,
+  festivals: [ORDER_SEQ.festivals, ORDER_GROUPS.festivalsItems, ORDER_GROUPS.festivalsActions]
+};
+function orderWords(catId, words){
+  const rules = ORDER_BY_CAT[catId];
+  if(!rules) return words.slice();
+  const pos = {};
+  rules.forEach((grp, gi)=> grp.forEach((en, i)=>{ if(!(en in pos)) pos[en] = {g:gi, i:i}; }));
+  const enOf = w => Array.isArray(w) ? w[0] : w;
+  return words.slice().sort((a,b)=>{
+    const ea = enOf(a), eb = enOf(b);
+    const pa = pos[ea], pb = pos[eb];
+    if(pa && pb){ if(pa.g!==pb.g) return pa.g-pb.g; return pa.i-pb.i; }
+    if(pa && !pb) return -1;
+    if(!pa && pb) return 1;
+    const la = ea.toLowerCase(), lb = eb.toLowerCase();
+    return la<lb ? -1 : la>lb ? 1 : 0;
+  });
+}
+function buildList(){
+  cardList=[];
+  CATS.forEach(c=>{
+    if(!curSearch && curCat!=='all' && c.id!==curCat) return;
+    orderWords(c.id, c.words).forEach(w=>{
+      const lv=getLevel(c.id,w[0]);
+      if(curFilter==='todo' && lv>=3) return;
+      if(curFilter==='done' && lv<3) return;
+      if(curSearch){ const en=w[0].toLowerCase(), zh=w[1]; if(en.indexOf(curSearch)===-1 && zh.indexOf(curSearch)===-1) return; }
+      cardList.push({cat:c,w:w});
+    });
+  });
+  if(curShuffle && !curSearch) cardList=shuffleArr(cardList);
+  if(cardIdx>=cardList.length) cardIdx=Math.max(0,cardList.length-1);
+}
+function wordArtSVG(item){
+  const tint=item.cat.tint,art=item.w[2];
+  let center='';
+  if(art===''){
+    const letter=item.w[0].charAt(0).toUpperCase();
+    center='<rect x="130" y="60" width="140" height="140" rx="24" fill="#ffffff" stroke="#ffb74d" stroke-width="6"/>'+
+           '<text x="200" y="165" text-anchor="middle" font-size="90" font-weight="bold" fill="#ff8f00">'+letter+'</text>';
+  } else if(art.charAt(0)==='#'){
+    const stroke=art.toLowerCase()==='#ffffff'?' stroke="#cccccc" stroke-width="4"':'';
+    center='<circle cx="200" cy="130" r="70" fill="'+art+'"'+stroke+'/><ellipse cx="178" cy="106" rx="22" ry="12" fill="rgba(255,255,255,0.35)"/>';
+  } else if(art.charAt(0)==='@'){
+    const shape=art.slice(1),col='#5C6BC0';
+    const shapes={
+      circle:'<circle cx="200" cy="130" r="64" fill="'+col+'"/>',
+      square:'<rect x="136" y="66" width="128" height="128" rx="10" fill="'+col+'"/>',
+      triangle:'<polygon points="200,62 272,192 128,192" fill="'+col+'"/>',
+      rect:'<rect x="116" y="88" width="168" height="88" rx="10" fill="'+col+'"/>',
+      star:'<polygon points="200,58 219,106 270,106 229,136 245,186 200,156 155,186 171,136 130,106 181,106" fill="#FFCA28"/>',
+      heart:'<path d="M200 186 C150 150 128 122 128 96 C128 74 146 62 164 62 C180 62 193 72 200 86 C207 72 220 62 236 62 C254 62 272 74 272 96 C272 122 250 150 200 186 Z" fill="#EF5350"/>',
+      diamond:'<polygon points="200,58 262,130 200,202 138,130" fill="#4DD0E1"/>',
+      parallelogram:'<polygon points="200,95 300,95 200,165 100,165" fill="'+col+'"/>',
+      trapezoid:'<polygon points="150,95 250,95 295,165 105,165" fill="'+col+'"/>',
+      cube:'<rect x="145" y="115" width="75" height="75" fill="'+col+'"/><polygon points="145,115 220,115 255,90 180,90" fill="#8DA0E0"/><polygon points="220,115 255,90 255,165 220,190" fill="#3F51B5"/>',
+      cuboid:'<rect x="130" y="118" width="100" height="72" fill="'+col+'"/><polygon points="130,118 165,93 265,93 230,118" fill="#8DA0E0"/><polygon points="230,118 265,93 265,165 230,190" fill="#3F51B5"/>',
+      cone:'<polygon points="200,72 152,185 248,185" fill="'+col+'"/><ellipse cx="200" cy="185" rx="48" ry="13" fill="#3F51B5"/>',
+      pyramid:'<polygon points="200,72 152,185 248,185" fill="'+col+'"/><polygon points="200,72 248,185 282,162" fill="#3F51B5"/>',
+      sphere:'<circle cx="200" cy="130" r="70" fill="'+col+'"/><ellipse cx="178" cy="106" rx="22" ry="12" fill="rgba(255,255,255,0.35)"/>',
+      cylinder:'<rect x="140" y="100" width="120" height="70" fill="'+col+'"/><ellipse cx="200" cy="100" rx="60" ry="16" fill="#8DA0E0"/><ellipse cx="200" cy="170" rx="60" ry="16" fill="#3F51B5"/>'
+    };
+    center=shapes[shape]||'';
+  } else if(/^[0-9]+$/.test(art)){
+    center='<circle cx="200" cy="130" r="76" fill="#ffffff" stroke="#64B5F6" stroke-width="6"/>'+
+           '<text x="200" y="'+(art.length>2?152:162)+'" text-anchor="middle" font-size="'+(art.length>2?56:84)+'" font-weight="bold" fill="#1E88E5">'+art+'</text>';
+  } else if(art.slice(0,4)==='img:'){
+    /* 本地 AI 插画 (images/ 目录) */
+    const _slug=art.slice(4);
+    if(HAVE_IMG.has(_slug)){
+      center='<image href="'+IMG_BASE+_slug+'.png" x="60" y="40" width="280" height="180" preserveAspectRatio="xMidYMid meet"/>';
+    } else {
+      const _l=item.w[0].charAt(0).toUpperCase();
+      center='<rect x="130" y="60" width="140" height="140" rx="24" fill="#ffffff" stroke="#ffb74d" stroke-width="6"/>'+
+             '<text x="200" y="165" text-anchor="middle" font-size="90" font-weight="bold" fill="#ff8f00">'+_l+'</text>';
+    }
+  } else {
+    center='<text x="200" y="168" text-anchor="middle" font-size="110">'+art+'</text>';
+  }
+  return '<svg viewBox="0 0 400 260">'+
+    '<defs><linearGradient id="bg'+item.cat.id+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-color="'+tint[0]+'"/><stop offset="1" stop-color="'+tint[1]+'"/></linearGradient></defs>'+
+    '<rect width="400" height="260" fill="url(#bg'+item.cat.id+')"/>'+
+    '<circle cx="52" cy="46" r="26" fill="rgba(255,255,255,0.55)"/>'+
+    '<circle cx="80" cy="50" r="18" fill="rgba(255,255,255,0.55)"/>'+
+    '<circle cx="352" cy="38" r="20" fill="rgba(255,255,255,0.45)"/>'+
+    '<ellipse cx="200" cy="252" rx="220" ry="26" fill="rgba(255,255,255,0.35)"/>'+
+    center+'</svg>';
+}
+function renderCard(){
+  const area=document.getElementById('enCardArea');
+  const total=totalWords(),mastered=masteredCount();
+  document.getElementById('enMasteredTxt').textContent=mastered+' / '+total;
+  document.getElementById('enProgressFill').style.width=(total?(mastered/total*100):0)+'%';
+  if(!cardList.length){
+    let msg;
+    if(curSearch) msg='<div class="big">🔍</div>未找到与「'+esc(curSearch)+'」匹配的单词<br>换个词试试？';
+    else if(curFilter==='done') msg='<div class="big">📭</div>还没有已掌握的卡片<br>去学习几张新卡片吧！';
+    else if(curFilter==='todo') msg='<div class="big">🎉</div>太棒了！<br>这个分类的卡片都学会啦！';
+    else msg='<div class="big">😅</div>没有卡片';
+    area.innerHTML='<div class="empty-state">'+msg+'</div>';
+    return;
+  }
+  const item=cardList[cardIdx];
+  const word=item.w[0],zh=item.w[1];
+  currentWord=word;
+  const lv=getLevel(item.cat.id,word);
+  currentExample=makeExample(item.cat,word);
+  const example=currentExample;
+  const svg=wordArtSVG(item);
+  let dots='';
+  for(let i=0;i<3;i++) dots+='<span class="'+(i<lv?'on':'')+'"></span>';
+  /* ★ v2: 把圆角裁切从 .card-face 移到 .card-art-wrap,face 改 visible,
+     彻底解掉 .card-body 文字被裁切的隐患 */
+  area.innerHTML =
+    '<div class="card-stage">'+
+      '<div class="card-inner'+(flipped?' flipped':'')+'" id="cardInner" onclick="flipCard()">'+
+        '<div class="card-face card-front">'+
+          '<div class="card-art">'+svg+'</div>'+
+          '<div class="card-body">'+
+            '<div class="word-en">'+word+'</div>'+
+            phonHTML(word)+
+            '<div class="accent-row">'+
+              '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(currentWord,\'uk\',this)">🇬🇧 英音</button>'+
+              '<button class="accent-btn us" onclick="event.stopPropagation();playAccent(currentWord,\'us\',this)">🇺🇸 美音</button>'+
+            '</div>'+
+            '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="card-face card-back">'+
+          '<div class="card-art">'+svg+'</div>'+
+          '<div class="card-body">'+
+            '<div class="word-zh">'+zh+'</div>'+
+            '<div class="word-en" style="font-size:26px">'+word+'</div>'+
+            phonHTML(word)+
+            '<div class="word-example">💬 '+example+'</div>'+
+            '<button class="speak-btn" id="speakExBtn" onclick="event.stopPropagation();speakExample()">🔊 听例句</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="action-row">'+
+      '<button class="action-btn btn-review" onclick="markReview()">👀 再看看</button>'+
+      '<button class="action-btn btn-know" onclick="markKnow()">✅ 我会了</button>'+
+    '</div>'+
+    '<div class="nav-row">'+
+      '<button class="nav-btn" onclick="prevCard()">←</button>'+
+      '<div style="text-align:center">'+
+        '<div class="card-counter">'+(cardIdx+1)+' / '+cardList.length+'</div>'+
+        '<div class="mastery-dots" style="margin-top:6px;justify-content:center">'+dots+'</div>'+
+      '</div>'+
+      '<button class="nav-btn" onclick="nextCard()">→</button>'+
+    '</div>';
+  savePos();
+  if(curSearch) renderSearchResults();
+}
+function flipCard(){flipped=!flipped;const el=document.getElementById('cardInner');if(el) el.classList.toggle('flipped',flipped)}
+function speakWord(){if(!cardList.length) return;speak(cardList[cardIdx].w[0],'en-US',document.getElementById('speakWordBtn'))}
+function speakExample(){if(!cardList.length) return;const item=cardList[cardIdx];if(!currentExample) currentExample=makeExample(item.cat,item.w[0]);speak(currentExample,'en-US',document.getElementById('speakExBtn'))}
+/* 音标: 英音(en-GB) / 美音(en-US)。优先用真人录音(dictionaryapi 音频)，
+   若离线或加载失败则回退到浏览器语音合成对应口音。 */
+function playAccent(word,accent,btn){
+  if(!word) return;
+  const p=PHON[word]||[];
+  const ipa=accent==='uk'?p[0]:p[1];
+  const url=accent==='uk'?p[2]:p[3];
+  const lang=accent==='uk'?'en-GB':'en-US';
+  if(!ipa && !url) return;
+  if(btn){btn.classList.add('speaking');}
+  const stop=()=>{ if(btn) btn.classList.remove('speaking'); };
+  if(url){
+    let done=false;
+    const a=new Audio();
+    a.src=url;
+    a.onended=()=>{done=true;stop();};
+    a.onerror=()=>{ if(!done){done=true;stop();speak(word,lang,btn);} };
+    const pr=a.play();
+    if(pr&&pr.catch) pr.catch(()=>{ if(!done){done=true;stop();speak(word,lang,btn);} });
+    // 安全兜底: 1.5s 内没成功播放就改用语音合成
+    setTimeout(()=>{ if(!done){done=true;stop();speak(word,lang,btn);} },1500);
+  } else {
+    speak(word,lang,btn);
+  }
+}
+function phonHTML(word){
+  const p=PHON[word];
+  if(!p) return '';
+  const uk=p[0]||'',us=p[1]||'';
+  let h='<div class="phon-row">';
+  if(uk) h+='<button class="phon-pill uk" onclick="event.stopPropagation();playAccent(currentWord,\'uk\',this)"><span class="flag">🇬🇧</span><span class="ipa">'+uk+'</span></button>';
+  if(us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(currentWord,\'us\',this)"><span class="flag">🇺🇸</span><span class="ipa">'+us+'</span></button>';
+  h+='</div>';
+  return h;
+}
+function nextCard(){if(!cardList.length) return;if(window.speechSynthesis) speechSynthesis.cancel();cardIdx=(cardIdx+1)%cardList.length;flipped=false;renderCard()}
+function prevCard(){if(!cardList.length) return;if(window.speechSynthesis) speechSynthesis.cancel();cardIdx=(cardIdx-1+cardList.length)%cardList.length;flipped=false;renderCard()}
+function markKnow(){
+  if(!cardList.length) return;
+  const item=cardList[cardIdx];
+  const key=wordKey(item.cat.id,item.w[0]);
+  const lv=getLevel(item.cat.id,item.w[0]);
+  if(lv<3){engProgress[key]=lv+1;saveObj(LS_EN,engProgress);refreshStars();if(lv===0)recordLearned(key);}
+  if(curFilter==='todo' && engProgress[key]>=3){buildList();flipped=false;renderCard();renderCatChips();return}
+  nextCard();renderCatChips();
+}
+function markReview(){
+  if(!cardList.length) return;
+  const item=cardList[cardIdx];
+  const key=wordKey(item.cat.id,item.w[0]);
+  if(getLevel(item.cat.id,item.w[0])>0){engProgress[key]=Math.max(0,getLevel(item.cat.id,item.w[0])-1);saveObj(LS_EN,engProgress)}
+  nextCard();renderCatChips();
+}
+/* ============================================================
+   ★ 游戏 TAB —— 复用 CATS,统一进度
+   ============================================================ */
+function gameArt(item){
+  const art=item.w[2];
+  if(art===''){
+    const letter=item.w[0].charAt(0).toUpperCase();
+    return '<div class="gameart lettertile" style="background:#fff;border-color:#ffb74d;color:#ff8f00">'+letter+'</div>';
+  }
+  if(art.charAt(0)==='#'){
+    const stroke=art.toLowerCase()==='#ffffff'?'box-shadow:inset 0 0 0 3px #ccc':'';
+    return '<div class="gameart colorcircle" style="background:'+art+';'+stroke+'"></div>';
+  }
+  if(art.charAt(0)==='@'){
+    return '<div class="gameart shape">'+(SHAPES_GAME[art.slice(1)]||'')+'</div>';
+  }
+  if(/^[0-9]+$/.test(art)){
+    const fz=art.length>2?56:84;
+    return '<div class="gameart num" style="font-size:'+fz+'px">'+art+'</div>';
+  }
+  if(art.slice(0,4)==='img:'){
+    const _slug=art.slice(4);
+    if(HAVE_IMG.has(_slug)){
+      return '<div class="gameart img"><img src="'+IMG_BASE+_slug+'.png" alt=""></div>';
+    }
+    const _l=item.w[0].charAt(0).toUpperCase();
+    return '<div class="gameart lettertile" style="background:#fff;border-color:#ffb74d;color:#ff8f00">'+_l+'</div>';
+  }
+  return '<div class="gameart emoji">'+art+'</div>';
+}
+function gameDistractors(catMe, wMe, n){
+  const pool=[];
+  catMe.words.forEach(w=>{ if(w[0]!==wMe[0]) pool.push({cat:catMe,w}); });
+  CATS.forEach(c=>{ if(c.id!==catMe.id) c.words.forEach(w=>{ if(w[0]!==wMe[0]) pool.push({cat:c,w}); }); });
+  const a=pool.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a.slice(0,n);
+}
+/* 选本session队列: 优先新词,然后到期复习词,最多 GAME_PER_SESSION */
+function gameBuildQueue(){
+  const now=Date.now();
+  const all=[];
+  CATS.forEach(c=>c.words.forEach(w=>{
+    const key=wordKey(c.id,w[0]);
+    const lv=getLevel(c.id,w[0]);
+    if(lv>=3) return;
+    const r=review[key];
+    const isNew=(lv===0 && !r);
+    const isDue=(r && r.due && r.due<=now);
+    if(isNew||isDue) all.push({cat:c,w,key,lv,isNew});
+  }));
+  all.sort((a,b)=>(a.isNew?-1:1)-(b.isNew?-1:1));
+  return all.slice(0,GAME_PER_SESSION);
+}
+function gSetPhase(t){document.getElementById('gPhase').textContent=t}
+function gRefreshTop(){
+  document.getElementById('gStarCount').textContent=gameSessionStars;
+  document.getElementById('gMastered').textContent=masteredCount();
+  document.getElementById('gTotal').textContent=totalWords();
+}
+function gTimerTick(){
+  if(!gameStartTime) return;
+  const e=Math.floor((Date.now()-gameStartTime)/1000);
+  const m=String(Math.floor(e/60)).padStart(2,'0'),s=String(e%60).padStart(2,'0');
+  document.getElementById('gTimer').textContent=m+':'+s;
+}
+function gameStart(){
+  gameQueue=gameBuildQueue();
+  gameIdx=0;
+  gameStartTime=Date.now();
+  gameSessionStars=0;
+  gRefreshTop();
+  if(gameTimerInt) clearInterval(gameTimerInt);
+  gameTimerInt=setInterval(gTimerTick,1000);
+  if(gameQueue.length===0) return gameRenderEmpty();
+  gameNext();
+}
+function gameNext(){
+  if(gameIdx>=gameQueue.length || Date.now()-gameStartTime>GAME_MS){
+    return gameEnd();
+  }
+  gameCurrent=gameQueue[gameIdx++];
+  const r=Math.random();
+  if(r<0.4) gameActListen();
+  else if(r<0.75) gameActSee();
+  else if(r<0.92) gameActDrag();
+  else gameActSentence();
+}
+function gameRenderEmpty(){
+  gSetPhase('没有要学的词');
+  document.getElementById('gameStage').innerHTML =
+    '<div class="game-scene" style="text-align:center">'+
+    '<div style="font-size:80px">🎉</div>'+
+    '<div class="game-h1">今天没词啦</div>'+
+    '<div class="game-h2">所有词都已掌握,或复习都做完了</div>'+
+    '<button class="game-btn green" onclick="gameStart()">🔄 再刷一次</button>'+
+    '</div>';
+}
+/* 听音选图 */
+function gameActListen(){
+  gSetPhase('听音选图');
+  const cur=gameCurrent;
+  const w=cur.w;
+  const opts=gameDistractors(cur.cat,w,3);
+  const all=shuffleArr([{cat:cur.cat,w},...opts]);
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-h1">听一听,点对的图!</div>'+
+      '<div class="game-speak" id="gSpk">🔊</div>'+
+      '<div class="game-h2">点喇叭可再听一次</div>'+
+      '<div class="game-opts" id="gOpts"></div>'+
+    '</div>';
+  document.getElementById('gSpk').onclick=()=>speak(w[0],'en-US',null);
+  const box=document.getElementById('gOpts');
+  all.forEach(o=>{
+    const b=document.createElement('div');
+    b.className='game-opt';
+    b.innerHTML=gameArt(o);
+    b.onclick=()=>gAnswer(b,o.w[0]===w[0],w[0]);
+    box.appendChild(b);
+  });
+  setTimeout(()=>speak(w[0],'en-US',null),350);
+}
+/* 看图选词 */
+function gameActSee(){
+  gSetPhase('看图选词');
+  const cur=gameCurrent;
+  const w=cur.w;
+  const opts=gameDistractors(cur.cat,w,3);
+  const all=shuffleArr([{cat:cur.cat,w},...opts]);
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-h1">这个用英语怎么说?</div>'+
+      '<div id="gPic">'+gameArt(cur)+'</div>'+
+      '<div class="game-h2">点图可听发音,点词卡作答</div>'+
+      '<div class="game-opts" id="gOpts"></div>'+
+    '</div>';
+  document.getElementById('gPic').onclick=()=>speak(w[0],'en-US',null);
+  const box=document.getElementById('gOpts');
+  all.forEach(o=>{
+    const b=document.createElement('div');
+    b.className='game-opt';
+    b.innerHTML='<div class="word-en">'+o.w[0]+'</div>';
+    b.onclick=()=>gAnswer(b,o.w[0]===w[0],w[0]);
+    box.appendChild(b);
+  });
+}
+/* 拖拽 */
+function gameActDrag(){
+  gSetPhase('拖拽配对');
+  const cur=gameCurrent;
+  const w=cur.w;
+  const extra=gameDistractors(cur.cat,w,2);
+  const chips=shuffleArr([{cat:cur.cat,w},...extra]);
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-h1">把单词拖到对的图!</div>'+
+      '<div class="game-drag">'+
+        '<div class="game-drag-src" id="gSrc"></div>'+
+        '<div class="game-drag-zone" id="gZone">'+gameArt(cur)+'</div>'+
+      '</div>'+
+      '<div class="game-h2">不会拖?先点单词,再点右边图</div>'+
+    '</div>';
+  const src=document.getElementById('gSrc'),zone=document.getElementById('gZone');
+  let selected=null;
+  chips.forEach(c=>{
+    const chip=document.createElement('div');
+    chip.className='game-chip';
+    chip.textContent=c.w[0];
+    chip.dataset.en=c.w[0];
+    chip.onclick=()=>{
+      if(selected) selected.classList.remove('selected');
+      selected=chip; chip.classList.add('selected');
+    };
+    src.appendChild(chip);
+  });
+  zone.onclick=()=>{ if(selected) gResolveDrag(selected.dataset.en); };
+  function gResolveDrag(en){
+    if(en===w[0]){
+      gAnswer(zone,true,w[0]);
+    } else {
+      soundWrong();
+      gameReviewMark(cur.key,false);
+      zone.style.background='#ffecec'; zone.style.borderColor='#ff6b6b';
+      setTimeout(()=>{zone.style.background='';zone.style.borderColor=''},500);
+      selected=null;
+    }
+  }
+}
+/* 句式 */
+function gameActSentence(){
+  gSetPhase('句式关');
+  const cur=gameCurrent;
+  const w=cur.w;
+  const txt=makeExample(cur.cat,w[0]);
+  const optWords=gameDistractors(cur.cat,w,3);
+  const allOpts=shuffleArr([{cat:cur.cat,w},...optWords]);
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-h1">补全句子!</div>'+
+      '<div class="game-sentence">'+txt.replace(w[0],'<span class="blank">'+w[0]+'</span>')+'</div>'+
+      '<div class="game-h2">听一听后,选对的词</div>'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">'+
+        '<div class="game-speak" id="gSpk">🔊</div>'+
+      '</div>'+
+      '<div class="game-opts" id="gOpts"></div>'+
+    '</div>';
+  document.getElementById('gSpk').onclick=()=>speak(txt,'en-US',null);
+  const box=document.getElementById('gOpts');
+  allOpts.forEach(o=>{
+    const b=document.createElement('div');
+    b.className='game-opt';
+    b.innerHTML='<div class="word-en">'+o.w[0]+'</div>';
+    b.onclick=()=>{
+      if(o.w[0]===w[0]){
+        gAnswer(b,true,w[0]);
+        setTimeout(()=>speak(txt,'en-US',null),400);
+      } else gAnswer(b,false,w[0]);
+    };
+    box.appendChild(b);
+  });
+}
+/* 统一判定 + 反馈 + 进度记录 */
+function gAnswer(node,correct,en){
+  const opts=document.querySelectorAll('.game-opt,.game-speak,#gPic');
+  opts.forEach(o=>o.onclick=null);
+  if(correct){
+    gGood();
+    node.classList.add('correct');
+    gameSessionStars++;
+    gPraise();
+    gameReviewMark(gameCurrent.key,true);
+    gRefreshTop();
+    setTimeout(gameNext,1000);
+  } else {
+    gWrong();
+    node.classList.add('wrong');
+    gameReviewMark(gameCurrent.key,false);
+    gRefreshTop();
+    /* 零挫败: 不前进,只高亮正确项让重试 */
+    setTimeout(()=>{
+      const all=document.querySelectorAll('.game-opt');
+      all.forEach(o=>{
+        const w=o.querySelector('.word-en');
+        if(w && w.textContent===en) o.style.outline='4px solid #34c759';
+      });
+      const correctNode=Array.from(all).find(o=>{
+        const w=o.querySelector('.word-en');
+        return w && w.textContent===en;
+      });
+      if(correctNode) correctNode.onclick=()=>{
+        correctNode.classList.remove('wrong');
+        gAnswer(correctNode,true,en);
+      };
+    },450);
+  }
+}
+function gameReviewMark(key,correct){
+  const r=review[key]||{due:0,seen:0,streak:0};
+  r.seen++;
+  if(correct){
+    r.streak++;
+    /* 同步到 engProgress (level+1, max 3) */
+    const found=findByKey(key);
+    if(found){
+      const lv=getLevel(found.cat.id,found.w[0]);
+      if(lv<3){engProgress[key]=lv+1;saveObj(LS_EN,engProgress);refreshStars();if(lv===0)recordLearned(key);}
+    }
+    /* 间隔重复 1/2/4/7 天 [PLACEHOLDER 待playtest校准] */
+    const gaps=[1,2,4,7];
+    const days=gaps[Math.min(r.streak-1,gaps.length-1)]||7;
+    r.due=Date.now()+days*24*3600*1000;
+  } else {
+    r.streak=0;
+    r.due=Date.now()+1*24*3600*1000;
+  }
+  review[key]=r;
+  saveObj(LS_REVIEW,review);
+}
+function gameEnd(){
+  gSetPhase('结算');
+  if(gameTimerInt){clearInterval(gameTimerInt);gameTimerInt=null}
+  const e=Math.floor((Date.now()-gameStartTime)/1000);
+  const m=String(Math.floor(e/60)).padStart(2,'0'),s=String(e%60).padStart(2,'0');
+  document.getElementById('gameStage').innerHTML =
+    '<div class="game-scene" style="text-align:center">'+
+    '<div style="font-size:80px">🌈</div>'+
+    '<div class="game-h1">本轮结束!</div>'+
+    '<div class="game-h2">本轮 ⭐ '+gameSessionStars+' 颗 · 用时 '+m+':'+s+'</div>'+
+    '<div class="game-h2">已掌握 '+masteredCount()+'/'+totalWords()+'</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px">'+
+      '<button class="game-btn green" onclick="gameStart()">🔄 再来一轮</button>'+
+      '<button class="game-btn ghost" onclick="renderGameIntro()">返回</button>'+
+    '</div></div>';
+  gBurst();
+}
+function soundWrong(){gWrong()}
+function renderGameIntro(){
+  gSetPhase('准备开始');
+  const total=masteredCount();
+  document.getElementById('gameStage').innerHTML =
+    '<div class="game-scene" style="text-align:center">'+
+    '<div style="font-size:80px">🚀</div>'+
+    '<div class="game-h1">闯关游戏</div>'+
+    '<div class="game-h2">听音选图 · 看图选词 · 拖拽配对 · 句式关</div>'+
+    '<div class="game-h2">每天 5 个新词 + 到期复习 · 间隔重复防遗忘</div>'+
+    '<div class="game-h2">已掌握 <b>'+total+'</b> / '+totalWords()+'</div>'+
+    '<button class="game-btn green" onclick="gameStart()">▶ 开始</button>'+
+    '</div>';
+}
+function shuffleArr(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+/* ============================================================
+   统计看板 📊 (基础 + 打卡)
+   ============================================================ */
+function miniCard(ic,v,l){
+  return '<div class="m"><div class="ic">'+ic+'</div><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';
+}
+function rowHtml(label,val){
+  return '<div class="dash-row"><span>'+label+'</span><span class="v">'+val+'</span></div>';
+}
+function renderDashboard(){
+  const area=document.getElementById('dashArea');
+  if(!area) return;
+  const total=totalWords();
+  const mastered=masteredCount();
+  const remain=total-mastered;
+  const rate=total?Math.round(mastered/total*100):0;
+  /* ---- 分类进度 ---- */
+  let catHtml='';
+  CATS.forEach(c=>{
+    const m=catMastered(c), t=c.words.length;
+    const pct=t?Math.round(m/t*100):0;
+    catHtml+='<div class="dash-cat">'+
+      '<div class="dash-cat-top"><span>'+c.zh+' '+c.en+'</span><span class="dash-cat-cnt">'+m+' / '+t+'</span></div>'+
+      '<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
+    '</div>';
+  });
+  /* ---- 掌握度 4 档分布 ---- */
+  const dist=[0,0,0,0];
+  for(const c of CATS){for(const w of c.words){const lv=getLevel(c.id,w[0]);if(lv>=0&&lv<=3)dist[lv]++;}}
+  const lvlNames=['未学','初学','复习中','已掌握'];
+  const lvlColors=['#dfe6e9','#74b9ff','#fdcb6e','#38ef7d'];
+  let distHtml='';
+  for(let i=0;i<4;i++){
+    const pct=total?Math.round(dist[i]/total*100):0;
+    distHtml+='<div class="dash-dist-item">'+
+      '<div class="dash-dist-cnt">'+dist[i]+'</div>'+
+      '<div class="dash-dist-bar"><div class="dash-dist-fill" style="height:'+pct+'%;background:'+lvlColors[i]+'"></div></div>'+
+      '<div class="dash-dist-name">'+lvlNames[i]+'</div>'+
+    '</div>';
+  }
+  /* ---- 古诗 ---- */
+  const poemMem=poemMemorizedCount();
+  const poemTotal=POEM_TOTAL;
+  /* ---- 复习 & 连击 ---- */
+  let dueCount=0,seenCount=0,maxStreak=0;
+  const nowMs=Date.now();
+  for(const k in review){const r=review[k];if(!r)continue;if(r.due&&r.due>0&&r.due<=nowMs)dueCount++;seenCount+=(r.seen||0);if((r.streak||0)>maxStreak)maxStreak=r.streak;}
+  /* ---- 学习日期统计 (今日/本周/连续打卡/7天趋势) ---- */
+  const now=new Date();now.setHours(0,0,0,0);
+  const dayMs=86400000;
+  const dayCount={};
+  for(const k in learnedMap){
+    const d=new Date(learnedMap[k]);d.setHours(0,0,0,0);
+    const diff=Math.floor((now-d)/dayMs);
+    if(diff>=0)dayCount[diff]=(dayCount[diff]||0)+1;
+  }
+  const todayCount=dayCount[0]||0;
+  let weekCount=0;for(let i=0;i<7;i++)weekCount+=(dayCount[i]||0);
+  let streak=0;
+  for(let i=0;i<400;i++){
+    if(dayCount[i])streak++;
+    else{if(i===0&&dayCount[1])continue;break;}
+  }
+  const wkNames=['日','一','二','三','四','五','六'];
+  let max7=1;for(let i=0;i<7;i++)max7=Math.max(max7,dayCount[i]||0);
+  let trendBars='',trendLabels='';
+  for(let i=0;i<7;i++){
+    const cnt=dayCount[6-i]||0;
+    const h=Math.round(cnt/max7*100);
+    const dt=new Date(now.getTime()-(6-i)*dayMs);
+    trendBars+='<div class="dash-trend-bar"><div class="dash-trend-fill" style="height:'+h+'%"></div><div class="dash-trend-cnt">'+cnt+'</div></div>';
+    trendLabels+='<span>'+wkNames[dt.getDay()]+'</span>';
+  }
+  /* ---- 组装 ---- */
+  let html='';
+  html+='<div class="dash-card dash-hero">'+
+    '<div class="big">'+mastered+' <small style="font-size:20px;opacity:.9">/ '+total+'</small></div>'+
+    '<div class="sub">🏆 已掌握单词</div>'+
+    '<div class="rate">'+rate+'% <small>掌握率 · 还剩 '+remain+' 个</small></div>'+
+  '</div>';
+  html+='<div class="dash-mini" style="margin-bottom:14px">'+
+    miniCard('⭐',stars,'累计星星')+
+    miniCard('📜',poemMem+' / '+poemTotal,'已背诵古诗')+
+    miniCard('🔥',streak,'连续打卡(天)')+
+    miniCard('🌱',todayCount,'今日新学')+
+  '</div>';
+  html+='<div class="dash-card">'+
+    '<div class="dash-title">📈 近 7 天学习趋势</div>'+
+    '<div class="dash-trend">'+trendBars+'</div>'+
+    '<div class="dash-trend-labels">'+trendLabels+'</div>'+
+  '</div>';
+  html+='<div class="dash-card">'+
+    '<div class="dash-title">📚 各分类掌握进度 ('+mastered+' / '+total+')</div>'+
+    catHtml+
+  '</div>';
+  html+='<div class="dash-card">'+
+    '<div class="dash-title">🎯 掌握度分布</div>'+
+    '<div class="dash-dist">'+distHtml+'</div>'+
+  '</div>';
+  html+='<div class="dash-card">'+
+    '<div class="dash-title">🔁 复习 & 游戏</div>'+
+    '<div class="dash-rows">'+
+      rowHtml('⏰ 待复习',dueCount+' 个')+
+      rowHtml('📝 累计复习次数',seenCount+' 次')+
+      rowHtml('🔥 最高连击',maxStreak+' 连')+
+      rowHtml('🎮 游戏已掌握',mastered+' / '+total)+
+      rowHtml('🗓 本周新学',weekCount+' 个')+
+    '</div>'+
+  '</div>';
+  area.innerHTML=html;
+}
+/* ============================================================
+   Tab 切换 + 初始化
+   ============================================================ */
+function showAbout(){document.getElementById('aboutModal').classList.add('show');}
+function closeAbout(){document.getElementById('aboutModal').classList.remove('show');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAbout();});
+function switchTab(tab){
+  curTab=tab;
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  ['En','Game','Stat'].forEach(t=>{
+    document.getElementById('tab'+t).classList.toggle('active',tab===t.toLowerCase());
+    document.getElementById('mod'+t).classList.toggle('active',tab===t.toLowerCase());
+  });
+  if(tab==='game'){renderGameIntro();gRefreshTop()}
+  if(tab==='stat'){renderDashboard()}
+}
+// 键盘快捷键（避免干扰输入框；焦点在按钮时把空格/回车交给按钮原生点击，防重复翻转）
+function handleKey(e){
+  const t=e.target, tag=t&&t.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  const k=e.key, isBtn=tag==='BUTTON';
+  // 数字键 1-4 切换主标签
+  if(k==='1'){switchTab('en');return;}
+  if(k==='3'){switchTab('game');return;}
+  if(k==='4'){switchTab('stat');return;}
+  if(curTab==='en'){
+    if(k==='ArrowLeft'){e.preventDefault();prevCard();}
+    else if(k==='ArrowRight'){e.preventDefault();nextCard();}
+    else if((k===' '||k==='Enter')&&!isBtn){e.preventDefault();flipCard();}
+    else if(k==='ArrowUp'&&!isBtn){e.preventDefault();markKnow();}
+    else if(k==='ArrowDown'&&!isBtn){e.preventDefault();markReview();}
+  }  // game / stat 不拦截方向键，避免影响拖拽与滚动
+}
+document.addEventListener('keydown',handleKey);
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('starCount').textContent=stars;
+  restorePos();
+  renderCatChips();
+  syncFilterChips();
+  const sc=document.getElementById('shuffleChip'); if(sc) sc.classList.toggle('active',curShuffle);
+  renderCard();
+  enableDragScroll(document.getElementById('catChips'));
+  renderGameIntro();
+  gRefreshTop();
+});
+</script>
+</body>
+</html>
