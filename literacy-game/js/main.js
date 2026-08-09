@@ -31,6 +31,7 @@
 
   // ---------- 状态 ----------
   var save = Storage.load();
+  if (!save.bonus || typeof save.bonus !== 'object') save.bonus = { date: '', remaining: 0 };
   var dayOffset = 0;                                  // 调试：模拟"明天"
   var ALL_CHARS = Object.keys(STROKE_DATA).sort();    // 按表序（= hex 排序）
   var plan = null, taskIndex = 0;
@@ -49,7 +50,12 @@
   var lastStrokeFailed = false;
   var message = '';
   var demo = { active: false, strokeIdx: 0, t0: 0 };
-  var resultStars = 0, resultAvgC = 0, resultAvgD = 0, resultMsg = '';
+  var resultStars = 0, resultAvgC = 0, resultAvgD = 0, resultMsg = '', resultScore = 0;
+  var isBonus = false;                 // 当前是否在「家长解锁的额外学习」模式
+  var bonusParticles = [];             // 结算庆祝彩屑
+  var resultEnterTime = 0;             // 进入结算屏的时间戳（用于动画）
+  var BONUS_PER_UNLOCK = 5;            // 每次家长解锁给予的额外字数（当天有效）
+  function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
 
   // ---------- 工具 ----------
   function pad2(n) { return ('0' + n).slice(-2); }
@@ -82,11 +88,12 @@
   }
 
   // ---------- 导航 ----------
-  function goHome() { screen = 'HOME'; ensurePlan(); buildControls(); }
+  function goHome() { screen = 'HOME'; isBonus = false; bonusParticles = []; ensurePlan(); buildControls(); }
 
   function startTask() {
     while (taskIndex < plan.items.length && plan.items[taskIndex].state === 'DONE') taskIndex++;
     if (taskIndex >= plan.items.length) { screen = 'HOME'; buildControls(); return; }
+    isBonus = false; bonusParticles = [];
     var item = plan.items[taskIndex];
     currentHex = item.char_id;
     currentData = STROKE_DATA[currentHex];
@@ -107,7 +114,7 @@
 
   function startTrace() {
     screen = 'TRACE';
-    doneCount = 0; passCount = 0; perStroke = []; written = [];
+    doneCount = 0; passCount = 0; perStroke = []; written = []; bonusParticles = [];
     curPts = []; drawing = false; activePointer = null;
     liveCD = null; lastStrokeFailed = false; message = '';
     demo.active = false;
@@ -125,6 +132,9 @@
     resultStars = avgD <= T * 0.5 ? 3 : (avgD <= T * 0.85 ? 2 : 1);
     resultMsg = resultStars === 3 ? '太棒啦！写得真漂亮！'
               : resultStars === 2 ? '很好！继续加油～' : '写出来啦，真厉害！';
+    // 得分（0–100，童趣向：覆盖率高 + 偏差小 → 高分；下限 60 保护积极性）
+    var devFit = Math.max(0, 1 - avgD / Math.max(T, 1e-6));
+    resultScore = Math.round(60 + avgC * 20 + devFit * 20);
 
     // 进度系统回写（GDD tracing §5 / rhythm §4.3）
     var rec = save.characters[currentHex] || { stage: 'R0', next_date: '', last_result: false, proficiency: 0 };
@@ -133,18 +143,106 @@
     rec.next_date = Rhythm.addDays(getToday(), Rhythm.INTERVAL[ns]);
     rec.last_result = true;
     rec.proficiency = Math.min(1, (rec.proficiency || 0) + 0.2); // P += 0.2
+    rec.score = resultScore;
     save.characters[currentHex] = rec;
     save.learned[currentHex] = true;
     if (plan.items[taskIndex]) plan.items[taskIndex].state = 'DONE';
+    // 额外学习模式：扣减当日家长解锁额度
+    if (isBonus) {
+      save.bonus.date = getToday();
+      save.bonus.remaining = Math.max(0, (save.bonus.remaining || 0) - 1);
+    }
     save.daily_task = plan;
     Storage.save(save);
 
+    spawnConfetti();
+    resultEnterTime = performance.now();
     playSound('complete');
+    if (save.settings.sound_on !== false && resultStars === 3) playSound('ding');
     screen = 'RESULT';
     buildControls();
   }
 
   function continueNext() { taskIndex++; startTask(); }
+
+  // ---------- 额外学习（家长解锁后提前学新字） ----------
+  function nextUnlearned() {
+    for (var i = 0; i < ALL_CHARS.length; i++) if (!save.learned[ALL_CHARS[i]]) return ALL_CHARS[i];
+    return null;
+  }
+  function startBonusTask() {
+    var cid = nextUnlearned();
+    if (!cid) { message = '全部 ' + ALL_CHARS.length + ' 字都学会啦！'; isBonus = false; screen = 'HOME'; buildControls(); return; }
+    currentHex = cid;
+    currentData = STROKE_DATA[cid];
+    currentMeta = CHAR_META[cid];
+    spiritImg = null;
+    if (typeof IMG_MAP !== 'undefined' && IMG_MAP[cid]) {
+      var im = new Image();
+      im.onerror = function () { spiritImg = null; };
+      im.src = 'img/' + IMG_MAP[cid];
+      spiritImg = im;
+    }
+    isBonus = true; bonusParticles = [];
+    screen = 'RECOGNIZE';
+    playSound('char');
+    buildControls();
+  }
+
+  // ---------- 家长解锁（顺序点繁体短语） ----------
+  var GATE_PHRASE = ['學', '而', '時', '習', '之'];
+  function openParentGate() {
+    closeParentGate();
+    var overlay = document.createElement('div');
+    overlay.id = 'parentGate';
+    overlay.className = 'show';
+    var tiles = GATE_PHRASE.slice();
+    for (var s = tiles.length - 1; s > 0; s--) { var r = Math.floor(Math.random() * (s + 1)); var tmp = tiles[s]; tiles[s] = tiles[r]; tiles[r] = tmp; }
+    overlay.innerHTML =
+      '<div class="pg-card">' +
+        '<h2>家长确认</h2>' +
+        '<p class="pg-hint">请家长按顺序点出：' + GATE_PHRASE.join(' → ') + '</p>' +
+        '<div class="pg-tiles"></div>' +
+        '<p class="pg-status"></p>' +
+        '<button class="pg-cancel btn btn-secondary">取消</button>' +
+      '</div>';
+    var tileWrap = overlay.querySelector('.pg-tiles');
+    var statusEl = overlay.querySelector('.pg-status');
+    var card = overlay.querySelector('.pg-card');
+    var progress = 0;
+    tiles.forEach(function (ch) {
+      var b = document.createElement('button');
+      b.className = 'pg-tile'; b.textContent = ch;
+      b.addEventListener('click', function () {
+        if (b.disabled) return;
+        if (ch === GATE_PHRASE[progress]) {
+          b.classList.add('ok'); b.disabled = true; progress++;
+          statusEl.textContent = '已点 ' + progress + ' / ' + GATE_PHRASE.length;
+          if (progress === GATE_PHRASE.length) {
+            statusEl.textContent = '解锁成功！';
+            setTimeout(function () { unlockBonus(); closeParentGate(); }, 450);
+          }
+        } else {
+          card.classList.add('shake');
+          setTimeout(function () { card.classList.remove('shake'); }, 400);
+          progress = 0;
+          var all = tileWrap.querySelectorAll('.pg-tile');
+          for (var k = 0; k < all.length; k++) { all[k].classList.remove('ok'); all[k].disabled = false; }
+          statusEl.textContent = '顺序不对，请重新点';
+        }
+      });
+      tileWrap.appendChild(b);
+    });
+    overlay.querySelector('.pg-cancel').addEventListener('click', closeParentGate);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeParentGate(); });
+    document.body.appendChild(overlay);
+  }
+  function closeParentGate() { var el = document.getElementById('parentGate'); if (el && el.parentNode) el.parentNode.removeChild(el); }
+  function unlockBonus() {
+    save.bonus = { date: getToday(), remaining: BONUS_PER_UNLOCK };
+    Storage.save(save);
+    goHome();
+  }
 
   function replayDemo() { demo.active = true; demo.strokeIdx = 0; demo.t0 = performance.now(); }
 
@@ -360,10 +458,20 @@
     if (screen === 'HOME') {
       var allDone = plan.items.length > 0 && plan.items.every(function (i) { return i.state === 'DONE'; });
       if (allDone) {
-        setControls([
-          { label: '明天再来玩', cls: 'primary', onClick: function () { dayOffset++; ensurePlan(); buildControls(); } },
-          { label: '重置存档', cls: 'secondary', onClick: function () { if (window.confirm('确定清空进度？')) { Storage.reset(); location.reload(); } } }
-        ]);
+        var bonusOk = save.bonus && save.bonus.date === getToday() && save.bonus.remaining > 0;
+        if (bonusOk) {
+          setControls([
+            { label: '继续学习（剩 ' + save.bonus.remaining + ' 字）', cls: 'primary', onClick: startBonusTask },
+            { label: '明天再来玩', cls: 'secondary', onClick: function () { dayOffset++; ensurePlan(); buildControls(); } },
+            { label: '重置存档', cls: 'secondary', onClick: function () { if (window.confirm('确定清空进度？')) { Storage.reset(); location.reload(); } } }
+          ]);
+        } else {
+          setControls([
+            { label: '家长解锁更多', cls: 'primary', onClick: openParentGate },
+            { label: '明天再来玩', cls: 'secondary', onClick: function () { dayOffset++; ensurePlan(); buildControls(); } },
+            { label: '重置存档', cls: 'secondary', onClick: function () { if (window.confirm('确定清空进度？')) { Storage.reset(); location.reload(); } } }
+          ]);
+        }
       } else {
         setControls([
           { label: '开始今日任务', cls: 'primary', onClick: startTask },
@@ -381,10 +489,24 @@
       list.push({ label: '返回首页', cls: 'secondary', onClick: goHome });
       setControls(list);
     } else if (screen === 'RESULT') {
-      setControls([
-        { label: (taskIndex < plan.items.length - 1) ? '继续' : '回到首页', cls: 'primary', onClick: continueNext },
-        { label: '返回首页', cls: 'secondary', onClick: goHome }
-      ]);
+      if (isBonus) {
+        if (save.bonus.remaining > 0) {
+          setControls([
+            { label: '继续（剩 ' + save.bonus.remaining + ' 字）', cls: 'primary', onClick: startBonusTask },
+            { label: '返回首页', cls: 'secondary', onClick: goHome }
+          ]);
+        } else {
+          setControls([
+            { label: '家长解锁更多', cls: 'primary', onClick: openParentGate },
+            { label: '返回首页', cls: 'secondary', onClick: goHome }
+          ]);
+        }
+      } else {
+        setControls([
+          { label: (taskIndex < plan.items.length - 1) ? '继续' : '回到首页', cls: 'primary', onClick: continueNext },
+          { label: '返回首页', cls: 'secondary', onClick: goHome }
+        ]);
+      }
     }
   }
 
@@ -484,13 +606,61 @@
       Render.drawText(ctx, '照着粉色虚线，一笔一笔写', 240, y + 24, 20, Render.PALETTE.fog, '400');
     }
   }
+  function spawnConfetti() {
+    bonusParticles = [];
+    if (save.settings.reduce_motion) return;
+    var colors = [Render.PALETTE.sun, Render.PALETTE.sky, Render.PALETTE.success,
+                  Render.PALETTE.coral, Render.PALETTE.peach, Render.PALETTE.mint];
+    for (var i = 0; i < 48; i++) {
+      var ang = Math.random() * Math.PI * 2;
+      var spd = 120 + Math.random() * 220;
+      bonusParticles.push({
+        x0: 240, y0: 160,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 140,
+        rot0: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 8,
+        size: 6 + Math.random() * 8,
+        color: colors[i % colors.length],
+        t0: performance.now()
+      });
+    }
+  }
+  function updateAndDrawConfetti(t) {
+    if (!bonusParticles.length) return;
+    var G = 720;
+    ctx.save();
+    for (var i = bonusParticles.length - 1; i >= 0; i--) {
+      var p = bonusParticles[i];
+      var dt = (t - p.t0) / 1000;
+      if (dt > 2.6) { bonusParticles.splice(i, 1); continue; }
+      var x = p.x0 + p.vx * dt;
+      var y = p.y0 + p.vy * dt + 0.5 * G * dt * dt;
+      ctx.save();
+      ctx.translate(x, y); ctx.rotate(p.rot0 + p.vr * dt);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
   function drawResult(t) {
-    Render.drawStars(ctx, 240, 110, resultStars, 3, 30);
+    updateAndDrawConfetti(t);
+    var pop = Math.min(1, (t - resultEnterTime) / 350);
+    var starScale = 0.55 + 0.45 * easeOut(pop);
+    Render.drawStars(ctx, 240, 108, resultStars, 3, 30 * starScale);
     var bounce = save.settings.reduce_motion ? 0 : -Math.abs(Math.sin(t / 220)) * 12;
-    Render.drawSprite(ctx, 240, 250 + bounce, 84, (currentMeta && currentMeta.main_color) || Render.PALETTE.sky, (currentMeta && currentMeta.accent_color) || Render.PALETTE.sun, 'done', t);
-    Render.drawChar(ctx, 240, 392, currentData.char, 90, Render.PALETTE.ink);
-    Render.drawText(ctx, resultMsg, 240, 460, 30, Render.PALETTE.ink, '700');
-    Render.drawText(ctx, '平均覆盖 ' + Math.round(resultAvgC * 100) + '% · 平均偏差 ' + Math.round(resultAvgD), 240, 502, 20, Render.PALETTE.fog, '400');
+    Render.drawSprite(ctx, 240, 248 + bounce, 84,
+      (currentMeta && currentMeta.main_color) || Render.PALETTE.sky,
+      (currentMeta && currentMeta.accent_color) || Render.PALETTE.sun, 'done', t);
+    Render.drawChar(ctx, 240, 388, currentData.char, 92, Render.PALETTE.ink);
+    // 得分数字滚动
+    var sp = Math.min(1, (t - resultEnterTime) / 600);
+    var shown = Math.round(resultScore * easeOut(sp));
+    Render.drawText(ctx, '得分 ' + shown, 240, 452, 42, Render.PALETTE.sun, '800');
+    Render.drawText(ctx, resultMsg, 240, 498, 26, Render.PALETTE.ink, '700');
+    Render.drawText(ctx, '平均覆盖 ' + Math.round(resultAvgC * 100) + '% · 平均偏差 ' + Math.round(resultAvgD),
+      240, 532, 18, Render.PALETTE.fog, '400');
   }
   function drawScreen(t) {
     Render.clear(ctx, LOGICAL_W, LOGICAL_H);

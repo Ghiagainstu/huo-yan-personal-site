@@ -34,7 +34,8 @@
       learned: {},          // char_id -> true（R0 起即计入"已学"）
       characters: {},       // char_id -> { stage, next_date, last_result, proficiency }
       daily_task: null,     // { date, items:[{char_id, kind, state}] }
-      active_minutes_today: 0
+      active_minutes_today: 0,
+      bonus: { date: '', remaining: 0 } // 家长解锁的额外学习额度（当天有效）
     };
   }
 
@@ -108,6 +109,10 @@
 
     out.daily_task = (data.daily_task != null) ? data.daily_task : null;
     out.active_minutes_today = (typeof data.active_minutes_today === 'number') ? data.active_minutes_today : 0;
+    out.bonus = (data.bonus && typeof data.bonus === 'object') ? {
+      date: (typeof data.bonus.date === 'string') ? data.bonus.date : '',
+      remaining: (typeof data.bonus.remaining === 'number') ? data.bonus.remaining : 0
+    } : { date: '', remaining: 0 };
     return out;
   }
 
@@ -123,6 +128,11 @@
     if (!d.characters) d.characters = {};
     if (d.daily_task === undefined) d.daily_task = null;
     if (typeof d.active_minutes_today !== 'number') d.active_minutes_today = 0;
+    if (!d.bonus || typeof d.bonus !== 'object') d.bonus = { date: '', remaining: 0 };
+    else {
+      if (typeof d.bonus.date !== 'string') d.bonus.date = '';
+      if (typeof d.bonus.remaining !== 'number') d.bonus.remaining = 0;
+    }
     return d;
   }
 

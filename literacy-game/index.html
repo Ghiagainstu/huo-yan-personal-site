@@ -91,6 +91,36 @@
   #about h2 { margin: 0 0 10px; font-size: 22px; color: var(--sky-deep); }
   #about p { font-size: 14px; line-height: 1.7; color: var(--ink); margin: 8px 0; }
   #about .close { margin-top: 12px; }
+  /* 家长解锁浮层（顺序点繁体短语） */
+  #parentGate {
+    position: fixed; inset: 0; background: rgba(46,58,75,0.55);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 20;
+  }
+  #parentGate.show { display: flex; }
+  #parentGate .pg-card {
+    background: var(--cloud); border-radius: 24px; padding: 24px; max-width: 440px; width: 100%;
+    box-shadow: 0 8px 24px rgba(46,58,75,0.18); text-align: center;
+  }
+  #parentGate h2 { margin: 0 0 8px; font-size: 24px; color: var(--sky-deep); }
+  #parentGate .pg-hint { font-size: 15px; line-height: 1.6; color: var(--ink); margin: 6px 0 16px; }
+  #parentGate .pg-tiles { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  #parentGate .pg-tile {
+    width: 64px; height: 64px; border-radius: 16px; border: none; cursor: pointer;
+    font-size: 34px; font-weight: 700; background: var(--sky); color: #fff;
+    font-family: var(--font-kai); transition: transform .08s ease, background .15s ease;
+  }
+  #parentGate .pg-tile:active { transform: scale(0.95); }
+  #parentGate .pg-tile.ok { background: var(--sun); color: var(--ink); }
+  #parentGate .pg-status { font-size: 15px; color: var(--fog); margin: 14px 0 4px; min-height: 20px; }
+  #parentGate .pg-cancel { margin-top: 12px; }
+  #parentGate .shake { animation: pgShake .4s; }
+  @keyframes pgShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-7px); }
+    80% { transform: translateX(7px); }
+  }
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -135,10 +165,10 @@
   <script src="js/tolerance.js"></script>
   <script src="js/tracing.js"></script>
   <script src="js/rhythm.js"></script>
-  <script src="js/storage.js"></script>
+  <script src="js/storage.js?v=2"></script>
   <script src="js/strokes-bundle.js"></script>
   <script src="js/render.js"></script>
   <script src="js/img-map.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=2"></script>
 </body>
 </html>
