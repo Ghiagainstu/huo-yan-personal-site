@@ -27,16 +27,20 @@
   /* 题型分类 */
   .cats{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:600px; margin-bottom:10px;}
   .cat-btn{
-    border:none; border-radius:14px; padding:10px 14px; font-size:1rem; font-weight:700;
-    background:#fff; color:var(--ink); box-shadow:var(--shadow); cursor:pointer; transition:.15s;
+    border:2px solid transparent; border-radius:999px; padding:9px 16px; font-size:.95rem; font-weight:700; line-height:1;
+    background:#fff; color:#555; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer; transition:.18s;
   }
-  .cat-btn.active{background:var(--orange); color:#fff; transform:translateY(-2px);}
+  .cat-btn:hover{transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.12);}
+  .cat-btn.active{
+    background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; border-color:rgba(255,255,255,.55);
+    transform:translateY(-2px); box-shadow:0 8px 18px rgba(255,140,66,.35);
+  }
 
   /* 子开关（如 20以内细分） */
   .subcats{display:none; gap:6px; flex-wrap:wrap; justify-content:center; max-width:600px; margin:0 auto 12px; padding:8px 10px; background:rgba(255,140,66,.10); border-radius:16px;}
   .subcats.show{display:flex;}
-  .subcat-btn{border:none; border-radius:12px; padding:7px 13px; font-size:.92rem; font-weight:700; background:#fff; color:var(--ink); box-shadow:var(--shadow); cursor:pointer; transition:.15s;}
-  .subcat-btn.active{background:var(--orange); color:#fff;}
+  .subcat-btn{border:1.5px solid transparent; border-radius:999px; padding:6px 14px; font-size:.88rem; font-weight:700; background:#fff; color:#777; box-shadow:0 2px 5px rgba(0,0,0,.06); cursor:pointer; transition:.18s;}
+  .subcat-btn.active{background:rgba(255,140,66,.16); color:var(--orange); border-color:var(--orange);}
 
   /* 控制条 */
   .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; margin-bottom:6px;}
@@ -47,6 +51,10 @@
   .ctrl-btn.swap{background:#5aa9e6;}
   .ctrl-btn:active{transform:scale(.95);}
 
+  /* 做题进度条 */
+  .prog-wrap{width:100%; max-width:560px; margin:0 auto 2px;}
+  .prog-bar{width:100%; height:10px; background:#e6e6ee; border-radius:999px; overflow:hidden;}
+  .prog-bar i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--green)); border-radius:999px; transition:width .3s ease;}
   .progress{font-size:1rem; font-weight:700; color:#777; margin:6px 0 10px; min-height:22px;}
 
   /* 题目卡 */
@@ -197,10 +205,12 @@
     <span style="font-size:.9rem;color:#888;font-weight:700;margin-left:6px;">方式</span>
     <button class="mode2-btn active" data-mode2="choice">选择</button>
     <button class="mode2-btn" data-mode2="fill">填空</button>
+    <button class="mode2-btn" id="soundBtn">🔊 音效</button>
     <button class="ctrl-btn start" id="startRound">🏁 开始闯关</button>
     <button class="ctrl-btn swap" id="swap">🔄 换一题</button>
   </div>
 
+  <div class="prog-wrap"><div class="prog-bar"><i id="progFill"></i></div></div>
   <div class="progress" id="progress">自由练习模式</div>
 
   <div class="board">
@@ -242,6 +252,7 @@
         <p><b>答题方式</b>：选择（点选项）或填空（数字键盘），适配幼儿手指操作。</p>
         <p><b>闯关 &amp; 反馈</b>：5 / 10 / 20 题一轮，结束有得分卡（星级＋彩带）；「错题分析」看板按题型统计正确率并回顾错题。</p>
         <p><b>家长统计</b>：本地记录总题数、正确率、连对（localStorage），右下角「家长」查看。</p>
+        <p><b>音效</b>：答对「叮」、答错「噗」、闯关完成有庆祝旋律；控制条「🔊 音效」可一键开关（默认开）。</p>
         <p style="color:#999;">纯前端单文件 HTML，离线可用，适配手机 / 平板 / 桌面。</p>
       </div>
       <div style="text-align:center;"><button class="ghost" id="closeAbout">关闭</button></div>
@@ -295,6 +306,7 @@
     breakTen:{label:'破十法',    max:20,  cap:20,  emoji:false},
     twenty:  {label:'20以内',    max:20,  cap:20,  emoji:false, sub:true}
   };
+  const CAT_ICO={five:'🔢',ten:'🔟',mul10:'✖️',div10:'➗',hundred:'💯',three10:'🔣',three20:'🔣',three30:'🔣',makeTen:'🍎',breakTen:'✂️',twenty:'2️⃣'};
 
   let catKey='ten';
   let roundSize=10;
@@ -308,9 +320,32 @@
   let qWrongVal=null;                // 本题最近一次错填的值
   let stats=loadStats();
 
+  /* ---------- 音效（Web Audio 合成，零文件依赖） ---------- */
+  const SOUND_STORE='kidsmath_sound_v1';
+  let soundOn=(function(){ try{ const v=localStorage.getItem(SOUND_STORE); if(v===null) return true; return v==='1'; }catch(e){ return true; } })();
+  let actx=null;
+  function getAC(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } if(actx && actx.state==='suspended'){ actx.resume(); } return actx; }
+  function tone(freq,start,dur,type,vol){
+    const a=getAC(); if(!a) return;
+    const o=a.createOscillator(), g=a.createGain();
+    o.type=type||'sine'; o.frequency.value=freq;
+    const t=a.currentTime+start;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol||0.18,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(t); o.stop(t+dur+0.03);
+  }
+  function playCorrect(){ if(!soundOn) return; tone(880,0,0.12,'sine',0.2); tone(1318,0.10,0.16,'sine',0.18); }
+  function playWrong(){ if(!soundOn) return; tone(233,0,0.18,'square',0.14); tone(175,0.10,0.22,'sawtooth',0.12); }
+  function playFanfare(){ if(!soundOn) return; const n=[523,659,784,1047]; n.forEach((f,i)=>tone(f,i*0.13,0.18,'triangle',0.2)); tone(1047,n.length*0.13,0.42,'triangle',0.2); }
+  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊 音效':'🔇 静音'; }
+  function setSound(on){ soundOn=on; try{ localStorage.setItem(SOUND_STORE,on?'1':'0'); }catch(e){} updateSoundBtn(); }
+
   const $=id=>document.getElementById(id);
   const eqEl=$('equation'), hintEl=$('hint'), optEl=$('options'),
         fbEl=$('feedback'), nextBtn=$('next'), progEl=$('progress'),
+        progFill=$('progFill'),
         keypadEl=$('keypad'), kpGrid=$('kpGrid'), kpDisplay=$('kpDisplay'),
         subcatsEl=$('subcats');
 
@@ -459,9 +494,11 @@
         [...kpGrid.children].forEach(b=>b.disabled=true);
       }
       if(roundActive){ roundCorrect++; recordRound(true); }
+      playCorrect();
       nextBtn.style.display='inline-block';
     }else{
       stats.cur=0; qEverWrong=true; qWrongVal=val;
+      playWrong();
       fbEl.textContent='再试试哦~ 💪'; fbEl.className='feedback try';
       if(inputMode==='choice'){ el.classList.add('wrong'); el.disabled=true; }
       else{
@@ -501,8 +538,14 @@
     showScore();
   }
   function updateProgress(){
-    if(roundActive) progEl.textContent='第 '+(roundIndex+1)+' / '+roundSize+' 题 · 已对 '+roundCorrect;
-    else progEl.textContent='自由练习模式';
+    if(roundActive){
+      const pct=Math.round((roundIndex+1)/roundSize*100);
+      progFill.style.width=pct+'%';
+      progEl.textContent='第 '+(roundIndex+1)+' / '+roundSize+' 题 · 已对 '+roundCorrect;
+    }else{
+      progFill.style.width='0%';
+      progEl.textContent='自由练习模式';
+    }
   }
   function showScore(){
     const rate=roundSize? roundCorrect/roundSize : 0;
@@ -525,6 +568,7 @@
       const s=document.createElement('span'); s.textContent=sStr[i]; s.style.animationDelay=(i*0.15)+'s'; starsEl.appendChild(s);
     }
     confetti();
+    playFanfare();
     $('scoreModal').classList.add('show');
   }
 
@@ -602,7 +646,7 @@
   const catsEl=$('cats');
   Object.keys(CATS).forEach(k=>{
     const b=document.createElement('button');
-    b.className='cat-btn'+(k===catKey?' active':''); b.textContent=CATS[k].label; b.dataset.cat=k;
+    b.className='cat-btn'+(k===catKey?' active':''); b.textContent=(CAT_ICO[k]||'')+' '+CATS[k].label; b.dataset.cat=k;
     b.addEventListener('click',()=>{
       document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
       b.classList.add('active'); catKey=k; roundActive=false;
@@ -671,6 +715,7 @@
   $('startRound').addEventListener('click',startRound);
   $('swap').addEventListener('click',skip);
   nextBtn.addEventListener('click',advance);
+  $('soundBtn').addEventListener('click',()=>setSound(!soundOn));
 
   $('openParent').addEventListener('click',()=>{refreshStats();$('parentModal').classList.add('show');});
   $('closeParent').addEventListener('click',()=>$('parentModal').classList.remove('show'));
@@ -685,7 +730,7 @@
   $('anClose').addEventListener('click',()=>{ $('analyseModal').classList.remove('show'); $('scoreModal').classList.add('show'); });
 
   /* 启动 */
-  buildKeypad(); buildSubcats();
+  buildKeypad(); buildSubcats(); updateSoundBtn();
   current=genQuestion(); render(); refreshStats();
 })();
 </script>
