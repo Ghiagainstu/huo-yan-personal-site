@@ -70,6 +70,34 @@
   function saveTodos() { LS.set('hg_todos', todos); }
   function saveKb() { LS.set('hg_kb', kb); }
 
+  /* ---------- 首次打开预置示例数据（铁律6：含 1 条逾期 + 1 条已完成） ---------- */
+  function seedDemo() {
+    var now = Date.now(), day = 86400000;
+    var overdue = new Date(now - 2 * day); overdue.setHours(9, 0, 0, 0);
+    var soon = new Date(now + 1 * day); soon.setHours(10, 30, 0, 0);
+    var later = new Date(now + 5 * day); later.setHours(15, 0, 0, 0);
+    todos = [
+      { id: 'seed-1', text: '示例：跟进 Renesas 百度品牌项目周报（这条已逾期，方便你体验标红）', pri: 0, remindAt: overdue.toISOString(), done: false, notified: true, createdAt: new Date(now - 3 * day).toISOString() },
+      { id: 'seed-2', text: '示例：整理本周 AI 新闻选题', pri: 2, remindAt: soon.toISOString(), done: false, notified: false, createdAt: new Date(now - 1 * day).toISOString() },
+      { id: 'seed-3', text: '示例：读一篇 SEM 出价策略文章', pri: 3, remindAt: later.toISOString(), done: false, notified: false, createdAt: new Date(now).toISOString() },
+      { id: 'seed-4', text: '示例（已完成）：配置新闻 AI 文案接口', pri: 1, remindAt: new Date(now - 1 * day).toISOString(), done: true, doneAt: new Date(now - 0.5 * day).toISOString(), notified: true, createdAt: new Date(now - 2 * day).toISOString() }
+    ];
+    kb.inbox = [ { id: 'seed-kb-1', text: '示例：知识库自动保存在本地浏览器，刷新不丢。切到「素材库 / 案例库」还能贴图（已加本地存储体积预警）。', img: null, createdAt: new Date(now - 1 * day).toISOString() } ];
+    saveTodos(); saveKb();
+  }
+
+  /* ---------- 本地存储用量（UTF-16 字符数，浏览器通常上限约 5MB） ---------- */
+  var LS_LIMIT = 5 * 1024 * 1024;
+  function lsUsageWithoutKb() {
+    var n = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k === 'hg_kb') continue;
+      n += (k ? k.length : 0) + (localStorage.getItem(k) || '').length;
+    }
+    return n;
+  }
+
   /* ---------- 提醒（声音 + 弹窗 + 系统通知） ---------- */
   function beep() {
     try {
@@ -130,20 +158,28 @@
 
   function renderPlan() {
     var today = todayStr();
-    var todayList = [], laterList = [];
+    var todayList = [], laterList = [], doneList = [];
     todos.forEach(function (t) {
+      if (t.done) { doneList.push(t); return; }
       var ds = t.remindAt ? fmtDate(new Date(t.remindAt)) : null;
-      if (t.done) return;
       if (ds && ds <= today) todayList.push(t);
       else laterList.push(t);
     });
     todayList.sort(function (a, b) { return (a.remindAt || '') < (b.remindAt || '') ? -1 : 1; });
     laterList.sort(function (a, b) { return (a.remindAt || '') < (b.remindAt || '') ? -1 : 1; });
+    doneList.sort(function (a, b) { return (b.doneAt || '') < (a.doneAt || '') ? -1 : 1; });
+
+    var total = todos.length;
+    var doneCount = doneList.length;
+    var rate = total ? Math.round(doneCount / total * 100) : 0;
+    var overdueCount = todayList.filter(function (t) { return t.remindAt && new Date(t.remindAt).getTime() < Date.now(); }).length;
 
     content.innerHTML =
       '<h2>计划安排</h2>' +
       '<p class="sub">今日待办自动归位 · 到点弹窗 + 响铃</p>' +
-      '<section class="card"><h3>今日安排</h3>' + todoListHtml(todayList, '今天还没有到点的待办，去下面添加并设定提醒时间吧') + '</section>' +
+      statRingHtml(rate, total, doneCount, overdueCount) +
+      '<section class="card"><h3>今天要处理' + (overdueCount ? ' <span class="badge-red">' + overdueCount + ' 项逾期</span>' : '') + '</h3>' +
+        todoListHtml(todayList, '今天没有到点的待办，去下面添加并设定提醒时间吧', 'active') + '</section>' +
       '<section class="card"><h3>添加待做事项</h3>' +
         '<div class="add-line"><input id="td-text" type="text" placeholder="输入要做的某件事…"></div>' +
         '<div class="pri-row">' + PRI.map(function (p) {
@@ -155,7 +191,10 @@
           '<button class="btn" id="td-add">+ 添加待办</button>' +
         '</div>' +
       '</section>' +
-      '<section class="card"><h3>待做事项</h3>' + todoListHtml(laterList, '暂无待办') + '</section>';
+      '<div class="search-line"><input id="td-search" type="text" placeholder="搜索待办…"></div>' +
+      '<section class="card"><h3>待做事项</h3>' + todoListHtml(laterList, '暂无待办', 'active') + '</section>' +
+      '<section class="card"><h3>已完成（' + doneCount + '）</h3>' +
+        (doneCount ? todoListHtml(doneList, '暂无', 'done') : '<p class="empty">还没有完成的待办</p>') + '</section>';
 
     var selPri = 0;
     var priEls = content.querySelectorAll('.pri-opt');
@@ -178,23 +217,57 @@
       }
       toast('已添加待办');
     });
+    var se = $('#td-search');
+    if (se) se.addEventListener('input', function () {
+      var q = se.value.trim().toLowerCase();
+      content.querySelectorAll('.todo-row').forEach(function (r) {
+        var tx = (r.querySelector('.txt') ? r.querySelector('.txt').textContent : '').toLowerCase();
+        r.style.display = (!q || tx.indexOf(q) >= 0) ? '' : 'none';
+      });
+    });
   }
 
-  function todoRowHtml(t) {
+  function todoRowHtml(t, mode) {
+    mode = mode || 'active';
     var p = PRI[t.pri] || PRI[3];
+    var dot = '<span class="dot" style="background:' + p.color + '"></span>';
+    if (mode === 'done') {
+      var doneTxt = t.doneAt ? fmtDate(new Date(t.doneAt)) + ' ' + fmtTime(new Date(t.doneAt)) : '';
+      return '<div class="todo-row done">' +
+        dot +
+        '<span class="txt">' + esc(t.text) + '</span>' +
+        '<span class="time">已完成 ' + doneTxt + '</span>' +
+        '<button class="icon-btn" data-act="td-restore" data-id="' + t.id + '">恢复</button>' +
+        '<button class="icon-btn" data-act="td-del" data-id="' + t.id + '">删除</button>' +
+        '</div>';
+    }
     var timeTxt = t.remindAt ? fmtDate(new Date(t.remindAt)) + ' ' + fmtTime(new Date(t.remindAt)) : '未设时间';
     var overdue = t.remindAt && new Date(t.remindAt).getTime() < Date.now() && !t.done;
-    return '<div class="todo-row">' +
-      '<span class="dot" style="background:' + p.color + '"></span>' +
+    return '<div class="todo-row' + (overdue ? ' overdue' : '') + '">' +
+      dot +
       '<span class="txt">' + esc(t.text) + '</span>' +
-      '<span class="time">' + timeTxt + (overdue ? ' · 已逾期' : '') + '</span>' +
+      '<span class="time">' + timeTxt + (overdue ? ' · 逾期' : '') + '</span>' +
       '<button class="icon-btn" data-act="td-done" data-id="' + t.id + '">完成</button>' +
       '<button class="icon-btn" data-act="td-del" data-id="' + t.id + '">删除</button>' +
       '</div>';
   }
-  function todoListHtml(list, empty) {
+  function todoListHtml(list, empty, mode) {
     if (!list.length) return '<p class="empty">' + empty + '</p>';
-    return list.map(todoRowHtml).join('');
+    return list.map(function (t) { return todoRowHtml(t, mode); }).join('');
+  }
+  function statRingHtml(rate, total, doneCount, overdueCount) {
+    var r = 26, c = 2 * Math.PI * r, off = c * (1 - rate / 100);
+    return '<div class="stat-row">' +
+      '<div class="stat-ring"><svg viewBox="0 0 70 70" width="72" height="72">' +
+        '<circle cx="35" cy="35" r="' + r + '" fill="none" stroke="#e5e5e7" stroke-width="8"/>' +
+        '<circle cx="35" cy="35" r="' + r + '" fill="none" stroke="#E8A33D" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 35 35)"/>' +
+        '<text x="35" y="35" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" fill="#1a1a1a">' + rate + '%</text>' +
+      '</svg></div>' +
+      '<div class="stat-meta">' +
+        '<div class="stat-num">' + total + ' <span>总待办</span></div>' +
+        '<div class="stat-num">' + doneCount + ' <span>已完成</span></div>' +
+        '<div class="stat-num' + (overdueCount ? ' warn' : '') + '">' + overdueCount + ' <span>逾期</span></div>' +
+      '</div></div>';
   }
 
   function renderKb() {
@@ -239,12 +312,29 @@
   }
   function pushKb(tab, text, img) {
     if (!text && !img) { toast('写点内容再保存'); return; }
-    (kb[tab] = kb[tab] || []).push({
+    var arr = kb[tab] = kb[tab] || [];
+    var entry = {
       id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
       text: text, img: img, createdAt: new Date().toISOString()
-    });
-    saveKb(); render();
-    toast('已保存到「' + (KB_TABS.filter(function (x) { return x.k === tab; })[0] || {}).label + '」');
+    };
+    arr.push(entry);
+    var label = (KB_TABS.filter(function (x) { return x.k === tab; })[0] || {}).label;
+    // 预估保存后的总占用（不含旧的 hg_kb）
+    var predicted = lsUsageWithoutKb() + JSON.stringify(kb).length;
+    if (predicted > LS_LIMIT * 0.95) {
+      arr.pop(); // 回滚，避免直接撑爆本地存储导致图片丢失
+      toast('保存失败：本地存储已接近上限（约 ' + Math.round(LS_LIMIT / 1024 / 1024) + 'MB），请先到「设置 / 数据」清空部分内容（尤其是带图条目）再保存');
+      render();
+      return;
+    }
+    saveKb();
+    var pct = Math.round(predicted / LS_LIMIT * 100);
+    if (predicted > LS_LIMIT * 0.8) {
+      toast('已保存到「' + label + '」 · 提醒：本地存储已用约 ' + pct + '%，接近上限，建议定期清理带图内容');
+    } else {
+      toast('已保存到「' + label + '」');
+    }
+    render();
   }
   function compressImg(dataUrl, cb) {
     try {
@@ -266,7 +356,8 @@
   /* ---------- 每日新闻 ---------- */
   function renderNews() {
     var tab = currentNewsTab;
-    var cache = newsCache[tab];
+    var cache = newsCache[tab] || LS.get('hg_news_' + tab, null);
+    if (cache && !newsCache[tab]) newsCache[tab] = cache;
     var list = cache ? cache.data : [];
     var loading = !cache;
     var sel = selectedNews && selectedNews.src === tab ? selectedNews : null;
@@ -285,7 +376,17 @@
       selectedNews = null;
       fetchNews(tab, true);
     });
-    if (loading) fetchNews(tab, false);
+    fetchNews(tab, false);
+    if (sel) genAIContent(sel.title, function (res) {
+      if (!res) return;
+      var box = $('#ai-copies'), sug = $('#ai-suggest');
+      if (res.copies && box) box.innerHTML = res.copies.map(function (c, i) {
+        return '<div class="copy-line"><div class="c">' + esc(c) + '</div>' +
+          '<div class="row"><span class="dim" style="font-size:12px">文案 ' + (i + 1) + '</span>' +
+          '<button class="btn ghost sm" data-act="copy" data-txt="' + esc(c).replace(/"/g, '&quot;') + '">复制</button></div></div>';
+      }).join('');
+      if (res.suggestion && sug) sug.textContent = res.suggestion;
+    });
   }
   function newsListHtml(list, tab) {
     if (!list.length) return '<p class="empty">暂无数据，点右上角刷新试试</p>';
@@ -305,12 +406,12 @@
       (n.url ? '<p class="dim"><a href="' + esc(n.url) + '" target="_blank" rel="noopener" style="text-decoration:underline">查看原文 ↗</a></p>' : '') +
       '</div>' +
       '<section class="card"><h3>二创文案（3 条，可直接复制）</h3>' +
-      copies.map(function (c, i) {
+      '<div id="ai-copies">' + copies.map(function (c, i) {
         return '<div class="copy-line"><div class="c">' + esc(c) + '</div>' +
           '<div class="row"><span class="dim" style="font-size:12px">文案 ' + (i + 1) + '</span>' +
           '<button class="btn ghost sm" data-act="copy" data-txt="' + esc(c).replace(/"/g, '&quot;') + '">复制</button></div></div>';
-      }).join('') + '</section>' +
-      '<section class="card"><h3>选题建议</h3><div class="tip">' + esc(genSuggestion(n.title)) + '</div></section>';
+      }).join('') + '</div></section>' +
+      '<section class="card"><h3>选题建议</h3><div class="tip" id="ai-suggest">' + esc(genSuggestion(n.title)) + '</div></section>';
   }
   function genCopies(title) {
     var t = title.length > 16 ? title.slice(0, 16) + '…' : title;
@@ -323,10 +424,43 @@
   function genSuggestion(title) {
     return '把「' + title + '」收进知识库「案例库」：第一步记下它为什么火（情绪/冲突/时效）；第二步想它和你的领域怎么结合；第三步设一个 3 天后复盘的提醒，检验判断。';
   }
+  function genAIContent(title, cb) {
+    var cfg = LS.get('hg_ai_cfg', null);
+    if (!cfg || !cfg.endpoint || !cfg.key) { cb(null); return; }
+    var prompt = '你是一名中文新媒体运营，擅长把热点改写成可直接发布的短文案。' +
+      '针对热点「' + title + '」，请输出：\n' +
+      '【文案】3 条，每条一句，口语化、有钩子，适合朋友圈/短视频，不要标题党。\n' +
+      '【选题】1 段，说明这个热点和「付费媒体/SEM/AI 工具/亲子教育」任一角度怎么结合做内容。\n' +
+      '严格按以下格式返回，不要多余解释：\n' +
+      '文案1：…\n文案2：…\n文案3：…\n选题：…';
+    safeFetch(cfg.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+      body: JSON.stringify({ model: cfg.model || 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.8 })
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      try {
+        var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+        if (!content) { cb(null); return; }
+        cb(parseAIContent(content));
+      } catch (e) { cb(null); }
+    }).catch(function () { cb(null); });
+  }
+  function parseAIContent(text) {
+    var lines = text.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    var copies = [], suggestion = '';
+    lines.forEach(function (l) {
+      if (/^文案[123一二三]?[:：]/.test(l)) copies.push(l.replace(/^文案[123一二三]?[:：]/, ''));
+      else if (/^选题[:：]/.test(l)) suggestion = l.replace(/^选题[:：]/, '');
+      else if (copies.length < 3 && !suggestion) copies.push(l);
+    });
+    if (!copies.length) copies = null;
+    return { copies: copies, suggestion: suggestion || null };
+  }
   function fetchNews(tab, force) {
     var cache = newsCache[tab];
-    if (cache && !force) return;
-    newsCache[tab] = { data: [], loading: true };
+    var stale = !cache || !cache.at || (Date.now() - cache.at > 10 * 60 * 1000);
+    if (cache && !force && !stale) return;
+    if (!cache) newsCache[tab] = { data: [], loading: true };
     safeFetch('https://api.vvhan.com/api/hotlist/' + tab)
       .then(function (r) { return r.json(); })
       .then(function (j) {
@@ -337,12 +471,16 @@
           }).filter(function (d) { return d.title; });
         }
         if (!list.length) list = NEWS_FALLBACK[tab] || [];
-        newsCache[tab] = { data: list, at: Date.now() };
+        var payload = { data: list, at: Date.now() };
+        newsCache[tab] = payload;
+        LS.set('hg_news_' + tab, payload);
         render();
       })
       .catch(function () {
-        newsCache[tab] = { data: NEWS_FALLBACK[tab] || [], at: Date.now() };
-        render();
+        if (!newsCache[tab] || !newsCache[tab].data || !newsCache[tab].data.length) {
+          newsCache[tab] = { data: NEWS_FALLBACK[tab] || [], at: Date.now() };
+          render();
+        }
       });
   }
 
@@ -505,13 +643,19 @@
         '<div class="set-row"><label class="btn ghost" style="display:inline-block">导入数据<input id="imp-file" type="file" accept=".json" style="display:none"></label></div>' +
         '<p class="dim">导出 .json 可完整备份待办与知识库；导入后刷新即生效。</p>' +
       '</section>' +
+      '<section class="card"><h3>AI 文案（可选，仅存本机）</h3>' +
+        '<p class="dim">填了接口和 Key 后，点开新闻会用真实模型生成文案；留空则用内置模板。Key 只存你本地浏览器，不会上传。</p>' +
+        '<div class="add-line"><input id="ai-endpoint" type="text" placeholder="接口地址，如 https://…/v1/chat/completions"></div>' +
+        '<div class="add-line"><input id="ai-key" type="password" placeholder="API Key（留空则不调用）"></div>' +
+        '<div class="form-row"><input id="ai-model" type="text" placeholder="模型名，如 gpt-4o-mini"><button class="btn" id="ai-save">保存</button></div>' +
+      '</section>' +
       '<section class="card"><h3>危险区</h3>' +
         '<button class="btn" id="clear-data" style="background:#e5484d;border-color:#e5484d">清空全部数据</button>' +
       '</section>' +
       '<section class="card"><h3>说明</h3>' +
         '<p class="dim">· 提醒弹窗需本页面保持打开才生效（纯前端限制）。</p>' +
         '<p class="dim">· 每日新闻来自公开热搜接口，偶发失效会自动回退到内置榜单。</p>' +
-        '<p class="dim">· AI 文案当前为内置模板生成，后续可在本页接入真实模型（API 只存你本地浏览器）。</p>' +
+        '<p class="dim">· 新闻 AI 文案：在上方填写接口与 Key 即用真实模型生成，留空用内置模板（Key 仅存本机）。</p>' +
       '</section>';
 
     $('#exp-json').addEventListener('click', function () {
@@ -547,9 +691,22 @@
       };
       reader.readAsText(f);
     });
+    var aiCfg0 = LS.get('hg_ai_cfg', {});
+    if (aiCfg0.endpoint) $('#ai-endpoint').value = aiCfg0.endpoint;
+    if (aiCfg0.model) $('#ai-model').value = aiCfg0.model;
+    $('#ai-save').addEventListener('click', function () {
+      var ep = $('#ai-endpoint').value.trim();
+      var key = $('#ai-key').value.trim();
+      var model = $('#ai-model').value.trim();
+      if (!ep) { toast('接口地址不能为空'); return; }
+      if (!key && aiCfg0.key) key = aiCfg0.key;
+      LS.set('hg_ai_cfg', { endpoint: ep, key: key, model: model });
+      toast(key ? '已保存，新闻将用 AI 生成文案' : '已保存（未填 Key，仍用模板）');
+    });
     $('#clear-data').addEventListener('click', function () {
       if (!confirm('确定清空全部数据？此操作不可恢复，请先导出备份。')) return;
-      LS.del('hg_todos'); LS.del('hg_kb'); LS.del('hg_news_cache');
+      LS.del('hg_todos'); LS.del('hg_kb');
+      ['weibo', 'baidu', 'zhihu', 'bilibili'].forEach(function (k) { LS.del('hg_news_' + k); });
       location.reload();
     });
   }
@@ -570,7 +727,10 @@
     var act = el.getAttribute('data-act');
     if (act === 'td-done') {
       var t1 = todos.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
-      if (t1) { t1.done = true; saveTodos(); render(); }
+      if (t1) { t1.done = true; t1.doneAt = new Date().toISOString(); saveTodos(); render(); }
+    } else if (act === 'td-restore') {
+      var t2 = todos.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+      if (t2) { t2.done = false; t2.doneAt = null; saveTodos(); render(); }
     } else if (act === 'td-del') {
       todos = todos.filter(function (x) { return x.id !== el.getAttribute('data-id'); });
       saveTodos(); render();
@@ -628,6 +788,7 @@
   }
 
   /* ---------- 启动 ---------- */
+  if (!localStorage.getItem('hg_todos') && !localStorage.getItem('hg_kb')) seedDemo();
   bindMenu();
   render();
   setInterval(tickReminders, 15000);

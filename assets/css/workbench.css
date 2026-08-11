@@ -31,7 +31,8 @@ body{
   padding:11px 14px;border:none;background:none;border-radius:8px;
   font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;
 }
-.menu-item .mi{width:18px;text-align:center;color:var(--sub);font-size:13px}
+.menu-item .mi{width:18px;text-align:center;color:var(--sub);font-size:13px;display:flex;align-items:center;justify-content:center}
+.menu-item .mi svg{width:18px;height:18px;display:block}
 .menu-item:hover{background:var(--panel)}
 .menu-item.active{background:var(--gold-bg);font-weight:600;box-shadow:inset 2.5px 0 0 var(--gold)}
 .menu-item.active .mi{color:var(--gold-dark)}
@@ -77,7 +78,22 @@ textarea{min-height:74px;resize:vertical}
 .todo-row .dot{width:10px;height:10px;border-radius:50%;flex:none}
 .todo-row .txt{flex:1;font-size:14px}
 .todo-row .time{font-size:12px;color:var(--sub);white-space:nowrap}
-.todo-row .done .txt{color:var(--sub);text-decoration:line-through}
+.todo-row.done .txt{color:var(--sub);text-decoration:line-through}
+.todo-row.overdue .txt{color:var(--red);font-weight:600}
+.todo-row.overdue .time{color:var(--red)}
+
+/* 统计环 */
+.stat-row{display:flex;align-items:center;gap:18px;margin-bottom:20px}
+.stat-ring{flex:none}
+.stat-meta{display:flex;gap:22px;flex-wrap:wrap}
+.stat-num{font-size:22px;font-weight:700}
+.stat-num span{font-size:13px;font-weight:400;color:var(--sub);margin-left:2px}
+.stat-num.warn{color:var(--red)}
+
+/* 逾期角标 + 搜索 */
+.badge-red{background:var(--red);color:#fff;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.search-line{margin:0 0 6px}
+.search-line input{background:#fff}
 .pri-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .pri-opt{
   display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line2);
