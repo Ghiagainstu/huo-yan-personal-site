@@ -10,6 +10,7 @@
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇹🇭</text></svg>">
+<meta name="robots" content="noindex, nofollow">
 <style>
   :root{
     --ocean:#0e7490;
@@ -260,6 +261,29 @@
 </script>
 </head>
 <body>
+<!-- 访问密码门（改密码：找到页面底部 PASS 变量修改即可） -->
+<style>
+  #pw-gate{display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,20,30,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}
+  #pw-gate .pw-card{background:#fff;border-radius:18px;padding:38px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  #pw-gate .pw-emoji{font-size:42px;margin-bottom:12px}
+  #pw-gate h3{font-size:20px;font-weight:800;color:#1f2937;margin-bottom:6px}
+  #pw-gate .pw-sub{font-size:13px;color:#6b7280;margin-bottom:24px;line-height:1.6}
+  #pw-gate input{width:100%;padding:13px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:16px;text-align:center;outline:none;transition:border-color .15s}
+  #pw-gate input:focus{border-color:#0e7490}
+  #pw-gate button{width:100%;margin-top:14px;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#0e7490,#0d9488);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s}
+  #pw-gate button:hover{opacity:.9}
+  #pw-gate .pw-err{color:#dc2626;font-size:13px;margin-top:14px}
+</style>
+<div id="pw-gate">
+  <div class="pw-card">
+    <div class="pw-emoji">🔒</div>
+    <h3>私密攻略 · 请输入密码</h3>
+    <p class="pw-sub">此页面为火哥家庭私有内容<br>仅限受邀访问</p>
+    <input type="password" id="pw-input" placeholder="输入访问密码" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button id="pw-btn" type="button">进入攻略 →</button>
+    <p class="pw-err" id="pw-err" style="display:none">密码不对，再试一次</p>
+  </div>
+</div>
 <div class="scroll-bar" id="scrollBar"></div>
 
 <!-- TOC NAV -->
@@ -730,6 +754,33 @@
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+})();
+</script>
+
+<script>
+/* ===== 访问密码门 ===== */
+(function(){
+  var PASS = 'huoyan2026'; /* ← 想改密码就改这一行，保存即生效 */
+  var gate = document.getElementById('pw-gate');
+  var input = document.getElementById('pw-input');
+  var btn = document.getElementById('pw-btn');
+  var err = document.getElementById('pw-err');
+  if (!gate || !input || !btn) return;
+  function unlock(){
+    gate.style.display = 'none';
+    try { sessionStorage.setItem('pwg_ok', '1'); } catch(e) {}
+  }
+  function check(){
+    if (input.value === PASS) { unlock(); }
+    else { err.style.display = 'block'; input.value = ''; input.focus(); }
+  }
+  try {
+    if (sessionStorage.getItem('pwg_ok') === '1') { unlock(); return; }
+  } catch(e) {}
+  gate.style.display = 'flex';
+  btn.addEventListener('click', check);
+  input.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') check(); });
+  setTimeout(function(){ input.focus(); }, 100);
 })();
 </script>
 
