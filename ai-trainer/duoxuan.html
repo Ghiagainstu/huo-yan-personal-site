@@ -83,6 +83,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
 
 .quiz-controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
 .btn{padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+  .btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
 .btn:active{transform:scale(.97)}
 .btn-primary{background:#10b981;color:#fff}
 .btn-primary:hover{background:#059669}
@@ -5776,7 +5777,7 @@ function renderPracticeTab(tab){
 
   if(tab!=='review'){
     practiceMode=tab;
-    practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;
+    practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;answerLog={};
     practiceOrder=buildPracticeOrder(tab!=='practice');
     if(tab==='exam'){examTimeLeft=30*60;startExamTimer();}else{examTimeLeft=0;if(examTimer){clearInterval(examTimer);examTimer=null;}}
   }
@@ -5832,7 +5833,7 @@ function switchPracticeMode(mode){
   stopVoice();stopAutoTimer();
   if(mode==='review'&&wrongList.length===0){alert('还没有错题，先去做练习吧！');return;}
   practiceMode=mode;
-  practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;
+  practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;answerLog={};
   if(mode==='review'){practiceOrder=buildReviewOrder();practiceFilter='all';}
   else{practiceOrder=buildPracticeOrder(mode!=='practice');}
   if(mode==='exam'){examTimeLeft=30*60;startExamTimer();}else{examTimeLeft=0;if(examTimer){clearInterval(examTimer);examTimer=null;}}
@@ -5843,7 +5844,7 @@ function switchPracticeMode(mode){
 function setPracticeFilter(f){
   stopVoice();stopAutoTimer();
   practiceFilter=f;
-  practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;
+  practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;answerLog={};
   practiceOrder=buildPracticeOrder(practiceMode!=='practice');
   renderPracticeTab(practiceMode);
   window.scrollTo({top:0,behavior:'smooth'});
@@ -5901,19 +5902,57 @@ function renderQuestionCard(q,reviewData){
   }
   h+='</div>';
 
+  const navPrev='<button class="btn btn-secondary"'+(practiceIdx>0?'':' disabled')+' onclick="goToQuestion('+(practiceIdx-1)+')">◀ 上一题</button>';
+  const navNext='<button class="btn btn-secondary"'+(practiceIdx<totalQ-1?'':' disabled')+' onclick="goToQuestion('+(practiceIdx+1)+')">下一题 ▶</button>';
   if(practiceMode==='exam'){
-    h+='<div class="quiz-controls"><button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">确认提交</button><button class="btn btn-skip" onclick="skipQuestion()">跳过</button><button class="btn btn-secondary" onclick="nextPracticeQuestion()">下一题 →</button></div>';
+    h+='<div class="quiz-controls"><button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">确认提交</button><button class="btn btn-skip" onclick="skipQuestion()">跳过</button>'+navPrev+navNext+'</div>';
   }else if(practiceMode==='speed'){
-    h+='<div class="quiz-controls"><button class="btn btn-secondary" onclick="showSpeedAnswer()">看答案</button></div>';
+    h+='<div class="quiz-controls"><button class="btn btn-secondary" onclick="showSpeedAnswer()">看答案</button>'+navPrev+navNext+'</div>';
   }else{
     // practice or review
-    h+='<div class="quiz-controls"><button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">确认提交</button><button class="btn btn-secondary" onclick="showAnswer()">看答案</button><button class="btn btn-skip" onclick="skipQuestion()">跳过</button></div>';
+    h+='<div class="quiz-controls"><button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">确认提交</button><button class="btn btn-secondary" onclick="showAnswer()">看答案</button><button class="btn btn-skip" onclick="skipQuestion()">跳过</button>'+navPrev+navNext+'</div>';
   }
   h+='<div id="quizResult"></div></div>';
   return h;
 }
 
 let selectedOptions=[];
+let answerLog={}; // practiceIdx -> {selected:[], submitted:bool}
+
+function saveCurrentState(){
+  answerLog[practiceIdx]={selected:[...selectedOptions], submitted:practiceSubmitted};
+}
+
+function restoreQuestionState(){
+  const q=getCurrentQuestion();
+  if(!q)return;
+  const saved=answerLog[practiceIdx];
+  if(!saved){selectedOptions=[];practiceSubmitted=false;return;}
+  selectedOptions=[...saved.selected];
+  practiceSubmitted=saved.submitted;
+  if(saved.submitted){
+    const correctSet=new Set(q.correctAnswers);
+    const selectedSet=new Set(selectedOptions);
+    let isCorrect=selectedSet.size===correctSet.size;
+    if(isCorrect){for(const k of correctSet){if(!selectedSet.has(k)){isCorrect=false;break;}}}
+    renderAnswerFeedback(q,correctSet,selectedSet,isCorrect);
+  }else{
+    document.querySelectorAll('#quizOptions .quiz-option').forEach(el=>{
+      el.classList.toggle('selected',selectedOptions.includes(el.dataset.key));
+    });
+  }
+}
+
+function goToQuestion(idx){
+  stopAutoTimer();
+  const total=(practiceMode==='review')?wrongList.length:practiceOrder.length;
+  if(idx<0||idx>=total)return;
+  saveCurrentState();
+  practiceIdx=idx;
+  const area=document.getElementById('practiceArea');
+  if(area){area.innerHTML=renderPracticeQuestion();restoreQuestionState();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
 function toggleOption(key){
   if(practiceSubmitted)return;
@@ -5946,6 +5985,7 @@ function submitAnswer(){
   if(isCorrect){for(const k of correctSet){if(!selectedSet.has(k)){isCorrect=false;break;}}}
 
   practiceSubmitted=true;practiceTotal++;
+  saveCurrentState();
   if(isCorrect)practiceCorrect++;
 
   // Track category stats
@@ -6011,21 +6051,23 @@ function renderAnswerFeedback(q,correctSet,selectedSet,isCorrect){
 }
 
 function showAnswer(){
-  if(practiceSubmitted)return;
   const q=getCurrentQuestion();
   if(!q)return;
   const correctSet=new Set(q.correctAnswers);
-  practiceSubmitted=true;practiceTotal++;
+  if(!practiceSubmitted){
+    practiceSubmitted=true;practiceTotal++;
 
-  const c=catOf(q);
-  if(!catStats[c])catStats[c]={correct:0,total:0};
-  catStats[c].total++;
-  saveCatStats();
+    const c=catOf(q);
+    if(!catStats[c])catStats[c]={correct:0,total:0};
+    catStats[c].total++;
+    saveCatStats();
 
-  const existing=wrongList.findIndex(w=>w.id===q.id);
-  if(existing>=0)wrongList.splice(existing,1);
-  wrongList.push({id:q.id, yourAnswer:[], correctAnswer:[...q.correctAnswers]});
-  saveWrongList();
+    const existing=wrongList.findIndex(w=>w.id===q.id);
+    if(existing>=0)wrongList.splice(existing,1);
+    wrongList.push({id:q.id, yourAnswer:[], correctAnswer:[...q.correctAnswers]});
+    saveWrongList();
+  }
+  saveCurrentState();
 
   document.querySelectorAll('#quizOptions .quiz-option').forEach(el=>{
     const k=el.dataset.key;
@@ -6066,6 +6108,7 @@ function skipQuestion() {
     var sb = document.getElementById("submitBtn"); if (sb) sb.disabled = true;
     document.getElementById("quizResult").innerHTML = "<div class=\"quiz-result skipped\">\u23ed \u5df2\u8df3\u8fc7</div>";
     updateLiveScore();
+    saveCurrentState();
   }
   advanceQuestion();
 }function advanceQuestion(){
@@ -6073,7 +6116,7 @@ function skipQuestion() {
   if(practiceMode==='exam'&&examTimeLeft<=0){renderPracticeFinish();return;}
   practiceIdx++;selectedOptions=[];
   const area=document.getElementById('practiceArea');
-  if(area)area.innerHTML=renderPracticeQuestion();
+  if(area){area.innerHTML=renderPracticeQuestion();restoreQuestionState();}
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -6108,7 +6151,7 @@ function renderPracticeFinish(){
 
 function retryPractice(){
   stopVoice();stopAutoTimer();
-  practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;
+  practiceIdx=0;practiceCorrect=0;practiceTotal=0;practiceSubmitted=false;answerLog={};
   if(practiceMode==='review')practiceOrder=buildReviewOrder();
   else practiceOrder=buildPracticeOrder(practiceMode!=='practice');
   if(practiceMode==='exam'){examTimeLeft=30*60;startExamTimer();}
@@ -6121,10 +6164,11 @@ function nextPracticeQuestion(){
   if(!practiceSubmitted&&practiceMode==='exam'){
     // allow skipping without answering in exam mode
     practiceSubmitted=true;
+    saveCurrentState();
     document.querySelectorAll('#quizOptions .quiz-option').forEach(el=>{el.style.cursor='default';el.onclick=null;});
     const sb=document.getElementById('submitBtn');if(sb)sb.disabled=true;
   }
-  advanceQuestion();
+  goToQuestion(practiceIdx+1);
 }
 
 function startExamTimer(){
