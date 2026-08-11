@@ -134,6 +134,18 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 /* swap toast */
 .swap-toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(46,60,92,.92);color:#fff;padding:6px 16px;border-radius:20px;font-size:.76rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .swap-toast.show{opacity:1}
+/* rules */
+.rule-panel{margin:10px 12px 4px;padding:12px 16px;background:#f7f9fc;border:1px solid var(--line);border-radius:10px}
+.rule-panel h3{font-size:.9rem;color:var(--title-bar);margin-bottom:6px}
+.rule-panel ul{list-style:none}
+.rule-panel li{font-size:.76rem;color:var(--text-light);padding:3px 0 3px 14px;position:relative;line-height:1.5}
+.rule-panel li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:var(--c3)}
+.rule-panel li b{color:var(--text)}
+.rule-status{margin:6px 12px 10px;padding:10px 14px;border-radius:10px;font-size:.78rem;line-height:1.6}
+.rule-status.ok{background:#e8f5ee;color:#2e7d4f;border:1px solid #bfe3cd}
+.rule-status.bad{background:#fdecec;color:#c0392b;border:1px solid #f3c4c4}
+.tag-organ{background:#fdecec;color:#c0392b}
+.tag-soy{background:#faf0e8;color:#b4643c}
 /* responsive */
 @media(min-width:600px){
   body{max-width:600px;margin:0 auto;box-shadow:0 0 40px rgba(0,0,0,.06)}
@@ -158,8 +170,18 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
   <span class="label">操作：</span>
   <button onclick="generateShoppingList()">购物清单</button>
   <button onclick="resetAllRatings()">清除评价</button>
+  <button onclick="runRuleCheck()">规则检查</button>
   <span class="drag-tip">⇄ 拖动日期或菜品互换</span>
 </div>
+
+<div class="rule-panel">
+  <h3>📋 菜单规则</h3>
+  <ul>
+    <li><b>内脏类</b>（鸭舌 / 鸡胗 / 鸭血 / 鸡爪鸭爪 / 猪爪 / 蹄筋）：每周期最多 3 次，每天最多 2 次</li>
+    <li><b>豆制品类</b>（真豆制品，不含粉丝 / 粉条 / 鱼豆腐）：每周期最多 4 次，每天最多 1 次（不能同时出现两次）</li>
+  </ul>
+</div>
+<div id="rule-status" class="rule-status ok"></div>
 
 <div id="menu-container"></div>
 
@@ -225,7 +247,7 @@ const menu = [
       {name:"清炒豆芽",ing:["豆芽"],spice:["葱","盐","食用油","干辣椒"]},
       {name:"手撕卷心菜",ing:["卷心菜"],spice:["蒜","干辣椒","盐","食用油","醋"]},
       {name:"红烧大排",ing:["大排"],spice:["葱","姜","生抽","老抽","料酒","糖","食用油"]},
-      {name:"油面筋烧腐竹",ing:["油面筋","腐竹"],spice:["葱","生抽","老抽","糖","食用油"]},
+      {name:"油面筋炒青菜",ing:["油面筋","青菜"],spice:["葱","生抽","老抽","糖","食用油"]},
     ]},
     {d:"D2",meal:"晚餐（4菜）",lunch:false,dishes:[
       {name:"清炒青菜",ing:["青菜"],spice:["蒜","盐","食用油"]},
@@ -254,7 +276,7 @@ const menu = [
     {d:"D6",meal:"午餐（3菜）",lunch:true,dishes:[
       {name:"山药乌骨鸡汤",ing:["山药","乌骨鸡"],spice:["葱","姜","料酒","盐"]},
       {name:"葱姜爆炒花蛤",ing:["花蛤"],spice:["葱","姜","蒜","干辣椒","料酒","生抽","食用油"]},
-      {name:"木耳毛豆烧烤麸",ing:["木耳","毛豆","烤麸"],spice:["葱","生抽","老抽","糖","食用油"]},
+      {name:"木耳毛豆炒胡萝卜",ing:["木耳","毛豆","胡萝卜"],spice:["葱","蒜","盐","生抽","食用油"]},
     ]},
   ]},
   {cycle:"周期二（D7‑D12）",color:"#3c8c6e",days:[
@@ -262,7 +284,7 @@ const menu = [
       {name:"豇豆小炒",ing:["缸豆"],spice:["蒜","干辣椒","盐","生抽","食用油"]},
       {name:"杏鲍菇炒青椒",ing:["杏鲍菇","青椒"],spice:["葱","蒜","盐","生抽","食用油"]},
       {name:"香煎鸡块",ing:["鸡块"],spice:["葱","姜","生抽","料酒","盐","食用油"]},
-      {name:"油豆腐烧老豆腐",ing:["油豆腐","老豆腐"],spice:["葱","生抽","老抽","糖","食用油"]},
+      {name:"油豆腐烧香菇",ing:["油豆腐","香菇"],spice:["葱","生抽","老抽","糖","食用油"]},
     ]},
     {d:"D8",meal:"晚餐（4菜）",lunch:false,dishes:[
       {name:"清炒菠菜",ing:["菠菜"],spice:["蒜","盐","食用油"]},
@@ -274,7 +296,7 @@ const menu = [
       {name:"清炒西葫芦",ing:["西葫芦"],spice:["蒜","盐","食用油"]},
       {name:"花菜炒香菇",ing:["花菜","香菇"],spice:["葱","蒜","盐","生抽","食用油"]},
       {name:"红烧鸡翅",ing:["鸡翅"],spice:["葱","姜","蒜","生抽","老抽","料酒","糖","食用油"]},
-      {name:"麻腐凉拌",ing:["麻腐"],spice:["蒜","香菜","生抽","醋","香油","辣椒油"]},
+      {name:"凉拌木耳",ing:["木耳"],spice:["蒜","香菜","生抽","醋","香油","辣椒油"]},
     ]},
     {d:"D10",meal:"晚餐（4菜）",lunch:false,dishes:[
       {name:"清炒丝瓜",ing:["丝瓜"],spice:["蒜","盐","食用油"]},
@@ -328,7 +350,7 @@ const menu = [
     {d:"D18",meal:"午餐（3菜）",lunch:true,dishes:[
       {name:"羊排萝卜汤",ing:["羊排","白萝卜"],spice:["葱","姜","料酒","盐","胡椒粉"]},
       {name:"清蒸老虎斑",ing:["老虎斑"],spice:["葱","姜","料酒","蒸鱼豉油","食用油"]},
-      {name:"素鸡红烧",ing:["素鸡"],spice:["葱","姜","生抽","老抽","糖","食用油"]},
+      {name:"红烧冬瓜",ing:["冬瓜"],spice:["葱","姜","蒜","生抽","老抽","糖","食用油"]},
     ]},
   ]},
   {cycle:"周期四（D19‑D24）",color:"#7850a0",days:[
@@ -373,7 +395,7 @@ const menu = [
       {name:"清炒油麦菜",ing:["油麦菜"],spice:["蒜","盐","食用油"]},
       {name:"秋葵小炒",ing:["秋葵"],spice:["蒜","盐","食用油"]},
       {name:"鸭血烧蒜苗",ing:["鸭血","蒜苗"],spice:["葱","蒜","生抽","盐","食用油"]},
-      {name:"豆腐烧油豆腐",ing:["豆腐","油豆腐"],spice:["葱","生抽","老抽","糖","食用油"]},
+      {name:"豆腐烧青菜",ing:["豆腐","青菜"],spice:["葱","生抽","糖","食用油"]},
     ]},
     {d:"D26",meal:"晚餐（4菜）",lunch:false,dishes:[
       {name:"苦瓜炒蛋",ing:["苦瓜","鸡蛋"],spice:["葱","蒜","盐","食用油"]},
@@ -402,10 +424,73 @@ const menu = [
     {d:"D30",meal:"午餐（3菜）",lunch:true,dishes:[
       {name:"乌骨鸡虫草花炖汤",ing:["乌骨鸡","虫草花"],spice:["葱","姜","料酒","盐"]},
       {name:"清蒸黄鱼",ing:["黄鱼"],spice:["葱","姜","料酒","蒸鱼豉油","食用油"]},
-      {name:"腐竹烧香干",ing:["腐竹","香干"],spice:["葱","蒜","生抽","老抽","糖","食用油"]},
+      {name:"腐竹烧萝卜",ing:["腐竹","白萝卜"],spice:["葱","姜","生抽","老抽","糖","食用油"]},
     ]},
   ]},
 ];
+
+// ============ 规则引擎 ============
+// 内脏类（杂碎）与豆制品类（真豆制品）食材集合
+const ORGAN_FOODS = ['鸭舌','鸡胗','鸭血','鸡爪鸭爪','猪爪','蹄筋'];
+const SOY_FOODS = ['油面筋','腐竹','油豆腐','豆腐','老豆腐','百叶','香干','日本豆腐','素鸡','烤麸','麻腐','豆皮'];
+// 说明：粉丝 / 粉条 / 鱼豆腐 非大豆制品，不计入豆制品规则
+
+const RULES = {
+  organ:{perWeek:3, perDay:2, label:'内脏类'},
+  soy:{perWeek:4, perDay:1, label:'豆制品类'}
+};
+
+function dishFoodCount(dish, foods){
+  return dish.ing.filter(ig=>foods.includes(ig)).length;
+}
+function dishRuleCats(dish){
+  const cats=[];
+  if(dishFoodCount(dish, ORGAN_FOODS)>0) cats.push('organ');
+  if(dishFoodCount(dish, SOY_FOODS)>0) cats.push('soy');
+  return cats;
+}
+// 校验整份菜单，返回违规列表
+function validateMenu(){
+  const violations=[];
+  menu.forEach(cyc=>{
+    ['organ','soy'].forEach(type=>{
+      const foods = type==='organ'?ORGAN_FOODS:SOY_FOODS;
+      const rule = RULES[type];
+      let weekCount=0;
+      cyc.days.forEach(day=>{
+        const dayCount = day.dishes.reduce((s,d)=>s+dishFoodCount(d,foods),0);
+        if(dayCount > rule.perDay){
+          violations.push({type, scope:'day', cyc:cyc.cycle, day:day.d, count:dayCount, limit:rule.perDay});
+        }
+        weekCount += dayCount;
+      });
+      if(weekCount > rule.perWeek){
+        violations.push({type, scope:'week', cyc:cyc.cycle, day:'', count:weekCount, limit:rule.perWeek});
+      }
+    });
+  });
+  return violations;
+}
+// 渲染合规状态条
+function renderRuleStatus(){
+  const el = document.getElementById('rule-status');
+  if(!el) return;
+  const v = validateMenu();
+  if(v.length===0){
+    el.className='rule-status ok';
+    el.innerHTML='✓ 当前菜单已符合全部规则（内脏类 一周≤3 / 一天≤2；豆制品类 一周≤4 / 一天≤1）';
+  }else{
+    el.className='rule-status bad';
+    el.innerHTML='⚠ 发现 '+v.length+' 处可能违规：<br>'+v.map(x=>
+      `${x.cyc}${x.day?' · '+x.day:''} ｜ ${RULES[x.type].label} ${x.scope==='week'?'一周':'一天'}出现 ${x.count} 次（上限 ${x.limit}）`
+    ).join('<br>');
+  }
+}
+function runRuleCheck(){
+  renderRuleStatus();
+  const v = validateMenu();
+  showToast(v.length===0?'✓ 规则全部符合':('⚠ '+v.length+' 处违规'));
+}
 
 // ============ 渲染 ============
 const container = document.getElementById('menu-container');
@@ -472,6 +557,9 @@ function renderMenu(){
         dish.spice.forEach(sp=>{
           html += `<span class="tag spice">${sp}</span>`;
         });
+        dishRuleCats(dish).forEach(c=>{
+          html += `<span class="tag ${c==='organ'?'tag-organ':'tag-soy'}">${c==='organ'?'内脏':'豆制品'}</span>`;
+        });
         html += '</div>';
 
         if(savedRate.note){
@@ -489,6 +577,7 @@ function renderMenu(){
   });
 
   setupDragAndDrop();
+  renderRuleStatus();
 }
 
 // ============ 评价功能 ============
@@ -721,7 +810,6 @@ function generateShoppingList(){
     // 豆制品
     '油面筋':'豆制品','腐竹':'豆制品','油豆腐':'豆制品','豆腐':'豆制品','老豆腐':'豆制品','百叶':'豆制品',
     '香干':'豆制品','日本豆腐':'豆制品','素鸡':'豆制品','烤麸':'豆制品','麻腐':'豆制品','豆皮':'豆制品',
-    '粉丝':'豆制品','粉条':'豆制品','鱼豆腐':'豆制品',
   };
   const spiceSet = new Set();
   const ingCount = {};
