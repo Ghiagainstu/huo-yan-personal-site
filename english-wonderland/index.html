@@ -1558,29 +1558,23 @@ const CATS = [
   ]} ,
 {id:'nature', zh:'天气自然', en:'Weather & Nature', tint:['#E0F2F1','#B2DFDB'], tpls:['I see the {w}.', 'Look at the {w}.', 'The {w} is here.', 'Wow, the {w}!'], words:[
     ['beach','海滩', 'img:beach'],
-    ['branch','树枝','img:branch'],
     ['breeze','微风', 'img:breeze'],
-    ['bush','灌木丛','img:bush'],
-    ['carnation','康乃馨','img:carnation'],
     ['cave','洞穴','img:cave'],
     ['cloud','云', 'img:cloud'],
     ['cloudy','多云的', 'img:cloudy'],
     ['desert','沙漠', 'img:desert'],
     ['fire','火', 'img:fire'],
     ['flame','火焰','img:flame'],
-    ['flower','花', 'img:flower'],
     ['fog','雾', 'img:fog'],
     ['foggy','有雾的', 'img:foggy'],
     ['forest','森林','img:forest'],
     ['frost','霜','img:frost'],
-    ['grass','草', 'img:grass'],
     ['hail','冰雹','img:hail'],
     ['hill','山丘','img:hill'],
     ['ice','冰', 'img:ice'],
     ['ice cube','冰块', 'img:ice-cube'],
     ['island','小岛', 'img:island'],
     ['lake','湖泊','img:lake'],
-    ['leaf','叶子', 'img:leaf'],
     ['lightning','闪电', 'img:lightning'],
     ['moon','月亮', 'img:moon'],
     ['mountain','山', 'img:mountain'],
@@ -1593,10 +1587,7 @@ const CATS = [
     ['rainy','多雨的', 'img:rainy'],
     ['river','河流', 'img:river'],
     ['rock','石头', 'img:rock'],
-    ['root','根','img:root'],
-    ['rose','玫瑰','img:rose'],
     ['sea','海','img:sea'],
-    ['seed','种子','img:seed'],
     ['sky','天空', 'img:sky'],
     ['slope','山坡','img:slope'],
     ['snow','雪', 'img:snow'],
@@ -1604,24 +1595,35 @@ const CATS = [
     ['snowman','雪人', 'img:snowman'],
     ['snowy','下雪的', 'img:snowy'],
     ['soil','泥土','img:soil'],
-    ['sprout','发芽', 'img:sprout'],
     ['star','星星', 'img:stars'],
     ['storm','暴风雨', 'img:storm'],
     ['stream','溪流','img:stream'],
     ['sun','太阳', 'img:sun'],
-    ['sunflower','向日葵', 'img:sunflower'],
     ['sunny','晴朗的', 'img:sunny'],
     ['sunshine','阳光', 'img:sunshine'],
     ['thunder','雷电', 'img:thunder'],
     ['tornado','龙卷风', 'img:tornado'],
-    ['tree','树', 'img:tree'],
-    ['trunk','树干','img:trunk'],
     ['typhoon','台风', 'img:typhoon'],
     ['volcano','火山', 'img:volcano'],
     ['waterfall','瀑布','img:waterfall'],
     ['weather','天气', 'img:weather'],
     ['wind','风', 'img:wind'],
     ['windy','有风的', 'img:windy']
+  ]} ,
+{id:'plants', zh:'植物', en:'Plants', tint:['#DCEDC8','#C5E1A5'], tpls:['I see {a} {w}.', 'The {w} is green.', 'This is {a} {w}.', 'I like the {w}.'], words:[
+    ['branch','树枝','img:branch'],
+    ['bush','灌木丛','img:bush'],
+    ['carnation','康乃馨','img:carnation'],
+    ['flower','花', 'img:flower'],
+    ['grass','草', 'img:grass'],
+    ['leaf','叶子', 'img:leaf'],
+    ['root','根','img:root'],
+    ['rose','玫瑰','img:rose'],
+    ['seed','种子','img:seed'],
+    ['sprout','发芽', 'img:sprout'],
+    ['sunflower','向日葵', 'img:sunflower'],
+    ['tree','树', 'img:tree'],
+    ['trunk','树干','img:trunk']
   ]} ,
 {id:'objects', zh:'日常物品', en:'Everyday Objects', tint:['#E8EAF6','#C5CAE9'], tpls:['I see {a} {w}.', 'This is my {w}.', 'I use {a} {w}.', 'Where is the {w}?'], words:[
     ['bag','书包', 'img:bag'],
@@ -1677,7 +1679,12 @@ const CATS = [
     ['umbrella','雨伞', 'img:umbrella'],
     ['wall','墙壁', 'img:wall'],
     ['watch','手表', 'img:watch'],
-    ['window','窗户', 'img:window']
+    ['window','窗户', 'img:window'],
+    ['puzzle','拼图', 'img:puzzle'],
+    ['seesaw','跷跷板','img:seesaw'],
+    ['slide','滑滑梯', 'img:slide'],
+    ['swing','秋千','img:swing'],
+    ['yo-yo','溜溜球', 'img:yo-yo']
   ]} ,
 {id:'transport', zh:'交通工具', en:'Transportation', tint:['#ECEFF1','#CFD8DC'], tpls:['The {w} is fast.', 'I ride the {w}.', 'The {w} goes vroom!', 'I see {a} {w}.'], words:[
     ['ambulance','救护车', 'img:ambulance'],
@@ -1712,7 +1719,8 @@ const CATS = [
     ['tricycle','三轮车','img:tricycle'],
     ['truck','卡车', 'img:truck'],
     ['van','面包车', 'img:van'],
-    ['yacht','游艇', 'img:yacht']
+    ['yacht','游艇', 'img:yacht'],
+    ['scooter','滑板车', 'img:scooter']
   ]} ,
 {id:'verbs', zh:'动作', en:'Verbs', tint:['#FFFDE7','#FFF9C4'], tpls:['I can {w}.', 'We can {w}!', 'Can you {w}?', 'We {w} together.'], words:[
     ['bake','烤', 'img:bake'],
@@ -1765,7 +1773,13 @@ const CATS = [
     ['want','想要','img:want'],
     ['wash','洗', 'img:wash'],
     ['wear','穿','img:wear'],
-    ['write','写字', 'img:write']
+    ['write','写字', 'img:write'],
+    ['bow','鞠躬','img:bow'],
+    ['greeting','问好','img:greeting'],
+    ['phone call','打电话','img:phone-call'],
+    ['touch','触碰','img:touch'],
+    ['visit','拜访','img:visit'],
+    ['wave','挥手','img:wave']
   ]} ,
 {id:'adjectives', zh:'感受描述', en:'Adjectives', tint:['#F9FBE7','#F0F4C3'], tpls:['I am {w}.', 'You are {w}.', 'I feel {w}.', 'The bear is {w}.'], words:[
     ['bad','坏的', 'img:bad'],
@@ -1853,7 +1867,6 @@ const CATS = [
 {id:'festivals', zh:'节日活动', en:'Festivals & Activities', tint:['#FCE4EC','#F8BBD0'], tpls:['I celebrate {w}.','{w} is fun!','We eat {w}.','Happy {w}!','I like {w}.'], words:[
     ['April Fools\' Day','愚人节', 'img:april-fools-day'],
     ['birthday','生日', 'img:birthday'],
-    ['bow','鞠躬', 'img:bow'],
     ['Children\'s Day','儿童节', 'img:children-s-day'],
     ['Double Ninth Festival','重阳节', 'img:double-ninth-festival'],
     ['Dragon Boat Festival','端午节', 'img:dragon-boat-festival'],
@@ -1861,7 +1874,6 @@ const CATS = [
     ['firecrackers','鞭炮', 'img:firecrackers'],
     ['fireworks','烟花', 'img:fireworks'],
     ['gift','礼物', 'img:gift'],
-    ['greeting','问好', 'img:greeting'],
     ['Halloween','万圣节', 'img:halloween'],
     ['Jack-o-lantern','南瓜灯', 'img:jack-o-lantern'],
     ['Lantern Festival','元宵节', 'img:lantern-festival'],
@@ -1870,15 +1882,11 @@ const CATS = [
     ['National Day','国庆节', 'img:national-day'],
     ['New Year','新年', 'img:new-year'],
     ['New Year\'s Eve','除夕', 'img:new-year-s-eve'],
-    ['phone call','打电话', 'img:phone-call'],
     ['red envelope','红包', 'img:red-envelope'],
     ['Spring Festival','春节', 'img:spring-festival'],
     ['Teachers\' Day','教师节', 'img:teachers-day'],
     ['Thanksgiving','感恩节', 'img:thanksgiving'],
-    ['touch','触碰', 'img:touch'],
-    ['turkey','火鸡','img:turkey'],
-    ['visit','拜访', 'img:visit'],
-    ['wave','挥手', 'img:wave']
+    ['turkey','火鸡','img:turkey']
   ]} ,
 {id:'jobs', zh:'职业', en:'Jobs', tint:['#FFF8E1','#FFECB3'], tpls:['I want to be {a} {w}.', 'My {w} helps people.', 'A {w} is brave.', 'I like {a} {w}.'], words:[
     ['actor','演员','img:actor'],
@@ -1941,22 +1949,16 @@ const CATS = [
     ['gymnastics','体操','img:gymnastics'],
     ['high jump','跳高','img:high-jump'],
     ['long jump','跳远','img:long-jump'],
-    ['puzzle','拼图', 'img:puzzle'],
     ['race','赛跑', 'img:race'],
     ['rowing','划船','img:rowing'],
-    ['scooter','滑板车', 'img:scooter'],
     ['scuba diving','潜水', 'img:scuba-diving'],
-    ['seesaw','跷跷板','img:seesaw'],
     ['skating','滑冰', 'img:skating'],
     ['skiing','滑雪', 'img:skiing'],
-    ['slide','滑滑梯', 'img:slide'],
     ['snorkeling','浮潜','img:snorkeling'],
     ['soccer','足球','img:soccer'],
-    ['swing','秋千','img:swing'],
     ['table tennis','乒乓球', 'img:table-tennis'],
     ['tennis','网球', 'img:tennis'],
     ['volleyball','排球', 'img:volleyball'],
-    ['yo-yo','溜溜球', 'img:yo-yo'],
     ['yoga','瑜伽', 'img:yoga']
   ]} ,
 {id:'insects', zh:'昆虫', en:'Insects', tint:['#E0F7FA','#B2EBF2'], tpls:['I see {a} {w}.', 'Look at the {w}.', 'The {w} is small.', 'I found {a} {w}.'], words:[
@@ -2078,6 +2080,49 @@ function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}ca
 function saveObj(key,obj){localStorage.setItem(key,JSON.stringify(obj))}
 function poemMemorizedCount(){let n=0;for(const k in poemProgress) if(poemProgress[k]===2) n++;return n}
 function wordKey(catId,w){return catId+':'+w}
+/* 分类迁移兼容(2026-08): CATS 调整后旧 key 的进度搬到新 key,一次性执行,保护已学记录 */
+const CAT_MOVE_KEYS = {
+  'festivals:touch':'verbs:touch',
+  'festivals:phone call':'verbs:phone call',
+  'festivals:bow':'verbs:bow',
+  'festivals:greeting':'verbs:greeting',
+  'festivals:visit':'verbs:visit',
+  'festivals:wave':'verbs:wave',
+  'sports:puzzle':'objects:puzzle',
+  'sports:seesaw':'objects:seesaw',
+  'sports:slide':'objects:slide',
+  'sports:swing':'objects:swing',
+  'sports:yo-yo':'objects:yo-yo',
+  'sports:scooter':'transport:scooter',
+  'nature:branch':'plants:branch',
+  'nature:bush':'plants:bush',
+  'nature:carnation':'plants:carnation',
+  'nature:flower':'plants:flower',
+  'nature:grass':'plants:grass',
+  'nature:leaf':'plants:leaf',
+  'nature:root':'plants:root',
+  'nature:rose':'plants:rose',
+  'nature:seed':'plants:seed',
+  'nature:sprout':'plants:sprout',
+  'nature:sunflower':'plants:sunflower',
+  'nature:tree':'plants:tree',
+  'nature:trunk':'plants:trunk'
+};
+function migrateProgress(){
+  try{
+    const pr=loadObj(LS_EN);
+    let changed=false;
+    for(const oldK in CAT_MOVE_KEYS){
+      const newK=CAT_MOVE_KEYS[oldK];
+      if(pr[oldK]!=null){
+        if(pr[newK]==null) pr[newK]=pr[oldK];
+        delete pr[oldK];
+        changed=true;
+      }
+    }
+    if(changed) saveObj(LS_EN,pr);
+  }catch(e){}
+}
 function getLevel(catId,w){return engProgress[wordKey(catId,w)]||0}
 function findByKey(key){
   for(const c of CATS){
@@ -3157,6 +3202,7 @@ function handleKey(e){
 }
 document.addEventListener('keydown',handleKey);
 document.addEventListener('DOMContentLoaded',function(){
+  migrateProgress();
   document.getElementById('starCount').textContent=stars;
   restorePos();
   renderCatChips();
