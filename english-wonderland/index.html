@@ -3334,11 +3334,11 @@ async function api(path,opt){
   }catch(e){return {ok:false,data:{error:'网络异常，稍后再试'}};}
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-/* ★ 头像（精选 8 个：Windows Chrome 彩色渲染稳定 + 主题统一） */
-const AVATAR_EMOJIS=['🐱','🐶','🐰','🐼','🐸','🐯','🦊','🌈'];
-let avatarSel='e:🐱';
+/* ★ 头像（用户选定 8 个动物：Windows Chrome 彩色渲染稳定） */
+const AVATAR_EMOJIS=['🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼'];
+let avatarSel='e:🐨';
 function avatarHTML(av,cls){
-  if(!av) return '<span class="'+cls+'">🐱</span>';
+  if(!av) return '<span class="'+cls+'">🐨</span>';
   if(av.slice(0,2)==='e:') return '<span class="'+cls+'">'+esc(av.slice(2))+'</span>';
   return '<span class="'+cls+'"><img src="'+av+'" alt=""/></span>';
 }
