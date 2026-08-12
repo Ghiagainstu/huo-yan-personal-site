@@ -211,6 +211,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
   .about-btn{font-size:12px;padding:4px 9px}
   .star-pill{font-size:14px;padding:5px 10px}
   .header h1{font-size:19px}
+  .login-screen{overflow-y:auto;align-items:flex-start;padding:16px;}
+  .login-box{padding:20px 16px;}
+  .avatar-presets{grid-template-columns:repeat(4,38px);gap:6px;}
+  .avatar-opt{width:38px;height:38px;font-size:18px;border-radius:10px;}
+  .avatar-preview{width:72px;height:72px;font-size:36px;}
+  .avatar-upload{padding:9px 12px;font-size:12px;}
 }
 /* ===== 统计看板 📊 ===== */
 .dash-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
@@ -276,9 +282,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .avatar-upload{display:flex;flex-direction:column;align-items:center;gap:2px;background:#0c8f7d;color:#fff;border:none;border-radius:14px;padding:12px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
 .avatar-upload:hover{background:#0a7d6e;}
 .avatar-upload small{font-size:11px;font-weight:400;opacity:.9;}
-.avatar-presets{display:grid;grid-template-columns:repeat(7,44px);gap:8px;justify-content:center;margin-top:10px;}
-.avatar-opt{width:44px;height:44px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.avatar-presets{display:grid;grid-template-columns:repeat(4,44px);gap:8px;justify-content:center;margin-top:10px;}
+.avatar-opt{width:44px;height:44px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
 .avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
+.avatar-opt.locked{background:#f3f3f3;opacity:.55;filter:grayscale(1);}
+.avatar-opt .lock-badge{position:absolute;top:-5px;right:-5px;background:rgba(0,0,0,.68);color:#fff;font-size:10px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.avatar-sep{grid-column:1/-1;font-size:12px;color:#999;text-align:left;margin-top:2px;border-top:1px dashed #e5e5e5;padding-top:8px;}
 .avatar-up{font-size:12px;color:#0c8f7d;margin-top:8px;cursor:pointer;text-decoration:underline;}
 .login-box .search-input{margin:7px 0;text-align:center;}
 .login-field{margin:8px 0;text-align:left;}
@@ -3476,8 +3485,19 @@ async function api(path,opt){
   }catch(e){return {ok:false,data:{error:'网络异常，稍后再试'}};}
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-/* ★ 头像（用户选定 8 个动物：Windows Chrome 彩色渲染稳定） */
-const AVATAR_EMOJIS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷','🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼','🦊'];
+/* ★ 头像：12 生肖免费 + 8 个积分解锁（id 与商城 avatar-* 商品对应） */
+const FREE_AVATARS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷'];
+const LOCKED_AVATARS=[
+  {id:'avatar-koala',emoji:'🐨',name:'考拉',price:30},
+  {id:'avatar-octopus',emoji:'🐙',name:'章鱼',price:30},
+  {id:'avatar-whale',emoji:'🐳',name:'鲸鱼',price:30},
+  {id:'avatar-owl',emoji:'🦉',name:'猫头鹰',price:30},
+  {id:'avatar-butterfly',emoji:'🦋',name:'蝴蝶',price:30},
+  {id:'avatar-bee',emoji:'🐝',name:'蜜蜂',price:30},
+  {id:'avatar-bear',emoji:'🐻',name:'小熊',price:30},
+  {id:'avatar-panda',emoji:'🐼',name:'熊猫',price:30}
+];
+function avatarUnlocked(id){ return (ownedItems()||[]).includes(id); }
 let avatarSel='e:🐭';
 function avatarHTML(av,cls,frame){
   const fc=frame?' '+frame:'';
@@ -3487,6 +3507,14 @@ function avatarHTML(av,cls,frame){
 }
 /* ★ 装扮商城 */
 const SHOP_ITEMS=[
+  {id:'avatar-koala',type:'avatar',name:'考拉',price:30},
+  {id:'avatar-octopus',type:'avatar',name:'章鱼',price:30},
+  {id:'avatar-whale',type:'avatar',name:'鲸鱼',price:30},
+  {id:'avatar-owl',type:'avatar',name:'猫头鹰',price:30},
+  {id:'avatar-butterfly',type:'avatar',name:'蝴蝶',price:30},
+  {id:'avatar-bee',type:'avatar',name:'蜜蜂',price:30},
+  {id:'avatar-bear',type:'avatar',name:'小熊',price:30},
+  {id:'avatar-panda',type:'avatar',name:'熊猫',price:30},
   {id:'frame-teal',type:'frame',name:'青绿边框',price:40},
   {id:'frame-silver',type:'frame',name:'银色边框',price:50},
   {id:'frame-pink',type:'frame',name:'粉色边框',price:100},
@@ -3523,22 +3551,23 @@ async function renderShop(){
   const av=auth&&auth.user&&auth.user.avatar;
   const TITLE_DESC={'title-0':'迈出学习的第一步','title-1':'坚持学习的小小成就','title-4':'掌握 100 词的小成就','title-5':'连续学习 7 天的坚持','title-2':'掌握 200+ 词的荣誉','title-6':'邀请 5 位伙伴的人气担当','title-3':'全场词汇王的至高荣誉','title-7':'词汇榜传说级存在'};
   let html='';
-  [['frame','🖼️ 头像框'],['title','🏅 称号']].forEach(function(g){
+  [['avatar','🐾 头像'],['frame','🖼️ 头像框'],['title','🏅 称号']].forEach(function(g){
     const list=SHOP_ITEMS.filter(i=>i.type===g[0]);
     html+='<div class="shop-group-name">'+g[1]+'</div><div class="shop-grid">';
     list.forEach(function(it){
       const has=owned.includes(it.id);
-      const chain=it.type==='frame'?FRAME_ORDER:TITLE_ORDER;
+      const chain=it.type==='frame'?FRAME_ORDER:(it.type==='title'?TITLE_ORDER:[]);
       const idx=chain.indexOf(it.id);
-      const locked=!has&&!(idx<=0||owned.includes(chain[idx-1]));
+      const locked=!has&&!(idx<=0||owned.includes(chain[idx-1]))&&it.type!=='avatar';
       const key=it.id.split('-')[1];
-      const prev=(it.type==='frame')
-        ? '<div class="fprev frame-'+key+'">'+avatarHTML(av,'')+'</div>'
-        : '<div class="fprev">'+avatarHTML(av,'')+'</div>';
+      let prev;
+      if(it.type==='frame') prev='<div class="fprev frame-'+key+'">'+avatarHTML(av,'')+'</div>';
+      else if(it.type==='avatar'){const la=LOCKED_AVATARS.find(x=>x.id===it.id);prev='<div class="fprev">'+(la?la.emoji:'')+'</div>';}
+      else prev='<div class="fprev">'+avatarHTML(av,'')+'</div>';
       html+='<div class="shop-card'+(has?' owned':'')+(locked?' locked':'')+'">'+
         prev+
-        '<div class="shop-card-name">'+it.name+'</div>'+
-        (it.type==='title'?'<div class="shop-card-desc">'+(TITLE_DESC[it.id]||'')+'</div>':'')+
+        '<div class="shop-card-name">'+it.name+(it.type==='avatar'?'头像':'')+'</div>'+
+        (it.type==='title'?'<div class="shop-card-desc">'+(TITLE_DESC[it.id]||'')+'</div>':(it.type==='avatar'?'<div class="shop-card-desc">解锁后登录页/排行榜都能用</div>':''))+
         '<div class="shop-card-price">'+(has?'✅ 已拥有':(locked?'🔒 未解锁':('⭐ '+it.price+' 分')))+'</div>'+
         (has?'':(locked?'<button class="shop-buy" disabled>🔒 先解锁</button>':'<button class="shop-buy" onclick="buyItem(\''+it.id+'\')">兑换</button>'))+
         '</div>';
@@ -3552,15 +3581,42 @@ async function buyItem(id){
   if(!res.ok){alert(res.data.error||'兑换失败');return;}
   await loadMe(); renderShop(); updateAuthUI();
   const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
+  const ap=document.getElementById('avatarPresets2');
+  if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap);
 }
 function renderAvatarPresets(root){
   if(!root) return;
   root.innerHTML='';
-  AVATAR_EMOJIS.forEach(e=>{
+  FREE_AVATARS.forEach(e=>{
     const b=document.createElement('button');
     b.className='avatar-opt'+(avatarSel==='e:'+e?' sel':'');
     b.textContent=e;
     b.onclick=()=>{avatarSel='e:'+e;refreshAvatarPreview();root.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};
+    root.appendChild(b);
+  });
+  const sep=document.createElement('div');
+  sep.className='avatar-sep';
+  sep.textContent='🔒 积分解锁头像';
+  root.appendChild(sep);
+  LOCKED_AVATARS.forEach(a=>{
+    const b=document.createElement('button');
+    const un=avatarUnlocked(a.id);
+    b.className='avatar-opt'+(un?'':' locked')+(avatarSel==='e:'+a.emoji?' sel':'');
+    b.textContent=a.emoji;
+    b.title=a.name+'（'+a.price+' 积分解锁）';
+    if(!un){
+      const lb=document.createElement('span');
+      lb.className='lock-badge';lb.textContent='🔒';
+      b.appendChild(lb);
+    }
+    b.onclick=()=>{
+      if(!un){
+        alert('「'+a.name+'」头像需要 '+a.price+' 积分解锁，去商城看看吧！');
+        openShop();
+        return;
+      }
+      avatarSel='e:'+a.emoji;refreshAvatarPreview();root.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
+    };
     root.appendChild(b);
   });
 }

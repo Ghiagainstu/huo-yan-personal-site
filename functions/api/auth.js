@@ -13,6 +13,7 @@ const INVITE_MAX = 20;                      // 邀请名额上限（用户确认
 const INVITE_PER_DAY = 1;                   // 每累计登录一天 +1
 const REG_IP_LIMIT = 10;                    // 同 IP 每小时最多成功注册次数（失败尝试不计）
 const PIN_FAIL_LIMIT = 5;                   // 15 分钟窗口内 PIN 连续错误上限
+const FREE_EMOJIS = ['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷']; // 12 生肖免费头像
 
 // 生成唯一 6 位数字邀请码
 async function genInviteCode(db) {
@@ -62,7 +63,13 @@ export async function onRequestPost(ctx) {
   const hash = await pinHash(nm, pin);
   const avatar = String(body.avatar || '').slice(0, 300000);
   const avatarOk = /^e:[^\s]{1,8}$/.test(avatar) || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar);
-  const avatarVal = avatarOk ? avatar : '';
+  // 注册时头像：只允许 12 生肖免费 emoji 或上传图（积分解锁头像注册时不可用）
+  let avatarVal = '';
+  if (avatarOk) {
+    const isEmoji = /^e:[^\s]{1,8}$/.test(avatar);
+    if (isEmoji) { if (FREE_EMOJIS.includes(avatar.slice(2))) avatarVal = avatar; }
+    else avatarVal = avatar;
+  }
 
   if (action === 'register') {
     // 邀请码校验：全局码 或 个人码（扣邀请人名额）

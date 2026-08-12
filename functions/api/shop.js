@@ -5,6 +5,14 @@ import { json, getUserByToken } from './_lib.js';
 
 // 商品目录（价格权威在后端；前端展示用同一份）
 const SHOP = {
+  'avatar-koala':    { type: 'avatar', name: '考拉头像',   price: 30 },
+  'avatar-octopus':  { type: 'avatar', name: '章鱼头像',   price: 30 },
+  'avatar-whale':    { type: 'avatar', name: '鲸鱼头像',   price: 30 },
+  'avatar-owl':      { type: 'avatar', name: '猫头鹰头像', price: 30 },
+  'avatar-butterfly':{ type: 'avatar', name: '蝴蝶头像',   price: 30 },
+  'avatar-bee':      { type: 'avatar', name: '蜜蜂头像',   price: 30 },
+  'avatar-bear':     { type: 'avatar', name: '小熊头像',   price: 30 },
+  'avatar-panda':    { type: 'avatar', name: '熊猫头像',   price: 30 },
   'frame-teal':    { type: 'frame', name: '青绿边框',   price: 40 },
   'frame-silver':  { type: 'frame', name: '银色边框',   price: 50 },
   'frame-pink':    { type: 'frame', name: '粉色边框',   price: 100 },
@@ -41,10 +49,17 @@ function parseItems(s) {
 const FRAME_CHAIN = ['frame-teal','frame-silver','frame-pink','frame-orange','frame-gold','frame-rainbow','frame-star','frame-fire','frame-dia','frame-crown'];
 const TITLE_CHAIN = ['title-0','title-1','title-4','title-5','title-2','title-6','title-3','title-7'];
 function isUnlocked(itemId, owned) {
-  const chain = itemId.indexOf('frame-') === 0 ? FRAME_CHAIN : TITLE_CHAIN;
-  const idx = chain.indexOf(itemId);
-  if (idx <= 0) return true;              // 第一级或不在链中：视为可买
-  return owned.includes(chain[idx - 1]);  // 必须已拥有前一级
+  if (itemId.indexOf('frame-') === 0) {
+    const idx = FRAME_CHAIN.indexOf(itemId);
+    if (idx <= 0) return true;
+    return owned.includes(FRAME_CHAIN[idx - 1]);
+  }
+  if (itemId.indexOf('title-') === 0) {
+    const idx = TITLE_CHAIN.indexOf(itemId);
+    if (idx <= 0) return true;
+    return owned.includes(TITLE_CHAIN[idx - 1]);
+  }
+  return true;   // avatar 等独立商品可直接兑换
 }
 
 export async function onRequestGet(ctx) {
