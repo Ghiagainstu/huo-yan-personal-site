@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<link rel="icon" href="/assets/favicon-kids-math-20260810101908.png">
+<link rel="icon" href="assets/favicon-kids-math-20260810101908.png">
 <title>🧮 幼儿口算</title>
 <style>
   :root{
@@ -363,6 +363,9 @@
   /* 会话状态持久化：记住上次选的题型 / 方式 / 题数 / 闯关进度，重开仍在原位 */
   const UI_STORE='kidsmath_ui_v1';
   let savedUI=null;
+  /* 难度自适应 + 只练错题 状态（必须在 loadUI 还原之前声明，否则命中 TDZ 直接崩整个初始化） */
+  let adaptMode=false, adaptLevel=1, adaptStreakCorrect=0, adaptStreakWrong=0;
+  let replayMode=false, replayQueue=[];
   function saveState(){
     try{ localStorage.setItem(UI_STORE, JSON.stringify({
       catKey, subMode, roundSize, inputMode,
@@ -402,10 +405,8 @@
     saveWrongBook();
   }
 
-  /* 难度自适应 + 只练错题 状态 */
-  let adaptMode=false, adaptLevel=1, adaptStreakCorrect=0, adaptStreakWrong=0;
+  /* 难度自适应 + 只练错题 状态（声明已上移到 loadUI 之前） */
   const ADAPT_NAMES=['5以内','10以内','20以内·平缓','20以内·挑战','100以内'];
-  let replayMode=false, replayQueue=[];
 
   /* ---------- 音效（Web Audio 合成，零文件依赖） ---------- */
   const SOUND_STORE='kidsmath_sound_v1';
