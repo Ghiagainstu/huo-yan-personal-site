@@ -54,6 +54,22 @@
   .ctrl-btn.swap{background:#5aa9e6;}
   .ctrl-btn:active{transform:scale(.95);}
 
+  /* 分类分组标签 */
+  .cat-groups{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:600px; margin-bottom:12px;}
+  .cat-group-btn{border:none; border-radius:999px; padding:7px 16px; font-weight:700; font-size:.9rem; background:#fff; color:#888; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer; transition:.18s;}
+  .cat-group-btn.active{background:var(--teal); color:#fff;}
+  .cat-groups.locked .cat-group-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
+
+  /* 控制条分层：设置行 / 操作行 */
+  .controls{flex-direction:column; gap:14px;}
+  .setup-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;}
+  .action-row{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:2px;}
+  .lbl{font-size:.9rem; color:#888; font-weight:700;}
+  .mini-btn{border:none; border-radius:12px; padding:8px 11px; font-size:1.1rem; background:#fff; color:#888; box-shadow:var(--shadow); cursor:pointer; transition:.15s;}
+  .mini-btn.active{background:var(--gold); color:#5a4500;}
+  .mini-btn:active{transform:scale(.94);}
+  .ctrl-btn.start.big{padding:15px 30px; font-size:1.28rem;}
+
   /* 做题进度条 */
   .prog-wrap{width:100%; max-width:560px; margin:0 auto 2px;}
   .prog-bar{width:100%; height:10px; background:#e6e6ee; border-radius:999px; overflow:hidden;}
@@ -197,7 +213,12 @@
     .cat-btn{padding:8px 11px; font-size:.9rem;}
     .subcats{padding:7px 8px;}
     .subcat-btn{padding:6px 11px; font-size:.86rem;}
-    .controls{gap:6px;}
+    .controls{gap:10px;}
+    .cat-groups{gap:6px;}
+    .cat-group-btn{padding:6px 13px; font-size:.85rem;}
+    .setup-row,.action-row{gap:8px;}
+    .mini-btn{padding:7px 10px; font-size:1rem;}
+    .ctrl-btn.start.big{font-size:1.12rem; padding:13px 26px;}
     .board{padding:16px 12px 20px; border-radius:22px;}
     .equation{font-size:1.8rem; gap:6px;}
     .num{font-size:1.9rem;} .op{font-size:1.7rem;} .equal{font-size:1.7rem;} .unknown{font-size:2.2rem;}
@@ -237,21 +258,26 @@
 <body>
   <h1>🧮 幼儿口算</h1>
 
+  <div class="cat-groups" id="catGroups"></div>
   <div class="cats" id="cats"></div>
   <div class="subcats" id="subcats"></div>
 
   <div class="controls">
-    <span style="font-size:.9rem;color:#888;font-weight:700;">题数</span>
-    <button class="size-btn" data-size="5">5</button>
-    <button class="size-btn active" data-size="10">10</button>
-    <button class="size-btn" data-size="20">20</button>
-    <span style="font-size:.9rem;color:#888;font-weight:700;margin-left:6px;">方式</span>
-    <button class="mode2-btn active" data-mode2="choice">选择</button>
-    <button class="mode2-btn" data-mode2="fill">填空</button>
-    <button class="mode2-btn" id="soundBtn">🔊 音效</button>
-    <button class="mode2-btn" id="adaptBtn">🤖 自适应</button>
-    <button class="ctrl-btn start" id="startRound">🏁 开始闯关</button>
-    <button class="ctrl-btn swap" id="swap">🔄 换一题</button>
+    <div class="setup-row">
+      <span class="lbl">题数</span>
+      <button class="size-btn" data-size="5">5</button>
+      <button class="size-btn active" data-size="10">10</button>
+      <button class="size-btn" data-size="20">20</button>
+      <span class="lbl">方式</span>
+      <button class="mode2-btn active" data-mode2="choice">选择</button>
+      <button class="mode2-btn" data-mode2="fill">填空</button>
+      <button class="mini-btn" id="soundBtn" title="音效开关">🔊</button>
+      <button class="mini-btn" id="adaptBtn" title="难度自适应">🤖</button>
+    </div>
+    <div class="action-row">
+      <button class="ctrl-btn start big" id="startRound">🏁 开始闯关</button>
+      <button class="ctrl-btn swap" id="swap">🔄 换一题</button>
+    </div>
   </div>
 
   <div class="prog-wrap"><div class="prog-bar"><i id="progFill"></i></div></div>
@@ -404,11 +430,21 @@
     three30: {label:'三个数30内', max:30,  cap:30,  emoji:false},
     makeTen: {label:'凑十法',    max:10,  cap:20,  emoji:false},
     breakTen:{label:'破十法',    max:20,  cap:20,  emoji:false},
+    levelTen:{label:'平十法',    max:20,  cap:20,  emoji:false},
+    roundTen:{label:'凑整法',    max:100, cap:200, emoji:false},
     twenty:  {label:'20以内',    max:20,  cap:20,  emoji:false, sub:true}
   };
-  const CAT_ICO={five:'🔢',ten:'🔟',mul10:'✖️',div10:'➗',hundred:'💯',three10:'🔣',three20:'🔣',three30:'🔣',makeTen:'🍎',breakTen:'✂️',twenty:'2️⃣'};
+  /* 题型分组（避免 11 个按钮平铺杂乱；默认展开"基础"） */
+  const CAT_GROUPS=[
+    {id:'basic',  label:'基础', cats:['five','ten','twenty']},
+    {id:'adv',    label:'进阶', cats:['three10','three20','three30','hundred']},
+    {id:'method', label:'方法', cats:['makeTen','breakTen','levelTen','roundTen','mul10','div10']}
+  ];
+  function groupOf(k){ const g=CAT_GROUPS.find(g=>g.cats.includes(k)); return g?g.id:'basic'; }
+  const CAT_ICO={five:'🔢',ten:'🔟',mul10:'✖️',div10:'➗',hundred:'💯',three10:'🔣',three20:'🔣',three30:'🔣',makeTen:'🍎',breakTen:'✂️',levelTen:'⚖️',roundTen:'🎯',twenty:'2️⃣'};
 
   let catKey='ten';
+  let catGroup=groupOf(catKey);
   let roundSize=10;
   let inputMode='choice';            // 'choice' 选择 | 'fill' 填空
   let subMode='mix';                 // 20以内子开关：mix/carry/ncarry/subB/subNB
@@ -488,12 +524,13 @@
   function playCorrect(){ if(!soundOn) return; tone(880,0,0.12,'sine',0.2); tone(1318,0.10,0.16,'sine',0.18); }
   function playWrong(){ if(!soundOn) return; tone(233,0,0.18,'square',0.14); tone(175,0.10,0.22,'sawtooth',0.12); }
   function playFanfare(){ if(!soundOn) return; const n=[523,659,784,1047]; n.forEach((f,i)=>tone(f,i*0.13,0.18,'triangle',0.2)); tone(1047,n.length*0.13,0.42,'triangle',0.2); }
-  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊 音效':'🔇 静音'; }
+  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊':'🔇'; }
   function setSound(on){ soundOn=on; try{ localStorage.setItem(SOUND_STORE,on?'1':'0'); }catch(e){} updateSoundBtn(); }
 
-  function updateAdaptBtn(){ const b=$('adaptBtn'); if(b){ b.textContent=adaptMode?('🤖 自适应·'+adaptLevel):'🤖 自适应'; b.classList.toggle('active', adaptMode); } }
+  function updateAdaptBtn(){ const b=$('adaptBtn'); if(b){ b.textContent='🤖'; b.classList.toggle('active', adaptMode); } }
   function applyAdaptUI(){
     catsEl.classList.toggle('locked', adaptMode);
+    catGroupsEl.classList.toggle('locked', adaptMode);
     subcatsEl.classList.toggle('locked', adaptMode);
     if(adaptMode && CATS[catKey] && CATS[catKey].sub) subcatsEl.classList.remove('show');
     updateAdaptBtn();
@@ -543,6 +580,8 @@
       const ans=a-b;
       return {type:'num', a, b, op:'−', ans, hint:'💡 破十：'+a+' = 10 + '+ones+'，先算 10 − '+b+' = '+(10-b)+'，再算 '+(10-b)+' + '+ones+' = '+ans};
     }
+    if(catKey==='levelTen') return genLevelTen();
+    if(catKey==='roundTen') return genRoundTen();
     if(catKey==='three10'||catKey==='three20'||catKey==='three30'){
       const bound = catKey==='three10'?10 : catKey==='three20'?20 : 30;
       return genThree(bound);
@@ -568,6 +607,28 @@
     if(useSub){ a=randInt(2,max); b=randInt(1,Math.min(a,max)); ans=a-b; op='−'; }
     else { a=randInt(1,max-1); b=randInt(1,max-a); ans=a+b; op='+'; }
     return {type:c.emoji?'emoji':'num', a,b,op,ans, e:choice(EMOJIS)};
+  }
+
+  /* 平十法：退位减的另一路思路。被减数 11~18，减数 > 个位（必退位）。
+     把减数拆成「个位 + 余下」，先减到整十、再减余下：15−7 = 15−5−2。 */
+  function genLevelTen(){
+    const a=randInt(11,18);
+    const ones=a-10;                 // 被减数个位（1~8）
+    const b=randInt(ones+1,9);       // 减数 > 个位 → 必为退位减
+    const ans=a-b;
+    const rest=b-ones;               // 减数拆成 ones + rest
+    return {type:'num', a, b, op:'−', ans, hint:'💡 平十：把 '+b+' 分成 '+ones+' + '+rest+'，先算 '+a+' − '+ones+' = '+(a-ones)+'，再算 '+(a-ones)+' − '+rest+' = '+ans};
+  }
+
+  /* 凑整法：把接近整十/整百的加数先凑成整十/整百再调回。100以内加法专用。 */
+  function genRoundTen(){
+    if(Math.random()<0.25){          // 凑整到 100
+      const a=randInt(92,98); const up=100-a; const b=randInt(1,99-a); const ans=a+b;
+      return {type:'num', a, b, op:'+', ans, hint:'💡 凑整：先把 '+a+' 凑成 100（加'+up+'），算 100 + '+b+' = '+(100+b)+'，再减 '+up+' = '+ans};
+    }
+    let a; do{ a=randInt(12,89); }while(a%10===0);   // 接近整十（个位非0）
+    const up=10-(a%10); const b=randInt(1,99-a); const ans=a+b;
+    return {type:'num', a, b, op:'+', ans, hint:'💡 凑整：先把 '+a+' 凑成 '+(a+up)+'（加'+up+'），算 '+(a+up)+' + '+b+' = '+(a+up+b)+'，再减 '+up+' = '+ans};
   }
 
   function genThree(bound){
@@ -964,19 +1025,34 @@
 
   /* ---------- 绑定 ---------- */
   const catsEl=$('cats');
-  Object.keys(CATS).forEach(k=>{
-    const b=document.createElement('button');
-    b.className='cat-btn'+(k===catKey?' active':''); b.textContent=(CAT_ICO[k]||'')+' '+CATS[k].label; b.dataset.cat=k;
-    b.addEventListener('click',()=>{
-      if(adaptMode) return;
-      document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active'); catKey=k; roundActive=false; saveState();
-      if(CATS[k].sub){ renderSubcats(); }
-      else subcatsEl.classList.remove('show');
-      current=genQuestion(); render();
+  const catGroupsEl=$('catGroups');
+  renderCatGroups(); renderCats();
+
+  function renderCatGroups(){
+    catGroupsEl.innerHTML='';
+    CAT_GROUPS.forEach(g=>{
+      const b=document.createElement('button');
+      b.className='cat-group-btn'+(g.id===catGroup?' active':''); b.textContent=g.label; b.dataset.g=g.id;
+      b.addEventListener('click',()=>{ if(adaptMode) return; catGroup=g.id; renderCatGroups(); renderCats(); });
+      catGroupsEl.appendChild(b);
     });
-    catsEl.appendChild(b);
-  });
+  }
+  function renderCats(){
+    catsEl.innerHTML='';
+    const grp=CAT_GROUPS.find(g=>g.id===catGroup)||CAT_GROUPS[0];
+    grp.cats.forEach(k=>{
+      const b=document.createElement('button');
+      b.className='cat-btn'+(k===catKey?' active':''); b.textContent=(CAT_ICO[k]||'')+' '+CATS[k].label; b.dataset.cat=k;
+      b.addEventListener('click',()=>{
+        if(adaptMode) return;
+        document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active'); catKey=k; roundActive=false; saveState();
+        if(CATS[k].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
+        current=genQuestion(); render();
+      });
+      catsEl.appendChild(b);
+    });
+  }
 
   // 子开关按题型分别定义（100以内在 20以内 基础上多了「整十数」入门级）
   const SUBS={
