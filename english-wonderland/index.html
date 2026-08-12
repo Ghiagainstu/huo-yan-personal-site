@@ -3294,11 +3294,24 @@ function gameEnd(){
   if(gameTimerInt){clearInterval(gameTimerInt);gameTimerInt=null}
   const e=Math.floor((Date.now()-gameStartTime)/1000);
   const m=String(Math.floor(e/60)).padStart(2,'0'),s=String(e%60).padStart(2,'0');
+  const gs=gameSessionStars;
+  let gainHtml='';
+  if(auth&&gs>0){
+    gainHtml='<div class="game-h2" id="gameGainLine">🎮 本轮 +'+gs+' 积分 入账中…</div>';
+    api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,game_stars:gs,date:cnToday()})}).then(function(r){
+      if(r.ok&&r.data.game_gained>0){
+        const el=document.getElementById('gameGainLine');
+        if(el) el.textContent='🎮 本轮 '+gs+' 星 → 入账 '+r.data.game_gained+' 积分！';
+        loadMe();
+      }
+    });
+  }
   document.getElementById('gameStage').innerHTML =
     '<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🌈</div>'+
     '<div class="game-h1">本轮结束!</div>'+
-    '<div class="game-h2">本轮 ⭐ '+gameSessionStars+' 颗 · 用时 '+m+':'+s+'</div>'+
+    '<div class="game-h2">本轮 ⭐ '+gs+' 颗 · 用时 '+m+':'+s+'</div>'+
+    gainHtml+
     '<div class="game-h2">已掌握 '+masteredCount()+'/'+totalWords()+'</div>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px">'+
       '<button class="game-btn green" onclick="gameStart()">🔄 再来一轮</button>'+
@@ -3401,8 +3414,8 @@ function renderDashboard(){
     const sd=auth.me.score_detail||{};
     html+='<div class="dash-card dash-score-card">'+
       '<div class="dash-score-total">⭐ '+auth.me.score+' 分</div>'+
-      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分</div>'+
-      '<div class="dash-score-note">多学词、每天打卡、邀请朋友，都能攒积分</div>'+
+      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分 · 游戏星 ×1：'+(sd.game||0)+' 分</div>'+
+      '<div class="dash-score-note">多学词、每天打卡、邀请朋友、闯关游戏，都能攒积分</div>'+
     '</div>';
   }
   html+='<div class="dash-card dash-hero">'+
@@ -3645,7 +3658,7 @@ async function openAvatarModal(){
   const sd=document.getElementById('myScoreDetail');
   if(sd){
     const d=me.score_detail||{};
-    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(me.streak||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10';
+    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 星 ×1';
   }
   document.getElementById('avatarModal').style.display='flex';
 }

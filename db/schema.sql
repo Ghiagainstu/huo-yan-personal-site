@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   invite_used INTEGER NOT NULL DEFAULT 0,   -- 已用邀请名额（初始3+累计登录天数，上限20）
   points_spent INTEGER NOT NULL DEFAULT 0,  -- 积分商城已消费积分
   items TEXT NOT NULL DEFAULT '[]',         -- 已购装扮 id 列表（JSON 数组）
+  game_stars INTEGER NOT NULL DEFAULT 0,    -- 累计游戏星（闯关答对题数，1星=1积分）
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 -- 已有库迁移（已建表时执行）：
@@ -17,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- ALTER TABLE users ADD COLUMN invite_used INTEGER NOT NULL DEFAULT 0;
 -- ALTER TABLE users ADD COLUMN points_spent INTEGER NOT NULL DEFAULT 0;
 -- ALTER TABLE users ADD COLUMN items TEXT NOT NULL DEFAULT '[]';
+-- ALTER TABLE users ADD COLUMN game_stars INTEGER NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY,                   -- 登录会话 token

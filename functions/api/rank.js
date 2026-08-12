@@ -2,9 +2,9 @@
 // GET /api/rank?type=total|score|week|day&token=...
 import { json, getUserByToken } from './_lib.js';
 
-// 积分 = 已掌握词数×2 + 累计签到天数×5 + 成功邀请×10
-function scoreOf(mastered, days, invites) {
-  return (mastered || 0) * 2 + (days || 0) * 5 + (invites || 0) * 10;
+// 积分 = 已掌握词数×2 + 累计签到天数×5 + 成功邀请×10 + 累计游戏星×1
+function scoreOf(mastered, days, invites, gameStars) {
+  return (mastered || 0) * 2 + (days || 0) * 5 + (invites || 0) * 10 + (gameStars || 0) * 1;
 }
 
 export async function onRequestGet(ctx) {
@@ -32,15 +32,15 @@ export async function onRequestGet(ctx) {
   } else {
     // total / score：带积分字段
     rows = await db.prepare(
-      `SELECT u.id, u.name, u.avatar, u.items, u.invite_used AS invites,
+      `SELECT u.id, u.name, u.avatar, u.items, u.invite_used AS invites, u.game_stars AS game_stars,
               (SELECT COUNT(*) FROM progress p WHERE p.user_id = u.id AND p.level >= 3) AS mastered,
               (SELECT COUNT(DISTINCT date) FROM checkin c WHERE c.user_id = u.id) AS days
        FROM users u LIMIT 100`
     ).all();
     rows = rows.results.map(r => ({
       id: r.id, name: r.name, avatar: r.avatar, items: r.items || '[]',
-      mastered: r.mastered || 0, days: r.days || 0, invites: r.invites || 0,
-      score: scoreOf(r.mastered, r.days, r.invites)
+      mastered: r.mastered || 0, days: r.days || 0, invites: r.invites || 0, game_stars: r.game_stars || 0,
+      score: scoreOf(r.mastered, r.days, r.invites, r.game_stars)
     }));
     if (type === 'score') rows.sort((a, b) => b.score - a.score || a.id - b.id);
     else rows.sort((a, b) => b.mastered - a.mastered || a.id - b.id);

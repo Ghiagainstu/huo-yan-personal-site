@@ -17,16 +17,18 @@ export async function onRequestGet(ctx) {
 
   // 邀请名额：min(3+累计登录天数, 20) - 已用
   const days = (await db.prepare('SELECT COUNT(DISTINCT date) AS n FROM checkin WHERE user_id=?').bind(u.id).first()).n;
-  const inv = await db.prepare('SELECT invite_code, invite_used, points_spent, items FROM users WHERE id=?').bind(u.id).first();
+  const inv = await db.prepare('SELECT invite_code, invite_used, points_spent, items, game_stars FROM users WHERE id=?').bind(u.id).first();
   const inviteMax = 20;
   const inviteQuota = Math.max(0, Math.min(3 + (days || 0), inviteMax) - (inv ? (inv.invite_used || 0) : 0));
 
-  // 积分：掌握词×2 + 累计签到天×5 + 成功邀请×10；可用 = 动态积分 - 已消费
+  // 积分：掌握词×2 + 累计签到天×5 + 成功邀请×10 + 游戏星×1；可用 = 动态积分 - 已消费
   const invitesUsed = inv ? (inv.invite_used || 0) : 0;
+  const gameStars = inv ? (inv.game_stars || 0) : 0;
   const scoreWords = mastered * 2;
   const scoreDays = (days || 0) * 5;
   const scoreInvites = invitesUsed * 10;
-  const score = scoreWords + scoreDays + scoreInvites;
+  const scoreGame = gameStars * 1;
+  const score = scoreWords + scoreDays + scoreInvites + scoreGame;
   const spent = inv ? (inv.points_spent || 0) : 0;
   const available = Math.max(0, score - spent);
   let items = [];
@@ -41,7 +43,8 @@ export async function onRequestGet(ctx) {
     `SELECT COUNT(*) AS n FROM (SELECT u.id,
        (SELECT COUNT(*) FROM progress p WHERE p.user_id=u.id AND p.level>=3)*2
        + (SELECT COUNT(DISTINCT date) FROM checkin c WHERE c.user_id=u.id)*5
-       + u.invite_used*10 AS sc FROM users u) WHERE sc > ?`
+       + u.invite_used*10
+       + u.game_stars AS sc FROM users u) WHERE sc > ?`
   ).bind(score).first();
 
   return json({
@@ -53,9 +56,10 @@ export async function onRequestGet(ctx) {
     myRankTotal: better.n + 1,
     myRankScore: betterScore.n + 1,
     score,
-    score_detail: { words: scoreWords, days: scoreDays, invites: scoreInvites },
+    score_detail: { words: scoreWords, days: scoreDays, invites: scoreInvites, game: scoreGame },
     points_available: available,
     items,
+    game_stars: gameStars,
     invite_code: inv ? inv.invite_code : '',
     invite_quota: inviteQuota,
     invite_max: inviteMax

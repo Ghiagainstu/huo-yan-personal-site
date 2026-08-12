@@ -37,7 +37,29 @@ export async function onRequestPost(ctx) {
     ).bind(u.id, today, gained).run();
   }
 
-  return json({ ok: true, gained, mastered: await countMastered(db, u.id) });
+  // 游戏星上报（本轮答对题数，1 星 = 1 积分；每天最多 +200 防刷）
+  let gameGained = 0;
+  const gs = Math.max(0, Math.min(200, Number(body.game_stars) || 0));
+  if (gs > 0) {
+    const win = 'g_' + today;
+    const cnt = await db.prepare('SELECT count FROM rate_limit WHERE kind=? AND key=? AND window=?')
+      .bind('game_stars', String(u.id), win).first();
+    const used = cnt ? cnt.count : 0;
+    const add = Math.min(gs, 200 - used);
+    if (add > 0) {
+      await db.prepare('UPDATE users SET game_stars = game_stars + ? WHERE id=?').bind(add, u.id).run();
+      if (cnt) {
+        await db.prepare('UPDATE rate_limit SET count = count + ? WHERE kind=? AND key=? AND window=?')
+          .bind(add, 'game_stars', String(u.id), win).run();
+      } else {
+        await db.prepare('INSERT INTO rate_limit(kind,key,window,count) VALUES(?,?,?,?)')
+          .bind('game_stars', String(u.id), win, add).run();
+      }
+      gameGained = add;
+    }
+  }
+
+  return json({ ok: true, gained, game_gained: gameGained, mastered: await countMastered(db, u.id) });
 }
 
 async function countMastered(db, userId) {
