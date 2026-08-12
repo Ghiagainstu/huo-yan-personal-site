@@ -3545,7 +3545,8 @@ function closeShop(){ document.getElementById('shopModal').style.display='none';
 async function renderShop(){
   const area=document.getElementById('shopList'); if(!area) return;
   if(!auth.me) await loadMe();
-  const avail=(auth.me.points_available!=null?auth.me.points_available:auth.me.score)||0;
+  const me=auth&&auth.me||{};
+  const avail=(me.points_available!=null?me.points_available:me.score)||0;
   document.getElementById('shopPoints').textContent=avail+' 分';
   const owned=ownedItems();
   const av=auth&&auth.user&&auth.user.avatar;
@@ -3582,9 +3583,9 @@ async function buyItem(id){
   await loadMe(); renderShop(); updateAuthUI();
   const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
   const ap=document.getElementById('avatarPresets2');
-  if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap);
+  if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
 }
-function renderAvatarPresets(root){
+function renderAvatarPresets(root,showLocked){
   if(!root) return;
   root.innerHTML='';
   FREE_AVATARS.forEach(e=>{
@@ -3594,6 +3595,7 @@ function renderAvatarPresets(root){
     b.onclick=()=>{avatarSel='e:'+e;refreshAvatarPreview();root.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};
     root.appendChild(b);
   });
+  if(!showLocked) return;   // 登录界面只显示 12 生肖，积分解锁头像只在「我的中心」展示
   const sep=document.createElement('div');
   sep.className='avatar-sep';
   sep.textContent='🔒 积分解锁头像';
@@ -3697,7 +3699,7 @@ async function openAvatarModal(){
   if(!auth) return;
   await loadMe();
   avatarSel=auth.user.avatar||'e:🐭';
-  renderAvatarPresets(document.getElementById('avatarPresets2'));
+  renderAvatarPresets(document.getElementById('avatarPresets2'),true);
   refreshAvatarPreview();
   document.getElementById('avatarMsg').textContent='';
   const me=auth.me||{};
