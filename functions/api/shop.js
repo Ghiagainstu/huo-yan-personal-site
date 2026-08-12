@@ -37,6 +37,16 @@ function parseItems(s) {
   try { const a = JSON.parse(s || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
 }
 
+// 等级解锁链：必须从低等级逐级购买，买完上一级才解锁下一级
+const FRAME_CHAIN = ['frame-teal','frame-silver','frame-pink','frame-orange','frame-gold','frame-rainbow','frame-star','frame-fire','frame-dia','frame-crown'];
+const TITLE_CHAIN = ['title-0','title-1','title-4','title-5','title-2','title-6','title-3','title-7'];
+function isUnlocked(itemId, owned) {
+  const chain = itemId.indexOf('frame-') === 0 ? FRAME_CHAIN : TITLE_CHAIN;
+  const idx = chain.indexOf(itemId);
+  if (idx <= 0) return true;              // 第一级或不在链中：视为可买
+  return owned.includes(chain[idx - 1]);  // 必须已拥有前一级
+}
+
 export async function onRequestGet(ctx) {
   return json({ items: SHOP });
 }
@@ -54,6 +64,7 @@ export async function onRequestPost(ctx) {
   const spent = row.points_spent || 0;
   const owned = parseItems(row.items);
   if (owned.includes(body.item_id)) return json({ error: '已经拥有啦' }, 400);
+  if (!isUnlocked(body.item_id, owned)) return json({ error: '请先解锁上一等级' }, 400);
 
   const score = await dynamicScore(db, u.id);
   const available = score - spent;

@@ -343,6 +343,9 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .shop-buy{background:#0c8f7d;color:#fff;border:none;border-radius:10px;padding:5px 16px;font-size:12px;font-weight:bold;cursor:pointer;}
 .shop-buy:active{opacity:.8;}
 .shop-card.owned .shop-buy{background:#e8f5ee;color:#0a6e5f;}
+.shop-card.locked{background:#f5f5f5;opacity:.62;}
+.shop-card.locked .fprev{filter:grayscale(1);}
+.shop-card.locked .shop-buy{background:#ccc;color:#fff;cursor:not-allowed;}
 .shop-group-name{font-size:13px;font-weight:bold;color:#333;margin:12px 0 8px;}
 .shop-balance{font-size:15px;text-align:center;margin:6px 0 10px;color:#b8860b;font-weight:bold;}
 .shop-group{margin:10px 0;}
@@ -3512,16 +3515,19 @@ async function renderShop(){
     html+='<div class="shop-group-name">'+g[1]+'</div><div class="shop-grid">';
     list.forEach(function(it){
       const has=owned.includes(it.id);
+      const chain=it.type==='frame'?FRAME_ORDER:TITLE_ORDER;
+      const idx=chain.indexOf(it.id);
+      const locked=!has&&!(idx<=0||owned.includes(chain[idx-1]));
       const key=it.id.split('-')[1];
       const prev=(it.type==='frame')
         ? '<div class="fprev frame-'+key+'">'+avatarHTML(av,'')+'</div>'
         : '<div class="fprev">'+avatarHTML(av,'')+'</div>';
-      html+='<div class="shop-card'+(has?' owned':'')+'">'+
+      html+='<div class="shop-card'+(has?' owned':'')+(locked?' locked':'')+'">'+
         prev+
         '<div class="shop-card-name">'+it.name+'</div>'+
         (it.type==='title'?'<div class="shop-card-desc">'+(TITLE_DESC[it.id]||'')+'</div>':'')+
-        '<div class="shop-card-price">'+(has?'✅ 已拥有':('⭐ '+it.price+' 分'))+'</div>'+
-        (has?'':'<button class="shop-buy" onclick="buyItem(\''+it.id+'\')">兑换</button>')+
+        '<div class="shop-card-price">'+(has?'✅ 已拥有':(locked?'🔒 未解锁':('⭐ '+it.price+' 分')))+'</div>'+
+        (has?'':(locked?'<button class="shop-buy" disabled>🔒 先解锁</button>':'<button class="shop-buy" onclick="buyItem(\''+it.id+'\')">兑换</button>'))+
         '</div>';
     });
     html+='</div>';
