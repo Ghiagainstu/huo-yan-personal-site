@@ -670,8 +670,10 @@
   }
 
   function isValidQ(q){
-    return q && typeof q==='object' && typeof q.type==='string' &&
-           q.type!=='' && typeof q.ans==='number' && isFinite(q.ans);
+    // render() 只认 emoji/num/three 三型；任何旧版/脏数据的陌生 type 一律作废重出，
+    // 否则 render 三路 q.type 判断全落空 → 题目区空白（线上"题目消失"的根因之一）。
+    return q && typeof q==='object' && (q.type==='emoji'||q.type==='num'||q.type==='three') &&
+           typeof q.ans==='number' && isFinite(q.ans);
   }
   function genOptions(ans,cap){
     const set=new Set([ans]); let g=0; const delta=cap<=10?2:5;
