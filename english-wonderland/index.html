@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>儿童英语学习乐园 | Kids English Playground</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2258%22%20height%3D%2258%22%20rx%3D%2213%22%20fill%3D%22%23FFD54F%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M32%2022%20C%2025%2016%2015%2016%2012%2019%20L%2012%2044%20C%2015%2041%2025%2041%2032%2047%20Z%22%20fill%3D%22%23FFF8E1%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M32%2022%20C%2039%2016%2049%2016%2052%2019%20L%2052%2044%20C%2049%2041%2039%2041%2032%2047%20Z%22%20fill%3D%22%23FFF8E1%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%222.5%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2215%22%20fill%3D%22%233E2723%22%3EABC%3C%2Ftext%3E%3C%2Fsvg%3E">
 <style>
@@ -274,6 +276,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
 .avatar-up{font-size:12px;color:#0c8f7d;margin-top:8px;cursor:pointer;text-decoration:underline;}
 .login-box .search-input{margin:7px 0;text-align:center;}
+.login-field{margin:8px 0;text-align:left;}
+.login-field label{display:block;font-size:13px;font-weight:bold;color:#0a6e5f;margin-bottom:3px;}
+.login-field .search-input{width:100%;box-sizing:border-box;border:2px solid #b8dcd4;background:#f6fbfa;font-size:16px;padding:11px 12px;border-radius:10px;}
+.login-field .search-input:focus{border-color:#0c8f7d;outline:none;background:#fff;}
+.login-field .search-input::placeholder{color:#7ba89d;font-weight:bold;opacity:1;}
 .login-msg{min-height:18px;font-size:13px;color:#c62828;}
 .login-btns{display:flex;gap:10px;justify-content:center;margin-top:10px;}
 .user-pill .up-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.3);cursor:pointer;flex:none;}
@@ -296,8 +303,14 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <div class="avatar-presets" id="avatarPresets"></div>
       <input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="onAvatarFile(this)"/>
     </div>
-    <input id="loginName" class="search-input" placeholder="昵称（如：果果）" maxlength="12"/>
-    <input id="loginPin" class="search-input" type="password" inputmode="numeric" maxlength="4" placeholder="4 位数字 PIN" onkeydown="if(event.key==='Enter')doAuth('login')"/>
+    <div class="login-field">
+      <label for="loginName">👤 昵称</label>
+      <input id="loginName" class="search-input" placeholder="如：果果" maxlength="12"/>
+    </div>
+    <div class="login-field">
+      <label for="loginPin">🔒 PIN 码（4 位数字）</label>
+      <input id="loginPin" class="search-input" type="password" inputmode="numeric" maxlength="4" placeholder="例如 1234" onkeydown="if(event.key==='Enter')doAuth('login')"/>
+    </div>
     <div class="login-msg" id="loginMsg"></div>
     <div class="login-btns">
       <button class="game-btn green" onclick="doAuth('login')">🔑 登录</button>
