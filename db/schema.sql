@@ -38,5 +38,14 @@ CREATE TABLE IF NOT EXISTS checkin (
   PRIMARY KEY (user_id, date)
 );
 
+-- L2 防护：IP 注册限频 + PIN 错误锁定计数（window 为小时块/15分钟块）
+CREATE TABLE IF NOT EXISTS rate_limit (
+  kind TEXT NOT NULL,                       -- 'reg_ip' 注册IP限频 | 'pin_fail' PIN错误锁定
+  key TEXT NOT NULL,                        -- IP 或 昵称(小写)
+  window TEXT NOT NULL,                     -- 时间窗口标识
+  count INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (kind, key, window)
+);
+
 CREATE INDEX IF NOT EXISTS idx_progress_user ON progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_checkin_date ON checkin(date);

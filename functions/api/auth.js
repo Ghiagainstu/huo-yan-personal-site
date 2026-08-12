@@ -1,13 +1,18 @@
 // 认证：注册 / 登录 / 登出（昵称 + 4 位 PIN）
-// 注册保护：邀请码体系——每人唯一6位邀请码；名额=min(3+累计登录天数,10)-已用；全局码(INVITE_CODE,默认8688)注册不消耗名额
+// 注册保护：
+//   - 邀请码体系：每人唯一6位邀请码；名额=min(3+累计登录天数,10)-已用；全局码(INVITE_CODE,默认20260812)注册不消耗名额
+//   - 总账号上限 100
+//   - L2 防护：同 IP 注册限频（每小时 5 次）+ PIN 连续错误锁定（15 分钟窗口内 5 次错锁）
 import { json, pinHash, cnDate } from './_lib.js';
 
-const GLOBAL_INVITE = '8688';               // 管理员码（环境变量 INVITE_CODE 可覆盖），用它注册不消耗名额
-const MAX_USERS = 200;                      // 总账号上限
+const GLOBAL_INVITE = '20260812';           // 管理员码（环境变量 INVITE_CODE 可覆盖），用它注册不消耗名额
+const MAX_USERS = 100;                      // 总账号上限
 const BANNED_NAMES = ['admin', 'root', 'test', 'administrator', 'system', 'owner', 'guest', '匿名'];
 const INVITE_INIT = 3;                      // 初始邀请名额
 const INVITE_MAX = 10;                      // 邀请名额上限
 const INVITE_PER_DAY = 1;                   // 每累计登录一天 +1
+const REG_IP_LIMIT = 5;                     // 同 IP 每小时最多注册次数
+const PIN_FAIL_LIMIT = 5;                   // 15 分钟窗口内 PIN 连续错误上限
 
 // 生成唯一 6 位数字邀请码
 async function genInviteCode(db) {
@@ -27,6 +32,25 @@ async function inviteQuota(db, userId, inviteUsed) {
   return Math.max(0, maxQ - used);
 }
 
+// 请求方 IP（Cloudflare 回源头）
+function ipOf(ctx) {
+  return (ctx.request.headers.get('cf-connecting-ip') || '').slice(0, 45) || 'unknown';
+}
+// 时间窗口：小时块（IP 限频）与 15 分钟块（PIN 锁定）
+function winHour() { return new Date().toISOString().slice(0, 13); }
+function win15() { const d = new Date(); return d.toISOString().slice(0, 13) + Math.floor(d.getUTCMinutes() / 15); }
+// 计数 +1（UPSERT）
+async function bump(db, kind, key, window) {
+  await db.prepare(
+    'INSERT INTO rate_limit(kind, key, window, count) VALUES(?, ?, ?, 1) ' +
+    'ON CONFLICT(kind, key, window) DO UPDATE SET count = count + 1'
+  ).bind(kind, key, window).run();
+}
+async function getCount(db, kind, key, window) {
+  const r = await db.prepare('SELECT count FROM rate_limit WHERE kind=? AND key=? AND window=?').bind(kind, key, window).first();
+  return r ? r.count : 0;
+}
+
 export async function onRequestPost(ctx) {
   const db = ctx.env.DB;
   const body = await ctx.request.json().catch(() => ({}));
@@ -41,11 +65,17 @@ export async function onRequestPost(ctx) {
   const avatarVal = avatarOk ? avatar : '';
 
   if (action === 'register') {
+    // L2-1 同 IP 注册限频（每小时 5 次）
+    const ip = ipOf(ctx);
+    await bump(db, 'reg_ip', ip, winHour());
+    if (await getCount(db, 'reg_ip', ip, winHour()) > REG_IP_LIMIT) {
+      return json({ error: '注册太频繁，请一小时后再试' }, 429);
+    }
+    // 邀请码校验：全局码 或 个人码（扣邀请人名额）
     const invite = String(body.invite || '').trim();
     const globalCode = (ctx.env && ctx.env.INVITE_CODE) || GLOBAL_INVITE;
     let inviter = null;
     if (invite !== globalCode) {
-      // 个人邀请码：查邀请人
       inviter = await db.prepare('SELECT id, invite_used FROM users WHERE invite_code = ?').bind(invite).first();
       if (!inviter) return json({ error: '邀请码不对，请向有账号的家长索取' }, 403);
       const quota = await inviteQuota(db, inviter.id, inviter.invite_used);
@@ -67,8 +97,18 @@ export async function onRequestPost(ctx) {
       await db.prepare('UPDATE users SET invite_used = invite_used + 1 WHERE id = ?').bind(inviter.id).run();
     }
   } else if (action === 'login') {
+    const w15 = win15();
     const u = await db.prepare('SELECT id, pin_hash FROM users WHERE name = ?').bind(nm).first();
-    if (!u || u.pin_hash !== hash) return json({ error: '昵称或 PIN 不对' }, 401);
+    if (!u || u.pin_hash !== hash) {
+      // L2-2 PIN 连续错误锁定
+      await bump(db, 'pin_fail', nm.toLowerCase(), w15);
+      if (await getCount(db, 'pin_fail', nm.toLowerCase(), w15) >= PIN_FAIL_LIMIT) {
+        return json({ error: 'PIN 错误次数过多，请 15 分钟后再试' }, 429);
+      }
+      return json({ error: '昵称或 PIN 不对' }, 401);
+    }
+    // 登录成功：清失败计数
+    await db.prepare('DELETE FROM rate_limit WHERE kind = ? AND key = ?').bind('pin_fail', nm.toLowerCase()).run();
   } else {
     return json({ error: '参数错误' }, 400);
   }
