@@ -257,6 +257,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .rank-name{flex:1;font-size:16px;font-weight:bold;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rank-val{font-size:14px;color:#1e88e5;font-weight:bold;white-space:nowrap;}
 .rank-me{text-align:center;font-size:13px;color:#666;margin:6px 0 0;}
+.dash-score-card{background:linear-gradient(135deg,#fff8e1,#fff3cd);border:1px solid #f5d78e;text-align:center;}
+.dash-score-total{font-size:30px;font-weight:bold;color:#b8860b;}
+.dash-score-detail{font-size:13px;color:#8a6d1a;margin-top:4px;}
+.dash-score-note{font-size:12px;color:#a8904a;margin-top:4px;}
 #loginModal .search-input{margin:8px 0;text-align:center;}
 #loginMsg{min-height:18px;}
 /* ★ 全屏登录层 + 头像 */
@@ -294,6 +298,15 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .invite-tip{font-size:12px;color:#7ba89d;margin-top:6px;line-height:1.5;}
 .invite-copy{margin-left:6px;background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer;}
 </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-1XSB4FETFN');
+</script>
 </head>
 <body>
 <div class="login-screen" id="loginScreen">
@@ -365,7 +378,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div class="invite-box">
       <div class="invite-row">📨 我的邀请码：<b id="myInviteCode">—</b><button class="invite-copy" onclick="copyInvite()">复制</button></div>
       <div class="invite-row">邀请名额：<b id="myInviteQuota">—</b></div>
-      <div class="invite-tip">初始 3 个名额，每登录一天 +1，最多 10 个。把邀请码给朋友，对方注册成功会消耗 1 个名额。</div>
+      <div class="invite-tip">初始 3 个名额，每登录一天 +1，最多 20 个。把邀请码给朋友，对方注册成功会消耗 1 个名额。</div>
     </div>
     <div class="login-btns">
       <button class="game-btn green" onclick="saveAvatar()">💾 保存头像</button>
@@ -417,6 +430,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="module" id="modRank">
     <div class="rank-top">
       <button class="filter-chip active" data-r="total" onclick="setRankType('total')">🏆 总榜</button>
+      <button class="filter-chip" data-r="score" onclick="setRankType('score')">⭐ 积分榜</button>
       <button class="filter-chip" data-r="week" onclick="setRankType('week')">📅 本周</button>
       <button class="filter-chip" data-r="day" onclick="setRankType('day')">☀️ 今日</button>
     </div>
@@ -3303,6 +3317,15 @@ function renderDashboard(){
   }
   /* ---- 组装 ---- */
   let html='';
+  /* ---- 云端积分（登录时显示） ---- */
+  if(auth&&auth.me&&auth.me.score!=null){
+    const sd=auth.me.score_detail||{};
+    html+='<div class="dash-card dash-score-card">'+
+      '<div class="dash-score-total">⭐ '+auth.me.score+' 分</div>'+
+      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分</div>'+
+      '<div class="dash-score-note">多学词、每天打卡、邀请朋友，都能攒积分</div>'+
+    '</div>';
+  }
   html+='<div class="dash-card dash-hero">'+
     '<div class="big">'+mastered+' <small style="font-size:20px;opacity:.9">/ '+total+'</small></div>'+
     '<div class="sub">🏆 已掌握单词</div>'+
@@ -3528,6 +3551,7 @@ async function renderRank(){
   if(!area) return;
   if(!auth){area.innerHTML='<div class="empty-state"><div class="big">👤</div>登录后就能看排行榜、和大家一起学<br><button class="game-btn green" style="margin-top:8px" onclick="openLogin()">去登录</button></div>';return;}
   area.innerHTML='<div class="empty-state">加载中…</div>';
+  if(!auth.me) await loadMe();
   const res=await api('/api/rank?type='+rankType+'&token='+encodeURIComponent(auth.token));
   if(!res.ok){area.innerHTML='<div class="empty-state">排行榜还没准备好，稍后再试</div>';return;}
   const list=res.data.list||[];
@@ -3537,16 +3561,21 @@ async function renderRank(){
     html+='<div class="rank-list">';
     list.forEach((it,i)=>{
       const mine=auth&&it.name===auth.user.name;
+      let rv='⭐'+it.stars;
+      if(rankType==='total') rv=it.mastered+' 词';
+      else if(rankType==='score') rv=it.score+' 分';
       html+='<div class="rank-item'+(mine?' mine':'')+'">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
         '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar'):'🐭')+'</span>'+
         '<span class="rank-name">'+esc(it.name)+'</span>'+
-        '<span class="rank-val">'+(rankType==='total'?(it.mastered+' 词'):('⭐'+it.stars))+'</span>'+
+        '<span class="rank-val">'+rv+'</span>'+
         '</div>';
     });
     html+='</div>';
-    if(res.data.me){
-      html+='<div class="rank-me">我的总榜排名：第 '+(res.data.me.myRankTotal||'-')+' 名（共 '+(res.data.me.totalUsers||'-')+' 人）</div>';
+    if(auth&&auth.me){
+      const isScore=rankType==='score';
+      const rk=isScore?auth.me.myRankScore:auth.me.myRankTotal;
+      html+='<div class="rank-me">我的'+(isScore?'积分榜':'总榜')+'排名：第 '+(rk||'-')+' 名（共 '+(auth.me.totalUsers||'-')+' 人）</div>';
     }
   } else {
     html+='<div class="empty-state">还没有人上榜<br>邀请小伙伴一起来学吧！</div>';
