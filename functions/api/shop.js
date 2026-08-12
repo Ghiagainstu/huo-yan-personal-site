@@ -5,13 +5,24 @@ import { json, getUserByToken } from './_lib.js';
 
 // 商品目录（价格权威在后端；前端展示用同一份）
 const SHOP = {
+  'frame-teal':    { type: 'frame', name: '青绿边框',   price: 40 },
   'frame-silver':  { type: 'frame', name: '银色边框',   price: 50 },
+  'frame-pink':    { type: 'frame', name: '粉色边框',   price: 100 },
+  'frame-orange':  { type: 'frame', name: '橙色边框',   price: 100 },
   'frame-gold':    { type: 'frame', name: '金色边框',   price: 120 },
   'frame-rainbow': { type: 'frame', name: '彩虹边框',   price: 200 },
   'frame-star':    { type: 'frame', name: '星星边框',   price: 300 },
+  'frame-fire':    { type: 'frame', name: '火焰边框',   price: 350 },
+  'frame-dia':     { type: 'frame', name: '钻石边框',   price: 400 },
+  'frame-crown':   { type: 'frame', name: '皇冠边框',   price: 500 },
+  'title-0':       { type: 'title', name: '小小新手',   price: 30 },
   'title-1':       { type: 'title', name: '学习达人',   price: 100 },
+  'title-4':       { type: 'title', name: '百词小将',   price: 150 },
+  'title-5':       { type: 'title', name: '坚持之星',   price: 200 },
   'title-2':       { type: 'title', name: '单词大师',   price: 250 },
-  'title-3':       { type: 'title', name: '超级学霸',   price: 500 }
+  'title-6':       { type: 'title', name: '人气王',     price: 300 },
+  'title-3':       { type: 'title', name: '超级学霸',   price: 500 },
+  'title-7':       { type: 'title', name: '词汇之王',   price: 800 }
 };
 
 // 动态积分：掌握词×2 + 累计签到天×5 + 成功邀请×10

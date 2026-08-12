@@ -32,6 +32,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 /* ===== 关于按钮 & 弹窗 ===== */
 .about-btn{background:rgba(255,255,255,.25);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;z-index:31;}
 .about-btn:active{background:rgba(255,255,255,.42);}
+.about-ico{padding:5px 9px;border-radius:50%;line-height:1;}
 .about-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9000;padding:16px;}
 .about-modal.show{display:flex;}
 .about-box{background:#fff;border-radius:18px;max-width:480px;width:100%;padding:24px 22px;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:86vh;overflow:auto;}
@@ -299,6 +300,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .invite-copy{margin-left:6px;background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer;}
 /* ★ 装扮商城 */
 .frame-silver{box-shadow:0 0 0 3px #c0c0c0;}
+.frame-teal{box-shadow:0 0 0 3px #1D9E75;}
+.frame-pink{box-shadow:0 0 0 3px #D4537E;}
+.frame-orange{box-shadow:0 0 0 3px #D85A30;}
+.frame-fire{box-shadow:0 0 0 3px #D85A30,0 0 0 6px #F0997B;}
+.frame-dia{box-shadow:0 0 0 3px #378ADD,0 0 0 6px #B5D4F4;}
+.frame-crown{box-shadow:0 0 0 3px #BA7517,0 0 0 6px #FAC775;}
 .frame-gold{box-shadow:0 0 0 3px #ffc93c;}
 .frame-rainbow{box-shadow:0 0 0 3px #ff5e7d,0 0 0 6px #ffb84d,0 0 0 9px #4dd0e1;}
 .frame-star{box-shadow:0 0 0 3px #ffc93c,0 0 12px 5px rgba(255,200,60,.65);}
@@ -397,7 +404,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
-      <button class="about-btn" onclick="showAbout()">ℹ️ 关于</button>
+      <button class="about-btn about-ico" onclick="showAbout()" title="关于" aria-label="关于">ℹ️</button>
     </div>
     <h1>🎓 儿童英语学习乐园</h1>
     <div class="sub">英语单词 · 🎮 闯关游戏 · 🏆 排行榜</div>
@@ -3464,16 +3471,27 @@ function avatarHTML(av,cls,frame){
 }
 /* ★ 装扮商城 */
 const SHOP_ITEMS=[
+  {id:'frame-teal',type:'frame',name:'青绿边框',price:40},
   {id:'frame-silver',type:'frame',name:'银色边框',price:50},
+  {id:'frame-pink',type:'frame',name:'粉色边框',price:100},
+  {id:'frame-orange',type:'frame',name:'橙色边框',price:100},
   {id:'frame-gold',type:'frame',name:'金色边框',price:120},
   {id:'frame-rainbow',type:'frame',name:'彩虹边框',price:200},
   {id:'frame-star',type:'frame',name:'星星边框',price:300},
+  {id:'frame-fire',type:'frame',name:'火焰边框',price:350},
+  {id:'frame-dia',type:'frame',name:'钻石边框',price:400},
+  {id:'frame-crown',type:'frame',name:'皇冠边框',price:500},
+  {id:'title-0',type:'title',name:'小小新手',price:30},
   {id:'title-1',type:'title',name:'学习达人',price:100},
+  {id:'title-4',type:'title',name:'百词小将',price:150},
+  {id:'title-5',type:'title',name:'坚持之星',price:200},
   {id:'title-2',type:'title',name:'单词大师',price:250},
-  {id:'title-3',type:'title',name:'超级学霸',price:500}
+  {id:'title-6',type:'title',name:'人气王',price:300},
+  {id:'title-3',type:'title',name:'超级学霸',price:500},
+  {id:'title-7',type:'title',name:'词汇之王',price:800}
 ];
-const FRAME_ORDER=['frame-silver','frame-gold','frame-rainbow','frame-star'];
-const TITLE_ORDER=['title-1','title-2','title-3'];
+const FRAME_ORDER=['frame-teal','frame-silver','frame-pink','frame-orange','frame-gold','frame-rainbow','frame-star','frame-fire','frame-dia','frame-crown'];
+const TITLE_ORDER=['title-0','title-1','title-4','title-5','title-2','title-6','title-3','title-7'];
 function ownedItems(){ return (auth&&auth.me&&auth.me.items)||[]; }
 function myFrame(){ const o=ownedItems(); return FRAME_ORDER.filter(f=>o.includes(f)).pop()||''; }
 function frameOf(items){ try{const a=JSON.parse(items||'[]');return FRAME_ORDER.filter(f=>a.includes(f)).pop()||'';}catch(e){return '';} }
@@ -3487,7 +3505,7 @@ async function renderShop(){
   document.getElementById('shopPoints').textContent=avail+' 分';
   const owned=ownedItems();
   const av=auth&&auth.user&&auth.user.avatar;
-  const TITLE_DESC={'title-1':'坚持学习的小小成就','title-2':'掌握 200+ 词的荣誉','title-3':'全场词汇王的至高荣誉'};
+  const TITLE_DESC={'title-0':'迈出学习的第一步','title-1':'坚持学习的小小成就','title-4':'掌握 100 词的小成就','title-5':'连续学习 7 天的坚持','title-2':'掌握 200+ 词的荣誉','title-6':'邀请 5 位伙伴的人气担当','title-3':'全场词汇王的至高荣誉','title-7':'词汇榜传说级存在'};
   let html='';
   [['frame','🖼️ 头像框'],['title','🏅 称号']].forEach(function(g){
     const list=SHOP_ITEMS.filter(i=>i.type===g[0]);
