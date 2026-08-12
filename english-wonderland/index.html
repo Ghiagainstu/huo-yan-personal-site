@@ -242,12 +242,29 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .dash-row .v{font-size:20px;font-weight:bold;color:#2d3436;}
 .dash-row .v small{font-size:13px;color:#999;font-weight:normal;}
 .dash-empty{font-size:13px;color:#b2bec3;text-align:center;padding:8px 0;}
+/* ★ 登录 + 排行榜样式 */
+.user-pill{display:none;align-items:center;gap:6px;background:rgba(255,255,255,.25);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:bold;z-index:31;}
+.user-pill .up-name{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-pill .up-streak{font-size:12px;opacity:.95;}
+.rank-top{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 8px;}
+.rank-hint{text-align:center;font-size:13px;color:#777;margin:10px 0 6px;}
+.rank-list{max-width:520px;margin:0 auto;padding:0 10px 20px;}
+.rank-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:10px 14px;margin:8px 0;}
+.rank-item.mine{background:#fff8e1;border-color:#ffb74d;box-shadow:0 0 0 1px #ffb74d;}
+.rank-no{width:34px;text-align:center;font-size:20px;font-weight:bold;color:#888;}
+.rank-name{flex:1;font-size:16px;font-weight:bold;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rank-val{font-size:14px;color:#1e88e5;font-weight:bold;white-space:nowrap;}
+.rank-me{text-align:center;font-size:13px;color:#666;margin:6px 0 0;}
+#loginModal .search-input{margin:8px 0;text-align:center;}
+#loginMsg{min-height:18px;}
 </style>
 </head>
 <body>
 <div class="header">
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
+      <div class="user-pill" id="userPill"><span class="up-name" id="userName"></span><span class="up-streak" id="userStreak"></span><button class="about-btn" onclick="logout()">退出</button></div>
+      <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
       <button class="about-btn" onclick="showAbout()">ℹ️ 关于</button>
     </div>
     <h1>🎓 儿童英语学习乐园</h1>
@@ -266,10 +283,25 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <p class="tip">💡 建议每天 5–10 分钟，先翻卡再闯关，坚持就有惊喜！</p>
   </div>
 </div>
+<div class="about-modal" id="loginModal" onclick="if(event.target===this)closeLogin()">
+  <div class="about-box">
+    <button class="about-close" onclick="closeLogin()" aria-label="关闭">✕</button>
+    <h2>👋 登录 / 注册</h2>
+    <p>输入昵称和 4 位数字 PIN（家长帮孩子建号，登录后看排行榜、和大家一起学）</p>
+    <input id="loginName" class="search-input" placeholder="昵称（如：果果）" maxlength="12" oninput="if(this.value.length>=3)document.getElementById('loginPin').focus()"/>
+    <input id="loginPin" class="search-input" type="password" inputmode="numeric" maxlength="4" placeholder="4 位数字 PIN" onkeydown="if(event.key==='Enter')doAuth('login')"/>
+    <div id="loginMsg"></div>
+    <div style="display:flex;gap:10px;margin-top:8px;justify-content:center">
+      <button class="game-btn green" onclick="doAuth('login')">🔑 登录</button>
+      <button class="game-btn" onclick="doAuth('register')">✨ 注册新账号</button>
+    </div>
+  </div>
+</div>
 <div class="tab-nav">
     <button class="tab-btn active" id="tabEn" onclick="switchTab('en')">🃏 英语卡片</button>
     <button class="tab-btn" id="tabGame" onclick="switchTab('game')">🎮 英语小游戏</button>
     <button class="tab-btn" id="tabStat" onclick="switchTab('stat')">📊 统计看板</button>
+    <button class="tab-btn" id="tabRank" onclick="switchTab('rank')">🏆 排行榜</button>
 </div>
 <!-- ================= 英语卡片 ================= -->
 <div class="module active" id="modEn">
@@ -305,6 +337,15 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <!-- ================= 统计看板 ================= -->
 <div class="module" id="modStat">
     <div id="dashArea"></div>
+</div>
+<!-- ================= 排行榜 ================= -->
+<div class="module" id="modRank">
+    <div class="rank-top">
+      <button class="filter-chip active" data-r="total" onclick="setRankType('total')">🏆 总榜</button>
+      <button class="filter-chip" data-r="week" onclick="setRankType('week')">📅 本周</button>
+      <button class="filter-chip" data-r="day" onclick="setRankType('day')">☀️ 今日</button>
+    </div>
+    <div id="rankArea"></div>
 </div>
 <div class="star-toast" id="starToast">
     <div class="big">⭐</div>
@@ -2784,6 +2825,7 @@ function markKnow(){
   const key=wordKey(item.cat.id,item.w[0]);
   const lv=getLevel(item.cat.id,item.w[0]);
   if(lv<3){engProgress[key]=lv+1;saveObj(LS_EN,engProgress);refreshStars();if(lv===0)recordLearned(key);}
+  queueReport();
   if(curFilter==='todo' && engProgress[key]>=3){buildList();flipped=false;renderCard();renderCatChips();return}
   nextCard();renderCatChips();
 }
@@ -2792,6 +2834,7 @@ function markReview(){
   const item=cardList[cardIdx];
   const key=wordKey(item.cat.id,item.w[0]);
   if(getLevel(item.cat.id,item.w[0])>0){engProgress[key]=Math.max(0,getLevel(item.cat.id,item.w[0])-1);saveObj(LS_EN,engProgress)}
+  queueReport();
   nextCard();renderCatChips();
 }
 /* ============================================================
@@ -3065,6 +3108,7 @@ function gameReviewMark(key,correct){
     if(found){
       const lv=getLevel(found.cat.id,found.w[0]);
       if(lv<3){engProgress[key]=lv+1;saveObj(LS_EN,engProgress);refreshStars();if(lv===0)recordLearned(key);}
+      queueReport();
     }
     /* 间隔重复 1/2/4/7 天 [PLACEHOLDER 待playtest校准] */
     const gaps=[1,2,4,7];
@@ -3226,15 +3270,135 @@ function renderDashboard(){
 function showAbout(){document.getElementById('aboutModal').classList.add('show');}
 function closeAbout(){document.getElementById('aboutModal').classList.remove('show');}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAbout();});
+/* ============================================================
+   ★ 登录 + 排行榜（云端 D1，学习共享）
+   ============================================================ */
+const LS_AUTH='kids_english_auth';
+let auth=null;               // {token, user:{id,name}, me?}
+let rankType='total';
+let reportTimer=null, reportDirty=0;
+function loadAuth(){try{return JSON.parse(localStorage.getItem(LS_AUTH)||'null');}catch(e){return null;}}
+function saveAuth(a){auth=a;if(a)localStorage.setItem(LS_AUTH,JSON.stringify(a));else localStorage.removeItem(LS_AUTH);}
+async function api(path,opt){
+  try{
+    const r=await fetch(path,opt);
+    return {ok:r.ok, data:await r.json().catch(()=>({}))};
+  }catch(e){return {ok:false,data:{error:'网络异常，稍后再试'}};}
+}
+function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function updateAuthUI(){
+  const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
+  if(auth&&auth.user){
+    pill.style.display='flex';
+    document.getElementById('userName').textContent=auth.user.name;
+    document.getElementById('userStreak').textContent=auth.me?('🔥'+auth.me.streak+'天'):'';
+    if(btn)btn.style.display='none';
+  } else {
+    pill.style.display='none';
+    if(btn)btn.style.display='';
+  }
+}
+function openLogin(){document.getElementById('loginModal').style.display='flex';}
+function closeLogin(){document.getElementById('loginModal').style.display='none';}
+async function doAuth(action){
+  const name=document.getElementById('loginName').value.trim();
+  const pin=document.getElementById('loginPin').value.trim();
+  const msg=document.getElementById('loginMsg');
+  if(!name||!/^\d{4}$/.test(pin)){msg.textContent='请输入昵称和 4 位数字 PIN';return;}
+  const res=await api('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name,pin,date:cnToday()})});
+  if(!res.ok){msg.textContent=res.data.error||'出错了，稍后再试';return;}
+  saveAuth(res.data);
+  msg.textContent='';
+  closeLogin();
+  updateAuthUI();
+  syncAllProgress();
+  loadMe();
+  renderRank();
+}
+async function logout(){
+  const token=auth&&auth.token;
+  saveAuth(null);
+  updateAuthUI();
+  if(token) api('/api/auth',{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+  const area=document.getElementById('rankArea'); if(area) area.innerHTML='';
+}
+async function loadMe(){
+  if(!auth) return;
+  const res=await api('/api/me?token='+encodeURIComponent(auth.token));
+  if(res.ok&&res.data.user){auth.me=res.data;saveAuth(auth);updateAuthUI();}
+}
+/* 进度上报：登录后本地改动 5 秒内防抖批量同步云端 */
+function queueReport(){
+  if(!auth) return;
+  reportDirty++;
+  if(reportTimer) clearTimeout(reportTimer);
+  reportTimer=setTimeout(flushReport,5000);
+}
+function progressList(){
+  const list=[];
+  for(const k in engProgress){
+    const i=k.indexOf(':'); if(i>0) list.push({cat:k.slice(0,i),word:k.slice(i+1),level:engProgress[k]});
+  }
+  return list;
+}
+async function flushReport(){
+  reportTimer=null;
+  if(!auth||reportDirty===0) return;
+  reportDirty=0;
+  const list=progressList();
+  if(!list.length) return;
+  await api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,progress:list,date:cnToday()})});
+}
+async function syncAllProgress(){
+  if(!auth) return;
+  const list=progressList();
+  if(!list.length) return;
+  await api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,progress:list,date:cnToday()})});
+}
+function setRankType(t){
+  rankType=t;
+  document.querySelectorAll('#modRank .filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.r===t));
+  renderRank();
+}
+async function renderRank(){
+  const area=document.getElementById('rankArea');
+  if(!area) return;
+  if(!auth){area.innerHTML='<div class="empty-state"><div class="big">👤</div>登录后就能看排行榜、和大家一起学<br><button class="game-btn green" style="margin-top:8px" onclick="openLogin()">去登录</button></div>';return;}
+  area.innerHTML='<div class="empty-state">加载中…</div>';
+  const res=await api('/api/rank?type='+rankType+'&token='+encodeURIComponent(auth.token));
+  if(!res.ok){area.innerHTML='<div class="empty-state">排行榜还没准备好，稍后再试</div>';return;}
+  const list=res.data.list||[];
+  const medals=['🥇','🥈','🥉'];
+  let html='<div class="rank-hint">以学习共享为主：看看大家都学到了什么，一起加油 💪</div>';
+  if(list.length){
+    html+='<div class="rank-list">';
+    list.forEach((it,i)=>{
+      const mine=auth&&it.name===auth.user.name;
+      html+='<div class="rank-item'+(mine?' mine':'')+'">'+
+        '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
+        '<span class="rank-name">'+esc(it.name)+'</span>'+
+        '<span class="rank-val">'+(rankType==='total'?(it.mastered+' 词'):('⭐'+it.stars))+'</span>'+
+        '</div>';
+    });
+    html+='</div>';
+    if(res.data.me){
+      html+='<div class="rank-me">我的总榜排名：第 '+(res.data.me.myRankTotal||'-')+' 名（共 '+(res.data.me.totalUsers||'-')+' 人）</div>';
+    }
+  } else {
+    html+='<div class="empty-state">还没有人上榜<br>邀请小伙伴一起来学吧！</div>';
+  }
+  area.innerHTML=html;
+}
 function switchTab(tab){
   curTab=tab;
   if(window.speechSynthesis) speechSynthesis.cancel();
-  ['En','Game','Stat'].forEach(t=>{
+  ['En','Game','Stat','Rank'].forEach(t=>{
     document.getElementById('tab'+t).classList.toggle('active',tab===t.toLowerCase());
     document.getElementById('mod'+t).classList.toggle('active',tab===t.toLowerCase());
   });
   if(tab==='game'){renderGameIntro();gRefreshTop()}
   if(tab==='stat'){renderDashboard()}
+  if(tab==='rank'){renderRank()}
 }
 // 键盘快捷键（避免干扰输入框；焦点在按钮时把空格/回车交给按钮原生点击，防重复翻转）
 function handleKey(e){
@@ -3245,6 +3409,7 @@ function handleKey(e){
   if(k==='1'){switchTab('en');return;}
   if(k==='3'){switchTab('game');return;}
   if(k==='4'){switchTab('stat');return;}
+  if(k==='5'){switchTab('rank');return;}
   if(curTab==='en'){
     if(k==='ArrowLeft'){e.preventDefault();prevCard();}
     else if(k==='ArrowRight'){e.preventDefault();nextCard();}
@@ -3256,6 +3421,7 @@ function handleKey(e){
 document.addEventListener('keydown',handleKey);
 document.addEventListener('DOMContentLoaded',function(){
   migrateProgress();
+  auth=loadAuth(); updateAuthUI(); if(auth){loadMe(); syncAllProgress();}
   document.getElementById('starCount').textContent=stars;
   restorePos();
   renderCatChips();
