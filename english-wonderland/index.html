@@ -302,6 +302,41 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .frame-gold{box-shadow:0 0 0 3px #ffc93c;}
 .frame-rainbow{box-shadow:0 0 0 3px #ff5e7d,0 0 0 6px #ffb84d,0 0 0 9px #4dd0e1;}
 .frame-star{box-shadow:0 0 0 3px #ffc93c,0 0 12px 5px rgba(255,200,60,.65);}
+/* 右上角商城按钮 */
+.shop-top-btn{background:#FFD54F;color:#5a4300;border:1px solid #FFC107;border-radius:20px;padding:5px 13px;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;z-index:31;}
+.shop-top-btn:active{transform:scale(.94);}
+.user-pill .up-arr{font-size:11px;color:rgba(255,255,255,.85);cursor:pointer;}
+.user-pill .up-name{cursor:pointer;}
+/* 我的中心弹窗 */
+.my-box{max-width:400px;}
+.my-sec{padding:12px 0;border-bottom:1px dashed #e0e0e0;}
+.my-sec:last-of-type{border-bottom:none;}
+.my-top{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
+.my-top .avatar-preview{width:64px;height:64px;font-size:34px;margin:0;border-width:3px;}
+.my-info{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start;}
+.my-name{font-size:17px;font-weight:bold;color:#333;}
+.my-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:#666;}
+.tbadge{background:#fff3cd;color:#8a6d1a;border:1px solid #f5d78e;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:bold;}
+.my-save{width:100%;margin-top:8px;}
+.my-sec-l{font-size:13px;font-weight:bold;color:#444;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.my-points{color:#b8860b;font-size:22px;}
+.my-detail{font-size:12px;color:#888;margin-bottom:10px;line-height:1.6;}
+.my-gobtn{display:block;width:100%;background:#fff3cd;color:#8a6d1a;border:1px solid #f5d78e;border-radius:12px;padding:10px 0;font-size:14px;font-weight:bold;cursor:pointer;}
+.my-gobtn:active{background:#ffe9a8;}
+.my-out{text-align:center;color:#d9534f;font-size:13px;font-weight:bold;padding:12px 0 2px;cursor:pointer;}
+/* 商城卡片化 */
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.shop-card{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff;}
+.shop-card.owned{background:#f5faf7;}
+.fprev{width:52px;height:52px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;background:#f0f4f3;}
+.fprev img{width:100%;height:100%;object-fit:cover;}
+.shop-card-name{font-size:13px;font-weight:bold;color:#333;}
+.shop-card-price{font-size:12px;color:#b8860b;margin:4px 0 8px;}
+.shop-card-desc{font-size:11px;color:#999;margin:2px 0 8px;}
+.shop-buy{background:#0c8f7d;color:#fff;border:none;border-radius:10px;padding:5px 16px;font-size:12px;font-weight:bold;cursor:pointer;}
+.shop-buy:active{opacity:.8;}
+.shop-card.owned .shop-buy{background:#e8f5ee;color:#0a6e5f;}
+.shop-group-name{font-size:13px;font-weight:bold;color:#333;margin:12px 0 8px;}
 .shop-balance{font-size:15px;text-align:center;margin:6px 0 10px;color:#b8860b;font-weight:bold;}
 .shop-group{margin:10px 0;}
 .shop-group-name{font-size:14px;font-weight:bold;color:#555;margin-bottom:6px;}
@@ -359,7 +394,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="header">
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
-      <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName"></span><span class="up-streak" id="userStreak"></span><button class="about-btn" onclick="logout()">退出</button></div>
+      <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
+      <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
       <button class="about-btn" onclick="showAbout()">ℹ️ 关于</button>
     </div>
@@ -380,27 +416,34 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
   </div>
 </div>
 <div class="about-modal" id="avatarModal" onclick="if(event.target===this)closeAvatarModal()">
-  <div class="about-box">
+  <div class="about-box my-box">
     <button class="about-close" onclick="closeAvatarModal()" aria-label="关闭">✕</button>
-    <h2>🖼️ 换个头像</h2>
-    <div class="avatar-pick">
-      <div class="avatar-row">
+    <h2>👤 我的中心</h2>
+    <div class="my-sec">
+      <div class="my-top">
         <div class="avatar-preview" id="avatarPreview2" onclick="openAvatarFile()"></div>
-        <button type="button" class="avatar-upload" onclick="openAvatarFile()">📷 上传照片<small>自己拍 / 照片</small></button>
+        <div class="my-info">
+          <div class="my-name" id="myCenterName"></div>
+          <div class="my-badges"><span class="tbadge" id="myShopTitle"></span><span id="myStreakText"></span></div>
+          <button type="button" class="avatar-upload" onclick="openAvatarFile()">📷 上传照片<small>自己拍 / 照片</small></button>
+        </div>
       </div>
       <div class="avatar-presets" id="avatarPresets2"></div>
+      <div class="login-msg" id="avatarMsg"></div>
+      <button class="game-btn green my-save" onclick="saveAvatar()">💾 保存头像</button>
     </div>
-    <div class="login-msg" id="avatarMsg"></div>
-    <div class="shop-title" id="myShopTitle"></div>
-    <div class="invite-box">
+    <div class="my-sec">
+      <div class="my-sec-l">我的积分 <b class="my-points" id="myPoints">—</b></div>
+      <div class="my-detail" id="myScoreDetail"></div>
+      <button class="my-gobtn" onclick="openShop()">🛍️ 去商城逛逛</button>
+    </div>
+    <div class="my-sec">
+      <div class="my-sec-l">邀请小伙伴</div>
       <div class="invite-row">📨 我的邀请码：<b id="myInviteCode">—</b><button class="invite-copy" onclick="copyInvite()">复制</button></div>
       <div class="invite-row">邀请名额：<b id="myInviteQuota">—</b></div>
       <div class="invite-tip">初始 3 个名额，每登录一天 +1，最多 20 个。把邀请码给朋友，对方注册成功会消耗 1 个名额。</div>
     </div>
-    <div class="login-btns">
-      <button class="game-btn green" onclick="saveAvatar()">💾 保存头像</button>
-    </div>
-    <button class="shop-btn" onclick="openShop()">🛍️ 装扮商城（用积分换头像框/称号）</button>
+    <div class="my-out" onclick="logout()">退出登录</div>
   </div>
 </div>
 <div class="about-modal" id="shopModal" onclick="if(event.target===this)closeShop()">
@@ -3443,15 +3486,23 @@ async function renderShop(){
   const avail=(auth.me.points_available!=null?auth.me.points_available:auth.me.score)||0;
   document.getElementById('shopPoints').textContent=avail+' 分';
   const owned=ownedItems();
+  const av=auth&&auth.user&&auth.user.avatar;
+  const TITLE_DESC={'title-1':'坚持学习的小小成就','title-2':'掌握 200+ 词的荣誉','title-3':'全场词汇王的至高荣誉'};
   let html='';
   [['frame','🖼️ 头像框'],['title','🏅 称号']].forEach(function(g){
     const list=SHOP_ITEMS.filter(i=>i.type===g[0]);
-    html+='<div class="shop-group"><div class="shop-group-name">'+g[1]+'</div>';
+    html+='<div class="shop-group-name">'+g[1]+'</div><div class="shop-grid">';
     list.forEach(function(it){
       const has=owned.includes(it.id);
-      html+='<div class="shop-item'+(has?' owned':'')+'">'+
-        '<span class="shop-item-name">'+it.name+'</span>'+
-        '<span class="shop-item-price">'+(has?'✅ 已拥有':('⭐'+it.price+' 分'))+'</span>'+
+      const key=it.id.split('-')[1];
+      const prev=(it.type==='frame')
+        ? '<div class="fprev frame-'+key+'">'+avatarHTML(av,'')+'</div>'
+        : '<div class="fprev">'+avatarHTML(av,'')+'</div>';
+      html+='<div class="shop-card'+(has?' owned':'')+'">'+
+        prev+
+        '<div class="shop-card-name">'+it.name+'</div>'+
+        (it.type==='title'?'<div class="shop-card-desc">'+(TITLE_DESC[it.id]||'')+'</div>':'')+
+        '<div class="shop-card-price">'+(has?'✅ 已拥有':('⭐ '+it.price+' 分'))+'</div>'+
         (has?'':'<button class="shop-buy" onclick="buyItem(\''+it.id+'\')">兑换</button>')+
         '</div>';
     });
@@ -3504,15 +3555,17 @@ function onAvatarFile(input){
 }
 function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
+  const shop=document.getElementById('shopTopBtn');
   if(auth&&auth.user){
     pill.style.display='flex';
     document.getElementById('upAvatar').innerHTML=avatarHTML(auth.user.avatar,'up-avatar',myFrame());
     document.getElementById('userName').textContent=auth.user.name;
-    document.getElementById('userStreak').textContent=auth.me?('🔥'+auth.me.streak+'天'):'';
     if(btn)btn.style.display='none';
+    if(shop)shop.style.display='';
   } else {
     pill.style.display='none';
     if(btn)btn.style.display='';
+    if(shop)shop.style.display='none';
   }
 }
 function openLogin(){
@@ -3555,10 +3608,21 @@ async function openAvatarModal(){
   refreshAvatarPreview();
   document.getElementById('avatarMsg').textContent='';
   const me=auth.me||{};
+  const nm=document.getElementById('myCenterName'); if(nm) nm.textContent=auth.user.name||'';
   const ic=document.getElementById('myInviteCode'), iq=document.getElementById('myInviteQuota');
   if(ic) ic.textContent=me.invite_code||'—';
   if(iq) iq.textContent=(me.invite_quota!=null?me.invite_quota:'—')+' / '+(me.invite_max||20)+' 个';
-  const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
+  const st=document.getElementById('myShopTitle');
+  if(st) st.textContent=myTitle()?('🏅 '+myTitle()):'';
+  const sk=document.getElementById('myStreakText');
+  if(sk) sk.textContent=(me.streak>0)?('🔥 连签 '+me.streak+' 天'):'';
+  const pt=document.getElementById('myPoints');
+  if(pt) pt.textContent=(me.points_available!=null?me.points_available:me.score)+' 分';
+  const sd=document.getElementById('myScoreDetail');
+  if(sd){
+    const d=me.score_detail||{};
+    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(me.streak||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10';
+  }
   document.getElementById('avatarModal').style.display='flex';
 }
 function copyInvite(){
