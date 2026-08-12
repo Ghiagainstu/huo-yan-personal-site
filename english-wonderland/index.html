@@ -271,7 +271,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .avatar-upload{display:flex;flex-direction:column;align-items:center;gap:2px;background:#0c8f7d;color:#fff;border:none;border-radius:14px;padding:12px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
 .avatar-upload:hover{background:#0a7d6e;}
 .avatar-upload small{font-size:11px;font-weight:400;opacity:.9;}
-.avatar-presets{display:grid;grid-template-columns:repeat(5,44px);gap:8px;justify-content:center;margin-top:10px;}
+.avatar-presets{display:grid;grid-template-columns:repeat(7,44px);gap:8px;justify-content:center;margin-top:10px;}
 .avatar-opt{width:44px;height:44px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
 .avatar-up{font-size:12px;color:#0c8f7d;margin-top:8px;cursor:pointer;text-decoration:underline;}
@@ -305,7 +305,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     </div>
     <div class="login-field">
       <label for="loginName">👤 昵称</label>
-      <input id="loginName" class="search-input" placeholder="如：果果" maxlength="12"/>
+      <input id="loginName" class="search-input" placeholder="如：嘟嘟" maxlength="12"/>
     </div>
     <div class="login-field">
       <label for="loginPin">🔒 PIN 码（4 位数字）</label>
@@ -3348,7 +3348,7 @@ async function api(path,opt){
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 /* ★ 头像（用户选定 8 个动物：Windows Chrome 彩色渲染稳定） */
-const AVATAR_EMOJIS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷','🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼'];
+const AVATAR_EMOJIS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷','🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼','🦊'];
 let avatarSel='e:🐭';
 function avatarHTML(av,cls){
   if(!av) return '<span class="'+cls+'">🐭</span>';
