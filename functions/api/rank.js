@@ -17,14 +17,14 @@ export async function onRequestGet(ctx) {
 
   if (type === 'week') {
     rows = await db.prepare(
-      `SELECT u.name, u.avatar, SUM(c.stars) AS stars, COUNT(DISTINCT c.date) AS days
+      `SELECT u.name, u.avatar, u.items, SUM(c.stars) AS stars, COUNT(DISTINCT c.date) AS days
        FROM checkin c JOIN users u ON u.id = c.user_id
        WHERE c.date >= date('now','-6 days')
        GROUP BY u.id ORDER BY stars DESC, days DESC, u.id ASC LIMIT 20`
     ).all();
   } else if (type === 'day') {
     rows = await db.prepare(
-      `SELECT u.name, u.avatar, c.stars AS stars
+      `SELECT u.name, u.avatar, u.items, c.stars AS stars
        FROM checkin c JOIN users u ON u.id = c.user_id
        WHERE c.date = date('now')
        ORDER BY stars DESC, u.id ASC LIMIT 20`
@@ -32,13 +32,13 @@ export async function onRequestGet(ctx) {
   } else {
     // total / score：带积分字段
     rows = await db.prepare(
-      `SELECT u.id, u.name, u.avatar, u.invite_used AS invites,
+      `SELECT u.id, u.name, u.avatar, u.items, u.invite_used AS invites,
               (SELECT COUNT(*) FROM progress p WHERE p.user_id = u.id AND p.level >= 3) AS mastered,
               (SELECT COUNT(DISTINCT date) FROM checkin c WHERE c.user_id = u.id) AS days
        FROM users u LIMIT 100`
     ).all();
     rows = rows.results.map(r => ({
-      id: r.id, name: r.name, avatar: r.avatar,
+      id: r.id, name: r.name, avatar: r.avatar, items: r.items || '[]',
       mastered: r.mastered || 0, days: r.days || 0, invites: r.invites || 0,
       score: scoreOf(r.mastered, r.days, r.invites)
     }));

@@ -17,16 +17,20 @@ export async function onRequestGet(ctx) {
 
   // 邀请名额：min(3+累计登录天数, 20) - 已用
   const days = (await db.prepare('SELECT COUNT(DISTINCT date) AS n FROM checkin WHERE user_id=?').bind(u.id).first()).n;
-  const inv = await db.prepare('SELECT invite_code, invite_used FROM users WHERE id=?').bind(u.id).first();
+  const inv = await db.prepare('SELECT invite_code, invite_used, points_spent, items FROM users WHERE id=?').bind(u.id).first();
   const inviteMax = 20;
   const inviteQuota = Math.max(0, Math.min(3 + (days || 0), inviteMax) - (inv ? (inv.invite_used || 0) : 0));
 
-  // 积分：掌握词×2 + 累计签到天×5 + 成功邀请×10
+  // 积分：掌握词×2 + 累计签到天×5 + 成功邀请×10；可用 = 动态积分 - 已消费
   const invitesUsed = inv ? (inv.invite_used || 0) : 0;
   const scoreWords = mastered * 2;
   const scoreDays = (days || 0) * 5;
   const scoreInvites = invitesUsed * 10;
   const score = scoreWords + scoreDays + scoreInvites;
+  const spent = inv ? (inv.points_spent || 0) : 0;
+  const available = Math.max(0, score - spent);
+  let items = [];
+  try { const a = JSON.parse(inv && inv.items || '[]'); if (Array.isArray(a)) items = a; } catch (e) {}
 
   // 我的总榜名次
   const better = await db.prepare(
@@ -50,6 +54,8 @@ export async function onRequestGet(ctx) {
     myRankScore: betterScore.n + 1,
     score,
     score_detail: { words: scoreWords, days: scoreDays, invites: scoreInvites },
+    points_available: available,
+    items,
     invite_code: inv ? inv.invite_code : '',
     invite_quota: inviteQuota,
     invite_max: inviteMax

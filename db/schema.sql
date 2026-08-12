@@ -7,12 +7,16 @@ CREATE TABLE IF NOT EXISTS users (
   pin_hash TEXT NOT NULL,                   -- PIN 哈希（SHA-256，不存明文）
   avatar TEXT NOT NULL DEFAULT '',          -- 头像：'e:🐱'(emoji预设) 或 dataURL(上传图 96px)
   invite_code TEXT UNIQUE,                  -- 个人邀请码（6位数字，注册时生成）
-  invite_used INTEGER NOT NULL DEFAULT 0,   -- 已用邀请名额（初始3+累计登录天数，上限10）
+  invite_used INTEGER NOT NULL DEFAULT 0,   -- 已用邀请名额（初始3+累计登录天数，上限20）
+  points_spent INTEGER NOT NULL DEFAULT 0,  -- 积分商城已消费积分
+  items TEXT NOT NULL DEFAULT '[]',         -- 已购装扮 id 列表（JSON 数组）
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 -- 已有库迁移（已建表时执行）：
 -- ALTER TABLE users ADD COLUMN invite_code TEXT;
 -- ALTER TABLE users ADD COLUMN invite_used INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE users ADD COLUMN points_spent INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE users ADD COLUMN items TEXT NOT NULL DEFAULT '[]';
 
 CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY,                   -- 登录会话 token

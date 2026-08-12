@@ -297,6 +297,22 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .invite-row b{color:#0a6e5f;font-size:16px;}
 .invite-tip{font-size:12px;color:#7ba89d;margin-top:6px;line-height:1.5;}
 .invite-copy{margin-left:6px;background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer;}
+/* ★ 装扮商城 */
+.frame-silver{box-shadow:0 0 0 3px #c0c0c0;}
+.frame-gold{box-shadow:0 0 0 3px #ffc93c;}
+.frame-rainbow{box-shadow:0 0 0 3px #ff5e7d,0 0 0 6px #ffb84d,0 0 0 9px #4dd0e1;}
+.frame-star{box-shadow:0 0 0 3px #ffc93c,0 0 12px 5px rgba(255,200,60,.65);}
+.shop-balance{font-size:15px;text-align:center;margin:6px 0 10px;color:#b8860b;font-weight:bold;}
+.shop-group{margin:10px 0;}
+.shop-group-name{font-size:14px;font-weight:bold;color:#555;margin-bottom:6px;}
+.shop-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:9px 12px;margin:6px 0;}
+.shop-item.owned{background:#f0faf7;border-color:#b8dcd4;}
+.shop-item-name{font-size:14px;font-weight:bold;color:#333;}
+.shop-item-price{font-size:13px;color:#b8860b;font-weight:bold;}
+.shop-item.owned .shop-item-price{color:#0a6e5f;}
+.shop-buy{background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:13px;cursor:pointer;}
+.shop-btn{margin-top:10px;background:#fff3cd;color:#8a6d1a;border:1px solid #f5d78e;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:bold;cursor:pointer;width:100%;}
+.shop-title{font-size:13px;color:#0a6e5f;font-weight:bold;margin:4px 0;}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -375,6 +391,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <div class="avatar-presets" id="avatarPresets2"></div>
     </div>
     <div class="login-msg" id="avatarMsg"></div>
+    <div class="shop-title" id="myShopTitle"></div>
     <div class="invite-box">
       <div class="invite-row">📨 我的邀请码：<b id="myInviteCode">—</b><button class="invite-copy" onclick="copyInvite()">复制</button></div>
       <div class="invite-row">邀请名额：<b id="myInviteQuota">—</b></div>
@@ -383,6 +400,15 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div class="login-btns">
       <button class="game-btn green" onclick="saveAvatar()">💾 保存头像</button>
     </div>
+    <button class="shop-btn" onclick="openShop()">🛍️ 装扮商城（用积分换头像框/称号）</button>
+  </div>
+</div>
+<div class="about-modal" id="shopModal" onclick="if(event.target===this)closeShop()">
+  <div class="about-box">
+    <button class="about-close" onclick="closeShop()" aria-label="关闭">✕</button>
+    <h2>🛍️ 装扮商城</h2>
+    <div class="shop-balance">可用积分：<b id="shopPoints">—</b></div>
+    <div id="shopList"></div>
   </div>
 </div>
 <div class="tab-nav">
@@ -3387,10 +3413,57 @@ function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.ge
 /* ★ 头像（用户选定 8 个动物：Windows Chrome 彩色渲染稳定） */
 const AVATAR_EMOJIS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷','🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼','🦊'];
 let avatarSel='e:🐭';
-function avatarHTML(av,cls){
-  if(!av) return '<span class="'+cls+'">🐭</span>';
-  if(av.slice(0,2)==='e:') return '<span class="'+cls+'">'+esc(av.slice(2))+'</span>';
-  return '<span class="'+cls+'"><img src="'+av+'" alt=""/></span>';
+function avatarHTML(av,cls,frame){
+  const fc=frame?' '+frame:'';
+  if(!av) return '<span class="'+cls+fc+'">🐭</span>';
+  if(av.slice(0,2)==='e:') return '<span class="'+cls+fc+'">'+esc(av.slice(2))+'</span>';
+  return '<span class="'+cls+fc+'"><img src="'+av+'" alt=""/></span>';
+}
+/* ★ 装扮商城 */
+const SHOP_ITEMS=[
+  {id:'frame-silver',type:'frame',name:'银色边框',price:50},
+  {id:'frame-gold',type:'frame',name:'金色边框',price:120},
+  {id:'frame-rainbow',type:'frame',name:'彩虹边框',price:200},
+  {id:'frame-star',type:'frame',name:'星星边框',price:300},
+  {id:'title-1',type:'title',name:'学习达人',price:100},
+  {id:'title-2',type:'title',name:'单词大师',price:250},
+  {id:'title-3',type:'title',name:'超级学霸',price:500}
+];
+const FRAME_ORDER=['frame-silver','frame-gold','frame-rainbow','frame-star'];
+const TITLE_ORDER=['title-1','title-2','title-3'];
+function ownedItems(){ return (auth&&auth.me&&auth.me.items)||[]; }
+function myFrame(){ const o=ownedItems(); return FRAME_ORDER.filter(f=>o.includes(f)).pop()||''; }
+function frameOf(items){ try{const a=JSON.parse(items||'[]');return FRAME_ORDER.filter(f=>a.includes(f)).pop()||'';}catch(e){return '';} }
+function myTitle(){ const o=ownedItems(); const t=TITLE_ORDER.filter(x=>o.includes(x)).pop(); if(!t) return ''; const it=SHOP_ITEMS.find(i=>i.id===t); return it?it.name:''; }
+function openShop(){ document.getElementById('shopModal').style.display='flex'; renderShop(); }
+function closeShop(){ document.getElementById('shopModal').style.display='none'; }
+async function renderShop(){
+  const area=document.getElementById('shopList'); if(!area) return;
+  if(!auth.me) await loadMe();
+  const avail=(auth.me.points_available!=null?auth.me.points_available:auth.me.score)||0;
+  document.getElementById('shopPoints').textContent=avail+' 分';
+  const owned=ownedItems();
+  let html='';
+  [['frame','🖼️ 头像框'],['title','🏅 称号']].forEach(function(g){
+    const list=SHOP_ITEMS.filter(i=>i.type===g[0]);
+    html+='<div class="shop-group"><div class="shop-group-name">'+g[1]+'</div>';
+    list.forEach(function(it){
+      const has=owned.includes(it.id);
+      html+='<div class="shop-item'+(has?' owned':'')+'">'+
+        '<span class="shop-item-name">'+it.name+'</span>'+
+        '<span class="shop-item-price">'+(has?'✅ 已拥有':('⭐'+it.price+' 分'))+'</span>'+
+        (has?'':'<button class="shop-buy" onclick="buyItem(\''+it.id+'\')">兑换</button>')+
+        '</div>';
+    });
+    html+='</div>';
+  });
+  area.innerHTML=html;
+}
+async function buyItem(id){
+  const res=await api('/api/shop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,item_id:id})});
+  if(!res.ok){alert(res.data.error||'兑换失败');return;}
+  await loadMe(); renderShop(); updateAuthUI();
+  const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
 }
 function renderAvatarPresets(root){
   if(!root) return;
@@ -3433,7 +3506,7 @@ function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
   if(auth&&auth.user){
     pill.style.display='flex';
-    document.getElementById('upAvatar').innerHTML=avatarHTML(auth.user.avatar,'up-avatar');
+    document.getElementById('upAvatar').innerHTML=avatarHTML(auth.user.avatar,'up-avatar',myFrame());
     document.getElementById('userName').textContent=auth.user.name;
     document.getElementById('userStreak').textContent=auth.me?('🔥'+auth.me.streak+'天'):'';
     if(btn)btn.style.display='none';
@@ -3484,7 +3557,8 @@ async function openAvatarModal(){
   const me=auth.me||{};
   const ic=document.getElementById('myInviteCode'), iq=document.getElementById('myInviteQuota');
   if(ic) ic.textContent=me.invite_code||'—';
-  if(iq) iq.textContent=(me.invite_quota!=null?me.invite_quota:'—')+' / '+(me.invite_max||10)+' 个';
+  if(iq) iq.textContent=(me.invite_quota!=null?me.invite_quota:'—')+' / '+(me.invite_max||20)+' 个';
+  const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
   document.getElementById('avatarModal').style.display='flex';
 }
 function copyInvite(){
@@ -3566,7 +3640,7 @@ async function renderRank(){
       else if(rankType==='score') rv=it.score+' 分';
       html+='<div class="rank-item'+(mine?' mine':'')+'">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
-        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar'):'🐭')+'</span>'+
+        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar',frameOf(it.items)):'🐭')+'</span>'+
         '<span class="rank-name">'+esc(it.name)+'</span>'+
         '<span class="rank-val">'+rv+'</span>'+
         '</div>';
