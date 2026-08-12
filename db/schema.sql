@@ -6,9 +6,13 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT UNIQUE NOT NULL,                -- 昵称（唯一）
   pin_hash TEXT NOT NULL,                   -- PIN 哈希（SHA-256，不存明文）
   avatar TEXT NOT NULL DEFAULT '',          -- 头像：'e:🐱'(emoji预设) 或 dataURL(上传图 96px)
+  invite_code TEXT UNIQUE,                  -- 个人邀请码（6位数字，注册时生成）
+  invite_used INTEGER NOT NULL DEFAULT 0,   -- 已用邀请名额（初始3+累计登录天数，上限10）
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
--- 已有库迁移（已建表时执行）：ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT '';
+-- 已有库迁移（已建表时执行）：
+-- ALTER TABLE users ADD COLUMN invite_code TEXT;
+-- ALTER TABLE users ADD COLUMN invite_used INTEGER NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY,                   -- 登录会话 token

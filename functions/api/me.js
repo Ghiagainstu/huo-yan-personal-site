@@ -15,6 +15,12 @@ export async function onRequestGet(ctx) {
   const streak = await calcStreak(db, u.id, today);
   const totalUsers = (await db.prepare('SELECT COUNT(*) AS n FROM users').first()).n;
 
+  // 邀请名额：min(3+累计登录天数, 10) - 已用
+  const days = (await db.prepare('SELECT COUNT(DISTINCT date) AS n FROM checkin WHERE user_id=?').bind(u.id).first()).n;
+  const inv = await db.prepare('SELECT invite_code, invite_used FROM users WHERE id=?').bind(u.id).first();
+  const inviteMax = 10;
+  const inviteQuota = Math.max(0, Math.min(3 + (days || 0), inviteMax) - (inv ? (inv.invite_used || 0) : 0));
+
   // 我的总榜名次
   const better = await db.prepare(
     'SELECT COUNT(*) AS n FROM (SELECT user_id FROM progress WHERE level>=3 GROUP BY user_id HAVING COUNT(*) > ?)'
@@ -26,7 +32,10 @@ export async function onRequestGet(ctx) {
     todayStars: todayStars ? todayStars.stars : 0,
     streak,
     totalUsers,
-    myRankTotal: better.n + 1
+    myRankTotal: better.n + 1,
+    invite_code: inv ? inv.invite_code : '',
+    invite_quota: inviteQuota,
+    invite_max: inviteMax
   });
 }
 

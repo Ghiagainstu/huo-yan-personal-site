@@ -288,6 +288,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .rank-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-size:20px;background:#f0f4f3;flex:none;}
 .rank-avatar img{width:100%;height:100%;object-fit:cover;}
 #avatarModal .avatar-preview{margin-top:4px;}
+.invite-box{margin-top:12px;padding:10px 12px;background:#f0faf7;border:1px solid #b8dcd4;border-radius:12px;text-align:left;}
+.invite-row{font-size:14px;color:#333;margin:3px 0;}
+.invite-row b{color:#0a6e5f;font-size:16px;}
+.invite-tip{font-size:12px;color:#7ba89d;margin-top:6px;line-height:1.5;}
+.invite-copy{margin-left:6px;background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -357,6 +362,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <div class="avatar-presets" id="avatarPresets2"></div>
     </div>
     <div class="login-msg" id="avatarMsg"></div>
+    <div class="invite-box">
+      <div class="invite-row">📨 我的邀请码：<b id="myInviteCode">—</b><button class="invite-copy" onclick="copyInvite()">复制</button></div>
+      <div class="invite-row">邀请名额：<b id="myInviteQuota">—</b></div>
+      <div class="invite-tip">初始 3 个名额，每登录一天 +1，最多 10 个。把邀请码给朋友，对方注册成功会消耗 1 个名额。</div>
+    </div>
     <div class="login-btns">
       <button class="game-btn green" onclick="saveAvatar()">💾 保存头像</button>
     </div>
@@ -3441,13 +3451,29 @@ async function logout(){
   const area=document.getElementById('rankArea'); if(area) area.innerHTML='';
   openLogin();
 }
-function openAvatarModal(){
+async function openAvatarModal(){
   if(!auth) return;
+  await loadMe();
   avatarSel=auth.user.avatar||'e:🐭';
   renderAvatarPresets(document.getElementById('avatarPresets2'));
   refreshAvatarPreview();
   document.getElementById('avatarMsg').textContent='';
+  const me=auth.me||{};
+  const ic=document.getElementById('myInviteCode'), iq=document.getElementById('myInviteQuota');
+  if(ic) ic.textContent=me.invite_code||'—';
+  if(iq) iq.textContent=(me.invite_quota!=null?me.invite_quota:'—')+' / '+(me.invite_max||10)+' 个';
   document.getElementById('avatarModal').style.display='flex';
+}
+function copyInvite(){
+  const code=document.getElementById('myInviteCode').textContent;
+  if(!code||code==='—') return;
+  const el=document.createElement('textarea');
+  el.value='邀请码：'+code;
+  document.body.appendChild(el); el.select();
+  try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(el);
+  const b=document.getElementById('myInviteCode').nextElementSibling;
+  if(b){const t=b.textContent;b.textContent='✅ 已复制';setTimeout(()=>b.textContent=t,1500);}
 }
 function closeAvatarModal(){document.getElementById('avatarModal').style.display='none';}
 async function saveAvatar(){
