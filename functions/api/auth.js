@@ -11,7 +11,7 @@ const BANNED_NAMES = ['admin', 'root', 'test', 'administrator', 'system', 'owner
 const INVITE_INIT = 3;                      // 初始邀请名额
 const INVITE_MAX = 20;                      // 邀请名额上限（用户确认：单个用户上限 20）
 const INVITE_PER_DAY = 1;                   // 每累计登录一天 +1
-const REG_IP_LIMIT = 5;                     // 同 IP 每小时最多注册次数
+const REG_IP_LIMIT = 10;                    // 同 IP 每小时最多成功注册次数（失败尝试不计）
 const PIN_FAIL_LIMIT = 5;                   // 15 分钟窗口内 PIN 连续错误上限
 
 // 生成唯一 6 位数字邀请码
@@ -65,12 +65,6 @@ export async function onRequestPost(ctx) {
   const avatarVal = avatarOk ? avatar : '';
 
   if (action === 'register') {
-    // L2-1 同 IP 注册限频（每小时 5 次）
-    const ip = ipOf(ctx);
-    await bump(db, 'reg_ip', ip, winHour());
-    if (await getCount(db, 'reg_ip', ip, winHour()) > REG_IP_LIMIT) {
-      return json({ error: '注册太频繁，请一小时后再试' }, 429);
-    }
     // 邀请码校验：全局码 或 个人码（扣邀请人名额）
     const invite = String(body.invite || '').trim();
     const globalCode = (ctx.env && ctx.env.INVITE_CODE) || GLOBAL_INVITE;
@@ -89,9 +83,15 @@ export async function onRequestPost(ctx) {
     // 昵称唯一
     const exist = await db.prepare('SELECT id FROM users WHERE name = ?').bind(nm).first();
     if (exist) return json({ error: '该昵称已被使用，换一个或直接登录' }, 409);
+    // L2-1 同 IP 注册限频（只统计真正成功的注册；先检查后入库）
+    const ip = ipOf(ctx);
+    if (await getCount(db, 'reg_ip', ip, winHour()) >= REG_IP_LIMIT) {
+      return json({ error: '注册太频繁，请一小时后再试' }, 429);
+    }
     // 生成本人邀请码并入库
     const myCode = await genInviteCode(db);
     await db.prepare('INSERT INTO users(name, pin_hash, avatar, invite_code) VALUES(?, ?, ?, ?)').bind(nm, hash, avatarVal, myCode).run();
+    await bump(db, 'reg_ip', ip, winHour());   // 成功注册后计数
     // 消耗邀请人 1 个名额
     if (inviter) {
       await db.prepare('UPDATE users SET invite_used = invite_used + 1 WHERE id = ?').bind(inviter.id).run();
