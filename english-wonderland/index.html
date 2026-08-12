@@ -269,7 +269,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .avatar-upload{display:flex;flex-direction:column;align-items:center;gap:2px;background:#0c8f7d;color:#fff;border:none;border-radius:14px;padding:12px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
 .avatar-upload:hover{background:#0a7d6e;}
 .avatar-upload small{font-size:11px;font-weight:400;opacity:.9;}
-.avatar-presets{display:grid;grid-template-columns:repeat(4,44px);gap:8px;justify-content:center;margin-top:10px;}
+.avatar-presets{display:grid;grid-template-columns:repeat(5,44px);gap:8px;justify-content:center;margin-top:10px;}
 .avatar-opt{width:44px;height:44px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
 .avatar-up{font-size:12px;color:#0c8f7d;margin-top:8px;cursor:pointer;text-decoration:underline;}
@@ -3335,10 +3335,10 @@ async function api(path,opt){
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 /* ★ 头像（用户选定 8 个动物：Windows Chrome 彩色渲染稳定） */
-const AVATAR_EMOJIS=['🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼'];
-let avatarSel='e:🐨';
+const AVATAR_EMOJIS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷','🐨','🐙','🐳','🦉','🦋','🐝','🐻','🐼'];
+let avatarSel='e:🐭';
 function avatarHTML(av,cls){
-  if(!av) return '<span class="'+cls+'">🐨</span>';
+  if(!av) return '<span class="'+cls+'">🐭</span>';
   if(av.slice(0,2)==='e:') return '<span class="'+cls+'">'+esc(av.slice(2))+'</span>';
   return '<span class="'+cls+'"><img src="'+av+'" alt=""/></span>';
 }
@@ -3393,7 +3393,7 @@ function updateAuthUI(){
   }
 }
 function openLogin(){
-  avatarSel=(auth&&auth.user&&auth.user.avatar)||'e:🐱';
+  avatarSel=(auth&&auth.user&&auth.user.avatar)||'e:🐭';
   renderAvatarPresets(document.getElementById('avatarPresets'));
   refreshAvatarPreview();
   document.getElementById('loginScreen').style.display='flex';
@@ -3424,7 +3424,7 @@ async function logout(){
 }
 function openAvatarModal(){
   if(!auth) return;
-  avatarSel=auth.user.avatar||'e:🐱';
+  avatarSel=auth.user.avatar||'e:🐭';
   renderAvatarPresets(document.getElementById('avatarPresets2'));
   refreshAvatarPreview();
   document.getElementById('avatarMsg').textContent='';
@@ -3494,7 +3494,7 @@ async function renderRank(){
       const mine=auth&&it.name===auth.user.name;
       html+='<div class="rank-item'+(mine?' mine':'')+'">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
-        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar'):'🐱')+'</span>'+
+        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar'):'🐭')+'</span>'+
         '<span class="rank-name">'+esc(it.name)+'</span>'+
         '<span class="rank-val">'+(rankType==='total'?(it.mastered+' 词'):('⭐'+it.stars))+'</span>'+
         '</div>';
