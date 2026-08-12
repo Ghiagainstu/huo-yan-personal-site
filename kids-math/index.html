@@ -92,8 +92,12 @@
   .op{font-size:2.1rem; color:var(--teal); margin:0 4px;}
   .equal{font-size:2.1rem; color:var(--orange); margin:0 4px;}
   .unknown{font-size:2.6rem; color:var(--orange);}
-  .hint{font-size:.98rem; color:#e07b1a; font-weight:700; margin:6px 0 12px; min-height:20px; background:#fff4e6; border-radius:10px; padding:6px 8px;}
+  .hint{font-size:.98rem; color:#e07b1a; font-weight:700; margin:0; min-height:20px; background:#fff4e6; border-radius:10px; padding:6px 8px;}
   .hint.plain{color:#999; background:transparent; font-weight:400;}
+  .hint-area{display:flex; flex-direction:column; align-items:center; gap:8px; margin:6px 0 12px;}
+  .hint-btn{display:none; align-items:center; gap:6px; background:linear-gradient(135deg,#ffe0a3,#ffcf7a); color:#7a4a00; border:none; border-radius:999px; padding:8px 18px; font-size:1rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(224,123,26,.35);}
+  .hint-btn:hover{filter:brightness(1.05);}
+  .hint-btn.on{background:linear-gradient(135deg,#fff0d6,#ffe0a3); color:#b06a00; box-shadow:none;}
 
   /* 选项 */
   .options{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:16px;}
@@ -285,7 +289,10 @@
 
   <div class="board">
     <div class="equation" id="equation"></div>
-    <div class="hint plain" id="hint"></div>
+    <div class="hint-area">
+      <button class="hint-btn" id="hintBtn" type="button">💡 解题方法</button>
+      <div class="hint plain" id="hint"></div>
+    </div>
     <div class="options" id="options"></div>
     <div class="keypad" id="keypad">
       <div class="kp-display" id="kpDisplay">?</div>
@@ -549,7 +556,7 @@
   }
 
   const $=id=>document.getElementById(id);
-  const eqEl=$('equation'), hintEl=$('hint'), optEl=$('options'),
+  const eqEl=$('equation'), hintEl=$('hint'), hintBtn=$('hintBtn'), optEl=$('options'),
         fbEl=$('feedback'), nextBtn=$('next'), progEl=$('progress'),
         progFill=$('progFill'),
         keypadEl=$('keypad'), kpGrid=$('kpGrid'), kpDisplay=$('kpDisplay'),
@@ -766,8 +773,16 @@
     }
     eqEl.innerHTML=html;
 
-    if(q.hint){ hintEl.textContent=q.hint; hintEl.className='hint'; }
-    else { hintEl.textContent = inputMode==='fill' ? '算出答案，按数字键填入 👇' : '数一数 / 算一算，点出正确答案 👇'; hintEl.className='hint plain'; }
+    if(q.hint){
+      hintBtn.style.display='inline-flex';
+      hintBtn.classList.remove('on'); hintBtn.textContent='💡 解题方法';
+      hintEl.style.display='none'; hintEl.textContent=''; hintEl.className='hint';
+    }else{
+      hintBtn.style.display='none';
+      hintEl.style.display='';
+      hintEl.textContent = inputMode==='fill' ? '算出答案，按数字键填入 👇' : '数一数 / 算一算，点出正确答案 👇';
+      hintEl.className='hint plain';
+    }
 
     if(inputMode==='fill'){
       optEl.style.display='none'; keypadEl.style.display='block';
@@ -1027,6 +1042,17 @@
   const catsEl=$('cats');
   const catGroupsEl=$('catGroups');
   renderCatGroups(); renderCats();
+
+  hintBtn.addEventListener('click',()=>{
+    if(!current || !current.hint) return;
+    if(hintBtn.classList.contains('on')){
+      hintBtn.classList.remove('on'); hintBtn.textContent='💡 解题方法';
+      hintEl.style.display='none'; hintEl.textContent='';
+    }else{
+      hintBtn.classList.add('on'); hintBtn.textContent='🔆 已显示';
+      hintEl.style.display=''; hintEl.textContent=current.hint; hintEl.className='hint';
+    }
+  });
 
   function renderCatGroups(){
     catGroupsEl.innerHTML='';
