@@ -307,13 +307,13 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <button class="about-btn" onclick="showAbout()">ℹ️ 关于</button>
     </div>
     <h1>🎓 儿童英语学习乐园</h1>
-    <div class="sub">英语单词 808 · 🎮 闯关游戏</div>
+    <div class="sub">英语单词 · 🎮 闯关游戏 · 🏆 排行榜</div>
 </div>
 <div class="about-modal" id="aboutModal" onclick="if(event.target===this)closeAbout()">
   <div class="about-box">
     <button class="about-close" onclick="closeAbout()" aria-label="关闭">✕</button>
     <h2>👋 关于儿童英语学习乐园</h2>
-    <p>这是一份专为 <strong>上海幼儿园大班 / 幼小衔接</strong> 小朋友设计的英语启蒙小工具，用 <strong>808 个单词</strong>、<strong>23 类</strong> 贴近生活的主题陪孩子轻松入门。</p>
+    <p>这是一份专为 <strong>上海幼儿园大班 / 幼小衔接</strong> 小朋友设计的英语启蒙小工具，用 <strong id="aboutWords">861</strong> 个单词、<strong id="aboutCats">24</strong> 类 贴近生活的主题陪孩子轻松入门。</p>
     <ul>
       <li>🃏 <strong>英语卡片</strong>：点一下翻到中文，跟读英美双发音，标记「已掌握」。</li>
       <li>🎮 <strong>英语小游戏</strong>：拼词、指认、听音选图，闯关赢星星。</li>
@@ -395,7 +395,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="game-praise" id="gamePraise"></div>
 <script>
 /* ============================================================
-   808 英语单词 (23 类)
+   861 英语单词 (24 类)
    ============================================================ */
 const PHON={'dog':['/dɒɡ/','/dɔɡ/','https://api.dictionaryapi.dev/media/pronunciations/en/dog-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/dog-us.mp3'],
 'cat':['/kæt/','/kæt/','https://api.dictionaryapi.dev/media/pronunciations/en/cat-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/cat-us.mp3'],
@@ -3532,6 +3532,8 @@ function handleKey(e){
 document.addEventListener('keydown',handleKey);
 document.addEventListener('DOMContentLoaded',function(){
   migrateProgress();
+  const _aw=document.getElementById('aboutWords'); if(_aw)_aw.textContent=totalWords();
+  const _ac=document.getElementById('aboutCats'); if(_ac)_ac.textContent=CATS.length;
   auth=loadAuth(); updateAuthUI();
   if(auth){loadMe(); syncAllProgress();}
   else { openLogin(); }
