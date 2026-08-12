@@ -263,10 +263,14 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .login-box h2{margin:6px 0 4px;font-size:20px;color:#0c8f7d;}
 .login-sub{font-size:13px;color:#777;margin-bottom:14px;}
 .avatar-pick{margin:6px 0 12px;}
-.avatar-preview{width:84px;height:84px;border-radius:50%;margin:0 auto 10px;background:#f0f4f3;border:3px dashed #c5d8d2;display:flex;align-items:center;justify-content:center;font-size:46px;cursor:pointer;overflow:hidden;color:#666;}
+.avatar-row{display:flex;align-items:center;justify-content:center;gap:14px;}
+.avatar-preview{width:84px;height:84px;border-radius:50%;background:#f0f4f3;border:3px dashed #c5d8d2;display:flex;align-items:center;justify-content:center;font-size:46px;cursor:pointer;overflow:hidden;color:#666;flex:none;}
 .avatar-preview img{width:100%;height:100%;object-fit:cover;}
-.avatar-presets{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
-.avatar-opt{width:38px;height:38px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:2px;background:#0c8f7d;color:#fff;border:none;border-radius:14px;padding:12px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
+.avatar-upload:hover{background:#0a7d6e;}
+.avatar-upload small{font-size:11px;font-weight:400;opacity:.9;}
+.avatar-presets{display:grid;grid-template-columns:repeat(4,44px);gap:8px;justify-content:center;margin-top:10px;}
+.avatar-opt{width:44px;height:44px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
 .avatar-up{font-size:12px;color:#0c8f7d;margin-top:8px;cursor:pointer;text-decoration:underline;}
 .login-box .search-input{margin:7px 0;text-align:center;}
@@ -285,9 +289,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <h2>🎓 儿童英语学习乐园</h2>
     <div class="login-sub">登录后和小朋友一起学习、看排名 🏆</div>
     <div class="avatar-pick">
-      <div class="avatar-preview" id="avatarPreview" onclick="openAvatarFile()"></div>
+      <div class="avatar-row">
+        <div class="avatar-preview" id="avatarPreview" onclick="openAvatarFile()"></div>
+        <button type="button" class="avatar-upload" onclick="openAvatarFile()">📷 上传照片<small>自己拍 / 照片</small></button>
+      </div>
       <div class="avatar-presets" id="avatarPresets"></div>
-      <div class="avatar-up" onclick="openAvatarFile()">📷 上传自己的头像</div>
       <input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="onAvatarFile(this)"/>
     </div>
     <input id="loginName" class="search-input" placeholder="昵称（如：果果）" maxlength="12"/>
@@ -327,9 +333,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <button class="about-close" onclick="closeAvatarModal()" aria-label="关闭">✕</button>
     <h2>🖼️ 换个头像</h2>
     <div class="avatar-pick">
-      <div class="avatar-preview" id="avatarPreview2" onclick="openAvatarFile()"></div>
+      <div class="avatar-row">
+        <div class="avatar-preview" id="avatarPreview2" onclick="openAvatarFile()"></div>
+        <button type="button" class="avatar-upload" onclick="openAvatarFile()">📷 上传照片<small>自己拍 / 照片</small></button>
+      </div>
       <div class="avatar-presets" id="avatarPresets2"></div>
-      <div class="avatar-up" onclick="openAvatarFile()">📷 上传自己的头像</div>
     </div>
     <div class="login-msg" id="avatarMsg"></div>
     <div class="login-btns">
@@ -3326,8 +3334,8 @@ async function api(path,opt){
   }catch(e){return {ok:false,data:{error:'网络异常，稍后再试'}};}
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-/* ★ 头像 */
-const AVATAR_EMOJIS=['🐱','🐶','🦁','🐼','🐰','🦄','🐸','⭐','🌈','🎈','🍎','🌻'];
+/* ★ 头像（精选 8 个：Windows Chrome 彩色渲染稳定 + 主题统一） */
+const AVATAR_EMOJIS=['🐱','🐶','🐰','🐼','🐸','🐯','🦊','🌈'];
 let avatarSel='e:🐱';
 function avatarHTML(av,cls){
   if(!av) return '<span class="'+cls+'">🐱</span>';
