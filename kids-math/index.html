@@ -209,6 +209,20 @@
     .kp{height:62px; font-size:1.7rem;}
     .parent-btn{font-size:.66rem; padding:5px 8px;}
   }
+  /* 护眼锁 */
+  .eye-lock{position:fixed; inset:0; background:linear-gradient(160deg,#e8f3ff,#fef6e4); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000;}
+  .eye-lock.show{display:flex;}
+  .eye-card{background:#fff; border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,.25); max-width:380px; width:100%; padding:28px 24px; text-align:center;}
+  .eye-emoji{font-size:3rem; animation:blink 2s ease-in-out infinite;}
+  @keyframes blink{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.12);opacity:.85;}}
+  .eye-card h2{margin:8px 0 6px; font-size:1.4rem;}
+  .eye-desc{color:#666; font-size:.98rem; line-height:1.6; margin:0 0 12px;}
+  .eye-2020{background:var(--teal); color:#fff; border-radius:14px; padding:10px; font-weight:700; margin-bottom:16px; animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+  .eye-verify{margin-top:6px;}
+  .eye-input{width:150px; font-size:1.3rem; text-align:center; padding:10px; border:2px solid var(--orange); border-radius:12px; margin:8px 0; outline:none;}
+  .eye-math-q{font-size:1.6rem; font-weight:800; margin:6px 0; color:var(--ink);}
+  .eye-msg{min-height:1.2em; font-size:.85rem; color:#e8554e; margin-top:6px;}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -269,6 +283,21 @@
       <div class="stat-row"><span>最佳连对</span><b id="sBest">0</b></div>
       <button class="ghost" id="openWrongBook">📕 错题本</button>
       <button class="reset" id="resetStats">清空统计</button>
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+      <h3 style="margin:4px 0 8px;font-size:1rem;">👀 护眼家长锁</h3>
+      <div class="stat-row"><span>今日已用</span><b id="eyeTodayUsed">0 分</b></div>
+      <div id="pinStatus" style="font-size:.85rem;color:#888;margin:4px 0 8px;"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+        <input id="pinNew" inputmode="numeric" maxlength="4" placeholder="新密码4位" style="width:92px;padding:8px;border:2px solid #ddd;border-radius:10px;text-align:center;">
+        <input id="pinConfirm" inputmode="numeric" maxlength="4" placeholder="再输一次" style="width:92px;padding:8px;border:2px solid #ddd;border-radius:10px;text-align:center;">
+      </div>
+      <div style="margin:6px 0;">
+        <button class="ghost" id="pinSave">保存密码</button>
+        <button class="ghost" id="pinClear">清除密码</button>
+      </div>
+      <div id="pinMsg" style="font-size:.82rem;color:#e8554e;min-height:1.1em;"></div>
+      <button class="ghost" id="resetTodayBtn" style="margin-top:8px;">重置今日时长</button>
+      <div id="resetTodayMsg" style="font-size:.82rem;color:#4ecdc4;min-height:1.1em;"></div>
       <div><button class="ghost" id="closeParent">关闭</button></div>
     </div>
   </div>
@@ -332,6 +361,29 @@
       <div style="margin-top:10px;"><button class="ctrl-btn swap" id="anReplay" style="position:static;display:inline-block;background:var(--orange);">🔁 只练错题</button></div>
       <div><button class="ghost" id="anFree">自由练习</button></div>
       <div><button class="ghost" id="anClose">返回得分卡</button></div>
+    </div>
+  </div>
+
+  <!-- 护眼锁：超时强制休息，需家长验证 -->
+  <div class="eye-lock" id="eyeLock">
+    <div class="eye-card">
+      <div class="eye-emoji">👀</div>
+      <h2 id="eyeTitle">该休息一下</h2>
+      <p id="eyeDesc" class="eye-desc"></p>
+      <div class="eye-2020">👉 看 6 米外的远处，休息 20 秒 👈</div>
+      <div id="eyePinWrap" class="eye-verify">
+        <div style="font-weight:700;margin-bottom:6px;">家长验证</div>
+        <input id="eyePinInput" type="password" inputmode="numeric" maxlength="4" placeholder="输入 4 位家长密码" class="eye-input">
+        <div><button class="ctrl-btn start" id="eyePinBtn">验证解锁</button></div>
+        <div id="eyePinMsg" class="eye-msg"></div>
+      </div>
+      <div id="eyeMathWrap" class="eye-verify">
+        <div style="font-weight:700;margin-bottom:6px;">家长验证（请家长算一算）</div>
+        <div id="eyeMathQ" class="eye-math-q"></div>
+        <input id="eyeMathInput" inputmode="numeric" placeholder="答案" class="eye-input">
+        <div><button class="ctrl-btn start" id="eyeMathBtn">验证解锁</button></div>
+        <div id="eyeMathMsg" class="eye-msg"></div>
+      </div>
     </div>
   </div>
 
@@ -1002,7 +1054,7 @@
     saveState();
   });
 
-  $('openParent').addEventListener('click',()=>{refreshStats();$('parentModal').classList.add('show');});
+  $('openParent').addEventListener('click',()=>{refreshStats();refreshEyeInfo();$('parentModal').classList.add('show');});
   $('closeParent').addEventListener('click',()=>$('parentModal').classList.remove('show'));
   $('openWrongBook').addEventListener('click',()=>{ $('parentModal').classList.remove('show'); showWrongBook(); });
   $('closeWrongBook').addEventListener('click',()=>$('wrongBookModal').classList.remove('show'));
@@ -1017,6 +1069,80 @@
   $('anReplay').addEventListener('click',()=>{ $('analyseModal').classList.remove('show'); startReplay(); });
   $('anFree').addEventListener('click',()=>{ $('analyseModal').classList.remove('show'); replayMode=false; roundActive=false; freeDone=0; freeCorrect=0; roundLog=[]; current=nextQ(); render(); saveState(); });
   $('anClose').addEventListener('click',()=>{ $('analyseModal').classList.remove('show'); $('scoreModal').classList.add('show'); });
+
+  /* ---------- 护眼：单次 / 每日时长上限 + 家长锁 ---------- */
+  const EYE_STORE='kidsmath_uptime_v1';
+  const PARENT_STORE='kidsmath_parent_v1';
+  const EYE_SINGLE_LIMIT=20*60;   // 单次连续 20 分钟
+  const EYE_DAILY_LIMIT=40*60;    // 当日累计 40 分钟
+  function todayKey(){ const d=new Date(); return ''+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
+  function loadParent(){ try{ const p=JSON.parse(localStorage.getItem(PARENT_STORE)); if(p&&typeof p==='object') return p; }catch(e){} return {pin:null}; }
+  function saveParent(p){ try{ localStorage.setItem(PARENT_STORE, JSON.stringify(p)); }catch(e){} }
+  let parentCfg=loadParent();
+  function loadUptime(){
+    let u={date:todayKey(), single:0, daily:0};
+    try{ const s=JSON.parse(localStorage.getItem(EYE_STORE)); if(s&&typeof s==='object'&&s.date===todayKey()){ u.single=+s.single||0; u.daily=+s.daily||0; } }catch(e){}
+    return u;
+  }
+  let uptime=loadUptime();
+  let eyeLockActive=false, eyeLockReason=null, eyeMathAns=0;
+  function saveUptime(){ try{ localStorage.setItem(EYE_STORE, JSON.stringify(uptime)); }catch(e){} }
+  function refreshEyeInfo(){
+    const m=Math.floor(uptime.daily/60), s=uptime.daily%60;
+    $('eyeTodayUsed').textContent=m+' 分'+(s?' '+s+' 秒':'');
+    $('pinStatus').textContent=(parentCfg.pin&&/^\d{4}$/.test(parentCfg.pin))?'当前：已设置（••••）':'当前：未设置（超时请用算式验证）';
+  }
+  function startEyeTimer(){
+    setInterval(()=>{
+      if(eyeLockActive||document.hidden) return;
+      if(uptime.date!==todayKey()){ uptime={date:todayKey(),single:0,daily:0}; }
+      uptime.single++; uptime.daily++;
+      if(uptime.daily>=EYE_DAILY_LIMIT){ saveUptime(); triggerEyeLock('daily'); return; }
+      if(uptime.single>=EYE_SINGLE_LIMIT){ saveUptime(); triggerEyeLock('single'); return; }
+      saveUptime();
+    },1000);
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden) saveUptime(); });
+    window.addEventListener('beforeunload', saveUptime);
+  }
+  function triggerEyeLock(reason){
+    if(eyeLockActive) return;
+    eyeLockActive=true; eyeLockReason=reason;
+    $('eyeTitle').textContent= reason==='daily' ? '🌙 今日护眼时间已用完' : '👀 该休息一下，保护眼睛啦';
+    $('eyeDesc').textContent= reason==='daily'
+      ? '为保护眼睛，今天的使用时间已到上限。请家长验证后决定是否继续。'
+      : '你已经连续看屏幕 20 分钟啦。请先看看 6 米外的远处休息一下，再请家长解锁继续。';
+    if(parentCfg.pin&&/^\d{4}$/.test(parentCfg.pin)){ showEyePin(); } else { showEyeMath(); }
+    $('eyeLock').classList.add('show');
+  }
+  function showEyePin(){ $('eyePinWrap').style.display='block'; $('eyeMathWrap').style.display='none'; const i=$('eyePinInput'); i.value=''; $('eyePinMsg').textContent=''; setTimeout(()=>i.focus(),60); }
+  function showEyeMath(){ $('eyePinWrap').style.display='none'; $('eyeMathWrap').style.display='block'; genEyeMath(); }
+  function genEyeMath(){ const a=10+Math.floor(Math.random()*89), b=10+Math.floor(Math.random()*89); eyeMathAns=a*b; $('eyeMathQ').textContent=a+' × '+b+' = ?'; $('eyeMathInput').value=''; $('eyeMathMsg').textContent=''; setTimeout(()=>$('eyeMathInput').focus(),60); }
+  function unlockEye(){
+    eyeLockActive=false; uptime.single=0;
+    if(eyeLockReason==='daily') uptime.daily=0;
+    eyeLockReason=null; saveUptime();
+    $('eyeLock').classList.remove('show');
+  }
+  function tryEyePin(){ if($('eyePinInput').value.trim()===parentCfg.pin){ unlockEye(); } else { $('eyePinMsg').textContent='密码不对，请家长输入'; } }
+  function tryEyeMath(){ const v=parseInt($('eyeMathInput').value,10); if(v===eyeMathAns){ unlockEye(); } else { $('eyeMathMsg').textContent='算错啦，请家长再算一次'; } }
+  function setupPin(){
+    const n1=$('pinNew').value.trim(), n2=$('pinConfirm').value.trim();
+    if(!/^\d{4}$/.test(n1)){ $('pinMsg').textContent='请输入 4 位数字'; return; }
+    if(n1!==n2){ $('pinMsg').textContent='两次输入不一致'; return; }
+    parentCfg.pin=n1; saveParent(parentCfg); $('pinNew').value=''; $('pinConfirm').value='';
+    $('pinMsg').textContent='✅ 家长密码已设置'; refreshEyeInfo();
+  }
+  function clearPin(){ parentCfg.pin=null; saveParent(parentCfg); $('pinMsg').textContent='已清除（将改用算式验证）'; refreshEyeInfo(); }
+  function resetToday(){ uptime={date:todayKey(),single:0,daily:0}; eyeLockActive=false; saveUptime(); $('eyeLock').classList.remove('show'); $('resetTodayMsg').textContent='✅ 今日时长已重置'; }
+
+  /* 护眼相关绑定 */
+  $('eyePinBtn').addEventListener('click', tryEyePin);
+  $('eyeMathBtn').addEventListener('click', tryEyeMath);
+  $('eyePinInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryEyePin(); });
+  $('eyeMathInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryEyeMath(); });
+  $('pinSave').addEventListener('click', setupPin);
+  $('pinClear').addEventListener('click', clearPin);
+  $('resetTodayBtn').addEventListener('click', resetToday);
 
   /* 启动 */
   buildKeypad(); renderSubcats(); updateSoundBtn();
@@ -1046,6 +1172,8 @@
     render(); saveState();
   }
   refreshStats();
+  refreshEyeInfo();
+  startEyeTimer();
 })();
 </script>
 </body>
