@@ -311,6 +311,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <label for="loginPin">🔒 PIN 码（4 位数字）</label>
       <input id="loginPin" class="search-input" type="password" inputmode="numeric" maxlength="4" placeholder="例如 1234" onkeydown="if(event.key==='Enter')doAuth('login')"/>
     </div>
+    <div class="login-field" id="inviteField">
+      <label for="loginInvite">🔑 邀请码（注册新账号需要）</label>
+      <input id="loginInvite" class="search-input" placeholder="问家长要" maxlength="12"/>
+    </div>
     <div class="login-msg" id="loginMsg"></div>
     <div class="login-btns">
       <button class="game-btn green" onclick="doAuth('login')">🔑 登录</button>
@@ -3415,9 +3419,11 @@ function closeLogin(){document.getElementById('loginScreen').style.display='none
 async function doAuth(action){
   const name=document.getElementById('loginName').value.trim();
   const pin=document.getElementById('loginPin').value.trim();
+  const invite=document.getElementById('loginInvite').value.trim();
   const msg=document.getElementById('loginMsg');
   if(!name||!/^\d{4}$/.test(pin)){msg.textContent='请输入昵称和 4 位数字 PIN';return;}
-  const res=await api('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name,pin,avatar:avatarSel,date:cnToday()})});
+  if(action==='register'&&!invite){msg.textContent='注册需要邀请码，请向家长索取';return;}
+  const res=await api('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name,pin,avatar:avatarSel,invite,date:cnToday()})});
   if(!res.ok){msg.textContent=res.data.error||'出错了，稍后再试';return;}
   saveAuth(res.data);
   msg.textContent='';

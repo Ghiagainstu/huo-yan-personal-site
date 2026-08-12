@@ -1,5 +1,10 @@
 // 认证：注册 / 登录 / 登出（昵称 + 4 位 PIN）
+// 注册保护：邀请码（环境变量 INVITE_CODE，默认 8688）+ 总账号上限 + 昵称黑名单
 import { json, pinHash, cnDate } from './_lib.js';
+
+const DEFAULT_INVITE = '8688';                      // 默认邀请码（可在 Cloudflare 环境变量 INVITE_CODE 覆盖）
+const MAX_USERS = 200;                              // 总账号上限，防刷爆 D1 免费额度
+const BANNED_NAMES = ['admin', 'root', 'test', 'administrator', 'system', 'owner', 'guest', '匿名'];
 
 export async function onRequestPost(ctx) {
   const db = ctx.env.DB;
@@ -15,6 +20,16 @@ export async function onRequestPost(ctx) {
   const avatarVal = avatarOk ? avatar : '';
 
   if (action === 'register') {
+    // 1) 邀请码校验（没码一律拒绝，防恶意批量注册）
+    const invite = String(body.invite || '').trim();
+    const inviteOk = (ctx.env && ctx.env.INVITE_CODE) || DEFAULT_INVITE;
+    if (invite !== inviteOk) return json({ error: '注册需要邀请码，请向家长索取' }, 403);
+    // 2) 昵称黑名单
+    if (BANNED_NAMES.includes(nm.toLowerCase())) return json({ error: '该昵称不可用' }, 400);
+    // 3) 总账号上限
+    const cnt = await db.prepare('SELECT COUNT(*) AS n FROM users').first();
+    if (cnt.n >= MAX_USERS) return json({ error: '注册名额已满' }, 403);
+    // 4) 昵称唯一
     const exist = await db.prepare('SELECT id FROM users WHERE name = ?').bind(nm).first();
     if (exist) return json({ error: '该昵称已被使用，换一个或直接登录' }, 409);
     await db.prepare('INSERT INTO users(name, pin_hash, avatar) VALUES(?, ?, ?)').bind(nm, hash, avatarVal).run();
