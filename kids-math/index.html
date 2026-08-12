@@ -126,6 +126,17 @@
   @keyframes starPop{0%{transform:scale(0) rotate(-40deg); opacity:0}70%{transform:scale(1.3)}100%{transform:scale(1); opacity:1}}
   .score-msg{font-size:1.3rem; font-weight:800; margin:8px 0 16px;}
   .score-msg.gold{color:var(--gold);} .score-msg.green{color:var(--green);} .score-msg.blue{color:var(--teal);} .score-msg.red{color:var(--red);}
+  .score-rate{font-size:1.5rem; font-weight:900; margin:2px 0 4px;}
+  .score-rate.gold{color:var(--gold);} .score-rate.green{color:var(--green);} .score-rate.blue{color:var(--teal);} .score-rate.red{color:var(--red);}
+  .score-wrong-title{font-size:.95rem; color:#888; margin:12px 0 6px; text-align:left;}
+  .score-wrong-list{display:flex; flex-direction:column; gap:6px; max-height:200px; overflow:auto;}
+  .sw-item{display:flex; align-items:center; gap:6px; justify-content:space-between; background:#f6f7f9; border-radius:10px; padding:8px 10px; font-size:.95rem; cursor:pointer; text-align:left;}
+  .sw-item:active{transform:scale(.99);}
+  .sw-q{font-weight:700; color:#333;}
+  .sw-wval{font-size:.8rem; color:var(--red); flex:0 0 auto;}
+  .sw-ans{font-size:.85rem; color:var(--green); font-weight:700; flex:0 0 auto;}
+  .sw-item.hide-ans .sw-ans{display:none;}
+  .sw-item.hide-ans::after{content:'👁'; font-size:.9rem; color:#aaa;}
 
   /* 错题分析看板 */
   .an-rate{font-size:1.3rem; font-weight:800; color:var(--orange); margin:2px 0 8px;}
@@ -290,6 +301,9 @@
       <div class="score-num" id="scoreNum">0 / 10</div>
       <div class="score-stars" id="scoreStars"></div>
       <div class="score-msg" id="scoreMsg"></div>
+      <div class="score-rate" id="scoreRate"></div>
+      <div class="score-wrong-title" id="scoreWrongTitle" style="display:none;">📌 错题回顾（点一下可看答案）</div>
+      <div class="score-wrong-list" id="scoreWrong"></div>
       <button class="ctrl-btn start" id="againRound" style="position:static;display:inline-block;">再来一轮 🔁</button>
       <div style="margin-top:10px;"><button class="ctrl-btn start" id="toAnalyse" style="position:static;display:inline-block;background:var(--teal);">📊 错题分析</button></div>
       <div><button class="ghost" id="freeMode">自由练习</button></div>
@@ -655,6 +669,10 @@
     updateProgress();
   }
 
+  function isValidQ(q){
+    return q && typeof q==='object' && typeof q.type==='string' &&
+           q.type!=='' && typeof q.ans==='number' && isFinite(q.ans);
+  }
   function genOptions(ans,cap){
     const set=new Set([ans]); let g=0; const delta=cap<=10?2:5;
     while(set.size<3 && g++<80){ const d=ans+randInt(-delta,delta); if(d>=0&&d<=cap&&d!==ans) set.add(d); }
@@ -754,12 +772,14 @@
     }
   }
   function showScore(){
-    const rate=roundSize? roundCorrect/roundSize : 0;
+    const total=roundLog.length||roundSize;
+    const correct=roundCorrect;
+    const rate= total? Math.round(correct/total*100):0;
     const numEl=$('scoreNum');
     // 数字滚动
-    let n=0; const step=Math.max(1,Math.round(roundCorrect/20))||1;
-    const timer=setInterval(()=>{ n+=step; if(n>=roundCorrect){n=roundCorrect; clearInterval(timer);} numEl.textContent=n+' / '+roundSize; },40);
-    numEl.textContent='0 / '+roundSize;
+    let n=0; const step=Math.max(1,Math.round(correct/20))||1;
+    const timer=setInterval(()=>{ n+=step; if(n>=correct){n=correct; clearInterval(timer);} numEl.textContent=n+' / '+total; },40);
+    numEl.textContent='0 / '+total;
 
     const starsEl=$('scoreStars'), msgEl=$('scoreMsg');
     starsEl.innerHTML=''; msgEl.className='score-msg';
@@ -773,6 +793,31 @@
     for(let i=0;i<sStr.length;i++){
       const s=document.createElement('span'); s.textContent=sStr[i]; s.style.animationDelay=(i*0.15)+'s'; starsEl.appendChild(s);
     }
+
+    // 正确率大字
+    const rateEl=$('scoreRate');
+    rateEl.textContent='正确率 '+rate+'%';
+    rateEl.className='score-rate '+(rate>=90?'gold':rate>=70?'green':rate>=50?'blue':'red');
+
+    // 哪些题错了：列出本轮 struggle 的题（答错或跳过），点一下展开答案
+    const wrongs=roundLog.filter(r=>r.struggled);
+    const wTitle=$('scoreWrongTitle'), wList=$('scoreWrong');
+    wList.innerHTML='';
+    if(wrongs.length===0){ wTitle.style.display='none'; }
+    else{
+      wTitle.style.display='block';
+      wrongs.forEach(r=>{
+        const w = r.wrong==null ? '（跳过）' : '你填了 '+r.wrong;
+        const item=document.createElement('div');
+        item.className='sw-item';
+        item.innerHTML='<span class="sw-q">'+r.text+'</span><span class="sw-wval">'+w+'</span><span class="sw-ans">✅ '+r.ans+'</span>';
+        item.title='点击隐藏/显示正确答案';
+        let shown=true;
+        item.addEventListener('click',()=>{ shown=!shown; item.classList.toggle('hide-ans',!shown); });
+        wList.appendChild(item);
+      });
+    }
+
     confetti();
     playFanfare();
     $('scoreModal').classList.add('show');
@@ -967,7 +1012,7 @@
   document.querySelectorAll('.mode2-btn').forEach(x=>{ if(x.id!=='soundBtn') x.classList.toggle('active', x.dataset.mode2===inputMode); });
   applyAdaptUI();
   // 恢复闯关进度：若上次在题目中途，回到原题目继续（已答则显示「继续」，不重复计分）
-  if(savedUI && savedUI.roundActive && savedUI.current && typeof savedUI.current.ans==='number'){
+  if(savedUI && savedUI.roundActive && isValidQ(savedUI.current)){
     roundActive=true; roundIndex=savedUI.roundIndex||0; roundCorrect=savedUI.roundCorrect||0;
     roundLog=(savedUI.roundLog||[]); current=savedUI.current;
     render();
@@ -982,7 +1027,9 @@
   }else{
     freeDone = savedUI && typeof savedUI.freeDone==='number' ? savedUI.freeDone : 0;
     freeCorrect = savedUI && typeof savedUI.freeCorrect==='number' ? savedUI.freeCorrect : 0;
-    if(savedUI && savedUI.current && typeof savedUI.current.ans==='number'){ current=savedUI.current; }
+    // 旧版本 localStorage 的 current 可能缺 type 字段（如 {a,b,op,ans}），
+    // 直接喂给 render() 会令三路 q.type 判断全落空、题目区空白。必须强校验。
+    if(isValidQ(savedUI && savedUI.current)){ current=savedUI.current; }
     else { current = adaptMode ? nextQ() : genQuestion(); }
     render(); saveState();
   }
