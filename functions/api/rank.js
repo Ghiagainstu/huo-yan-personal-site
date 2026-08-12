@@ -17,21 +17,21 @@ export async function onRequestGet(ctx) {
 
   if (type === 'week') {
     rows = await db.prepare(
-      `SELECT u.name, SUM(c.stars) AS stars, COUNT(DISTINCT c.date) AS days
+      `SELECT u.name, u.avatar, SUM(c.stars) AS stars, COUNT(DISTINCT c.date) AS days
        FROM checkin c JOIN users u ON u.id = c.user_id
        WHERE c.date >= date('now','-6 days')
        GROUP BY u.id ORDER BY stars DESC, days DESC, u.id ASC LIMIT 20`
     ).all();
   } else if (type === 'day') {
     rows = await db.prepare(
-      `SELECT u.name, c.stars AS stars
+      `SELECT u.name, u.avatar, c.stars AS stars
        FROM checkin c JOIN users u ON u.id = c.user_id
        WHERE c.date = date('now')
        ORDER BY stars DESC, u.id ASC LIMIT 20`
     ).all();
   } else {
     rows = await db.prepare(
-      `SELECT u.name, COUNT(p.word) AS mastered
+      `SELECT u.name, u.avatar, COUNT(p.word) AS mastered
        FROM users u JOIN progress p ON p.user_id = u.id AND p.level >= 3
        GROUP BY u.id ORDER BY mastered DESC, u.id ASC LIMIT 20`
     ).all();
@@ -56,7 +56,7 @@ async function me(db, token, url) {
   ).bind(mastered).first();
 
   return json({
-    user: { id: u.id, name: u.name },
+    user: { id: u.id, name: u.name, avatar: u.avatar || '' },
     mastered,
     todayStars: todayStars ? todayStars.stars : 0,
     streak,

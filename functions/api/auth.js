@@ -10,11 +10,14 @@ export async function onRequestPost(ctx) {
     return json({ error: '请输入昵称和 4 位数字 PIN' }, 400);
   }
   const hash = await pinHash(nm, pin);
+  const avatar = String(body.avatar || '').slice(0, 300000);
+  const avatarOk = /^e:[^\s]{1,8}$/.test(avatar) || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar);
+  const avatarVal = avatarOk ? avatar : '';
 
   if (action === 'register') {
     const exist = await db.prepare('SELECT id FROM users WHERE name = ?').bind(nm).first();
     if (exist) return json({ error: '该昵称已被使用，换一个或直接登录' }, 409);
-    await db.prepare('INSERT INTO users(name, pin_hash) VALUES(?, ?)').bind(nm, hash).run();
+    await db.prepare('INSERT INTO users(name, pin_hash, avatar) VALUES(?, ?, ?)').bind(nm, hash, avatarVal).run();
   } else if (action === 'login') {
     const u = await db.prepare('SELECT id, pin_hash FROM users WHERE name = ?').bind(nm).first();
     if (!u || u.pin_hash !== hash) return json({ error: '昵称或 PIN 不对' }, 401);
@@ -22,7 +25,7 @@ export async function onRequestPost(ctx) {
     return json({ error: '参数错误' }, 400);
   }
 
-  const u = await db.prepare('SELECT id, name FROM users WHERE name = ?').bind(nm).first();
+  const u = await db.prepare('SELECT id, name, avatar FROM users WHERE name = ?').bind(nm).first();
   const token = crypto.randomUUID();
   await db.prepare('INSERT INTO sessions(token, user_id) VALUES(?, ?)').bind(token, u.id).run();
 
@@ -30,7 +33,7 @@ export async function onRequestPost(ctx) {
   const today = cnDate(body);
   await db.prepare('INSERT OR IGNORE INTO checkin(user_id, date, stars) VALUES(?, ?, 0)').bind(u.id, today).run();
 
-  return json({ token, user: { id: u.id, name: u.name } });
+  return json({ token, user: { id: u.id, name: u.name, avatar: u.avatar || '' } });
 }
 
 // 登出：DELETE /api/auth，Authorization: Bearer <token>

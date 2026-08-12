@@ -5,8 +5,10 @@ CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT UNIQUE NOT NULL,                -- 昵称（唯一）
   pin_hash TEXT NOT NULL,                   -- PIN 哈希（SHA-256，不存明文）
+  avatar TEXT NOT NULL DEFAULT '',          -- 头像：'e:🐱'(emoji预设) 或 dataURL(上传图 96px)
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+-- 已有库迁移（已建表时执行）：ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT '';
 
 CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY,                   -- 登录会话 token

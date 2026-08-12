@@ -257,13 +257,52 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .rank-me{text-align:center;font-size:13px;color:#666;margin:6px 0 0;}
 #loginModal .search-input{margin:8px 0;text-align:center;}
 #loginMsg{min-height:18px;}
+/* ★ 全屏登录层 + 头像 */
+.login-screen{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#0c8f7d 0%,#1f9d55 60%,#38b26a 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:#fff;border-radius:24px;padding:26px 24px;max-width:360px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25);text-align:center;}
+.login-box h2{margin:6px 0 4px;font-size:20px;color:#0c8f7d;}
+.login-sub{font-size:13px;color:#777;margin-bottom:14px;}
+.avatar-pick{margin:6px 0 12px;}
+.avatar-preview{width:84px;height:84px;border-radius:50%;margin:0 auto 10px;background:#f0f4f3;border:3px dashed #c5d8d2;display:flex;align-items:center;justify-content:center;font-size:46px;cursor:pointer;overflow:hidden;color:#666;}
+.avatar-preview img{width:100%;height:100%;object-fit:cover;}
+.avatar-presets{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+.avatar-opt{width:38px;height:38px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
+.avatar-up{font-size:12px;color:#0c8f7d;margin-top:8px;cursor:pointer;text-decoration:underline;}
+.login-box .search-input{margin:7px 0;text-align:center;}
+.login-msg{min-height:18px;font-size:13px;color:#c62828;}
+.login-btns{display:flex;gap:10px;justify-content:center;margin-top:10px;}
+.user-pill .up-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.3);cursor:pointer;flex:none;}
+.user-pill .up-avatar img{width:100%;height:100%;object-fit:cover;}
+.rank-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-size:20px;background:#f0f4f3;flex:none;}
+.rank-avatar img{width:100%;height:100%;object-fit:cover;}
+#avatarModal .avatar-preview{margin-top:4px;}
 </style>
 </head>
 <body>
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h2>🎓 儿童英语学习乐园</h2>
+    <div class="login-sub">登录后和小朋友一起学习、看排名 🏆</div>
+    <div class="avatar-pick">
+      <div class="avatar-preview" id="avatarPreview" onclick="openAvatarFile()"></div>
+      <div class="avatar-presets" id="avatarPresets"></div>
+      <div class="avatar-up" onclick="openAvatarFile()">📷 上传自己的头像</div>
+      <input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="onAvatarFile(this)"/>
+    </div>
+    <input id="loginName" class="search-input" placeholder="昵称（如：果果）" maxlength="12"/>
+    <input id="loginPin" class="search-input" type="password" inputmode="numeric" maxlength="4" placeholder="4 位数字 PIN" onkeydown="if(event.key==='Enter')doAuth('login')"/>
+    <div class="login-msg" id="loginMsg"></div>
+    <div class="login-btns">
+      <button class="game-btn green" onclick="doAuth('login')">🔑 登录</button>
+      <button class="game-btn" onclick="doAuth('register')">✨ 注册</button>
+    </div>
+  </div>
+</div>
 <div class="header">
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
-      <div class="user-pill" id="userPill"><span class="up-name" id="userName"></span><span class="up-streak" id="userStreak"></span><button class="about-btn" onclick="logout()">退出</button></div>
+      <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName"></span><span class="up-streak" id="userStreak"></span><button class="about-btn" onclick="logout()">退出</button></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
       <button class="about-btn" onclick="showAbout()">ℹ️ 关于</button>
     </div>
@@ -283,17 +322,18 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <p class="tip">💡 建议每天 5–10 分钟，先翻卡再闯关，坚持就有惊喜！</p>
   </div>
 </div>
-<div class="about-modal" id="loginModal" onclick="if(event.target===this)closeLogin()">
+<div class="about-modal" id="avatarModal" onclick="if(event.target===this)closeAvatarModal()">
   <div class="about-box">
-    <button class="about-close" onclick="closeLogin()" aria-label="关闭">✕</button>
-    <h2>👋 登录 / 注册</h2>
-    <p>输入昵称和 4 位数字 PIN（家长帮孩子建号，登录后看排行榜、和大家一起学）</p>
-    <input id="loginName" class="search-input" placeholder="昵称（如：果果）" maxlength="12" oninput="if(this.value.length>=3)document.getElementById('loginPin').focus()"/>
-    <input id="loginPin" class="search-input" type="password" inputmode="numeric" maxlength="4" placeholder="4 位数字 PIN" onkeydown="if(event.key==='Enter')doAuth('login')"/>
-    <div id="loginMsg"></div>
-    <div style="display:flex;gap:10px;margin-top:8px;justify-content:center">
-      <button class="game-btn green" onclick="doAuth('login')">🔑 登录</button>
-      <button class="game-btn" onclick="doAuth('register')">✨ 注册新账号</button>
+    <button class="about-close" onclick="closeAvatarModal()" aria-label="关闭">✕</button>
+    <h2>🖼️ 换个头像</h2>
+    <div class="avatar-pick">
+      <div class="avatar-preview" id="avatarPreview2" onclick="openAvatarFile()"></div>
+      <div class="avatar-presets" id="avatarPresets2"></div>
+      <div class="avatar-up" onclick="openAvatarFile()">📷 上传自己的头像</div>
+    </div>
+    <div class="login-msg" id="avatarMsg"></div>
+    <div class="login-btns">
+      <button class="game-btn green" onclick="saveAvatar()">💾 保存头像</button>
     </div>
   </div>
 </div>
@@ -3286,10 +3326,56 @@ async function api(path,opt){
   }catch(e){return {ok:false,data:{error:'网络异常，稍后再试'}};}
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+/* ★ 头像 */
+const AVATAR_EMOJIS=['🐱','🐶','🦁','🐼','🐰','🦄','🐸','⭐','🌈','🎈','🍎','🌻'];
+let avatarSel='e:🐱';
+function avatarHTML(av,cls){
+  if(!av) return '<span class="'+cls+'">🐱</span>';
+  if(av.slice(0,2)==='e:') return '<span class="'+cls+'">'+esc(av.slice(2))+'</span>';
+  return '<span class="'+cls+'"><img src="'+av+'" alt=""/></span>';
+}
+function renderAvatarPresets(root){
+  if(!root) return;
+  root.innerHTML='';
+  AVATAR_EMOJIS.forEach(e=>{
+    const b=document.createElement('button');
+    b.className='avatar-opt'+(avatarSel==='e:'+e?' sel':'');
+    b.textContent=e;
+    b.onclick=()=>{avatarSel='e:'+e;refreshAvatarPreview();root.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};
+    root.appendChild(b);
+  });
+}
+function refreshAvatarPreview(){
+  ['avatarPreview','avatarPreview2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(avatarSel.slice(0,2)==='e:') el.textContent=avatarSel.slice(2);
+    else el.innerHTML='<img src="'+avatarSel+'" alt=""/>';
+  });
+}
+function openAvatarFile(){const f=document.getElementById('avatarFile');if(f)f.value='';f.click();}
+function onAvatarFile(input){
+  const f=input.files&&input.files[0];
+  if(!f||!f.type.match(/^image\//)) return;
+  const img=new Image();
+  const url=URL.createObjectURL(f);
+  img.onload=()=>{
+    const c=document.createElement('canvas');c.width=c.height=96;
+    const ctx=c.getContext('2d');
+    const s=Math.min(img.width,img.height);
+    ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,96,96);
+    avatarSel=c.toDataURL('image/jpeg',0.7);
+    URL.revokeObjectURL(url);
+    refreshAvatarPreview();
+  };
+  img.onerror=()=>URL.revokeObjectURL(url);
+  img.src=url;
+}
 function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
   if(auth&&auth.user){
     pill.style.display='flex';
+    document.getElementById('upAvatar').innerHTML=avatarHTML(auth.user.avatar,'up-avatar');
     document.getElementById('userName').textContent=auth.user.name;
     document.getElementById('userStreak').textContent=auth.me?('🔥'+auth.me.streak+'天'):'';
     if(btn)btn.style.display='none';
@@ -3298,14 +3384,19 @@ function updateAuthUI(){
     if(btn)btn.style.display='';
   }
 }
-function openLogin(){document.getElementById('loginModal').style.display='flex';}
-function closeLogin(){document.getElementById('loginModal').style.display='none';}
+function openLogin(){
+  avatarSel=(auth&&auth.user&&auth.user.avatar)||'e:🐱';
+  renderAvatarPresets(document.getElementById('avatarPresets'));
+  refreshAvatarPreview();
+  document.getElementById('loginScreen').style.display='flex';
+}
+function closeLogin(){document.getElementById('loginScreen').style.display='none';}
 async function doAuth(action){
   const name=document.getElementById('loginName').value.trim();
   const pin=document.getElementById('loginPin').value.trim();
   const msg=document.getElementById('loginMsg');
   if(!name||!/^\d{4}$/.test(pin)){msg.textContent='请输入昵称和 4 位数字 PIN';return;}
-  const res=await api('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name,pin,date:cnToday()})});
+  const res=await api('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name,pin,avatar:avatarSel,date:cnToday()})});
   if(!res.ok){msg.textContent=res.data.error||'出错了，稍后再试';return;}
   saveAuth(res.data);
   msg.textContent='';
@@ -3321,6 +3412,25 @@ async function logout(){
   updateAuthUI();
   if(token) api('/api/auth',{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
   const area=document.getElementById('rankArea'); if(area) area.innerHTML='';
+  openLogin();
+}
+function openAvatarModal(){
+  if(!auth) return;
+  avatarSel=auth.user.avatar||'e:🐱';
+  renderAvatarPresets(document.getElementById('avatarPresets2'));
+  refreshAvatarPreview();
+  document.getElementById('avatarMsg').textContent='';
+  document.getElementById('avatarModal').style.display='flex';
+}
+function closeAvatarModal(){document.getElementById('avatarModal').style.display='none';}
+async function saveAvatar(){
+  const msg=document.getElementById('avatarMsg');
+  if(!auth) return;
+  const res=await api('/api/avatar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,avatar:avatarSel})});
+  if(!res.ok){msg.textContent=res.data.error||'保存失败';return;}
+  auth.user.avatar=avatarSel; saveAuth(auth);
+  msg.textContent='✅ 已保存';
+  closeAvatarModal(); updateAuthUI();
 }
 async function loadMe(){
   if(!auth) return;
@@ -3376,6 +3486,7 @@ async function renderRank(){
       const mine=auth&&it.name===auth.user.name;
       html+='<div class="rank-item'+(mine?' mine':'')+'">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
+        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar'):'🐱')+'</span>'+
         '<span class="rank-name">'+esc(it.name)+'</span>'+
         '<span class="rank-val">'+(rankType==='total'?(it.mastered+' 词'):('⭐'+it.stars))+'</span>'+
         '</div>';
@@ -3421,7 +3532,9 @@ function handleKey(e){
 document.addEventListener('keydown',handleKey);
 document.addEventListener('DOMContentLoaded',function(){
   migrateProgress();
-  auth=loadAuth(); updateAuthUI(); if(auth){loadMe(); syncAllProgress();}
+  auth=loadAuth(); updateAuthUI();
+  if(auth){loadMe(); syncAllProgress();}
+  else { openLogin(); }
   document.getElementById('starCount').textContent=stars;
   restorePos();
   renderCatChips();

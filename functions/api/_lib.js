@@ -17,11 +17,11 @@ export function pinHash(name, pin) {
   return sha256(APP_SALT + '|' + name.trim().toLowerCase() + '|' + pin);
 }
 
-// 从 token 取当前用户（返回 {id,name} 或 null）
+// 从 token 取当前用户（返回 {id,name,avatar} 或 null）
 export async function getUserByToken(db, token) {
   if (!token) return null;
   return db.prepare(
-    'SELECT u.id, u.name FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'
+    'SELECT u.id, u.name, u.avatar FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'
   ).bind(token).first().catch(() => null);
 }
 
