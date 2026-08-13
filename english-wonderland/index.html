@@ -3886,7 +3886,7 @@ document.addEventListener('DOMContentLoaded',function(){
   const _aw=document.getElementById('aboutWords'); if(_aw)_aw.textContent=totalWords();
   const _ac=document.getElementById('aboutCats'); if(_ac)_ac.textContent=CATS.length;
   auth=loadAuth(); updateAuthUI();
-  if(auth){loadMe(); syncAllProgress();}
+  if(auth){closeLogin(); loadMe(); syncAllProgress();}  // ★ 已登录：直接关掉登录层，刷新不再弹登录界面（仅用户主动 logout 才回登录层）
   else { openLogin(); }
   document.getElementById('starCount').textContent=stars;
   restorePos();
