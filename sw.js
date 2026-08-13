@@ -5,7 +5,6 @@ var CORE = [
   '/assets/css/workbench.css',
   '/assets/css/style.css',
   '/assets/js/workbench.js',
-  '/assets/js/nav.js',
   '/assets/manifest.webmanifest'
 ];
 
