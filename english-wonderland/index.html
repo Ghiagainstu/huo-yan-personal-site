@@ -340,6 +340,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .my-gobtn{display:block;width:100%;background:#fff3cd;color:#8a6d1a;border:1px solid #f5d78e;border-radius:12px;padding:10px 0;font-size:14px;font-weight:bold;cursor:pointer;}
 .my-gobtn:active{background:#ffe9a8;}
 .my-out{text-align:center;color:#d9534f;font-size:13px;font-weight:bold;padding:12px 0 2px;cursor:pointer;}
+.my-title{display:flex;justify-content:space-between;align-items:center;}
+.my-out-top{color:#d9534f;font-size:13px;font-weight:bold;cursor:pointer;}
 /* 商城卡片化 */
 .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .shop-card{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff;}
@@ -437,7 +439,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="about-modal" id="avatarModal" onclick="if(event.target===this)closeAvatarModal()">
   <div class="about-box my-box">
     <button class="about-close" onclick="closeAvatarModal()" aria-label="关闭">✕</button>
-    <h2>👤 我的中心</h2>
+    <h2 class="my-title">👤 我的中心 <span class="my-out-top" onclick="logout()">退出</span></h2>
     <div class="my-sec">
       <div class="my-top">
         <div class="avatar-preview" id="avatarPreview2" onclick="openAvatarFile()"></div>
@@ -3067,6 +3069,30 @@ function gameBuildQueue(){
   all.sort((a,b)=>(a.isNew?-1:1)-(b.isNew?-1:1));
   return all.slice(0,GAME_PER_SESSION);
 }
+/* 游戏进度记忆：离开/刷新后回来继续本轮（6 小时内未完成的自动续玩） */
+const LS_GAME='kids_game_progress';
+function gameSave(){
+  try{
+    const q=gameQueue.map(it=>({c:it.cat.id,w:it.w[0],lv:it.lv,isNew:it.isNew?1:0}));
+    localStorage.setItem(LS_GAME,JSON.stringify({q,idx:gameIdx,stars:gameSessionStars,t:gameStartTime}));
+  }catch(e){}
+}
+function gameLoad(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LS_GAME)||'null');
+    if(!d||!Array.isArray(d.q)||!d.q.length) return null;
+    const q=[];
+    for(const it of d.q){
+      const cat=CATS.find(c=>c.id===it.c);
+      const w=cat&&cat.words.find(x=>x[0]===it.w);
+      if(!cat||!w) continue;
+      q.push({cat,w,key:wordKey(cat.id,w[0]),lv:getLevel(cat.id,w[0]),isNew:!!it.isNew});
+    }
+    if(!q.length) return null;
+    return {q,idx:Math.max(0,Math.min(d.idx||0,q.length)),stars:d.stars||0,t:d.t||Date.now()};
+  }catch(e){return null;}
+}
+function gameClearSave(){try{localStorage.removeItem(LS_GAME);}catch(e){}}
 function gSetPhase(t){document.getElementById('gPhase').textContent=t}
 function gRefreshTop(){
   document.getElementById('gStarCount').textContent=gameSessionStars;
@@ -3080,10 +3106,17 @@ function gTimerTick(){
   document.getElementById('gTimer').textContent=m+':'+s;
 }
 function gameStart(){
-  gameQueue=gameBuildQueue();
-  gameIdx=0;
-  gameStartTime=Date.now();
-  gameSessionStars=0;
+  const saved=gameLoad();
+  if(saved&&Date.now()-saved.t<6*3600*1000){
+    /* 有未完成的存档 → 继续上一轮 */
+    gameQueue=saved.q; gameIdx=saved.idx; gameStartTime=saved.t; gameSessionStars=saved.stars;
+  } else {
+    gameQueue=gameBuildQueue();
+    gameIdx=0;
+    gameStartTime=Date.now();
+    gameSessionStars=0;
+    gameClearSave();
+  }
   gRefreshTop();
   if(gameTimerInt) clearInterval(gameTimerInt);
   gameTimerInt=setInterval(gTimerTick,1000);
@@ -3095,6 +3128,7 @@ function gameNext(){
     return gameEnd();
   }
   gameCurrent=gameQueue[gameIdx++];
+  gameSave();
   preloadGameAhead();
   const r=Math.random();
   if(r<0.4) gameActListen();
@@ -3299,6 +3333,7 @@ function gameReviewMark(key,correct){
   saveObj(LS_REVIEW,review);
 }
 function gameEnd(){
+  gameClearSave();
   gSetPhase('结算');
   if(gameTimerInt){clearInterval(gameTimerInt);gameTimerInt=null}
   const e=Math.floor((Date.now()-gameStartTime)/1000);
@@ -3688,6 +3723,7 @@ async function doAuth(action){
   renderRank();
 }
 async function logout(){
+  if(!confirm('确定要退出登录吗？')) return;
   const token=auth&&auth.token;
   saveAuth(null);
   updateAuthUI();
