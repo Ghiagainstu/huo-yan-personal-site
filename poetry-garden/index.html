@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古诗词 | 儿童学习乐园</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2258%22%20height%3D%2258%22%20rx%3D%2213%22%20fill%3D%22%23FFD54F%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M32%2022%20C%2025%2016%2015%2016%2012%2019%20L%2012%2044%20C%2015%2041%2025%2041%2032%2047%20Z%22%20fill%3D%22%23FFF8E1%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M32%2022%20C%2039%2016%2049%2016%2052%2019%20L%2052%2044%20C%2049%2041%2039%2041%2032%2047%20Z%22%20fill%3D%22%23FFF8E1%22%20stroke%3D%22%233E2723%22%20stroke-width%3D%222.5%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2215%22%20fill%3D%22%233E2723%22%3EABC%3C%2Ftext%3E%3C%2Fsvg%3E">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Microsoft YaHei','Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent;}
+body{background:#f5f7fa;color:#333;min-height:100vh;}
+
+/* ===== 顶部 ===== */
+.header{background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);color:#fff;padding:20px 16px 16px;text-align:center;position:relative;}
+.header h1{font-size:24px;margin-bottom:4px;}
+.header .sub{font-size:13px;opacity:.9;}
+.star-pill{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;font-size:16px;font-weight:bold;cursor:default;}
+.home-link{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:6px 12px;font-size:13px;text-decoration:none;font-weight:bold;}
+
+/* ===== 容器 ===== */
+.module{display:none;max-width:640px;margin:0 auto;padding:16px 16px 40px;}
+.module.active{display:block;}
+
+/* ===== 总进度条 ===== */
+.overall-progress{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.overall-progress .txt{font-size:13px;color:#666;margin-bottom:6px;display:flex;justify-content:space-between;}
+.progress-track{height:10px;background:#e9ecef;border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#11998e,#38ef7d);border-radius:5px;transition:width .4s;}
+
+/* ===== 古诗词 ===== */
+.poem-card{background:#fff;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden;margin-bottom:14px;}
+.poem-art{height:200px;}
+.poem-art svg{width:100%;height:100%;display:block;}
+.poem-art img{width:100%;height:100%;object-fit:cover;display:block;}
+.poem-head{text-align:center;padding:14px 16px 6px;}
+.poem-title{font-size:26px;color:#8d6e63;font-weight:bold;}
+.poem-author{font-size:14px;color:#aaa;margin-top:4px;}
+.poem-status{display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:12px;background:#eceff1;color:#90a4ae;}
+.poem-status.s1{background:#e3f2fd;color:#1976d2;}
+.poem-status.s2{background:#fff8e1;color:#f39c12;}
+.poem-lines{padding:10px 20px 16px;}
+.poem-line{text-align:center;margin-bottom:12px;cursor:pointer;border-radius:10px;padding:4px;transition:background .2s;}
+.poem-line:hover{background:#f8f9fa;}
+.poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:4px;}
+.poem-line .py{font-size:13px;color:#b0bec5;margin-top:2px;letter-spacing:.5px;}
+.poem-note{margin:0 16px 16px;background:#fffde7;border-left:4px solid #ffd600;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.7;color:#666;}
+
+/* ===== 操作按钮 ===== */
+.action-row{display:flex;gap:10px;margin-bottom:12px;}
+.action-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;transition:transform .15s;}
+.action-btn:active{transform:scale(.95)}
+.btn-review{background:#ffeaa7;color:#d35400;}
+.btn-know{background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;}
+
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.nav-btn{width:56px;height:48px;border:none;border-radius:12px;background:#fff;font-size:22px;color:#2575fc;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);}
+.nav-btn:active{transform:scale(.92)}
+.card-counter{font-size:15px;color:#888;font-weight:bold;}
+
+/* ===== 星星弹窗 ===== */
+.star-toast{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:30px 40px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);z-index:9999;transition:transform .3s cubic-bezier(.68,-.55,.27,1.55);pointer-events:none;}
+.star-toast.show{transform:translate(-50%,-50%) scale(1)}
+.star-toast .big{font-size:64px}
+.star-toast .msg{font-size:20px;font-weight:bold;color:#f39c12;margin-top:8px}
+
+@media(max-width:480px){
+  .header h1{font-size:20px}
+  .poem-title{font-size:22px}
+  .poem-line .zi{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <a class="home-link" href="../">↩ 学习乐园</a>
+    <div class="star-pill">⭐ <span id="starCount">0</span></div>
+    <h1>📜 古诗词</h1>
+    <div class="sub">共 28 首 · 点诗句可听发音</div>
+</div>
+
+<div class="module active">
+    <div class="overall-progress">
+        <div class="txt"><span>🏅 已背诵 Memorized</span><span id="poemMasteredTxt">0 / 28</span></div>
+        <div class="progress-track"><div class="progress-fill" id="poemProgressFill" style="width:0%"></div></div>
+    </div>
+    <div id="poemCardArea"></div>
+</div>
+
+<div class="star-toast" id="starToast">
+    <div class="big">⭐</div>
+    <div class="msg" id="starToastMsg">+1 星星！</div>
+</div>
+
+<script>
+/* ============================================================
+   古诗词 —— 独立页面 (拆分自 儿童英语学习乐园.html)
+   与学习乐园共享: kids_poetry_progress(背诵进度) + kids_stars(星星)
+   星星算法: floor(英语掌握/5) + 古诗已背*2  (两页统一)
+   ============================================================ */
+const POEMS = [
+{title:'咏鹅',author:'骆宾王',dynasty:'唐',lines:[['鹅，鹅，鹅，','é, é, é,'],['曲项向天歌。','qū xiàng xiàng tiān gē.'],['白毛浮绿水，','bái máo fú lǜ shuǐ,'],['红掌拨清波。','hóng zhǎng bō qīng bō.']],note:'大白鹅弯着脖子朝天叫，白色的羽毛浮在绿色的水面上，红色的脚掌拨动着清清的水波。'},
+{title:'静夜思',author:'李白',dynasty:'唐',lines:[['床前明月光，','chuáng qián míng yuè guāng,'],['疑是地上霜。','yí shì dì shàng shuāng.'],['举头望明月，','jǔ tóu wàng míng yuè,'],['低头思故乡。','dī tóu sī gù xiāng.']],note:'床前洒满了明亮的月光，好像地上结了一层霜。抬头看着天上的月亮，低下头想起了远方的家乡。'},
+{title:'春晓',author:'孟浩然',dynasty:'唐',lines:[['春眠不觉晓，','chūn mián bù jué xiǎo,'],['处处闻啼鸟。','chù chù wén tí niǎo.'],['夜来风雨声，','yè lái fēng yǔ shēng,'],['花落知多少。','huā luò zhī duō shǎo.']],note:'春天睡得香甜，不知不觉天就亮了，到处都能听到小鸟的叫声。昨晚又刮风又下雨，不知道花落了多少呢。'},
+{title:'悯农',author:'李绅',dynasty:'唐',lines:[['锄禾日当午，','chú hé rì dāng wǔ,'],['汗滴禾下土。','hàn dī hé xià tǔ.'],['谁知盘中餐，','shuí zhī pán zhōng cān,'],['粒粒皆辛苦。','lì lì jiē xīn kǔ.']],note:'农民伯伯在中午的大太阳下锄草，汗水滴到了泥土里。谁知道碗里的每一粒米饭，都是农民辛苦种出来的呢。'},
+{title:'画',author:'王维',dynasty:'唐',lines:[['远看山有色，','yuǎn kàn shān yǒu sè,'],['近听水无声。','jìn tīng shuǐ wú shēng.'],['春去花还在，','chūn qù huā hái zài,'],['人来鸟不惊。','rén lái niǎo bù jīng.']],note:'远远看去山有颜色，走近听水却没有声音。春天过去了花还在开，人走过来了小鸟也不害怕。这是一幅画呀！'},
+{title:'登鹳雀楼',author:'王之涣',dynasty:'唐',lines:[['白日依山尽，','bái rì yī shān jìn,'],['黄河入海流。','huáng hé rù hǎi liú.'],['欲穷千里目，','yù qióng qiān lǐ mù,'],['更上一层楼。','gèng shàng yī céng lóu.']],note:'太阳靠着山边慢慢落下去了，黄河的水滚滚流向大海。想要看到更远的地方，就要再爬上一层楼。'},
+{title:'草',author:'白居易',dynasty:'唐',lines:[['离离原上草，','lí lí yuán shàng cǎo,'],['一岁一枯荣。','yī suì yī kū róng.'],['野火烧不尽，','yě huǒ shāo bù jìn,'],['春风吹又生。','chūn fēng chuī yòu shēng.']],note:'草原上的草长得很茂盛，一年枯一次又绿一次。野火怎么烧也烧不完，春风一吹，小草又长出来了。'},
+{title:'望庐山瀑布',author:'李白',dynasty:'唐',lines:[['日照香炉生紫烟，','rì zhào xiāng lú shēng zǐ yān,'],['遥看瀑布挂前川。','yáo kàn pù bù guà qián chuān,'],['飞流直下三千尺，','fēi liú zhí xià sān qiān chǐ,'],['疑是银河落九天。','yí shì yín hé luò jiǔ tiān.']],note:'太阳照着香炉峰升起紫色的烟雾，远远看去瀑布就像挂在山前。水流飞一样地冲下来，好像天上的银河落到了人间。'},
+{title:'江雪',author:'柳宗元',dynasty:'唐',lines:[['千山鸟飞绝，','qiān shān niǎo fēi jué,'],['万径人踪灭。','wàn jìng rén zōng miè,'],['孤舟蓑笠翁，','gū zhōu suō lì wēng,'],['独钓寒江雪。','dú diào hán jiāng xuě.']],note:'所有的山上都看不到鸟的影子，所有的路上都看不到人的脚印。只有一条小船上，一个戴着斗笠的老爷爷，独自在寒冷的江上钓鱼，大雪纷飞。'},
+{title:'所见',author:'袁枚',dynasty:'清',lines:[['牧童骑黄牛，','mù tóng qí huáng niú,'],['歌声振林樾。','gē shēng zhèn lín yuè.'],['意欲捕鸣蝉，','yì yù bǔ míng chán,'],['忽然闭口立。','hū rán bì kǒu lì.']],note:'放牛的小牧童骑在黄牛背上，他的歌声在树林里回荡。忽然他想捉一只正在叫的知了，就马上闭上嘴巴，悄悄地站住了。'},
+{title:'小池',author:'杨万里',dynasty:'宋',lines:[['泉眼无声惜细流，','quán yǎn wú shēng xī xì liú,'],['树阴照水爱晴柔。','shù yīn zhào shuǐ ài qíng róu,'],['小荷才露尖尖角，','xiǎo hé cái lù jiān jiān jiǎo,'],['早有蜻蜓立上头。','zǎo yǒu qīng tíng lì shàng tóu.']],note:'泉眼里的水悄悄地流出来，树荫映在水面上。小小的荷花才露出尖尖的花苞，就有一只蜻蜓站在上面了。'},
+{title:'村居',author:'高鼎',dynasty:'清',lines:[['草长莺飞二月天，','cǎo zhǎng yīng fēi èr yuè tiān,'],['拂堤杨柳醉春烟。','fú dī yáng liǔ zuì chūn yān,'],['儿童散学归来早，','ér tóng sàn xué guī lái zǎo,'],['忙趁东风放纸鸢。','máng chèn dōng fēng fàng zhǐ yuān.']],note:'二月里小草长高了，黄莺飞来飞去，河边的杨柳在春风中轻轻摇摆。小孩子们放学后早早回来，趁着春风赶紧去放风筝。'}
+,{title:'风',author:'李峤',dynasty:'唐',lines:[['解落三秋叶，','jiě luò sān qiū yè,'],['能开二月花。','néng kāi èr yuè huā.'],['过江千尺浪，','guò jiāng qiān chǐ làng,'],['入竹万竿斜。','rù zhú wàn gān xié.']],note:'风一吹，秋天的树叶就纷纷落下来；风能吹开二月的鲜花。风吹过江面，掀起很高的浪花；吹进竹林，上万根竹子都跟着斜了。'}
+,{title:'敕勒歌',author:'北朝民歌',dynasty:'北朝',lines:[['敕勒川，阴山下。','chì lè chuān, yīn shān xià.'],['天似穹庐，笼盖四野。','tiān sì qióng lú, lǒng gài sì yě.'],['天苍苍，野茫茫，','tiān cāng cāng, yě máng máng,'],['风吹草低见牛羊。','fēng chuī cǎo dī xiàn niú yáng.']],note:'美丽的敕勒川就在阴山脚下。天空像一顶大帐篷，罩住了四面八方。天蓝蓝的，草原一眼望不到边，风吹过，草弯下了腰，露出了成群的牛羊。'}
+,{title:'相思',author:'王维',dynasty:'唐',lines:[['红豆生南国，','hóng dòu shēng nán guó,'],['春来发几枝。','chūn lái fā jǐ zhī.'],['愿君多采撷，','yuàn jūn duō cǎi xié,'],['此物最相思。','cǐ wù zuì xiāng sī.']],note:'红豆生长在温暖的南方，春天到了又长出几根新枝。希望你多多采摘红豆，因为它最能代表朋友之间的思念。'}
+,{title:'池上',author:'白居易',dynasty:'唐',lines:[['小娃撑小艇，','xiǎo wá chēng xiǎo tǐng,'],['偷采白莲回。','tōu cǎi bái lián huí.'],['不解藏踪迹，','bù jiě cáng zōng jì,'],['浮萍一道开。','fú píng yī dào kāi.']],note:'小孩子偷偷撑着小船，采了白莲花回来。他还不懂怎么藏起自己的脚印，小船开过，水面上的浮萍被分开了长长的一条水路。'}
+,{title:'寻隐者不遇',author:'贾岛',dynasty:'唐',lines:[['松下问童子，','sōng xià wèn tóng zǐ,'],['言师采药去。','yán shī cǎi yào qù.'],['只在此山中，','zhǐ zài cǐ shān zhōng,'],['云深不知处。','yún shēn bù zhī chù.']],note:'在松树下问一个看门的小孩，小孩说他的师父采药去了。师父就在这座山里，可是山里的云太厚了，不知道他到底在哪里。'}
+,{title:'绝句',author:'杜甫',dynasty:'唐',lines:[['两个黄鹂鸣翠柳，','liǎng gè huáng lí míng cuì liǔ,'],['一行白鹭上青天。','yī háng bái lù shàng qīng tiān.'],['窗含西岭千秋雪，','chuāng hán xī lǐng qiān qiū xuě,'],['门泊东吴万里船。','mén bó dōng wú wàn lǐ chuán.']],note:'两只黄鹂在绿柳枝上欢快地叫，一行白鹭飞上了蓝蓝的天空。从窗户看出去，西山上积着千年不化的白雪；门口停着就要驶向远方东吴的大船。'}
+,{title:'古朗月行',author:'李白',dynasty:'唐',lines:[['小时不识月，','xiǎo shí bù shí yuè,'],['呼作白玉盘。','hū zuò bái yù pán.'],['又疑瑶台镜，','yòu yí yáo tái jìng,'],['飞在青云端。','fēi zài qīng yún duān.']],note:'小时候不认识月亮，把它叫作白玉做的盘子。又怀疑是神仙瑶台上的镜子，飞在白云的上面。'}
+,{title:'小儿垂钓',author:'胡令能',dynasty:'唐',lines:[['蓬头稚子学垂纶，','péng tóu zhì zǐ xué chuí lún,'],['侧坐莓苔草映身。','cè zuò méi tái cǎo yìng shēn.'],['路人借问遥招手，','lù rén jiè wèn yáo zhāo shǒu,'],['怕得鱼惊不应人。','pà dé yú jīng bù yìng rén.']],note:'一个头发乱乱的小孩正在学钓鱼，他侧着身子坐在长满青苔的石头上，野草遮住了他的身体。过路的人向他问路，他远远地摆手，怕把鱼吓跑，所以不回答。'}
+,{title:'鹿柴',author:'王维',dynasty:'唐',lines:[['空山不见人，','kōng shān bù jiàn rén,'],['但闻人语响。','dàn wén rén yǔ xiǎng.'],['返景入深林，','fǎn jǐng rù shēn lín,'],['复照青苔上。','fù zhào qīng tái shàng.']],note:'空荡荡的山里看不见一个人，只听到有人说话的声音。夕阳的余光映照进深深的树林，又落在长满青苔的石头上。'}
+,{title:'夜书所见',author:'叶绍翁',dynasty:'宋',lines:[['萧萧梧叶送寒声，','xiāo xiāo wú yè sòng hán shēng,'],['江上秋风动客情。','jiāng shàng qiū fēng dòng kè qíng.'],['知有儿童挑促织，','zhī yǒu ér tóng tiǎo cù zhī,'],['夜深篱落一灯明。','yè shēn lí luò yī dēng míng.']],note:'梧桐树叶沙沙地响，送来一阵凉意；江上的秋风，让出门在外的人想起了家乡。忽然看到有小朋友在捉蟋蟀，深夜里，篱笆旁边还亮着一盏小灯。'}
+,{title:'早发白帝城',author:'李白',dynasty:'唐',lines:[['朝辞白帝彩云间，','zhāo cí bái dì cǎi yún jiān,'],['千里江陵一日还。','qiān lǐ jiāng líng yī rì huán.'],['两岸猿声啼不住，','liǎng àn yuán shēng tí bù zhù,'],['轻舟已过万重山。','qīng zhōu yǐ guò wàn chóng shān.']],note:'早晨告别了在彩云里的白帝城，到千里外的江陵一天就能到。两岸猴子叫个不停，轻快的小船已经穿过了重重山峦。'}
+,{title:'九月九日忆山东兄弟',author:'王维',dynasty:'唐',lines:[['独在异乡为异客，','dú zài yì xiāng wéi yì kè,'],['每逢佳节倍思亲。','měi féng jiā jié bèi sī qīn.'],['遥知兄弟登高处，','yáo zhī xiōng dì dēng gāo chù,'],['遍插茱萸少一人。','biàn chā zhū yú shǎo yī rén.']],note:'一个人住在别的地方，每到过节的时候就格外想念亲人。远远想到兄弟们今天登高插茱萸，只少了我一个人。'}
+,
+{title:'江南',author:'汉乐府',dynasty:'汉',lines:[['江南可采莲，','jiāng nán kě cǎi lián,'],['莲叶何田田。','lián yè hé tián tián.'],['鱼戏莲叶间。','yú xì lián yè jiān.'],['鱼戏莲叶东，','yú xì lián yè dōng,'],['鱼戏莲叶西，','yú xì lián yè xī,'],['鱼戏莲叶南，','yú xì lián yè nán,'],['鱼戏莲叶北。','yú xì lián yè běi.']],note:'长江以南的水乡，姑娘们划着小船采莲蓬。圆圆的荷叶挨挨挤挤，小鱼在荷叶间快活地游来游去，一会儿游到东，一会儿游到西，真好玩。'},
+{title:'赠汪伦',author:'李白',dynasty:'唐',lines:[['李白乘舟将欲行，','lǐ bái chéng zhōu jiāng yù xíng,'],['忽闻岸上踏歌声。','hū wén àn shàng tà gē shēng.'],['桃花潭水深千尺，','táo huā tán shuǐ shēn qiān chǐ,'],['不及汪伦送我情。','bù jí wāng lún sòng wǒ qíng.']],note:'李白坐船正要离开，忽然听见岸上有人边走边唱歌来送他，那是好朋友汪伦。桃花潭的水就算有千尺深，也比不上汪伦送别我的情意深。'},
+{title:'画鸡',author:'唐寅',dynasty:'明',lines:[['头上红冠不用裁，','tóu shàng hóng guān bù yòng cái,'],['满身雪白走将来。','mǎn shēn xuě bái zǒu jiāng lái.'],['平生不敢轻言语，','píng shēng bù gǎn qīng yán yǔ,'],['一叫千门万户开。','yī jiào qiān mén wàn hù kāi.']],note:'画里的大公鸡，头上的红冠子不用剪裁天生就有，全身雪白走过来。它平时不轻易叫唤，可是一打鸣，千家万户的门就都打开了，天亮啦。'},
+{title:'春夜喜雨',author:'杜甫',dynasty:'唐',lines:[['好雨知时节，','hǎo yǔ zhī shí jié,'],['当春乃发生。','dāng chūn nǎi fā shēng.'],['随风潜入夜，','suí fēng qián rù yè,'],['润物细无声。','rùn wù xì wú shēng.'],['野径云俱黑，','yě jìng yún jù hēi,'],['江船火独明。','jiāng chuán huǒ dú míng.'],['晓看红湿处，','xiǎo kàn hóng shī chù,'],['花重锦官城。','huā zhòng jǐn guān chéng.']],note:'春天的雨真好，它知道时节，春天一到就悄悄下起来。它随着风在夜里轻轻落下，滋润小花小草却一点声音也没有。野外的小路和云都是黑黑的，只有江面上渔船的灯火亮着。第二天早上看那被雨水打湿的红花，成都城里到处是沉甸甸、湿漉漉的花儿。'}];
+
+const POEM_SCENES = [
+'<img onerror="this.style.display='none'" src="images/poem-yonge.webp" alt="咏鹅">',
+'<img onerror="this.style.display='none'" src="images/poem-jingyesi.webp" alt="静夜思">',
+'<img onerror="this.style.display='none'" src="images/poem-chunxiao.webp" alt="春晓">',
+'<img onerror="this.style.display='none'" src="images/poem-minnong.webp" alt="悯农">',
+'<img onerror="this.style.display='none'" src="images/poem-hua.webp" alt="画">',
+'<img onerror="this.style.display='none'" src="images/poem-dengguanque.webp" alt="登鹳雀楼">',
+'<img onerror="this.style.display='none'" src="images/poem-cao.webp" alt="草">',
+'<img onerror="this.style.display='none'" src="images/poem-luoshanpubu.webp" alt="望庐山瀑布">',
+'<img onerror="this.style.display='none'" src="images/poem-jiangxue.webp" alt="江雪">',
+'<img onerror="this.style.display='none'" src="images/poem-suojian.webp" alt="所见">',
+'<img onerror="this.style.display='none'" src="images/poem-xiaochi.webp" alt="小池">',
+'<img onerror="this.style.display='none'" src="images/poem-cunju.webp" alt="村居">',
+'<img onerror="this.style.display='none'" src="images/poem-feng.webp" alt="风">',
+'<img onerror="this.style.display='none'" src="images/poem-chilege.webp" alt="敕勒歌">',
+'<img onerror="this.style.display='none'" src="images/poem-xiangsi.webp" alt="相思">',
+'<img onerror="this.style.display='none'" src="images/poem-chishang.webp" alt="池上">',
+'<img onerror="this.style.display='none'" src="images/poem-xunyinzhe.webp" alt="寻隐者不遇">',
+'<img onerror="this.style.display='none'" src="images/poem-jueju.webp" alt="绝句">',
+'<img onerror="this.style.display='none'" src="images/poem-gulang.webp" alt="古朗月行">',
+'<img onerror="this.style.display='none'" src="images/poem-xiaoer.webp" alt="小儿垂钓">',
+'<img onerror="this.style.display='none'" src="images/poem-luzhai.webp" alt="鹿柴">',
+'<img onerror="this.style.display='none'" src="images/poem-yeshu.webp" alt="夜书所见">',
+'<img onerror="this.style.display='none'" src="images/poem-baidi.webp" alt="早发白帝城">',
+'<img onerror="this.style.display='none'" src="images/poem-jiuyuejiu.webp" alt="九月九日忆山东兄弟">'
+,
+'<img onerror="this.style.display='none'" src="images/poem-jiangnan.webp" alt="江南">',
+'<img onerror="this.style.display='none'" src="images/poem-zengwanglun.webp" alt="赠汪伦">',
+'<img onerror="this.style.display='none'" src="images/poem-huaji.webp" alt="画鸡">',
+'<img onerror="this.style.display='none'" src="images/poem-chunyexiyu.webp" alt="春夜喜雨">'];
+
+/* ============================================================
+   状态 + 存储
+   ============================================================ */
+const LS_EN = 'kids_english_progress';
+const LS_POEM = 'kids_poetry_progress';
+const LS_STAR = 'kids_stars';
+
+function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{}}}
+function saveObj(key,obj){localStorage.setItem(key,JSON.stringify(obj))}
+
+let engProgress = loadObj(LS_EN);
+let poemProgress = loadObj(LS_POEM);
+let stars = parseInt(localStorage.getItem(LS_STAR) || '0', 10);
+let poemIdx = 0;
+
+/* ============================================================
+   语音朗读 (SpeechSynthesis)
+   ============================================================ */
+let voices = [];
+function loadVoices(){voices = window.speechSynthesis ? speechSynthesis.getVoices() : []}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+let speakingBtn = null;
+
+function speak(text,lang,btn){
+  if(!('speechSynthesis' in window)){return}
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = lang.indexOf('zh')===0 ? 0.75 : 0.85;
+    const prefix = lang.split('-')[0];
+    let v = voices.find(vv=>vv.lang && vv.lang.toLowerCase()===lang.toLowerCase());
+    if(!v) v = voices.find(vv=>vv.lang && vv.lang.toLowerCase().indexOf(prefix)===0);
+    if(v) u.voice = v;
+    if(btn){
+      if(speakingBtn) speakingBtn.classList.remove('speaking');
+      speakingBtn = btn;
+      btn.classList.add('speaking');
+      u.onend = u.onerror = function(){
+        btn.classList.remove('speaking');
+        if(speakingBtn===btn) speakingBtn=null;
+      };
+    }
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ============================================================
+   星星系统 (与学习乐园统一算法)
+   ============================================================ */
+function earnedStars(){
+  let m=0; for(const k in engProgress) if(engProgress[k]>=3) m++;
+  let p=0; for(const k in poemProgress) if(poemProgress[k]===2) p++;
+  return Math.floor(m/5) + p*2;
+}
+function refreshStars(){
+  const e=earnedStars();
+  if(e>stars){
+    const d=e-stars; stars=e; localStorage.setItem(LS_STAR,String(stars));
+    showStarToast(d);
+  }
+  document.getElementById('starCount').textContent=stars;
+}
+function showStarToast(d){
+  const t=document.getElementById('starToast');
+  document.getElementById('starToastMsg').textContent='+'+d+' 星星！太棒了！';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* ============================================================
+   古诗词
+   ============================================================ */
+function poemStatus(i){return poemProgress[String(i)]||0}
+function poemMemorizedCount(){let n=0;for(const k in poemProgress) if(poemProgress[k]===2) n++;return n}
+function renderPoem(){
+  const area=document.getElementById('poemCardArea');
+  const p=POEMS[poemIdx],st=poemStatus(poemIdx);
+  const memorized=poemMemorizedCount();
+  document.getElementById('poemMasteredTxt').textContent=memorized+' / '+POEMS.length;
+  document.getElementById('poemProgressFill').style.width=(memorized/POEMS.length*100)+'%';
+  const stTxt=st===2?'⭐ 已背诵':(st===1?'📖 已学习':'未学习');
+  const stCls=st===2?'s2':(st===1?'s1':'');
+  let linesHtml='';
+  p.lines.forEach((l,i)=>{
+    linesHtml+='<div class="poem-line" onclick="speakLine('+i+')" title="点击听这一句">'+
+      '<div class="zi">'+l[0]+'</div><div class="py">'+l[1]+'</div></div>';
+  });
+  area.innerHTML =
+    '<div class="poem-card">'+
+      '<div class="poem-art">'+POEM_SCENES[poemIdx]+'</div>'+
+      '<div class="poem-head">'+
+        '<div class="poem-title">'+p.title+'</div>'+
+        '<div class="poem-author">'+p.dynasty+' · '+p.author+'</div>'+
+        '<span class="poem-status '+stCls+'">'+stTxt+'</span>'+
+      '</div>'+
+      '<div class="poem-lines">'+linesHtml+'</div>'+
+      '<div class="poem-note">📖 '+p.note+'</div>'+
+    '</div>'+
+    '<div class="action-row">'+
+      '<button class="action-btn" style="background:#e3f2fd;color:#1976d2" id="readPoemBtn" onclick="readPoem()">🔊 朗读全文</button>'+
+      '<button class="action-btn '+(st===2?'btn-know':'btn-review')+'" onclick="toggleMemorized()">'+(st===2?'⭐ 已背诵(点击取消)':'📝 标记已背诵')+'</button>'+
+    '</div>'+
+    '<div class="nav-row">'+
+      '<button class="nav-btn" onclick="prevPoem()">←</button>'+
+      '<div class="card-counter">第 '+(poemIdx+1)+' / '+POEMS.length+' 首</div>'+
+      '<button class="nav-btn" onclick="nextPoem()">→</button>'+
+    '</div>';
+}
+function readPoem(){
+  const p=POEMS[poemIdx];
+  const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
+  speak(text,'zh-CN',document.getElementById('readPoemBtn'));
+  if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
+}
+function speakLine(i){
+  const p=POEMS[poemIdx];
+  if(p.lines[i]) speak(p.lines[i][0],'zh-CN',null);
+  if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
+}
+function toggleMemorized(){
+  const key=String(poemIdx);
+  poemProgress[key]=poemStatus(poemIdx)===2?1:2;
+  saveObj(LS_POEM,poemProgress);
+  refreshStars();renderPoem();
+}
+function nextPoem(){if(window.speechSynthesis) speechSynthesis.cancel();poemIdx=(poemIdx+1)%POEMS.length;renderPoem()}
+function prevPoem(){if(window.speechSynthesis) speechSynthesis.cancel();poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;renderPoem()}
+
+/* 键盘快捷键: ← → 切换, 空格/回车 朗读全文 */
+function handleKey(e){
+  const t=e.target, tag=t&&t.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  const k=e.key, isBtn=tag==='BUTTON';
+  if(k==='ArrowLeft'){e.preventDefault();prevPoem();}
+  else if(k==='ArrowRight'){e.preventDefault();nextPoem();}
+  else if((k===' '||k==='Enter')&&!isBtn){e.preventDefault();readPoem();}
+}
+document.addEventListener('keydown',handleKey);
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('starCount').textContent=stars;
+  renderPoem();
+});
+</script>
+</body>
+</html>
