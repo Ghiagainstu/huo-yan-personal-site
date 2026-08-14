@@ -3611,7 +3611,7 @@ let _activeStart=null, _usageTimer=null;
 function normalizePin(s){
   const map={'０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9',
     '零':'0','〇':'0','一':'1','二':'2','两':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9',
-    '壹':'1','贰':'2','叁':'3','肆':'4','伍':'5','陆':'6','柒':'7','捌':'8','玖':'9'};
+    '壹':'1','貳':'2','贰':'2','參':'3','叁':'3','肆':'4','伍':'5','陸':'6','陆':'6','柒':'7','捌':'8','玖':'9'};
   let out='';
   for(const ch of (s||'')){
     if(map[ch]!==undefined)out+=map[ch];
@@ -3660,7 +3660,7 @@ function startUsageTimer(){
 }
 let lockCode='';
 function genCode(){let s='';for(let k=0;k<4;k++)s+=String(Math.floor(Math.random()*10));return s;}
-function numToZh(code){const m={'0':'零','1':'一','2':'二','3':'三','4':'四','5':'五','6':'六','7':'七','8':'八','9':'九'};return code.split('').map(c=>m[c]).join('');}
+function numToZh(code){const m={'0':'零','1':'壹','2':'貳','3':'參','4':'肆','5':'伍','6':'陸','7':'柒','8':'捌','9':'玖'};return code.split('').map(c=>m[c]).join('');}
 function showLock(){
   const m=Math.floor(usage.used/60);
   const el=document.getElementById('lockMin');if(el)el.textContent=m;
