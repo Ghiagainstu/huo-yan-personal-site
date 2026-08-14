@@ -7,6 +7,7 @@ import { json, getUserByToken, pinHash, cnDate } from './_lib.js';
 const BASE_SECONDS = 20 * 60;    // 单次默认 20 分钟
 const EXTEND_SECONDS = 20 * 60;  // 每次家长解锁延长 20 分钟
 const MAX_UNLOCKS = 2;           // 最多解锁 2 次 -> 日上限 1 小时
+const ADMIN_PIN = '852121';      // 内测管理解锁码：不受每日次数上限限制（仍延长预算）
 
 const CREATE = `CREATE TABLE IF NOT EXISTS usage_limit (
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -73,8 +74,12 @@ export async function onRequestPost(ctx) {
   if (action === 'unlock') {
     // 解锁码由前端在锁屏时随机生成（中文数字文字展示），家长按对应阿拉伯数字输入；
     // 后端不再校验固定 PIN，只负责记账：未达上限则 +1 解锁次数（预算延长由 stateOf 计算）。
-    const st0 = stateOf(await getRow(db, u.id, today));
-    if (st0.unlock_count >= MAX_UNLOCKS) return json({ error: '今日解锁次数已用完' }, 429);
+    // admin_pin === ADMIN_PIN（852121）为内测管理解锁：跳过每日次数上限，仍 +1 延长预算。
+    const admin = body.admin_pin === ADMIN_PIN;
+    if (!admin) {
+      const st0 = stateOf(await getRow(db, u.id, today));
+      if (st0.unlock_count >= MAX_UNLOCKS) return json({ error: '今日解锁次数已用完' }, 429);
+    }
     await db.prepare(
       `INSERT INTO usage_limit(user_id, date, used_seconds, unlock_count) VALUES(?, ?, 0, 1)
        ON CONFLICT(user_id, date) DO UPDATE SET unlock_count = unlock_count + 1`

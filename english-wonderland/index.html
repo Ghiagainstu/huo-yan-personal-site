@@ -410,6 +410,27 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .shop-buy{background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:13px;cursor:pointer;}
 .shop-btn{margin-top:10px;background:#fff3cd;color:#8a6d1a;border:1px solid #f5d78e;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:bold;cursor:pointer;width:100%;}
 .shop-title{font-size:13px;color:#0a6e5f;font-weight:bold;margin:4px 0;}
+/* 头像大图预览 */
+.big-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:10000;}
+.big-modal.show{display:flex;}
+.big-box{background:#fff;border-radius:18px;padding:22px 26px;text-align:center;min-width:250px;max-width:80vw;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+.big-title{font-size:15px;font-weight:bold;color:#333;margin:2px 0 14px;}
+.big-body{display:flex;justify-content:center;}
+.big-avatar{width:170px;height:170px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-size:80px;background:#f0f4f3;}
+.big-avatar img{width:100%;height:100%;object-fit:cover;}
+.big-img{width:170px;height:170px;object-fit:cover;border-radius:50%;}
+.big-emoji{font-size:110px;line-height:1;}
+.big-tip{font-size:11px;color:#aaa;margin-top:14px;}
+/* 轻提示 toast */
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-14px);background:rgba(23,58,50,.94);color:#fff;padding:11px 20px;border-radius:12px;font-size:14px;font-weight:bold;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:82vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.22);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.err{background:rgba(170,54,44,.95);}
+.toast.ok{background:rgba(12,143,125,.95);}
+/* 商城新头像 / 排行榜称号 */
+.avatar-opt img{width:32px;height:32px;border-radius:8px;object-fit:cover;display:block;}
+.fprev{cursor:pointer;transition:transform .15s;}
+.fprev:active{transform:scale(.92);}
+.rank-title{font-size:11px;color:#8a6d1a;background:#fff3cd;border:1px solid #f0d48a;border-radius:8px;padding:1px 7px;margin-left:6px;white-space:nowrap;font-weight:bold;vertical-align:middle;}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -537,6 +558,15 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     </div>
   </div>
 </div>
+<div class="big-modal" id="bigModal" onclick="if(event.target===this)hideBig()">
+  <div class="big-box">
+    <button class="about-close" onclick="hideBig()" aria-label="关闭">✕</button>
+    <div class="big-title" id="bigName"></div>
+    <div class="big-body" id="bigBody"></div>
+    <div class="big-tip">点击空白处关闭</div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
 <div class="tab-nav">
     <button class="tab-btn active" id="tabEn" onclick="switchTab('en')">🃏 英语卡片</button>
     <button class="tab-btn" id="tabGame" onclick="switchTab('game')">🎮 英语小游戏</button>
@@ -3707,8 +3737,9 @@ function showLock(){
   const maxNote=document.getElementById('lockMaxNote');
   const form=document.getElementById('lockUnlockForm');
   if(form)form.style.display='none';
-  if(usage.unlockCount>=USAGE_MAX_UNLOCK){if(btn)btn.style.display='none';if(maxNote)maxNote.style.display='';}
-  else{if(btn)btn.style.display='';if(maxNote)maxNote.style.display='none';}
+  // 已达上限时按钮保留：家长/管理员仍可输入解锁码（普通码后端会返回「今日解锁次数已用完」）
+  if(btn)btn.style.display='';
+  if(maxNote)maxNote.style.display=usage.unlockCount>=USAGE_MAX_UNLOCK?'':'none';
   lockCode=genCode();
   const z=document.getElementById('lockCodeZh');if(z)z.textContent=numToZh(lockCode);
   const n=document.getElementById('lockCodeNum');if(n)n.textContent=lockCode;
@@ -3729,8 +3760,11 @@ function closeUnlockForm(){const f=document.getElementById('lockUnlockForm');if(
 async function doUnlock(){
   const i=document.getElementById('lockPin');const pin=normalizePin(i?i.value:'');
   const msg=document.getElementById('lockMsg');
-  if(pin!==lockCode){if(msg)msg.textContent='解锁码不对，请按屏幕上中文数字对应的阿拉伯数字输入';return;}
-  const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,action:'unlock',date:cnToday()})});
+  const admin=pin==='852121';   // 内测 admin 解锁码：不受随机码限制
+  if(!admin&&pin!==lockCode){if(msg)msg.textContent='解锁码不对，请按屏幕上中文数字对应的阿拉伯数字输入';return;}
+  const body={token:auth.token,action:'unlock',date:cnToday()};
+  if(admin) body.admin_pin='852121';
+  const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!res.ok){if(msg)msg.textContent=res.data.error||'解锁失败';return;}
   applyUsage(res.data);closeUnlockForm();hideLock();
 }
@@ -3749,7 +3783,13 @@ const LOCKED_AVATARS=[
   {id:'avatar-butterfly',emoji:'🦋',name:'蝴蝶',price:30},
   {id:'avatar-bee',emoji:'🐝',name:'蜜蜂',price:30},
   {id:'avatar-bear',emoji:'🐻',name:'小熊',price:30},
-  {id:'avatar-panda',emoji:'🐼',name:'熊猫',price:30}
+  {id:'avatar-panda',emoji:'🐼',name:'熊猫',price:30},
+  {id:'avatar-pixel-dragon',img:'images/avatars/像素方块小绿龙.webp',name:'像素小绿龙',price:100},
+  {id:'avatar-capybara',img:'images/avatars/卡皮巴拉.webp',name:'卡皮巴拉',price:100},
+  {id:'avatar-dino',img:'images/avatars/圆滚滚恐龙宝宝.webp',name:'恐龙宝宝',price:100},
+  {id:'avatar-unicorn',img:'images/avatars/彩虹独角兽.webp',name:'彩虹独角兽',price:100},
+  {id:'avatar-duck',img:'images/avatars/黄油小黄鸭.webp',name:'黄油小黄鸭',price:100},
+  {id:'avatar-witch',img:'images/avatars/黑粉小魔女.webp',name:'黑粉小魔女',price:100}
 ];
 function avatarUnlocked(id){ return (ownedItems()||[]).includes(id); }
 let avatarSel='e:🐭';
@@ -3769,6 +3809,12 @@ const SHOP_ITEMS=[
   {id:'avatar-bee',type:'avatar',name:'蜜蜂',price:30},
   {id:'avatar-bear',type:'avatar',name:'小熊',price:30},
   {id:'avatar-panda',type:'avatar',name:'熊猫',price:30},
+  {id:'avatar-pixel-dragon',type:'avatar',name:'像素小绿龙',price:100},
+  {id:'avatar-capybara',type:'avatar',name:'卡皮巴拉',price:100},
+  {id:'avatar-dino',type:'avatar',name:'恐龙宝宝',price:100},
+  {id:'avatar-unicorn',type:'avatar',name:'彩虹独角兽',price:100},
+  {id:'avatar-duck',type:'avatar',name:'黄油小黄鸭',price:100},
+  {id:'avatar-witch',type:'avatar',name:'黑粉小魔女',price:100},
   {id:'frame-teal',type:'frame',name:'青绿边框',price:40},
   {id:'frame-silver',type:'frame',name:'银色边框',price:50},
   {id:'frame-pink',type:'frame',name:'粉色边框',price:100},
@@ -3794,6 +3840,34 @@ function ownedItems(){ return (auth&&auth.me&&auth.me.items)||[]; }
 function myFrame(){ const o=ownedItems(); return FRAME_ORDER.filter(f=>o.includes(f)).pop()||''; }
 function frameOf(items){ try{const a=JSON.parse(items||'[]');return FRAME_ORDER.filter(f=>a.includes(f)).pop()||'';}catch(e){return '';} }
 function myTitle(){ const o=ownedItems(); const t=TITLE_ORDER.filter(x=>o.includes(x)).pop(); if(!t) return ''; const it=SHOP_ITEMS.find(i=>i.id===t); return it?it.name:''; }
+function titleFromItems(items){ try{const a=JSON.parse(items||'[]');const t=TITLE_ORDER.filter(x=>a.includes(x)).pop();if(!t)return '';const it=SHOP_ITEMS.find(i=>i.id===t);return it?it.name:'';}catch(e){return '';} }
+/* 轻提示：替代浏览器 alert */
+let _toastTimer=null;
+function showToast(msg,type){
+  const t=document.getElementById('toast'); if(!t) return;
+  t.textContent=msg;
+  t.className='toast'+(type==='err'?' err':(type==='ok'?' ok':''));
+  requestAnimationFrame(()=>t.classList.add('show'));
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+/* 头像大图预览（点击商城头像放大） */
+function bigPreview(id){
+  const it=SHOP_ITEMS.find(x=>x.id===id); if(!it) return;
+  const av=auth&&auth.user&&auth.user.avatar;
+  let body;
+  if(it.type==='frame') body=avatarHTML(av,'big-avatar','frame-'+it.id.split('-')[1]);
+  else if(it.type==='avatar'){const la=LOCKED_AVATARS.find(x=>x.id===id);body=la?(la.img?'<img class="big-img" src="'+la.img+'" alt=""/>':'<span class="big-emoji">'+la.emoji+'</span>'):'';}
+  else body=avatarHTML(av,'big-avatar');
+  showBig(body,it.name+(it.type==='avatar'?'头像':''));
+}
+function showBig(html,name){
+  const bd=document.getElementById('bigBody'),nm=document.getElementById('bigName');
+  if(bd) bd.innerHTML=html;
+  if(nm) nm.textContent=name||'';
+  document.getElementById('bigModal').classList.add('show');
+}
+function hideBig(){ document.getElementById('bigModal').classList.remove('show'); }
 function openShop(){ document.getElementById('shopModal').style.display='flex'; renderShop(); }
 function closeShop(){ document.getElementById('shopModal').style.display='none'; }
 async function renderShop(){
@@ -3816,8 +3890,8 @@ async function renderShop(){
       const locked=!has&&!(idx<=0||owned.includes(chain[idx-1]))&&it.type!=='avatar';
       const key=it.id.split('-')[1];
       let prev;
-      if(it.type==='frame') prev='<div class="fprev frame-'+key+'">'+avatarHTML(av,'')+'</div>';
-      else if(it.type==='avatar'){const la=LOCKED_AVATARS.find(x=>x.id===it.id);prev='<div class="fprev">'+(la?la.emoji:'')+'</div>';}
+      if(it.type==='frame') prev='<div class="fprev frame-'+key+'" onclick="bigPreview(\''+it.id+'\')">'+avatarHTML(av,'')+'</div>';
+      else if(it.type==='avatar'){const la=LOCKED_AVATARS.find(x=>x.id===it.id);prev='<div class="fprev" onclick="bigPreview(\''+it.id+'\')">'+(la?(la.img?'<img src="'+la.img+'" alt=""/>':la.emoji):'')+'</div>';}
       else prev='<div class="fprev">'+avatarHTML(av,'')+'</div>';
       html+='<div class="shop-card'+(has?' owned':'')+(locked?' locked':'')+'">'+
         prev+
@@ -3832,12 +3906,14 @@ async function renderShop(){
   area.innerHTML=html;
 }
 async function buyItem(id){
+  const it=SHOP_ITEMS.find(x=>x.id===id);
   const res=await api('/api/shop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,item_id:id})});
-  if(!res.ok){alert(res.data.error||'兑换失败');return;}
+  if(!res.ok){showToast(res.data.error||'兑换失败','err');return;}
   await loadMe(); renderShop(); updateAuthUI();
   const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
   const ap=document.getElementById('avatarPresets2');
   if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
+  showToast('✅ 兑换成功：'+(it?it.name:id),'ok');
 }
 function renderAvatarPresets(root,showLocked){
   if(!root) return;
@@ -3857,8 +3933,10 @@ function renderAvatarPresets(root,showLocked){
   LOCKED_AVATARS.forEach(a=>{
     const b=document.createElement('button');
     const un=avatarUnlocked(a.id);
-    b.className='avatar-opt'+(un?'':' locked')+(avatarSel==='e:'+a.emoji?' sel':'');
-    b.textContent=a.emoji;
+    const avKey=a.img||('e:'+a.emoji);
+    b.className='avatar-opt'+(un?'':' locked')+(avatarSel===avKey?' sel':'');
+    if(a.img){ b.innerHTML='<img src="'+a.img+'" alt=""/>'; }
+    else b.textContent=a.emoji;
     b.title=a.name+'（'+a.price+' 积分解锁）';
     if(!un){
       const lb=document.createElement('span');
@@ -3867,11 +3945,11 @@ function renderAvatarPresets(root,showLocked){
     }
     b.onclick=()=>{
       if(!un){
-        alert('「'+a.name+'」头像需要 '+a.price+' 积分解锁，去商城看看吧！');
+        showToast('「'+a.name+'」需要 '+a.price+' 积分解锁，去商城看看吧','err');
         openShop();
         return;
       }
-      avatarSel='e:'+a.emoji;refreshAvatarPreview();root.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
+      avatarSel=avKey;refreshAvatarPreview();root.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
     };
     root.appendChild(b);
   });
@@ -4055,13 +4133,14 @@ async function renderRank(){
     html+='<div class="rank-list">';
     list.forEach((it,i)=>{
       const mine=auth&&it.name===auth.user.name;
+      const rtitle=titleFromItems(it.items);
       let rv='⭐'+it.stars;
       if(rankType==='total') rv=it.mastered+' 词';
       else if(rankType==='score') rv=it.score+' 分';
       html+='<div class="rank-item'+(mine?' mine':'')+'">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
         '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar',frameOf(it.items)):'🐭')+'</span>'+
-        '<span class="rank-name">'+esc(it.name)+'</span>'+
+        '<span class="rank-name">'+esc(it.name)+(rtitle?'<span class="rank-title">🏅'+esc(rtitle)+'</span>':'')+'</span>'+
         '<span class="rank-val">'+rv+'</span>'+
         '</div>';
     });
