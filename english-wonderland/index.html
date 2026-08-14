@@ -23,6 +23,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .header .sub{font-size:13px;opacity:.9;}
 .top-right{position:absolute;top:14px;right:14px;display:flex;gap:8px;align-items:center;z-index:30;}
 .star-pill{background:rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;font-size:16px;font-weight:bold;cursor:default;}
+.upd-link{text-decoration:none;color:#fff;transition:background .15s,color .15s;}
+.upd-link:hover{background:var(--gold);color:#1a1a1a;}
 /* ===== Tab 导航 ===== */
 .tab-nav{display:flex;gap:10px;padding:14px 16px 0;max-width:640px;margin:0 auto;flex-wrap:wrap;}
 .tab-btn{flex:1 1 0;min-width:130px;padding:14px;border:none;border-radius:12px;background:#fff;font-size:16px;font-weight:bold;color:#555;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.06);transition:all .25s;}
@@ -416,6 +418,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
       <div class="star-pill" id="usagePill" style="display:none">⏱ 今日剩余 <span id="usageRemain">20</span> 分</div>
+      <a class="star-pill upd-link" href="../updates/">📜 更新历程</a>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
