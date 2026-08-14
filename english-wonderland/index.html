@@ -415,6 +415,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="header">
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
+      <div class="star-pill" id="usagePill" style="display:none">⏱ 今日剩余 <span id="usageRemain">20</span> 分</div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
@@ -473,6 +474,25 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <h2>🛍️ 装扮商城</h2>
     <div class="shop-balance">可用积分：<b id="shopPoints">—</b></div>
     <div id="shopList"></div>
+  </div>
+</div>
+<div class="about-modal" id="lockModal" onclick="if(event.target===this)hideLock()">
+  <div class="about-box">
+    <button class="about-close" onclick="hideLock()" aria-label="关闭">✕</button>
+    <h2>🎉 今天的英语学习完成啦！</h2>
+    <p>今天已经学习了 <b id="lockMin">0</b> 分钟，你超棒！让眼睛和大脑休息一下，明天会记得更牢哦～</p>
+    <p class="tip">💡 每天坚持一点点，比一次学很久更有效。</p>
+    <button class="game-btn green" id="lockUnlockBtn" onclick="openUnlockForm()">👨‍👩‍👧 家长解锁延长 20 分钟</button>
+    <div id="lockMaxNote" style="display:none" class="tip">⏰ 今日已达 1 小时上限，明天再继续哦！</div>
+    <div id="lockUnlockForm" style="display:none;margin-top:14px">
+      <p>家长请输入 PIN（可用全角或中文数字，如 <b>１２３４</b> 或 <b>一二三四</b>）</p>
+      <input id="lockPin" class="search-input" inputmode="text" maxlength="8" placeholder="家长 PIN" onkeydown="if(event.key==='Enter')doUnlock()"/>
+      <div class="login-msg" id="lockMsg"></div>
+      <div class="login-btns">
+        <button class="game-btn green" onclick="doUnlock()">✅ 确认解锁</button>
+        <button class="game-btn" onclick="closeUnlockForm()">取消</button>
+      </div>
+    </div>
   </div>
 </div>
 <div class="tab-nav">
@@ -3577,7 +3597,101 @@ async function api(path,opt){
   }catch(e){return {ok:false,data:{error:'网络异常，稍后再试'}};}
 }
 function cnToday(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-/* ★ 头像：12 生肖免费 + 8 个积分解锁（id 与商城 avatar-* 商品对应） */
+
+/* ===== 防沉迷：每日时长预算 + 家长解锁（服务端持久化） =====
+   单次 20 分钟；家长解锁 +20 分钟/次，最多 2 次（日上限 1 小时）。
+   活跃秒数上报服务端，清缓存也无法重置；家长 PIN 复用游玩 PIN，允许全角/中文数字形式。 */
+const USAGE_BASE=20*60, USAGE_EXTEND=20*60, USAGE_MAX_UNLOCK=2;
+let usage={used:0,unlockCount:0,budget:USAGE_BASE,remaining:USAGE_BASE,locked:false,loaded:false};
+let _activeStart=null, _usageTimer=null;
+
+function normalizePin(s){
+  const map={'０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9',
+    '零':'0','〇':'0','一':'1','二':'2','两':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9',
+    '壹':'1','贰':'2','叁':'3','肆':'4','伍':'5','陆':'6','柒':'7','捌':'8','玖':'9'};
+  let out='';
+  for(const ch of (s||'')){
+    if(map[ch]!==undefined)out+=map[ch];
+    else if(/[0-9]/.test(ch))out+=ch;
+  }
+  return out;
+}
+function applyUsage(st){
+  usage.used=st.used_seconds||0;
+  usage.unlockCount=st.unlock_count||0;
+  usage.budget=st.budget_seconds||USAGE_BASE;
+  usage.remaining=Math.max(0,(st.remaining_seconds!=null?st.remaining_seconds:usage.budget-usage.used));
+  usage.locked=usage.remaining<=0;
+  usage.loaded=true;
+  updateUsagePill();
+}
+function updateUsagePill(){
+  const p=document.getElementById('usagePill');if(!p)return;
+  if(!auth){p.style.display='none';return;}
+  p.style.display='';
+  document.getElementById('usageRemain').textContent=Math.ceil(usage.remaining/60);
+  p.style.opacity=usage.locked?'0.5':'1';
+}
+async function loadUsage(){
+  if(!auth)return;
+  const res=await api('/api/usage?token='+encodeURIComponent(auth.token)+'&date='+cnToday());
+  if(res.ok&&res.data.ok){applyUsage(res.data);if(usage.locked&&(curTab==='en'||curTab==='game'||!curTab))showLock();}
+}
+async function reportUsage(sec){
+  if(!auth||sec<=0)return;
+  const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,action:'add',seconds:sec,date:cnToday()})});
+  if(res.ok&&res.data.ok){applyUsage(res.data);if(usage.locked)showLock();}
+}
+function startActive(){if(!auth||usage.locked)return;_activeStart=Date.now();}
+function flushActive(){
+  if(_activeStart==null)return;
+  const sec=Math.floor((Date.now()-_activeStart)/1000);_activeStart=null;
+  if(sec>0)reportUsage(sec);
+}
+function isLearningTab(){return curTab==='en'||curTab==='game';}
+function startUsageTimer(){
+  if(_usageTimer)return;
+  _usageTimer=setInterval(function(){
+    if(auth&&isLearningTab()&&!usage.locked){flushActive();startActive();}
+  },20000);
+}
+function showLock(){
+  const m=Math.floor(usage.used/60);
+  const el=document.getElementById('lockMin');if(el)el.textContent=m;
+  const btn=document.getElementById('lockUnlockBtn');
+  const maxNote=document.getElementById('lockMaxNote');
+  const form=document.getElementById('lockUnlockForm');
+  if(form)form.style.display='none';
+  if(usage.unlockCount>=USAGE_MAX_UNLOCK){if(btn)btn.style.display='none';if(maxNote)maxNote.style.display='';}
+  else{if(btn)btn.style.display='';if(maxNote)maxNote.style.display='none';}
+  document.getElementById('lockModal').classList.add('show');
+  flushActive();
+}
+function hideLock(){
+  if(usage.locked){showLock();return;}          // 仍锁定（如已达上限）：保持锁屏
+  document.getElementById('lockModal').classList.remove('show');
+  if(isLearningTab())startActive();
+}
+function openUnlockForm(){
+  const f=document.getElementById('lockUnlockForm');if(f)f.style.display='';
+  const i=document.getElementById('lockPin');if(i){i.value='';setTimeout(()=>i.focus(),50);}
+  const msg=document.getElementById('lockMsg');if(msg)msg.textContent='';
+}
+function closeUnlockForm(){const f=document.getElementById('lockUnlockForm');if(f)f.style.display='none';}
+async function doUnlock(){
+  const i=document.getElementById('lockPin');const pin=normalizePin(i?i.value:'');
+  const msg=document.getElementById('lockMsg');
+  if(!/^\d{4}$/.test(pin)){if(msg)msg.textContent='请输入 4 位家长 PIN（可用全角/中文数字）';return;}
+  const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,action:'unlock',pin:pin,date:cnToday()})});
+  if(!res.ok){if(msg)msg.textContent=res.data.error||'解锁失败';return;}
+  applyUsage(res.data);closeUnlockForm();hideLock();
+}
+async function initUsage(){
+  await loadUsage();
+  startUsageTimer();
+  if(auth&&!usage.locked)startActive();
+}
+
 const FREE_AVATARS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷'];
 const LOCKED_AVATARS=[
   {id:'avatar-koala',emoji:'🐨',name:'考拉',price:30},
@@ -3754,6 +3868,7 @@ function updateAuthUI(){
     if(btn)btn.style.display='';
     if(shop)shop.style.display='none';
   }
+  updateUsagePill();
 }
 function openLogin(){
   avatarSel=(auth&&auth.user&&auth.user.avatar)||'e:🐭';
@@ -3777,11 +3892,16 @@ async function doAuth(action){
   updateAuthUI();
   syncAllProgress();
   loadMe();
+  initUsage();
   renderRank();
 }
 async function logout(){
   if(!confirm('确定要退出登录吗？')) return;
   const token=auth&&auth.token;
+  if(_usageTimer){clearInterval(_usageTimer);_usageTimer=null;}
+  flushActive();
+  document.getElementById('lockModal').classList.remove('show');
+  usage={used:0,unlockCount:0,budget:USAGE_BASE,remaining:USAGE_BASE,locked:false,loaded:false};
   saveAuth(null);
   updateAuthUI();
   if(token) api('/api/auth',{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
@@ -3910,11 +4030,13 @@ async function renderRank(){
 }
 function switchTab(tab){
   curTab=tab;
+  if((tab==='en'||tab==='game')&&usage.locked){showLock();return;}
   if(window.speechSynthesis) speechSynthesis.cancel();
   ['En','Game','Stat','Rank'].forEach(t=>{
     document.getElementById('tab'+t).classList.toggle('active',tab===t.toLowerCase());
     document.getElementById('mod'+t).classList.toggle('active',tab===t.toLowerCase());
   });
+  if(tab==='en'||tab==='game'){ if(!usage.locked) startActive(); } else { flushActive(); }
   if(tab==='game'){renderGameIntro();gRefreshTop()}
   if(tab==='stat'){renderDashboard()}
   if(tab==='rank'){renderRank()}
@@ -3938,12 +4060,16 @@ function handleKey(e){
   }  // game / stat 不拦截方向键，避免影响拖拽与滚动
 }
 document.addEventListener('keydown',handleKey);
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){ flushActive(); }            // 切后台/锁屏：暂停计时并上报已用秒数
+  else { if(auth&&isLearningTab()&&!usage.locked) startActive(); }
+});
 document.addEventListener('DOMContentLoaded',function(){
   migrateProgress();
   const _aw=document.getElementById('aboutWords'); if(_aw)_aw.textContent=totalWords();
   const _ac=document.getElementById('aboutCats'); if(_ac)_ac.textContent=CATS.length;
   auth=loadAuth(); updateAuthUI();
-  if(auth){closeLogin(); loadMe(); syncAllProgress();}  // ★ 已登录：直接关掉登录层，刷新不再弹登录界面（仅用户主动 logout 才回登录层）
+  if(auth){closeLogin(); loadMe(); syncAllProgress(); initUsage();}  // ★ 已登录：直接关掉登录层，刷新不再弹登录界面（仅用户主动 logout 才回登录层）
   else { openLogin(); }
   document.getElementById('starCount').textContent=stars;
   restorePos();

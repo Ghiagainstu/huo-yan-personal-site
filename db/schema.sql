@@ -55,3 +55,12 @@ CREATE TABLE IF NOT EXISTS rate_limit (
 
 CREATE INDEX IF NOT EXISTS idx_progress_user ON progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_checkin_date ON checkin(date);
+
+-- 防沉迷：每日学习时长预算 + 家长解锁次数（date 用中国本地日期）
+CREATE TABLE IF NOT EXISTS usage_limit (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date TEXT NOT NULL,
+  used_seconds INTEGER NOT NULL DEFAULT 0,   -- 当日已用活跃秒数（累计，服务端为准）
+  unlock_count INTEGER NOT NULL DEFAULT 0,   -- 当日家长解锁次数（默认 20 分钟/次，上限 2 次 = 日上限 1 小时）
+  PRIMARY KEY (user_id, date)
+);
