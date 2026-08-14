@@ -320,6 +320,45 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .frame-gold{box-shadow:0 0 0 3px #ffc93c;}
 .frame-rainbow{box-shadow:0 0 0 3px #ff5e7d,0 0 0 6px #ffb84d,0 0 0 9px #4dd0e1;}
 .frame-star{box-shadow:0 0 0 3px #ffc93c,0 0 12px 5px rgba(255,200,60,.65);}
+[class*="frame-"]{position:relative;}
+/* —— 增强：支持 mask 时用「渐变环 + 内发光 + 传说动画」替换实色环 —— */
+@supports ((-webkit-mask-composite:xor) or (mask-composite:exclude)){
+  [class*="frame-"]{box-shadow:inset 0 0 5px rgba(255,255,255,.45);}
+  [class*="frame-"]::before{
+    content:'';position:absolute;inset:0;border-radius:50%;padding:3px;
+    background:conic-gradient(from 0deg,var(--g1,#c0c0c0),var(--g2,#f5f5f5),var(--g1,#c0c0c0));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask-composite:exclude;
+    pointer-events:none;z-index:2;
+  }
+  .frame-teal{--g1:#9be8cf;--g2:#0e7a5c;}
+  .frame-silver{--g1:#ffffff;--g2:#9a9aa0;}
+  .frame-pink{--g1:#ffb3c8;--g2:#c23a66;}
+  .frame-orange{--g1:#ffb27d;--g2:#c2480f;}
+  .frame-gold{--g1:#ffe08a;--g2:#c9920a;}
+  .frame-fire{--g1:#ffb27d;--g2:#d85a30;--glow:rgba(240,153,123,.55);}
+  .frame-dia{--g1:#b5d4f4;--g2:#378add;--glow:rgba(55,138,221,.5);}
+  .frame-crown{--g1:#fac775;--g2:#ba7517;--glow:rgba(250,199,117,.6);}
+  .frame-star{--g1:#ffe08a;--g2:#c9920a;--glow:rgba(255,200,60,.6);}
+  .frame-rainbow{--glow:rgba(255,94,125,.5);}
+  .frame-rainbow::before{background:conic-gradient(from 0deg,#ff5e7d,#ffb84d,#ffe08a,#4dd0e1,#7cc6ff,#b58cff,#ff5e7d);}
+  /* 传说框：外发光呼吸 + 光晕旋转 */
+  .frame-rainbow,.frame-star,.frame-fire,.frame-dia,.frame-crown{animation:frameGlow 3s ease-in-out infinite;}
+  .frame-rainbow::before,.frame-star::before,.frame-fire::before,.frame-dia::before,.frame-crown::before{animation:frameSpin 4s linear infinite;}
+  /* 右上角小图标（星星/火焰/钻石/皇冠） */
+  .frame-star::after,.frame-fire::after,.frame-dia::after,.frame-crown::after{
+    content:'';position:absolute;top:2px;right:2px;font-size:13px;line-height:1;z-index:3;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));
+  }
+  .frame-star::after{content:'⭐';}
+  .frame-fire::after{content:'🔥';}
+  .frame-dia::after{content:'💎';}
+  .frame-crown::after{content:'👑';}
+}
+@keyframes frameSpin{to{transform:rotate(360deg)}}
+@keyframes frameGlow{0%,100%{box-shadow:inset 0 0 5px rgba(255,255,255,.45),0 0 6px 1px var(--glow,rgba(0,0,0,.2))}50%{box-shadow:inset 0 0 5px rgba(255,255,255,.45),0 0 14px 4px var(--glow,rgba(0,0,0,.2))}}
 /* 右上角商城按钮 */
 .shop-top-btn{background:#FFD54F;color:#5a4300;border:1px solid #FFC107;border-radius:20px;padding:5px 13px;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;z-index:31;}
 .shop-top-btn:active{transform:scale(.94);}
