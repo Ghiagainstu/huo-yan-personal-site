@@ -71,13 +71,10 @@ export async function onRequestPost(ctx) {
   }
 
   if (action === 'unlock') {
-    const pin = normalizePin(String(body.pin || ''));
-    if (!/^\d{4}$/.test(pin)) return json({ error: '家长 PIN 格式不对（需 4 位）' }, 400);
+    // 解锁码由前端在锁屏时随机生成（中文数字文字展示），家长按对应阿拉伯数字输入；
+    // 后端不再校验固定 PIN，只负责记账：未达上限则 +1 解锁次数（预算延长由 stateOf 计算）。
     const st0 = stateOf(await getRow(db, u.id, today));
     if (st0.unlock_count >= MAX_UNLOCKS) return json({ error: '今日解锁次数已用完' }, 429);
-    const u2 = await db.prepare('SELECT pin_hash FROM users WHERE id=?').bind(u.id).first();
-    const hash = await pinHash(u.name, pin);
-    if (u2.pin_hash !== hash) return json({ error: '家长 PIN 不对' }, 401);
     await db.prepare(
       `INSERT INTO usage_limit(user_id, date, used_seconds, unlock_count) VALUES(?, ?, 0, 1)
        ON CONFLICT(user_id, date) DO UPDATE SET unlock_count = unlock_count + 1`

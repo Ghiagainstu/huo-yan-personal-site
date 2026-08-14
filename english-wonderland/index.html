@@ -488,8 +488,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <button class="game-btn green" id="lockUnlockBtn" onclick="openUnlockForm()">👨‍👩‍👧 家长解锁延长 20 分钟</button>
     <div id="lockMaxNote" style="display:none" class="tip">⏰ 今日已达 1 小时上限，明天再继续哦！</div>
     <div id="lockUnlockForm" style="display:none;margin-top:14px">
-      <p>家长请输入 PIN（<b>直接按阿拉伯数字即可</b>，如 <b>1234</b>；也支持全角 <b>１２３４</b> 或中文 <b>一二三四</b>）</p>
-      <input id="lockPin" class="search-input" inputmode="numeric" maxlength="8" placeholder="家长 PIN（阿拉伯数字）" onkeydown="if(event.key==='Enter')doUnlock()"/>
+      <p>家长解锁 PIN：<b id="lockCodeZh" style="font-size:18px;color:#B87A1E">----</b><br><span style="font-size:12px;color:#888">请按它对应的阿拉伯数字 <b id="lockCodeNum">----</b>（也支持全角 ３９５８ 或中文数字）</span></p>
+      <input id="lockPin" class="search-input" inputmode="numeric" maxlength="8" placeholder="如按 3958" onkeydown="if(event.key==='Enter')doUnlock()"/>
       <div class="login-msg" id="lockMsg"></div>
       <div class="login-btns">
         <button class="game-btn green" onclick="doUnlock()">✅ 确认解锁</button>
@@ -3658,6 +3658,9 @@ function startUsageTimer(){
     if(auth&&isLearningTab()&&!usage.locked){flushActive();startActive();}
   },20000);
 }
+let lockCode='';
+function genCode(){let s='';for(let k=0;k<4;k++)s+=String(Math.floor(Math.random()*10));return s;}
+function numToZh(code){const m={'0':'零','1':'一','2':'二','3':'三','4':'四','5':'五','6':'六','7':'七','8':'八','9':'九'};return code.split('').map(c=>m[c]).join('');}
 function showLock(){
   const m=Math.floor(usage.used/60);
   const el=document.getElementById('lockMin');if(el)el.textContent=m;
@@ -3667,6 +3670,9 @@ function showLock(){
   if(form)form.style.display='none';
   if(usage.unlockCount>=USAGE_MAX_UNLOCK){if(btn)btn.style.display='none';if(maxNote)maxNote.style.display='';}
   else{if(btn)btn.style.display='';if(maxNote)maxNote.style.display='none';}
+  lockCode=genCode();
+  const z=document.getElementById('lockCodeZh');if(z)z.textContent=numToZh(lockCode);
+  const n=document.getElementById('lockCodeNum');if(n)n.textContent=lockCode;
   document.getElementById('lockModal').classList.add('show');
   flushActive();
 }
@@ -3684,8 +3690,8 @@ function closeUnlockForm(){const f=document.getElementById('lockUnlockForm');if(
 async function doUnlock(){
   const i=document.getElementById('lockPin');const pin=normalizePin(i?i.value:'');
   const msg=document.getElementById('lockMsg');
-  if(!/^\d{4}$/.test(pin)){if(msg)msg.textContent='请输入 4 位家长 PIN（可用全角/中文数字）';return;}
-  const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,action:'unlock',pin:pin,date:cnToday()})});
+  if(pin!==lockCode){if(msg)msg.textContent='解锁码不对，请按屏幕上中文数字对应的阿拉伯数字输入';return;}
+  const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,action:'unlock',date:cnToday()})});
   if(!res.ok){if(msg)msg.textContent=res.data.error||'解锁失败';return;}
   applyUsage(res.data);closeUnlockForm();hideLock();
 }
