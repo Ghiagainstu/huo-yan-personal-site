@@ -431,6 +431,19 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .fprev{cursor:pointer;transition:transform .15s;}
 .fprev:active{transform:scale(.92);}
 .rank-title{font-size:11px;color:#8a6d1a;background:#fff3cd;border:1px solid #f0d48a;border-radius:8px;padding:1px 7px;margin-left:6px;white-space:nowrap;font-weight:bold;vertical-align:middle;}
+/* ===== 移动端顶部布局优化（避免菜单挤在一起/重叠标题） ===== */
+@media (max-width:480px){
+  .header{display:flex;flex-direction:column;padding:12px 10px 14px;}
+  .top-right{position:static;justify-content:center;flex-wrap:wrap;gap:6px;margin:0 0 8px;}
+  .star-pill{font-size:13px;padding:4px 10px;}
+  .user-pill{padding:3px 9px;gap:5px;font-size:12px;}
+  .user-pill .up-name{max-width:56px;}
+  .user-pill .up-arr{display:none;}
+  .shop-top-btn{padding:4px 10px;font-size:12px;}
+  .tab-nav{gap:8px;padding:12px 10px 0;}
+  .game-top{gap:8px;font-size:13px;}
+  .game-top .pill{padding:5px 10px;}
+}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -477,7 +490,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="header">
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
-      <div class="star-pill" id="usagePill" style="display:none">⏱ 今日剩余 <span id="usageRemain">20</span> 分</div>
+      <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20</span> 分</div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
