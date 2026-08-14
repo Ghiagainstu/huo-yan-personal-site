@@ -485,8 +485,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <button class="game-btn green" id="lockUnlockBtn" onclick="openUnlockForm()">👨‍👩‍👧 家长解锁延长 20 分钟</button>
     <div id="lockMaxNote" style="display:none" class="tip">⏰ 今日已达 1 小时上限，明天再继续哦！</div>
     <div id="lockUnlockForm" style="display:none;margin-top:14px">
-      <p>家长请输入 PIN（可用全角或中文数字，如 <b>１２３４</b> 或 <b>一二三四</b>）</p>
-      <input id="lockPin" class="search-input" inputmode="text" maxlength="8" placeholder="家长 PIN" onkeydown="if(event.key==='Enter')doUnlock()"/>
+      <p>家长请输入 PIN（<b>直接按阿拉伯数字即可</b>，如 <b>1234</b>；也支持全角 <b>１２３４</b> 或中文 <b>一二三四</b>）</p>
+      <input id="lockPin" class="search-input" inputmode="numeric" maxlength="8" placeholder="家长 PIN（阿拉伯数字）" onkeydown="if(event.key==='Enter')doUnlock()"/>
       <div class="login-msg" id="lockMsg"></div>
       <div class="login-btns">
         <button class="game-btn green" onclick="doUnlock()">✅ 确认解锁</button>
