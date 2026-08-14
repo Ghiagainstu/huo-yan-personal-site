@@ -16,7 +16,7 @@ const CREATE = `CREATE TABLE IF NOT EXISTS usage_limit (
   PRIMARY KEY (user_id, date)
 )`;
 
-async function ensureTable(db) { await db.exec(CREATE); }
+async function ensureTable(db) { await db.prepare(CREATE).run(); }
 
 async function getRow(db, userId, date) {
   return db.prepare('SELECT used_seconds, unlock_count FROM usage_limit WHERE user_id=? AND date=?')
