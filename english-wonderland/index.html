@@ -66,6 +66,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .search-input::placeholder{color:#b2bec3;}
 .search-clear{border:none;background:#f0f2f5;color:#888;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;flex-shrink:0;}
 .search-clear:active{background:#e2e6ea;}
+.cat-select{flex-shrink:0;max-width:42%;border:none;outline:none;background:#f0f2f5;color:#444;font-size:14px;font-weight:bold;font-family:inherit;border-radius:10px;padding:6px 8px;cursor:pointer;margin-left:2px;min-width:0;}
+.cat-select:focus{background:#e2e6ea;}
 .search-results{margin:4px 0 10px;}
 .search-info{font-size:13px;color:#888;margin-bottom:8px;}
 .search-tags{display:flex;flex-wrap:wrap;gap:8px;}
@@ -636,6 +638,9 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <span class="search-ico">🔍</span>
       <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文，例如 cat 或 猫…" oninput="doSearch()" />
       <button id="searchClear" class="search-clear" type="button" onclick="clearSearch()" title="清除">✕</button>
+      <select id="catSelect" class="cat-select" onchange="onCatSelect(this.value)" title="按分类筛选">
+        <option value="all">📚 全部</option>
+      </select>
     </div>
     <div id="searchResults" class="search-results" style="display:none"></div>
     <div class="filter-row">
@@ -3311,7 +3316,15 @@ function renderCatChips(){
   });
   box.innerHTML = html;
 }
-function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();buildList();renderCard()}
+function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();syncCatSelect();buildList();renderCard()}
+function populateCatSelect(){
+  const sel=document.getElementById('catSelect'); if(!sel) return;
+  let html='<option value="all">📚 全部</option>';
+  CATS.forEach(c=>{ html+='<option value="'+c.id+'">'+esc(c.zh)+' '+esc(c.en)+'</option>'; });
+  sel.innerHTML=html; syncCatSelect();
+}
+function onCatSelect(val){ setCat(val); }
+function syncCatSelect(){ const sel=document.getElementById('catSelect'); if(sel) sel.value=curCat; }
 function setFilter(f){
   curFilter=f;cardIdx=0;flipped=false;
   document.querySelectorAll('.filter-chip[data-f]').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
@@ -3342,7 +3355,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function doSearch(){
   const inp=document.getElementById('wordSearch');
   curSearch=inp.value.trim().toLowerCase();
-  if(curSearch && curCat!=='all'){ curCat='all'; renderCatChips(); }
+  if(curSearch && curCat!=='all'){ curCat='all'; renderCatChips(); syncCatSelect(); }
   cardIdx=0;flipped=false;
   buildList();renderCard();renderSearchResults();
 }
@@ -3350,7 +3363,7 @@ function clearSearch(){
   const inp=document.getElementById('wordSearch');
   inp.value='';curSearch='';
   cardIdx=0;flipped=false;
-  buildList();renderCard();renderSearchResults();
+  buildList();renderCard();renderSearchResults();syncCatSelect();
 }
 function renderSearchResults(){
   const box=document.getElementById('searchResults');
@@ -4887,6 +4900,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('starCount').textContent=stars;
   restorePos();
   renderCatChips();
+  populateCatSelect();
   syncFilterChips();
   const sc=document.getElementById('shuffleChip'); if(sc) sc.classList.toggle('active',curShuffle);
   document.querySelectorAll('.filter-chip[data-rg]').forEach(b=>b.classList.toggle('active',b.dataset.rg===curRegion));
