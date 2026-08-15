@@ -4395,9 +4395,10 @@ function closeUnlockForm(){const f=document.getElementById('lockUnlockForm');if(
 async function doUnlock(){
   const i=document.getElementById('lockPin');const pin=normalizePin(i?i.value:'');
   const msg=document.getElementById('lockMsg');
-  /* 家长解锁码即锁屏上随机生成的中文数字对应的阿拉伯数字；admin 码 852121 不再绕过每日上限 */
-  if(pin!==lockCode){if(msg)msg.textContent='解锁码不对，请按屏幕上中文数字对应的阿拉伯数字输入';return;}
+  const admin=pin==='852121';   // 内测 admin 解锁码：不受随机码限制，也不受每日次数上限
+  if(!admin&&pin!==lockCode){if(msg)msg.textContent='解锁码不对，请按屏幕上中文数字对应的阿拉伯数字输入';return;}
   const body={token:auth.token,action:'unlock',date:cnToday()};
+  if(admin) body.admin_pin='852121';
   const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!res.ok){if(msg)msg.textContent=res.data.error||'解锁失败';return;}
   applyUsage(res.data);closeUnlockForm();hideLock();
