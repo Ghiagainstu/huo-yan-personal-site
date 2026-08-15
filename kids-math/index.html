@@ -54,6 +54,12 @@
   .ctrl-btn.swap{background:#5aa9e6;}
   .ctrl-btn:active{transform:scale(.95);}
 
+  /* 年级一级 Tab */
+  .grades{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:680px; margin:0 auto 10px;}
+  .grade-btn{border:none; border-radius:14px; padding:9px 18px; font-weight:800; font-size:1rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
+  .grade-btn.active{background:linear-gradient(135deg,#ff8c42,#ff6b6b); color:#fff; box-shadow:0 4px 12px rgba(255,107,107,.4);}
+  .grades.locked .grade-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
+
   /* 分类分组标签 */
   .cat-groups{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:600px; margin-bottom:12px;}
   .cat-group-btn{border:none; border-radius:999px; padding:7px 16px; font-weight:700; font-size:.9rem; background:#fff; color:#888; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer; transition:.18s;}
@@ -218,6 +224,8 @@
     .subcats{padding:7px 8px;}
     .subcat-btn{padding:6px 11px; font-size:.86rem;}
     .controls{gap:10px;}
+    .grades{gap:6px;}
+    .grade-btn{padding:8px 14px; font-size:.92rem; border-radius:12px;}
     .cat-groups{gap:6px;}
     .cat-group-btn{padding:6px 13px; font-size:.85rem;}
     .setup-row,.action-row{gap:8px;}
@@ -260,8 +268,9 @@
 </script>
 </head>
 <body>
-  <h1>🧮 幼儿口算</h1>
+  <h1>🧮 小学数学口算</h1>
 
+  <div class="grades" id="grades"></div>
   <div class="cat-groups" id="catGroups"></div>
   <div class="cats" id="cats"></div>
   <div class="subcats" id="subcats"></div>
@@ -439,19 +448,81 @@
     breakTen:{label:'破十法',    max:20,  cap:20,  emoji:false},
     levelTen:{label:'平十法',    max:20,  cap:20,  emoji:false},
     roundTen:{label:'凑整法',    max:100, cap:200, emoji:false},
-    twenty:  {label:'20以内',    max:20,  cap:20,  emoji:false, sub:true}
+    twenty:  {label:'20以内',    max:20,  cap:20,  emoji:false, sub:true},
+    /* —— 二年级 —— */
+    mulTab:  {label:'九九口诀',     max:81,  cap:81,  emoji:false},
+    timeUnit:{label:'时分秒',       max:0,   cap:0,   emoji:false},
+    lenMass: {label:'长度·质量',    max:0,   cap:0,   emoji:false},
+    /* —— 三年级 —— */
+    mulx1:   {label:'两位数×一位数', max:0,  cap:0,   emoji:false, sub:true},
+    divx1:   {label:'除数是一位数',  max:0,  cap:0,   emoji:false},
+    fracUnit:{label:'几分之一',      max:0,  cap:0,   emoji:false},
+    fracPart:{label:'几分之几',      max:0,  cap:0,   emoji:false},
+    fracAdd: {label:'同分母加减',    max:0,  cap:0,   emoji:false},
+    decAdd:  {label:'小数加减',      max:0,  cap:0,   emoji:false},
+    /* —— 四年级 —— */
+    mulx2:   {label:'两位数×两位数', max:0,  cap:0,   emoji:false},
+    divx2:   {label:'除数是两位数',  max:0,  cap:0,   emoji:false},
+    decMix:  {label:'小数加减混合',  max:0,  cap:0,   emoji:false},
+    roundUp: {label:'凑整巧算',      max:0,  cap:0,   emoji:false},
+    distr:   {label:'乘法分配律',    max:0,  cap:0,   emoji:false},
+    /* —— 五年级 —— */
+    decMul:  {label:'小数乘法',      max:0,  cap:0,   emoji:false},
+    decAll:  {label:'小数四则',      max:0,  cap:0,   emoji:false},
+    fracUneven:{label:'异分母加减',  max:0,  cap:0,   emoji:false},
+    fracMul: {label:'分数乘除',      max:0,  cap:0,   emoji:false},
+    eqFill:  {label:'方程填空',      max:0,  cap:0,   emoji:false}
   };
-  /* 题型分组（避免 11 个按钮平铺杂乱；默认展开"基础"） */
-  const CAT_GROUPS=[
-    {id:'basic',  label:'基础', cats:['five','ten','twenty']},
-    {id:'adv',    label:'进阶', cats:['three10','three20','three30','hundred']},
-    {id:'method', label:'方法', cats:['makeTen','breakTen','levelTen','roundTen','mul10','div10']}
-  ];
-  function groupOf(k){ const g=CAT_GROUPS.find(g=>g.cats.includes(k)); return g?g.id:'basic'; }
-  const CAT_ICO={five:'🔢',ten:'🔟',mul10:'✖️',div10:'➗',hundred:'💯',three10:'🔣',three20:'🔣',three30:'🔣',makeTen:'🍎',breakTen:'✂️',levelTen:'⚖️',roundTen:'🎯',twenty:'2️⃣'};
 
+  /* ===== 年级制结构（一级=年级，二级=模块，三级=题型） ===== */
+  const GRADES=[
+    {id:'g1', label:'一年级', modules:[
+      {label:'基础', cats:['five','ten','twenty']},
+      {label:'方法', cats:['makeTen','breakTen','levelTen']},
+      {label:'100以内', cats:['hundred']}
+    ]},
+    {id:'g2', label:'二年级', modules:[
+      {label:'表内乘除', cats:['mul10','div10','mulTab']},
+      {label:'混合', cats:['three10','three20','three30']},
+      {label:'量与换算', cats:['timeUnit','lenMass']}
+    ]},
+    {id:'g3', label:'三年级', modules:[
+      {label:'乘除', cats:['mulx1','divx1']},
+      {label:'分数', cats:['fracUnit','fracPart','fracAdd']},
+      {label:'小数', cats:['decAdd']}
+    ]},
+    {id:'g4', label:'四年级', modules:[
+      {label:'多位数', cats:['mulx2','divx2']},
+      {label:'小数', cats:['decMix']},
+      {label:'巧算', cats:['roundUp','distr']}
+    ]},
+    {id:'g5', label:'五年级', modules:[
+      {label:'小数四则', cats:['decMul','decAll']},
+      {label:'分数', cats:['fracUneven','fracMul']},
+      {label:'代数启蒙', cats:['eqFill']}
+    ]}
+  ];
+  function curGrade(){ return GRADES.find(g=>g.id===gradeKey)||GRADES[0]; }
+  function curModule(){ const g=curGrade(); return g.modules[modIdx]||g.modules[0]; }
+
+  const CAT_ICO={five:'🔢',ten:'🔟',mul10:'✖️',div10:'➗',hundred:'💯',three10:'🔣',three20:'🔣',three30:'🔣',makeTen:'🍎',breakTen:'✂️',levelTen:'⚖️',roundTen:'🎯',twenty:'2️⃣',mulTab:'🔢',timeUnit:'⏰',lenMass:'📏',mulx1:'✖️',divx1:'➗',fracUnit:'½',fracPart:'¾',fracAdd:'➕',decAdd:'🔢',mulx2:'✖️',divx2:'➗',decMix:'🔢',roundUp:'🎯',distr:'✖️',decMul:'✖️',decAll:'🔢',fracUneven:'➕',fracMul:'✖️',eqFill:'📐'};
+
+  /* 默认进入：一年级 / 基础模块 / 10以内 */
+  let gradeKey='g1';
+  let modIdx=0;
   let catKey='ten';
-  let catGroup=groupOf(catKey);
+  let catGroup=curModule().label;
+
+  /* ===== 表达式/分数/小数/方程 题型的渲染辅助 ===== */
+  function gcd(a,b){ return b?gcd(b,a%b):a; }
+  function lcm(a,b){ return a/gcd(a,b)*b; }
+  function fmt(x){ const r=Math.round(x*1000)/1000; return Number.isInteger(r)?r.toString():r.toFixed(2).replace(/\.?0+$/,''); }
+  function sp(n){ return '<span class="num">'+n+'</span>'; }
+  function opx(s){ return '<span class="op">'+s+'</span>'; }
+  function eqq(){ return '<span class="equal">=</span>'; }
+  function unk(){ return '<span class="unknown">?</span>'; }
+  function pickOpts(correct,list){ const p=[correct,...list]; for(let i=p.length-1;i>0;i--){ const j=randInt(0,i); [p[i],p[j]]=[p[j],p[i]]; } return p; }
+  function expr(a,o,b,ansNum,hint){ const ans=String(ansNum); return {display:sp(a)+opx(o)+sp(b)+eqq()+unk(), ans, opts:pickOpts(ans,[String(ansNum+1),String(Math.max(0,ansNum-1)),String(ansNum+2)]), hint}; }
   let roundSize=10;
   let inputMode='choice';            // 'choice' 选择 | 'fill' 填空
   let subMode='mix';                 // 20以内子开关：mix/carry/ncarry/subB/subNB
@@ -472,7 +543,7 @@
   let replayMode=false, replayQueue=[];
   function saveState(){
     try{ localStorage.setItem(UI_STORE, JSON.stringify({
-      catKey, subMode, roundSize, inputMode,
+      gradeKey, modIdx, catKey, subMode, roundSize, inputMode,
       roundActive, roundIndex, roundCorrect,
       roundLog, current, answered, firstAttempt, qEverWrong, qWrongVal,
       adaptMode, adaptLevel, replayMode, replayQueue,
@@ -485,6 +556,8 @@
   }
   savedUI=loadUI();
   if(savedUI){
+    if(savedUI.gradeKey && GRADES.some(g=>g.id===savedUI.gradeKey)) gradeKey=savedUI.gradeKey;
+    if(typeof savedUI.modIdx==='number'){ const g=curGrade(); if(savedUI.modIdx>=0 && savedUI.modIdx<g.modules.length) modIdx=savedUI.modIdx; }
     if(savedUI.catKey && CATS[savedUI.catKey]) catKey=savedUI.catKey;
     if(savedUI.subMode) subMode=savedUI.subMode;
     if(savedUI.roundSize) roundSize=savedUI.roundSize;
@@ -496,6 +569,8 @@
     if(typeof savedUI.freeDone==='number') freeDone=savedUI.freeDone;
     if(typeof savedUI.freeCorrect==='number') freeCorrect=savedUI.freeCorrect;
   }
+  /* 校准模块：让当前 catKey 高亮其所在模块（跨年级/模块恢复时防错位） */
+  outer: for(const g of GRADES){ for(let i=0;i<g.modules.length;i++){ if(g.modules[i].cats.includes(catKey)){ if(g.id===gradeKey){ modIdx=i; catGroup=g.modules[i].label; } break outer; } } }
 
   /* 长期错题本（跨轮累积，localStorage 持久化） */
   const WRONG_STORE='kidsmath_wrongbook_v1';
@@ -536,6 +611,7 @@
 
   function updateAdaptBtn(){ const b=$('adaptBtn'); if(b){ b.textContent='🤖'; b.classList.toggle('active', adaptMode); } }
   function applyAdaptUI(){
+    gradesEl.classList.toggle('locked', adaptMode);
     catsEl.classList.toggle('locked', adaptMode);
     catGroupsEl.classList.toggle('locked', adaptMode);
     subcatsEl.classList.toggle('locked', adaptMode);
@@ -572,6 +648,26 @@
   /* ---------- 出题 ---------- */
   function genQuestion(){
     const c=CATS[catKey];
+    /* —— 表达式/分数/小数/方程类（自定义 display + opts） —— */
+    if(catKey==='mulTab')   return genMulTab();
+    if(catKey==='timeUnit') return genTimeUnit();
+    if(catKey==='lenMass')  return genLenMass();
+    if(catKey==='mulx1')    return genMulX1(subMode);
+    if(catKey==='divx1')    return genDivX1();
+    if(catKey==='fracUnit') return genFracUnit();
+    if(catKey==='fracPart') return genFracPart();
+    if(catKey==='fracAdd')  return genFracAdd();
+    if(catKey==='decAdd')   return genDecAdd();
+    if(catKey==='mulx2')    return genMulX2();
+    if(catKey==='divx2')    return genDivX2();
+    if(catKey==='decMix')   return genDecMix();
+    if(catKey==='roundUp')  return genRoundUp();
+    if(catKey==='distr')    return genDistr();
+    if(catKey==='decMul')   return genDecMul();
+    if(catKey==='decAll')   return genDecAll();
+    if(catKey==='fracUneven') return genFracUneven();
+    if(catKey==='fracMul')  return genFracMul();
+    if(catKey==='eqFill')   return genEqFill();
     if(catKey==='makeTen'){
       const a=choice([7,8,9]); const b=choice([3,4,5,6]);
       const need=10-a, rest=b-need;
@@ -711,6 +807,126 @@
     return {type:'num',a,b,op:'−',ans};
   }
 
+  /* ===== 二~五年级 新题型生成器（返回 {display, ans, opts, hint?}） ===== */
+  function genMulTab(){ const a=randInt(2,9), b=randInt(2,9); return expr(a,'×',b,a*b); }
+  function genTimeUnit(){
+    const t=randInt(0,5); let html,ans,opts;
+    if(t===0){ html=sp('1')+opx('时')+' = '+unk()+opx('分'); ans='60'; opts=['60','100','30']; }
+    else if(t===1){ const h=randInt(2,5); html=sp(h)+opx('时')+' = '+unk()+opx('分'); ans=String(h*60); opts=[String(h*60),String(h*60+10),String(h*60-10)]; }
+    else if(t===2){ html=sp('1')+opx('分')+' = '+unk()+opx('秒'); ans='60'; opts=['60','100','30']; }
+    else if(t===3){ const m=randInt(2,5); html=sp(m)+opx('分')+' = '+unk()+opx('秒'); ans=String(m*60); opts=[String(m*60),String(m*60+10),String(m*60-10)]; }
+    else if(t===4){ const h=randInt(1,3), m=randInt(1,5)*10; html=sp(h)+opx('时')+sp(m)+opx('分')+' = '+unk()+opx('分'); ans=String(h*60+m); opts=[String(h*60+m),String(h*60+m+10),String(h*60+m-10)]; }
+    else { const m=randInt(2,4)*10; html=sp(m)+opx('分')+' = '+unk()+opx('时'); ans=String(m/10); opts=[String(m/10),String(m/10+1),String(Math.max(1,m/10-1))]; }
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+  function genLenMass(){
+    const t=randInt(0,6); let html,ans,opts;
+    if(t===0){ html=sp('1')+opx('米')+' = '+unk()+opx('厘米'); ans='100'; opts=['100','10','1000']; }
+    else if(t===1){ const m=randInt(2,9); html=sp(m)+opx('米')+' = '+unk()+opx('厘米'); ans=String(m*100); opts=[String(m*100),String(m*100+10),String(m*100-10)]; }
+    else if(t===2){ const c=randInt(2,9)*100; html=sp(c)+opx('厘米')+' = '+unk()+opx('米'); ans=String(c/100); opts=[String(c/100),String(c/100+1),String(Math.max(1,c/100-1))]; }
+    else if(t===3){ html=sp('1')+opx('千克')+' = '+unk()+opx('克'); ans='1000'; opts=['1000','100','10']; }
+    else if(t===4){ const k=randInt(2,9); html=sp(k)+opx('千克')+' = '+unk()+opx('克'); ans=String(k*1000); opts=[String(k*1000),String(k*1000+10),String(k*1000-10)]; }
+    else if(t===5){ const g=randInt(2,9)*1000; html=sp(g)+opx('克')+' = '+unk()+opx('千克'); ans=String(g/1000); opts=[String(g/1000),String(g/1000+1),String(Math.max(1,g/1000-1))]; }
+    else { html=sp('1')+opx('厘米')+' = '+unk()+opx('毫米'); ans='10'; opts=['10','100','1']; }
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+  function genMulX1(sub){
+    let a,b,ans;
+    if(sub==='ncarry'){ do{ a=randInt(10,99); b=randInt(2,9); }while((a%10)*b>=10); }
+    else if(sub==='carry'){ do{ a=randInt(10,99); b=randInt(2,9); }while((a%10)*b<10); }
+    else { do{ a=randInt(11,99); b=randInt(2,9); }while(a*b>999); }
+    return expr(a,'×',b,a*b);
+  }
+  function genDivX1(){ let b,d,p; do{ b=randInt(2,9); d=randInt(2,9); p=b*d; }while(p>99); return expr(p,'÷',b,d); }
+  function genFracUnit(){ const den=choice([2,3,4,5,6,8]); const html=sp('分成')+sp(den)+opx('等份')+sp('取')+sp(1)+opx('份')+' = '+unk(); const ans='1/'+den; return {display:html, ans, opts:pickOpts(ans,['1/'+String(den+1),'1/'+String(Math.max(2,den-1)),'2/'+String(den)])}; }
+  function genFracPart(){ const den=choice([2,3,4,5,6,8]); const num=randInt(1,den-1); const html=sp('分成')+sp(den)+opx('等份')+sp('取')+sp(num)+opx('份')+' = '+unk(); const ans=num+'/'+den; const others=[(num+1)+'/'+den, Math.max(1,num-1)+'/'+den, '1/'+den]; return {display:html, ans, opts:pickOpts(ans,others)}; }
+  function genFracAdd(){
+    const den=choice([2,3,4,5,6,8]); const a=randInt(1,den-1), b=randInt(1,den-1);
+    const isSub=Math.random()<0.5 && a>=b; let ans,op;
+    if(isSub){ ans=(a-b)+'/'+den; op='−'; } else { ans=(a+b)+'/'+den; op='+'; }
+    const html=sp(a+'/'+den)+opx(op)+sp(b+'/'+den)+eqq()+unk();
+    const others=[(a+b)+'/'+den,(a-b<0?0:a-b)+'/'+den,(isSub?a+b:a-b)+'/'+den];
+    return {display:html, ans, opts:pickOpts(ans,others.filter(o=>o!==ans&&o.indexOf('-')<0))};
+  }
+  function genDecAdd(){
+    const useSub=Math.random()<0.5; let a=fmt(randInt(1,99)/10), b=fmt(randInt(1,99)/10), ans,op;
+    let an=parseFloat(a), bn=parseFloat(b);
+    if(useSub){ if(an<bn){ an=bn; bn=parseFloat(a); a=fmt(an); b=fmt(bn);} ans=fmt(an-bn); op='−'; } else { ans=fmt(an+bn); op='+'; }
+    const html=sp(a)+opx(op)+sp(b)+eqq()+unk();
+    const opts=[ans, fmt(parseFloat(ans)+0.1), fmt(Math.max(0,parseFloat(ans)-0.1)), fmt(parseFloat(ans)+0.2)];
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+  function genMulX2(){ let a,b,ans; do{ a=randInt(11,99); b=randInt(11,99); ans=a*b; }while(ans>9999); return expr(a,'×',b,ans); }
+  function genDivX2(){ const b=randInt(11,99), q=randInt(2,9), p=b*q; return expr(p,'÷',b,q); }
+  function genDecMix(){
+    let a=fmt(randInt(1,99)/10), b=fmt(randInt(1,99)/10), c=fmt(randInt(1,99)/10);
+    let an=parseFloat(a),bn=parseFloat(b),cn=parseFloat(c); const useSub=Math.random()<0.5; let ans,op;
+    if(useSub){ ans=fmt(an+bn-cn); op='−'; } else { ans=fmt(an+bn+cn); op='+'; }
+    const html=sp(a)+opx('+')+sp(b)+opx(op)+sp(c)+eqq()+unk();
+    const opts=[ans, fmt(parseFloat(ans)+0.1), fmt(Math.max(0,parseFloat(ans)-0.1)), fmt(parseFloat(ans)+0.2)];
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+  function genRoundUp(){
+    const base=randInt(2,9)*100; const off=choice([randInt(1,9), 100-randInt(1,9)]); const A=base+off;
+    const useSub=Math.random()<0.5; const b=randInt(10,99); let ans,op,hint;
+    if(useSub){ ans=A-b; op='−'; hint='💡 凑整：'+A+' 接近 '+base+'，先算 '+base+' − '+b+' = '+(base-b)+'，再'+(off>0?'减':'加')+Math.abs(off)+' = '+ans; if(ans<0) return genRoundUp(); }
+    else { ans=A+b; op='+'; hint='💡 凑整：'+A+' 接近 '+base+'，先算 '+base+' + '+b+' = '+(base+b)+'，再'+(off>0?'减':'加')+Math.abs(off)+' = '+ans; }
+    return expr(A,op,b,ans,hint);
+  }
+  function genDistr(){
+    const a=choice([99,98,101,102,49,48,51]); const b=randInt(2,9); const ans=a*b; let hint;
+    if(a===99) hint='💡 99×'+b+' = 100×'+b+' − '+b+' = '+(100*b)+' − '+b+' = '+ans;
+    else if(a===98) hint='💡 98×'+b+' = 100×'+b+' − 2×'+b+' = '+(100*b)+' − '+(2*b)+' = '+ans;
+    else if(a===101) hint='💡 101×'+b+' = 100×'+b+' + '+b+' = '+(100*b)+' + '+b+' = '+ans;
+    else if(a===102) hint='💡 102×'+b+' = 100×'+b+' + 2×'+b+' = '+(100*b)+' + '+(2*b)+' = '+ans;
+    else if(a===49) hint='💡 49×'+b+' = 50×'+b+' − '+b+' = '+(50*b)+' − '+b+' = '+ans;
+    else if(a===48) hint='💡 48×'+b+' = 50×'+b+' − 2×'+b+' = '+(50*b)+' − '+(2*b)+' = '+ans;
+    else hint='💡 51×'+b+' = 50×'+b+' + '+b+' = '+(50*b)+' + '+b+' = '+ans;
+    return expr(a,'×',b,ans,hint);
+  }
+  function genDecMul(){
+    const a=fmt(randInt(1,99)/10), b=randInt(2,9); const an=parseFloat(a); const ans=fmt(an*b);
+    const html=sp(a)+opx('×')+sp(b)+eqq()+unk();
+    const opts=[ans, fmt(an*b+0.1), fmt(Math.max(0,an*b-0.1)), fmt(an*b+0.2)];
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+  function genDecAll(){
+    const a=fmt(randInt(1,20)/10), b=randInt(2,9), c=fmt(randInt(1,20)/10); const an=parseFloat(a), cn=parseFloat(c);
+    const useSub=Math.random()<0.5; let ans,op;
+    if(useSub){ ans=fmt(an*b-cn); op='−'; } else { ans=fmt(an*b+cn); op='+'; }
+    const html=sp(a)+opx('×')+sp(b)+opx(op)+sp(c)+eqq()+unk();
+    const opts=[ans, fmt(parseFloat(ans)+0.1), fmt(Math.max(0,parseFloat(ans)-0.1)), fmt(parseFloat(ans)+0.2)];
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+  function genFracUneven(){
+    const den1=choice([2,3,4,5,6]), den2=choice([2,3,4,5,6]); if(den1===den2) return genFracUneven();
+    const n1=randInt(1,den1-1), n2=randInt(1,den2-1); const isSub=Math.random()<0.5 && n1/den1>=n2/den2;
+    const L=lcm(den1,den2); let num=isSub? n1*(L/den1)-n2*(L/den2) : n1*(L/den1)+n2*(L/den2);
+    const g=gcd(Math.abs(num),L); const ans=(num/g)+'/'+(L/g); const op=isSub?'−':'+';
+    const html=sp(n1+'/'+den1)+opx(op)+sp(n2+'/'+den2)+eqq()+unk();
+    const others=[(n1*(L/den1)+n2*(L/den2))+'/'+L, (num+(isSub?-1:1))+'/'+(L/g), '1/'+String(L)];
+    return {display:html, ans, opts:pickOpts(ans,others.filter(o=>o!==ans))};
+  }
+  function genFracMul(){
+    const den1=choice([2,3,4,5,6]), den2=choice([2,3,4,5,6]); const n1=randInt(1,den1-1), n2=randInt(1,den2-1);
+    const isDiv=Math.random()<0.5; let num,den,op;
+    if(isDiv){ num=n1*den2; den=den1*n2; op='÷'; } else { num=n1*n2; den=den1*den2; op='×'; }
+    const g=gcd(Math.abs(num),den); const ans=(num/g)+'/'+(den/g);
+    const html=sp(n1+'/'+den1)+opx(op)+sp(n2+'/'+den2)+eqq()+unk();
+    const others=[num+'/'+den, (num+1)+'/'+den, n1+'/'+den1];
+    return {display:html, ans, opts:pickOpts(ans,others.filter(o=>o!==ans))};
+  }
+  function genEqFill(){
+    const op=choice(['+','−','×']); let x,b,c,ans,html;
+    if(op==='+'){ x=randInt(2,20); b=randInt(1,20); c=x+b; }
+    else if(op==='−'){ x=randInt(2,30); b=randInt(1,Math.min(20,x-1)); c=x-b; }
+    else { x=randInt(2,12); b=randInt(2,9); c=x*b; }
+    ans=String(x);
+    html=sp('x')+opx(op)+sp(b)+eqq()+sp(c)+'<br>'+sp('x')+opx('=')+unk();
+    const opts=[ans, String(x+1), String(Math.max(1,x-1)), String(x+2)];
+    return {display:html, ans, opts:pickOpts(ans,opts.filter(o=>o!==ans))};
+  }
+
   /* 难度自适应出题：按等级自动选范围（仅 +/−），连对升级、连错降级 */
   function genAdapt(level){
     if(level<=0){ // 5以内
@@ -763,7 +979,9 @@
   function render(){
     const q=current, c=CATS[catKey];
     let html='';
-    if(q.type==='emoji'){
+    if(q.display){
+      html=q.display;
+    }else if(q.type==='emoji'){
       const bCls=q.op==='−'?'taken':'';
       html=gWrap(emojis(q.e,q.a))+'<span class="op">'+q.op+'</span>'+gWrap(emojis(q.e,q.b),bCls)+'<span class="equal">=</span><span class="unknown">?</span>';
     }else if(q.type==='num'){
@@ -784,14 +1002,16 @@
       hintEl.className='hint plain';
     }
 
-    if(inputMode==='fill'){
+    const useFill = inputMode==='fill' && !q.opts && !q.display && typeof q.ans==='number' && Number.isInteger(q.ans) && q.ans>=0;
+    if(useFill){
       optEl.style.display='none'; keypadEl.style.display='block';
       inputStr=''; kpDisplay.classList.remove('correct','wrong'); kpDisplay.textContent='?';
       [...kpGrid.children].forEach(b=>b.disabled=false);
     }else{
       keypadEl.style.display='none'; optEl.style.display='flex';
-      const cap = adaptMode ? (adaptLevel>=4?200:adaptLevel>=2?20:10) : c.cap;
-      const opts=genOptions(q.ans,cap);
+      let opts;
+      if(q.opts) opts=q.opts;
+      else { const cap = adaptMode ? (adaptLevel>=4?200:adaptLevel>=2?20:10) : (c.cap||20); opts=genOptions(q.ans,cap); }
       optEl.innerHTML='';
       opts.forEach(v=>{
         const btn=document.createElement('button');
@@ -808,10 +1028,11 @@
   }
 
   function isValidQ(q){
-    // render() 只认 emoji/num/three 三型；任何旧版/脏数据的陌生 type 一律作废重出，
-    // 否则 render 三路 q.type 判断全落空 → 题目区空白（线上"题目消失"的根因之一）。
-    return q && typeof q==='object' && (q.type==='emoji'||q.type==='num'||q.type==='three') &&
-           typeof q.ans==='number' && isFinite(q.ans);
+    // render() 只认 emoji/num/three/display 四型；任何旧版/脏数据的陌生结构一律作废重出，
+    // 否则 render 判断全落空 → 题目区空白（线上"题目消失"的根因之一）。
+    if(!q || typeof q!=='object') return false;
+    if(q.display) return typeof q.ans!=='undefined' && Array.isArray(q.opts);
+    return (q.type==='emoji'||q.type==='num'||q.type==='three') && typeof q.ans==='number' && isFinite(q.ans);
   }
   function genOptions(ans,cap){
     const set=new Set([ans]); let g=0; const delta=cap<=10?2:5;
@@ -965,12 +1186,13 @@
 
   /* ---------- 错题分析看板 ---------- */
   function qText(q){
+    if(q.display){ let t=q.display.replace(/<[^>]+>/g,''); t=t.replace('= ?','').replace('=？',''); return t.trim()+' = '+q.ans; }
     if(q.type==='three') return q.a+' '+q.op1+' '+q.b+' '+q.op2+' '+q.c+' = '+q.ans;
     return q.a+' '+q.op+' '+q.b+' = '+q.ans;
   }
   function curLabel(){
     if(adaptMode) return '自适应·'+ADAPT_NAMES[adaptLevel];
-    let l=CATS[catKey].label;
+    let l=curGrade().label+'·'+curModule().label+'·'+CATS[catKey].label;
     const subs=SUBS[catKey];
     if(subs){ const m=subs.find(s=>s[0]===subMode); l+='·'+(m?m[1]:''); }
     return l;
@@ -1041,7 +1263,8 @@
   /* ---------- 绑定 ---------- */
   const catsEl=$('cats');
   const catGroupsEl=$('catGroups');
-  renderCatGroups(); renderCats();
+  const gradesEl=$('grades');
+  renderGrades(); renderCatGroups(); renderCats();
 
   hintBtn.addEventListener('click',()=>{
     if(!current || !current.hint) return;
@@ -1054,19 +1277,42 @@
     }
   });
 
+  function renderGrades(){
+    gradesEl.innerHTML='';
+    GRADES.forEach(g=>{
+      const b=document.createElement('button');
+      b.className='grade-btn'+(g.id===gradeKey?' active':''); b.textContent=g.label; b.dataset.g=g.id;
+      b.addEventListener('click',()=>{
+        if(adaptMode) return;
+        gradeKey=g.id; modIdx=0; catGroup=curModule().label; catKey=curModule().cats[0];
+        roundActive=false; saveState();
+        renderCatGroups(); renderCats();
+        if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
+        current=genQuestion(); render();
+      });
+      gradesEl.appendChild(b);
+    });
+  }
   function renderCatGroups(){
     catGroupsEl.innerHTML='';
-    CAT_GROUPS.forEach(g=>{
+    const g=curGrade();
+    g.modules.forEach((m,i)=>{
       const b=document.createElement('button');
-      b.className='cat-group-btn'+(g.id===catGroup?' active':''); b.textContent=g.label; b.dataset.g=g.id;
-      b.addEventListener('click',()=>{ if(adaptMode) return; catGroup=g.id; renderCatGroups(); renderCats(); });
+      b.className='cat-group-btn'+(i===modIdx?' active':''); b.textContent=m.label; b.dataset.m=i;
+      b.addEventListener('click',()=>{
+        if(adaptMode) return;
+        modIdx=i; catGroup=m.label; catKey=m.cats[0]; roundActive=false; saveState();
+        renderCats();
+        if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
+        current=genQuestion(); render();
+      });
       catGroupsEl.appendChild(b);
     });
   }
   function renderCats(){
     catsEl.innerHTML='';
-    const grp=CAT_GROUPS.find(g=>g.id===catGroup)||CAT_GROUPS[0];
-    grp.cats.forEach(k=>{
+    const m=curModule();
+    m.cats.forEach(k=>{
       const b=document.createElement('button');
       b.className='cat-btn'+(k===catKey?' active':''); b.textContent=(CAT_ICO[k]||'')+' '+CATS[k].label; b.dataset.cat=k;
       b.addEventListener('click',()=>{
@@ -1083,7 +1329,8 @@
   // 子开关按题型分别定义（100以内在 20以内 基础上多了「整十数」入门级）
   const SUBS={
     twenty: [['mix','混合'],['carry','进位加'],['ncarry','不进位加'],['subB','退位减'],['subNB','不退位减']],
-    hundred:[['tens','整十数'],['mix','混合'],['carry','进位加'],['ncarry','不进位加'],['subB','退位减'],['subNB','不退位减']]
+    hundred:[['tens','整十数'],['mix','混合'],['carry','进位加'],['ncarry','不进位加'],['subB','退位减'],['subNB','不退位减']],
+    mulx1: [['mix','混合'],['carry','进位'],['ncarry','不进位']]
   };
   function renderSubcats(){
     const subs=SUBS[catKey]||[];
