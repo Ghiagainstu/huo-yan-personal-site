@@ -3569,6 +3569,26 @@ const ORDER_CLUSTERS = {
     ['loud','quiet'],
     ['bright','dark'],
     ['hungry','thirsty']
+  ],
+  verbs: [
+    ['open','close'],
+    ['come','go'],
+    ['sit','stand'],
+    ['push','pull'],
+    ['give','take'],
+    ['run','walk','jump'],
+    ['ride','cycling','fly','swim'],
+    ['look','see','listen','hear'],
+    ['cry','smile','laugh'],
+    ['eat','drink'],
+    ['make','draw','paint','write','bake'],
+    ['wash','sweep'],
+    ['hug','wave','clap','throw','catch','kick','point','touch'],
+    ['sing','dance','play','climb'],
+    ['read','learn','think','show','find'],
+    ['have','like','want','help'],
+    ['bow','greeting','phone call','visit'],
+    ['put','wear','sleep']
   ]
 };
 const ORDER_GROUPS = {
@@ -3583,13 +3603,74 @@ const ORDER_GROUPS = {
     ["dinosaur","mammoth","sabertooth"]
   ],
   festivalsItems: ["firecrackers","fireworks","red envelope","gift","Jack-o-lantern","turkey"],
-  festivalsActions: ["bow","touch","wave","visit","phone call","greeting"]
+  festivalsActions: ["bow","touch","wave","visit","phone call","greeting"],
+  food: [
+    ["bread","rice","noodle","dumpling","steamed bun","pasta","pancake","pizza"],
+    ["beef","pork","mutton","meat","chicken meat","fish meat","sausage","egg"],
+    ["milk","butter","cheese","yogurt","ice cream"],
+    ["cake","cookie","candy","chocolate","dessert","pie","popcorn","donut","honey","jam","jelly"],
+    ["water","juice","tea","coffee","cola"],
+    ["soup","porridge"],
+    ["hamburger","fries","sandwich","hot dog"],
+    ["tofu"],
+    ["salad"]
+  ],
+  fruits: [
+    ["apple","pear","peach","cherry","plum","apricot"],
+    ["grape","strawberry","blueberry","blackberry","raspberry"],
+    ["orange","lemon","lime","tangerine","pomelo"],
+    ["banana","mango","pineapple","coconut","dragon fruit","durian","guava","papaya","lychee","longan","mangosteen","pitaya","fig"],
+    ["watermelon","melon","cantaloupe"],
+    ["avocado","hawthorn","kiwi","persimmon","pomegranate","sugarcane","date","fruit"]
+  ],
+  vegetables: [
+    ["carrot","potato","radish","turnip","sweet potato","yam","lotus root","beet","ginger"],
+    ["tomato","eggplant","pumpkin","cucumber","bitter melon","winter melon","zucchini","chili","pepper"],
+    ["cabbage","lettuce","spinach","celery","leek","scallion","chives","cilantro","bamboo shoot","asparagus","cauliflower","broccoli"],
+    ["green bean","pea","bean sprouts"],
+    ["mushroom"],
+    ["onion","garlic"],
+    ["corn","okra"]
+  ],
+  body: [
+    ["head","face","hair","eyebrow","eye","ear","nose","mouth","tooth","tongue","chin","cheek"],
+    ["neck","shoulder"],
+    ["arm","elbow","wrist","hand","finger"],
+    ["back","tummy"],
+    ["leg","knee","ankle","foot","heel","toe"]
+  ],
+  clothes: [
+    ["hat","glasses","scarf","tie"],
+    ["shirt","T-shirt","sweater","jacket","vest","coat","raincoat"],
+    ["pants","jeans","shorts","skirt"],
+    ["dress","uniform","swimsuit"],
+    ["shoe","boot","sneakers","running shoes","sandal","slippers"],
+    ["sock","glove","mitten"],
+    ["belt"]
+  ],
+  transport: [
+    ["car","taxi","van","jeep","truck","ambulance","fire truck"],
+    ["bus","school bus","tram"],
+    ["train","subway","high-speed train"],
+    ["bike","motorcycle","e-bike","scooter","skateboard","tricycle"],
+    ["ship","boat","ferry","sailboat","lifeboat","submarine","yacht"],
+    ["plane","helicopter","jet","hot air balloon"],
+    ["rocket","spaceship"],
+    ["excavator","tractor"]
+  ]
 };
 const ORDER_BY_CAT = {
   numbers: [ORDER_SEQ.numbers],
   time: [ORDER_SEQ.days, ORDER_SEQ.months, ORDER_SEQ.seasons, ORDER_SEQ.dayparts, ORDER_SEQ.relative],
   adjectives: ORDER_CLUSTERS.adjectives,
+  verbs: ORDER_CLUSTERS.verbs,
   animals: ORDER_GROUPS.animals,
+  food: [ORDER_GROUPS.food],
+  fruits: [ORDER_GROUPS.fruits],
+  vegetables: [ORDER_GROUPS.vegetables],
+  body: [ORDER_GROUPS.body],
+  clothes: [ORDER_GROUPS.clothes],
+  transport: [ORDER_GROUPS.transport],
   festivals: [ORDER_SEQ.festivals, ORDER_GROUPS.festivalsItems, ORDER_GROUPS.festivalsActions]
 };
 function orderWords(catId, words){
