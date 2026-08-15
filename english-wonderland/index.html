@@ -1550,6 +1550,10 @@ function preloadIdle(){
   if('requestIdleCallback' in window) requestIdleCallback(step, {timeout:3000});
   else setTimeout(step, 1200);
 }
+/* 空闲时预热装扮头像（商城 6 图），点击个人头像/商城时已在浏览器缓存，零等待 */
+function preloadAvatarImgs(){
+  LOCKED_AVATARS.forEach(a=>{ if(a.img && !preloadedImg.has(a.img)){ preloadedImg.add(a.img); const im=new Image(); im.src=a.img; } });
+}
 const CATS = [
 {id:'animals', zh:'动物', en:'Animals', tint:['#E0F7FA','#B2EBF2'], tpls:['I see {a} {w}.', 'Look at the {w}.', 'The {w} is cute.', 'I like {a} {w}.', 'The {w} says hello.'], words:[
     ['cat','猫','img:cat'],
@@ -3853,12 +3857,12 @@ const LOCKED_AVATARS=[
   {id:'avatar-bee',emoji:'🐝',name:'蜜蜂',price:30},
   {id:'avatar-bear',emoji:'🐻',name:'小熊',price:30},
   {id:'avatar-panda',emoji:'🐼',name:'熊猫',price:30},
-  {id:'avatar-pixel-dragon',img:'images/avatars/像素方块小绿龙.webp',name:'像素小绿龙',price:100},
-  {id:'avatar-capybara',img:'images/avatars/卡皮巴拉.webp',name:'卡皮巴拉',price:100},
-  {id:'avatar-dino',img:'images/avatars/圆滚滚恐龙宝宝.webp',name:'恐龙宝宝',price:100},
-  {id:'avatar-unicorn',img:'images/avatars/彩虹独角兽.webp',name:'彩虹独角兽',price:100},
-  {id:'avatar-duck',img:'images/avatars/黄油小黄鸭.webp',name:'黄油小黄鸭',price:100},
-  {id:'avatar-witch',img:'images/avatars/黑粉小魔女.webp',name:'黑粉小魔女',price:100}
+  {id:'avatar-pixel-dragon',img:'images/avatars/pixel-dragon.webp',name:'像素小绿龙',price:100},
+  {id:'avatar-capybara',img:'images/avatars/capybara.webp',name:'卡皮巴拉',price:100},
+  {id:'avatar-dino',img:'images/avatars/dino.webp',name:'恐龙宝宝',price:100},
+  {id:'avatar-unicorn',img:'images/avatars/unicorn.webp',name:'彩虹独角兽',price:100},
+  {id:'avatar-duck',img:'images/avatars/duck.webp',name:'黄油小黄鸭',price:100},
+  {id:'avatar-witch',img:'images/avatars/witch.webp',name:'黑粉小魔女',price:100}
 ];
 function avatarUnlocked(id){ return (ownedItems()||[]).includes(id); }
 let avatarSel='e:🐭';
@@ -3960,7 +3964,7 @@ async function renderShop(){
       const key=it.id.split('-')[1];
       let prev;
       if(it.type==='frame') prev='<div class="fprev frame-'+key+'" onclick="bigPreview(\''+it.id+'\')">'+avatarHTML(av,'')+'</div>';
-      else if(it.type==='avatar'){const la=LOCKED_AVATARS.find(x=>x.id===it.id);prev='<div class="fprev" onclick="bigPreview(\''+it.id+'\')">'+(la?(la.img?'<img src="'+la.img+'" alt=""/>':la.emoji):'')+'</div>';}
+      else if(it.type==='avatar'){const la=LOCKED_AVATARS.find(x=>x.id===it.id);prev='<div class="fprev" onclick="bigPreview(\''+it.id+'\')">'+(la?(la.img?'<img src="'+la.img+'" alt="" loading="lazy" decoding="async"/>':la.emoji):'')+'</div>';}
       else prev='<div class="fprev">'+avatarHTML(av,'')+'</div>';
       html+='<div class="shop-card'+(has?' owned':'')+(locked?' locked':'')+'">'+
         prev+
@@ -4004,7 +4008,7 @@ function renderAvatarPresets(root,showLocked){
     const un=avatarUnlocked(a.id);
     const avKey=a.img||('e:'+a.emoji);
     b.className='avatar-opt'+(un?'':' locked')+(avatarSel===avKey?' sel':'');
-    if(a.img){ b.innerHTML='<img src="'+a.img+'" alt=""/>'; }
+    if(a.img){ b.innerHTML='<img src="'+a.img+'" alt="" loading="lazy" decoding="async"/>'; }
     else b.textContent=a.emoji;
     b.title=a.name+'（'+a.price+' 积分解锁）';
     if(!un){
@@ -4028,7 +4032,7 @@ function refreshAvatarPreview(){
     const el=document.getElementById(id);
     if(!el) return;
     if(avatarSel.slice(0,2)==='e:') el.textContent=avatarSel.slice(2);
-    else el.innerHTML='<img src="'+avatarSel+'" alt=""/>';
+    else el.innerHTML='<img src="'+avatarSel+'" alt="" decoding="async"/>';
   });
 }
 function openAvatarFile(){const f=document.getElementById('avatarFile');if(f)f.value='';f.click();}
@@ -4105,11 +4109,13 @@ async function logout(){
 }
 async function openAvatarModal(){
   if(!auth) return;
-  await loadMe();
   avatarSel=auth.user.avatar||'e:🐭';
   renderAvatarPresets(document.getElementById('avatarPresets2'),true);
   refreshAvatarPreview();
   document.getElementById('avatarMsg').textContent='';
+  // 先立即弹出弹层（头像图已瘦身，几乎瞬时），再异步补全"我的中心"数据，消除点击后 1-2 秒无响应
+  document.getElementById('avatarModal').style.display='flex';
+  await loadMe();
   const me=auth.me||{};
   const nm=document.getElementById('myCenterName'); if(nm) nm.textContent=auth.user.name||'';
   const ic=document.getElementById('myInviteCode'), iq=document.getElementById('myInviteQuota');
@@ -4126,7 +4132,6 @@ async function openAvatarModal(){
     const d=me.score_detail||{};
     sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 星 ×1';
   }
-  document.getElementById('avatarModal').style.display='flex';
 }
 function copyInvite(){
   const code=document.getElementById('myInviteCode').textContent;
@@ -4275,6 +4280,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('.filter-chip[data-rg]').forEach(b=>b.classList.toggle('active',b.dataset.rg===curRegion));
   renderCard();
   preloadIdle();
+  preloadAvatarImgs();
   enableDragScroll(document.getElementById('catChips'));
   renderGameIntro();
   gRefreshTop();

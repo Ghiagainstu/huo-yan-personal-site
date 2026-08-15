@@ -1,0 +1,8 @@
+/english-wonderland/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/english-wonderland/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
