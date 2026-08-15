@@ -67,6 +67,47 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
   .poem-title{font-size:22px}
   .poem-line .zi{font-size:26px}
 }
+/* 搜索 + 目录 */
+.poem-toolbar{display:flex;gap:8px;margin:0 0 12px;align-items:center;}
+.poem-search{flex:1;position:relative;}
+.poem-search .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:18px;opacity:.55;pointer-events:none;}
+.poem-search input{width:100%;box-sizing:border-box;padding:12px 14px 12px 40px;font-size:16px;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#5d4037;outline:none;}
+.poem-search input:focus{border-color:#ffb74d;}
+.toc-btn{flex:0 0 auto;padding:12px 14px;border:none;border-radius:14px;background:#e3f2fd;color:#1976d2;font-size:15px;font-weight:bold;cursor:pointer;white-space:nowrap;}
+.toc-btn:active{transform:scale(.97);}
+.poem-list-panel{background:#fffdf7;border:2px solid #ffe0b2;border-radius:16px;max-height:46vh;overflow:auto;margin-bottom:14px;padding:6px;display:none;}
+.poem-list-panel.show{display:block;}
+.poem-list-hint{padding:6px 10px;font-size:13px;color:#a1887f;}
+.poem-list-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;}
+.poem-list-item:hover{background:#fff3e0;}
+.poem-list-item .no{width:26px;height:26px;flex:0 0 auto;border-radius:50%;background:#ffe0b2;color:#e65100;font-size:13px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
+.poem-list-item .ti{flex:1;font-size:16px;color:#5d4037;font-weight:bold;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.poem-list-item .au{font-size:13px;color:#8d6e63;flex:0 0 auto;}
+.poem-list-item .gd{font-size:11px;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:8px;flex:0 0 auto;}
+.poem-list-empty{padding:18px;text-align:center;color:#a1887f;}
+/* 拼音/背诵/筛选/统计 工具条 */
+.poem-toolbar2{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center;}
+.tool-btn{padding:10px 12px;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#8d6e63;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;}
+.tool-btn:active{transform:scale(.97);}
+.tool-btn.on{background:#ffe0b2;color:#e65100;border-color:#ffb74d;}
+.tool-sel{padding:10px;max-width:130px;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#5d4037;font-size:14px;font-weight:bold;cursor:pointer;}
+/* 背诵遮盖 */
+.poem-line.covered{cursor:pointer;background:#fff3e0;border:2px dashed #ffcc80;}
+.poem-line.covered .zi,.poem-line.covered .py{display:none;}
+.poem-line .cover{font-size:30px;opacity:.55;padding:4px 0;}
+/* 统计看板 */
+.poem-stat-panel{background:#fffdf7;border:2px solid #ffe0b2;border-radius:16px;max-height:46vh;overflow:auto;margin-bottom:14px;padding:12px;display:none;}
+.poem-stat-panel.show{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.stat-card{background:#f1f8e9;border-radius:12px;padding:12px 6px;text-align:center;}
+.stat-val{font-size:20px;font-weight:bold;color:#2e7d32;}
+.stat-lab{font-size:12px;color:#7cb342;margin-top:2px;}
+.stat-title{font-size:14px;font-weight:bold;color:#8d6e63;margin:6px 2px;}
+.stat-gd{display:flex;align-items:center;gap:8px;margin:6px 0;}
+.stat-gd-lab{width:34px;flex:0 0 auto;font-size:12px;color:#8d6e63;font-weight:bold;}
+.stat-gd .progress-track{flex:1;}
+.stat-gd-num{width:48px;flex:0 0 auto;text-align:right;font-size:12px;color:#a1887f;}
+@media(max-width:480px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
@@ -75,7 +116,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <a class="home-link" href="../">↩ 学习乐园</a>
     <div class="star-pill">⭐ <span id="starCount">0</span></div>
     <h1>📜 古诗词</h1>
-    <div class="sub">共 28 首 · 点诗句可听发音</div>
+    <div class="sub" id="poemSub">共 28 首 · 点诗句可听发音</div>
 </div>
 
 <div class="module active">
@@ -83,6 +124,38 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <div class="txt"><span>🏅 已背诵 Memorized</span><span id="poemMasteredTxt">0 / 28</span></div>
         <div class="progress-track"><div class="progress-fill" id="poemProgressFill" style="width:0%"></div></div>
     </div>
+    <div class="poem-toolbar">
+      <div class="poem-search">
+        <span class="ico">🔍</span>
+        <input id="poemSearch" type="search" placeholder="搜索诗名 / 作者 / 诗句…" oninput="onPoemSearch()" />
+      </div>
+      <button class="toc-btn" onclick="toggleToc()">📋 目录</button>
+    </div>
+    <div class="poem-toolbar2">
+      <button class="tool-btn" id="btnPinyin" onclick="togglePinyin()">🔤 拼音</button>
+      <button class="tool-btn" id="btnRecite" onclick="toggleRecite()">🃏 背诵</button>
+      <button class="tool-btn" id="btnFav" onclick="toggleFav()">⭐ 收藏</button>
+      <button class="tool-btn" onclick="toggleStats()">📊 统计</button>
+      <select id="poemFilter" class="tool-sel" onchange="setPoemFilter(this.value)">
+        <option value="all">全部</option>
+        <option value="unlearned">未学习</option>
+        <option value="learning">学习中</option>
+        <option value="memorized">已背诵</option>
+        <option value="fav">⭐ 收藏</option>
+        <option value="G1A">1上</option>
+        <option value="G1B">1下</option>
+        <option value="G2A">2上</option>
+        <option value="G2B">2下</option>
+        <option value="G3A">3上</option>
+        <option value="G3B">3下</option>
+        <option value="G4A">4上</option>
+        <option value="G4B">4下</option>
+        <option value="G5A">5上</option>
+        <option value="G5B">5下</option>
+      </select>
+    </div>
+    <div id="poemListPanel" class="poem-list-panel"></div>
+    <div id="poemStatPanel" class="poem-stat-panel"></div>
     <div id="poemCardArea"></div>
 </div>
 
@@ -98,125 +171,244 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
    星星算法: floor(英语掌握/5) + 古诗已背*2  (两页统一)
    ============================================================ */
 const POEMS = [
+
 {title:'咏鹅',author:'骆宾王',dynasty:'唐',lines:[['鹅，鹅，鹅，','é, é, é,'],['曲项向天歌。','qū xiàng xiàng tiān gē.'],['白毛浮绿水，','bái máo fú lǜ shuǐ,'],['红掌拨清波。','hóng zhǎng bō qīng bō.']],note:'大白鹅弯着脖子朝天叫，白色的羽毛浮在绿色的水面上，红色的脚掌拨动着清清的水波。'},
-{title:'静夜思',author:'李白',dynasty:'唐',lines:[['床前明月光，','chuáng qián míng yuè guāng,'],['疑是地上霜。','yí shì dì shàng shuāng.'],['举头望明月，','jǔ tóu wàng míng yuè,'],['低头思故乡。','dī tóu sī gù xiāng.']],note:'床前洒满了明亮的月光，好像地上结了一层霜。抬头看着天上的月亮，低下头想起了远方的家乡。'},
-{title:'春晓',author:'孟浩然',dynasty:'唐',lines:[['春眠不觉晓，','chūn mián bù jué xiǎo,'],['处处闻啼鸟。','chù chù wén tí niǎo.'],['夜来风雨声，','yè lái fēng yǔ shēng,'],['花落知多少。','huā luò zhī duō shǎo.']],note:'春天睡得香甜，不知不觉天就亮了，到处都能听到小鸟的叫声。昨晚又刮风又下雨，不知道花落了多少呢。'},
+
 {title:'悯农',author:'李绅',dynasty:'唐',lines:[['锄禾日当午，','chú hé rì dāng wǔ,'],['汗滴禾下土。','hàn dī hé xià tǔ.'],['谁知盘中餐，','shuí zhī pán zhōng cān,'],['粒粒皆辛苦。','lì lì jiē xīn kǔ.']],note:'农民伯伯在中午的大太阳下锄草，汗水滴到了泥土里。谁知道碗里的每一粒米饭，都是农民辛苦种出来的呢。'},
+
 {title:'画',author:'王维',dynasty:'唐',lines:[['远看山有色，','yuǎn kàn shān yǒu sè,'],['近听水无声。','jìn tīng shuǐ wú shēng.'],['春去花还在，','chūn qù huā hái zài,'],['人来鸟不惊。','rén lái niǎo bù jīng.']],note:'远远看去山有颜色，走近听水却没有声音。春天过去了花还在开，人走过来了小鸟也不害怕。这是一幅画呀！'},
+
 {title:'登鹳雀楼',author:'王之涣',dynasty:'唐',lines:[['白日依山尽，','bái rì yī shān jìn,'],['黄河入海流。','huáng hé rù hǎi liú.'],['欲穷千里目，','yù qióng qiān lǐ mù,'],['更上一层楼。','gèng shàng yī céng lóu.']],note:'太阳靠着山边慢慢落下去了，黄河的水滚滚流向大海。想要看到更远的地方，就要再爬上一层楼。'},
+
 {title:'草',author:'白居易',dynasty:'唐',lines:[['离离原上草，','lí lí yuán shàng cǎo,'],['一岁一枯荣。','yī suì yī kū róng.'],['野火烧不尽，','yě huǒ shāo bù jìn,'],['春风吹又生。','chūn fēng chuī yòu shēng.']],note:'草原上的草长得很茂盛，一年枯一次又绿一次。野火怎么烧也烧不完，春风一吹，小草又长出来了。'},
-{title:'望庐山瀑布',author:'李白',dynasty:'唐',lines:[['日照香炉生紫烟，','rì zhào xiāng lú shēng zǐ yān,'],['遥看瀑布挂前川。','yáo kàn pù bù guà qián chuān,'],['飞流直下三千尺，','fēi liú zhí xià sān qiān chǐ,'],['疑是银河落九天。','yí shì yín hé luò jiǔ tiān.']],note:'太阳照着香炉峰升起紫色的烟雾，远远看去瀑布就像挂在山前。水流飞一样地冲下来，好像天上的银河落到了人间。'},
+
 {title:'江雪',author:'柳宗元',dynasty:'唐',lines:[['千山鸟飞绝，','qiān shān niǎo fēi jué,'],['万径人踪灭。','wàn jìng rén zōng miè,'],['孤舟蓑笠翁，','gū zhōu suō lì wēng,'],['独钓寒江雪。','dú diào hán jiāng xuě.']],note:'所有的山上都看不到鸟的影子，所有的路上都看不到人的脚印。只有一条小船上，一个戴着斗笠的老爷爷，独自在寒冷的江上钓鱼，大雪纷飞。'},
-{title:'所见',author:'袁枚',dynasty:'清',lines:[['牧童骑黄牛，','mù tóng qí huáng niú,'],['歌声振林樾。','gē shēng zhèn lín yuè.'],['意欲捕鸣蝉，','yì yù bǔ míng chán,'],['忽然闭口立。','hū rán bì kǒu lì.']],note:'放牛的小牧童骑在黄牛背上，他的歌声在树林里回荡。忽然他想捉一只正在叫的知了，就马上闭上嘴巴，悄悄地站住了。'},
-{title:'小池',author:'杨万里',dynasty:'宋',lines:[['泉眼无声惜细流，','quán yǎn wú shēng xī xì liú,'],['树阴照水爱晴柔。','shù yīn zhào shuǐ ài qíng róu,'],['小荷才露尖尖角，','xiǎo hé cái lù jiān jiān jiǎo,'],['早有蜻蜓立上头。','zǎo yǒu qīng tíng lì shàng tóu.']],note:'泉眼里的水悄悄地流出来，树荫映在水面上。小小的荷花才露出尖尖的花苞，就有一只蜻蜓站在上面了。'},
-{title:'村居',author:'高鼎',dynasty:'清',lines:[['草长莺飞二月天，','cǎo zhǎng yīng fēi èr yuè tiān,'],['拂堤杨柳醉春烟。','fú dī yáng liǔ zuì chūn yān,'],['儿童散学归来早，','ér tóng sàn xué guī lái zǎo,'],['忙趁东风放纸鸢。','máng chèn dōng fēng fàng zhǐ yuān.']],note:'二月里小草长高了，黄莺飞来飞去，河边的杨柳在春风中轻轻摇摆。小孩子们放学后早早回来，趁着春风赶紧去放风筝。'}
-,{title:'风',author:'李峤',dynasty:'唐',lines:[['解落三秋叶，','jiě luò sān qiū yè,'],['能开二月花。','néng kāi èr yuè huā.'],['过江千尺浪，','guò jiāng qiān chǐ làng,'],['入竹万竿斜。','rù zhú wàn gān xié.']],note:'风一吹，秋天的树叶就纷纷落下来；风能吹开二月的鲜花。风吹过江面，掀起很高的浪花；吹进竹林，上万根竹子都跟着斜了。'}
-,{title:'敕勒歌',author:'北朝民歌',dynasty:'北朝',lines:[['敕勒川，阴山下。','chì lè chuān, yīn shān xià.'],['天似穹庐，笼盖四野。','tiān sì qióng lú, lǒng gài sì yě.'],['天苍苍，野茫茫，','tiān cāng cāng, yě máng máng,'],['风吹草低见牛羊。','fēng chuī cǎo dī xiàn niú yáng.']],note:'美丽的敕勒川就在阴山脚下。天空像一顶大帐篷，罩住了四面八方。天蓝蓝的，草原一眼望不到边，风吹过，草弯下了腰，露出了成群的牛羊。'}
-,{title:'相思',author:'王维',dynasty:'唐',lines:[['红豆生南国，','hóng dòu shēng nán guó,'],['春来发几枝。','chūn lái fā jǐ zhī.'],['愿君多采撷，','yuàn jūn duō cǎi xié,'],['此物最相思。','cǐ wù zuì xiāng sī.']],note:'红豆生长在温暖的南方，春天到了又长出几根新枝。希望你多多采摘红豆，因为它最能代表朋友之间的思念。'}
-,{title:'池上',author:'白居易',dynasty:'唐',lines:[['小娃撑小艇，','xiǎo wá chēng xiǎo tǐng,'],['偷采白莲回。','tōu cǎi bái lián huí.'],['不解藏踪迹，','bù jiě cáng zōng jì,'],['浮萍一道开。','fú píng yī dào kāi.']],note:'小孩子偷偷撑着小船，采了白莲花回来。他还不懂怎么藏起自己的脚印，小船开过，水面上的浮萍被分开了长长的一条水路。'}
-,{title:'寻隐者不遇',author:'贾岛',dynasty:'唐',lines:[['松下问童子，','sōng xià wèn tóng zǐ,'],['言师采药去。','yán shī cǎi yào qù.'],['只在此山中，','zhǐ zài cǐ shān zhōng,'],['云深不知处。','yún shēn bù zhī chù.']],note:'在松树下问一个看门的小孩，小孩说他的师父采药去了。师父就在这座山里，可是山里的云太厚了，不知道他到底在哪里。'}
-,{title:'绝句',author:'杜甫',dynasty:'唐',lines:[['两个黄鹂鸣翠柳，','liǎng gè huáng lí míng cuì liǔ,'],['一行白鹭上青天。','yī háng bái lù shàng qīng tiān.'],['窗含西岭千秋雪，','chuāng hán xī lǐng qiān qiū xuě,'],['门泊东吴万里船。','mén bó dōng wú wàn lǐ chuán.']],note:'两只黄鹂在绿柳枝上欢快地叫，一行白鹭飞上了蓝蓝的天空。从窗户看出去，西山上积着千年不化的白雪；门口停着就要驶向远方东吴的大船。'}
-,{title:'古朗月行',author:'李白',dynasty:'唐',lines:[['小时不识月，','xiǎo shí bù shí yuè,'],['呼作白玉盘。','hū zuò bái yù pán.'],['又疑瑶台镜，','yòu yí yáo tái jìng,'],['飞在青云端。','fēi zài qīng yún duān.']],note:'小时候不认识月亮，把它叫作白玉做的盘子。又怀疑是神仙瑶台上的镜子，飞在白云的上面。'}
-,{title:'小儿垂钓',author:'胡令能',dynasty:'唐',lines:[['蓬头稚子学垂纶，','péng tóu zhì zǐ xué chuí lún,'],['侧坐莓苔草映身。','cè zuò méi tái cǎo yìng shēn.'],['路人借问遥招手，','lù rén jiè wèn yáo zhāo shǒu,'],['怕得鱼惊不应人。','pà dé yú jīng bù yìng rén.']],note:'一个头发乱乱的小孩正在学钓鱼，他侧着身子坐在长满青苔的石头上，野草遮住了他的身体。过路的人向他问路，他远远地摆手，怕把鱼吓跑，所以不回答。'}
-,{title:'鹿柴',author:'王维',dynasty:'唐',lines:[['空山不见人，','kōng shān bù jiàn rén,'],['但闻人语响。','dàn wén rén yǔ xiǎng.'],['返景入深林，','fǎn jǐng rù shēn lín,'],['复照青苔上。','fù zhào qīng tái shàng.']],note:'空荡荡的山里看不见一个人，只听到有人说话的声音。夕阳的余光映照进深深的树林，又落在长满青苔的石头上。'}
-,{title:'夜书所见',author:'叶绍翁',dynasty:'宋',lines:[['萧萧梧叶送寒声，','xiāo xiāo wú yè sòng hán shēng,'],['江上秋风动客情。','jiāng shàng qiū fēng dòng kè qíng.'],['知有儿童挑促织，','zhī yǒu ér tóng tiǎo cù zhī,'],['夜深篱落一灯明。','yè shēn lí luò yī dēng míng.']],note:'梧桐树叶沙沙地响，送来一阵凉意；江上的秋风，让出门在外的人想起了家乡。忽然看到有小朋友在捉蟋蟀，深夜里，篱笆旁边还亮着一盏小灯。'}
-,{title:'早发白帝城',author:'李白',dynasty:'唐',lines:[['朝辞白帝彩云间，','zhāo cí bái dì cǎi yún jiān,'],['千里江陵一日还。','qiān lǐ jiāng líng yī rì huán.'],['两岸猿声啼不住，','liǎng àn yuán shēng tí bù zhù,'],['轻舟已过万重山。','qīng zhōu yǐ guò wàn chóng shān.']],note:'早晨告别了在彩云里的白帝城，到千里外的江陵一天就能到。两岸猴子叫个不停，轻快的小船已经穿过了重重山峦。'}
-,{title:'九月九日忆山东兄弟',author:'王维',dynasty:'唐',lines:[['独在异乡为异客，','dú zài yì xiāng wéi yì kè,'],['每逢佳节倍思亲。','měi féng jiā jié bèi sī qīn.'],['遥知兄弟登高处，','yáo zhī xiōng dì dēng gāo chù,'],['遍插茱萸少一人。','biàn chā zhū yú shǎo yī rén.']],note:'一个人住在别的地方，每到过节的时候就格外想念亲人。远远想到兄弟们今天登高插茱萸，只少了我一个人。'}
+{title:'相思',author:'王维',dynasty:'唐',lines:[['红豆生南国，','hóng dòu shēng nán guó,'],['春来发几枝。','chūn lái fā jǐ zhī.'],['愿君多采撷，','yuàn jūn duō cǎi xié,'],['此物最相思。','cǐ wù zuì xiāng sī.']],note:'红豆生长在温暖的南方，春天到了又长出几根新枝。希望你多多采摘红豆，因为它最能代表朋友之间的思念。'}
 ,
+{title:'寻隐者不遇',author:'贾岛',dynasty:'唐',lines:[['松下问童子，','sōng xià wèn tóng zǐ,'],['言师采药去。','yán shī cǎi yào qù.'],['只在此山中，','zhǐ zài cǐ shān zhōng,'],['云深不知处。','yún shēn bù zhī chù.']],note:'在松树下问一个看门的小孩，小孩说他的师父采药去了。师父就在这座山里，可是山里的云太厚了，不知道他到底在哪里。'}
+,
+{title:'古朗月行',author:'李白',dynasty:'唐',lines:[['小时不识月，','xiǎo shí bù shí yuè,'],['呼作白玉盘。','hū zuò bái yù pán.'],['又疑瑶台镜，','yòu yí yáo tái jìng,'],['飞在青云端。','fēi zài qīng yún duān.']],note:'小时候不认识月亮，把它叫作白玉做的盘子。又怀疑是神仙瑶台上的镜子，飞在白云的上面。'}
+,
+
 {title:'江南',author:'汉乐府',dynasty:'汉',lines:[['江南可采莲，','jiāng nán kě cǎi lián,'],['莲叶何田田。','lián yè hé tián tián.'],['鱼戏莲叶间。','yú xì lián yè jiān.'],['鱼戏莲叶东，','yú xì lián yè dōng,'],['鱼戏莲叶西，','yú xì lián yè xī,'],['鱼戏莲叶南，','yú xì lián yè nán,'],['鱼戏莲叶北。','yú xì lián yè běi.']],note:'长江以南的水乡，姑娘们划着小船采莲蓬。圆圆的荷叶挨挨挤挤，小鱼在荷叶间快活地游来游去，一会儿游到东，一会儿游到西，真好玩。'},
-{title:'赠汪伦',author:'李白',dynasty:'唐',lines:[['李白乘舟将欲行，','lǐ bái chéng zhōu jiāng yù xíng,'],['忽闻岸上踏歌声。','hū wén àn shàng tà gē shēng.'],['桃花潭水深千尺，','táo huā tán shuǐ shēn qiān chǐ,'],['不及汪伦送我情。','bù jí wāng lún sòng wǒ qíng.']],note:'李白坐船正要离开，忽然听见岸上有人边走边唱歌来送他，那是好朋友汪伦。桃花潭的水就算有千尺深，也比不上汪伦送别我的情意深。'},
+
 {title:'画鸡',author:'唐寅',dynasty:'明',lines:[['头上红冠不用裁，','tóu shàng hóng guān bù yòng cái,'],['满身雪白走将来。','mǎn shēn xuě bái zǒu jiāng lái.'],['平生不敢轻言语，','píng shēng bù gǎn qīng yán yǔ,'],['一叫千门万户开。','yī jiào qiān mén wàn hù kāi.']],note:'画里的大公鸡，头上的红冠子不用剪裁天生就有，全身雪白走过来。它平时不轻易叫唤，可是一打鸣，千家万户的门就都打开了，天亮啦。'},
+{title:'夜宿山寺',author:'李白',dynasty:'唐',lines:[['危楼高百尺，','wēi lóu gāo bǎi chǐ,'],['手可摘星辰。','shǒu kě zhāi xīng chén.'],['不敢高声语，','bù gǎn gāo shēng yǔ,'],['恐惊天上人。','kǒng jīng tiān shàng rén.']],note:'山上的寺庙楼好像有一百尺高，站在上面手都能摘到星星。我不敢大声说话，怕惊动了天上的神仙。'}
+,
+{title:'梅花',author:'王安石',dynasty:'宋',lines:[['墙角数枝梅，','qiáng jiǎo shù zhī méi,'],['凌寒独自开。','líng hán dú zì kāi.'],['遥知不是雪，','yáo zhī bù shì xuě,'],['为有暗香来。','wèi yǒu àn xiāng lái.']],note:'墙角有几枝梅花，冒着寒冷独自开放。远远看去知道那不是雪，因为有淡淡的香味飘了过来。'}
+,
+
+{title:'静夜思',author:'李白',dynasty:'唐',lines:[['床前明月光，','chuáng qián míng yuè guāng,'],['疑是地上霜。','yí shì dì shàng shuāng.'],['举头望明月，','jǔ tóu wàng míng yuè,'],['低头思故乡。','dī tóu sī gù xiāng.']],note:'床前洒满了明亮的月光，好像地上结了一层霜。抬头看着天上的月亮，低下头想起了远方的家乡。'},
+
+{title:'春晓',author:'孟浩然',dynasty:'唐',lines:[['春眠不觉晓，','chūn mián bù jué xiǎo,'],['处处闻啼鸟。','chù chù wén tí niǎo.'],['夜来风雨声，','yè lái fēng yǔ shēng,'],['花落知多少。','huā luò zhī duō shǎo.']],note:'春天睡得香甜，不知不觉天就亮了，到处都能听到小鸟的叫声。昨晚又刮风又下雨，不知道花落了多少呢。'},
+
+{title:'所见',author:'袁枚',dynasty:'清',lines:[['牧童骑黄牛，','mù tóng qí huáng niú,'],['歌声振林樾。','gē shēng zhèn lín yuè.'],['意欲捕鸣蝉，','yì yù bǔ míng chán,'],['忽然闭口立。','hū rán bì kǒu lì.']],note:'放牛的小牧童骑在黄牛背上，他的歌声在树林里回荡。忽然他想捉一只正在叫的知了，就马上闭上嘴巴，悄悄地站住了。'},
+{title:'风',author:'李峤',dynasty:'唐',lines:[['解落三秋叶，','jiě luò sān qiū yè,'],['能开二月花。','néng kāi èr yuè huā.'],['过江千尺浪，','guò jiāng qiān chǐ làng,'],['入竹万竿斜。','rù zhú wàn gān xié.']],note:'风一吹，秋天的树叶就纷纷落下来；风能吹开二月的鲜花。风吹过江面，掀起很高的浪花；吹进竹林，上万根竹子都跟着斜了。'}
+,
+{title:'池上',author:'白居易',dynasty:'唐',lines:[['小娃撑小艇，','xiǎo wá chēng xiǎo tǐng,'],['偷采白莲回。','tōu cǎi bái lián huí.'],['不解藏踪迹，','bù jiě cáng zōng jì,'],['浮萍一道开。','fú píng yī dào kāi.']],note:'小孩子偷偷撑着小船，采了白莲花回来。他还不懂怎么藏起自己的脚印，小船开过，水面上的浮萍被分开了长长的一条水路。'}
+,
+{title:'绝句',author:'杜甫',dynasty:'唐',lines:[['两个黄鹂鸣翠柳，','liǎng gè huáng lí míng cuì liǔ,'],['一行白鹭上青天。','yī háng bái lù shàng qīng tiān.'],['窗含西岭千秋雪，','chuāng hán xī lǐng qiān qiū xuě,'],['门泊东吴万里船。','mén bó dōng wú wàn lǐ chuán.']],note:'两只黄鹂在绿柳枝上欢快地叫，一行白鹭飞上了蓝蓝的天空。从窗户看出去，西山上积着千年不化的白雪；门口停着就要驶向远方东吴的大船。'}
+,
+{title:'悯农(其一)',author:'李绅',dynasty:'唐',lines:[['春种一粒粟，','chūn zhòng yī lì sù,'],['秋收万颗子。','qiū shōu wàn kē zi.'],['四海无闲田，','sì hǎi wú xián tián,'],['农夫犹饿死。','nóng fū yóu è sǐ.']],note:'春天种下一粒种子，秋天能收回很多粮食。天下没有一块空着的田地，可种地的农民还是饿死了。'}
+,
+{title:'江上渔者',author:'范仲淹',dynasty:'宋',lines:[['江上往来人，','jiāng shàng wǎng lái rén,'],['但爱鲈鱼美。','dàn ài lú yú měi.'],['君看一叶舟，','jūn kàn yī yè zhōu,'],['出没风波里。','chū mò fēng bō lǐ.']],note:'江上来来往往的人，都爱吃鲜美的鲈鱼。可你看那像树叶一样的小船，正在大风大浪里忽上忽下，多危险啊。'}
+,
+{title:'七步诗',author:'曹植',dynasty:'魏晋',lines:[['煮豆燃豆萁，','zhǔ dòu rán dòu qí,'],['豆在釜中泣。','dòu zài fǔ zhōng qì.'],['本是同根生，','běn shì tóng gēn shēng,'],['相煎何太急。','xiāng jiān hé tài jí.']],note:'烧豆子时点燃豆秆，豆子在锅里好像哭了：我们本来是同一条根长出来的，你为什么这么急着想煮了我？'}
+,
+{title:'敕勒歌',author:'北朝民歌',dynasty:'北朝',lines:[['敕勒川，阴山下。','chì lè chuān, yīn shān xià.'],['天似穹庐，笼盖四野。','tiān sì qióng lú, lǒng gài sì yě.'],['天苍苍，野茫茫，','tiān cāng cāng, yě máng máng,'],['风吹草低见牛羊。','fēng chuī cǎo dī xiàn niú yáng.']],note:'美丽的敕勒川就在阴山脚下。天空像一顶大帐篷，罩住了四面八方。天蓝蓝的，草原一眼望不到边，风吹过，草弯下了腰，露出了成群的牛羊。'}
+,
+{title:'早发白帝城',author:'李白',dynasty:'唐',lines:[['朝辞白帝彩云间，','zhāo cí bái dì cǎi yún jiān,'],['千里江陵一日还。','qiān lǐ jiāng líng yī rì huán.'],['两岸猿声啼不住，','liǎng àn yuán shēng tí bù zhù,'],['轻舟已过万重山。','qīng zhōu yǐ guò wàn chóng shān.']],note:'早晨告别了在彩云里的白帝城，到千里外的江陵一天就能到。两岸猴子叫个不停，轻快的小船已经穿过了重重山峦。'}
+,
+{title:'回乡偶书',author:'贺知章',dynasty:'唐',lines:[['少小离家老大回，','shào xiǎo lí jiā lǎo dà huí,'],['乡音无改鬓毛衰。','xiāng yīn wú gǎi bìn máo shuāi.'],['儿童相见不相识，','ér tóng xiāng jiàn bù xiāng shí,'],['笑问客从何处来。','xiào wèn kè cóng hé chù lái.']],note:'小时候离开家，老了才回来，口音没变可头发已经白了。村里的孩子不认识我，笑着问我这个客人是从哪儿来的。'}
+,
+{title:'秋浦歌',author:'李白',dynasty:'唐',lines:[['白发三千丈，','bái fà sān qiān zhàng,'],['缘愁似个长。','yuán chóu shì gè cháng.'],['不知明镜里，','bù zhī míng jìng lǐ,'],['何处得秋霜。','hé chù dé qiū shuāng.']],note:'我的白头发好像有三千丈长，因为心里的忧愁也这么长。对着镜子一看，不知什么时候沾上了这一片白霜。'}
+,
+{title:'凉州词',author:'王之涣',dynasty:'唐',lines:[['黄河远上白云间，','huáng hé yuǎn shàng bái yún jiān,'],['一片孤城万仞山。','yī piàn gū chéng wàn rèn shān.'],['羌笛何须怨杨柳，','qiāng dí hé xū yuàn yáng liǔ,'],['春风不度玉门关。','chūn fēng bù dù yù mén guān.']],note:'黄河好像一直流到白云中间，一座孤城坐落在高山里。羌笛何必吹那哀怨的《折杨柳》呢，春风根本吹不到玉门关外呀。'}
+,
+{title:'一字诗',author:'陈沆',dynasty:'清',lines:[['一帆一桨一渔舟，','yī fān yī jiǎng yī yú zhōu,'],['一个渔翁一钓钩。','yī gè yú wēng yī diào gōu.'],['一俯一仰一场笑，','yī fǔ yī yǎng yī chǎng xiào,'],['一江明月一江秋。','yī jiāng míng yuè yī jiāng qiū.']],note:'一只帆、一支桨、一条小船，一个老渔翁拿着一根钓竿。他一低头一抬头地笑着唱，满江的明月，满江的秋色。'}
+,
+{title:'大林寺桃花',author:'白居易',dynasty:'唐',lines:[['人间四月芳菲尽，','rén jiān sì yuè fāng fēi jǐn,'],['山寺桃花始盛开。','shān sì táo huā shǐ shèng kāi.'],['长恨春归无觅处，','cháng hèn chūn guī wú mì chù,'],['不知转入此中来。','bù zhī zhuǎn rù cǐ zhōng lái.']],note:'四月的平地花儿都谢了，可山里寺庙的桃花才刚开。我总抱怨春天走得太快找不到它，没想到它转到这里来了。'}
+,
+{title:'前出塞',author:'杜甫',dynasty:'唐',lines:[['挽弓当挽强，','wǎn gōng dāng wǎn qiáng,'],['用箭当用长。','yòng jiàn dāng yòng cháng.'],['射人先射马，','shè rén xiān shè mǎ,'],['擒贼先擒王。','qín zéi xiān qín wáng.'],['杀人亦有限，','shā rén yì yǒu xiàn,'],['列国自有疆。','liè guó zì yǒu jiāng.'],['苟能制侵陵，','gǒu néng zhì qīn líng,'],['岂在多杀伤。','qǐ zài duō shā shāng.']],note:'拉弓要拉最硬的弓，用箭要用最长的箭。打仗要射敌人的马、抓敌人的头领。杀人也要有限度，只要能挡住侵犯，何必多杀人呢。'}
+,
+
+{title:'小池',author:'杨万里',dynasty:'宋',lines:[['泉眼无声惜细流，','quán yǎn wú shēng xī xì liú,'],['树阴照水爱晴柔。','shù yīn zhào shuǐ ài qíng róu,'],['小荷才露尖尖角，','xiǎo hé cái lù jiān jiān jiǎo,'],['早有蜻蜓立上头。','zǎo yǒu qīng tíng lì shàng tóu.']],note:'泉眼里的水悄悄地流出来，树荫映在水面上。小小的荷花才露出尖尖的花苞，就有一只蜻蜓站在上面了。'},
+{title:'小儿垂钓',author:'胡令能',dynasty:'唐',lines:[['蓬头稚子学垂纶，','péng tóu zhì zǐ xué chuí lún,'],['侧坐莓苔草映身。','cè zuò méi tái cǎo yìng shēn.'],['路人借问遥招手，','lù rén jiè wèn yáo zhāo shǒu,'],['怕得鱼惊不应人。','pà dé yú jīng bù yìng rén.']],note:'一个头发乱乱的小孩正在学钓鱼，他侧着身子坐在长满青苔的石头上，野草遮住了他的身体。过路的人向他问路，他远远地摆手，怕把鱼吓跑，所以不回答。'}
+,
+{title:'竹里馆',author:'王维',dynasty:'唐',lines:[['独坐幽篁里，','dú zuò yōu huáng lǐ,'],['弹琴复长啸。','dàn qín fù cháng xiào.'],['深林人不知，','shēn lín rén bù zhī,'],['明月来相照。','míng yuè lái xiāng zhào.']],note:'我一个人坐在幽静的竹林里，弹弹琴、吹吹口哨。树林深处没人知道我，只有明月来陪着我。'}
+,
+{title:'游园不值',author:'叶绍翁',dynasty:'宋',lines:[['应怜屐齿印苍苔，','yīng lián jī chǐ yìn cāng tái,'],['小扣柴扉久不开。','xiǎo kòu chái fēi jiǔ bù kāi.'],['春色满园关不住，','chūn sè mǎn yuán guān bù zhù,'],['一枝红杏出墙来。','yī zhī hóng xìng chū qiáng lái.']],note:'也许是园主爱惜青苔，怕我的木鞋踩坏它，我轻轻敲门好久也没人开。可满园的春色关不住，一枝红杏已经伸到墙外来了。'}
+,
+{title:'清明',author:'杜牧',dynasty:'唐',lines:[['清明时节雨纷纷，','qīng míng shí jié yǔ fēn fēn,'],['路上行人欲断魂。','lù shàng xíng rén yù duàn hún.'],['借问酒家何处有，','jiè wèn jiǔ jiā hé chù yǒu,'],['牧童遥指杏花村。','mù tóng yáo zhǐ xìng huā cūn.']],note:'清明这天雨下个不停，路上的行人心里酸酸的。请问哪儿有酒家？放牛的小孩远远地指向杏花村。'}
+,
+{title:'遗爱寺',author:'白居易',dynasty:'唐',lines:[['弄石临溪坐，','nòng shí lín xī zuò,'],['寻花绕寺行。','xún huā rào sì xíng.'],['时时闻鸟语，','shí shí wén niǎo yǔ,'],['处处是泉声。','chù chù shì quán shēng.']],note:'我搬着石头坐在溪边，绕着寺庙找花儿看。时不时听到小鸟叫，到处都能听见泉水叮咚响。'}
+,
+{title:'枫桥夜泊',author:'张继',dynasty:'唐',lines:[['月落乌啼霜满天，','yuè luò wū tí shuāng mǎn tiān,'],['江枫渔火对愁眠。','jiāng fēng yú huǒ duì chóu mián.'],['姑苏城外寒山寺，','gū sū chéng wài hán shān sì,'],['夜半钟声到客船。','yè bàn zhōng shēng dào kè chuán.']],note:'月亮落下、乌鸦啼叫，寒霜满天；江边的枫树和渔火陪着我发愁难眠。苏州城外寒山寺的钟声，半夜里敲到了我的小船边。'}
+,
+{title:'塞下曲',author:'卢纶',dynasty:'唐',lines:[['月黑雁飞高，','yuè hēi yàn fēi gāo,'],['单于夜遁逃。','chán yú yè dùn táo.'],['欲将轻骑逐，','yù jiāng qīng qí zhú,'],['大雪满弓刀。','dà xuě mǎn gōng dāo.']],note:'没有月亮的夜里大雁飞得很高，敌军头领趁黑逃跑了。将军正要带着轻骑兵去追，大雪却落满了弓和刀。'}
+,
+
+{title:'望庐山瀑布',author:'李白',dynasty:'唐',lines:[['日照香炉生紫烟，','rì zhào xiāng lú shēng zǐ yān,'],['遥看瀑布挂前川。','yáo kàn pù bù guà qián chuān,'],['飞流直下三千尺，','fēi liú zhí xià sān qiān chǐ,'],['疑是银河落九天。','yí shì yín hé luò jiǔ tiān.']],note:'太阳照着香炉峰升起紫色的烟雾，远远看去瀑布就像挂在山前。水流飞一样地冲下来，好像天上的银河落到了人间。'},
+{title:'鹿柴',author:'王维',dynasty:'唐',lines:[['空山不见人，','kōng shān bù jiàn rén,'],['但闻人语响。','dàn wén rén yǔ xiǎng.'],['返景入深林，','fǎn jǐng rù shēn lín,'],['复照青苔上。','fù zhào qīng tái shàng.']],note:'空荡荡的山里看不见一个人，只听到有人说话的声音。夕阳的余光映照进深深的树林，又落在长满青苔的石头上。'}
+,
+{title:'晓出净慈寺送林子方',author:'杨万里',dynasty:'宋',lines:[['毕竟西湖六月中，','bì jìng xī hú liù yuè zhōng,'],['风光不与四时同。','fēng guāng bù yǔ sì shí tóng.'],['接天莲叶无穷碧，','jiē tiān lián yè wú qióng bì,'],['映日荷花别样红。','yìng rì hé huā bié yàng hóng.']],note:'到底是六月的西湖，风景和别的季节不一样。连天的荷叶一片碧绿，阳光下的荷花格外红艳。'}
+,
+{title:'于易水送人',author:'骆宾王',dynasty:'唐',lines:[['此地别燕丹，','cǐ dì bié yān dān,'],['壮士发冲冠。','zhuàng shì fā chōng guān.'],['昔时人已没，','xī shí rén yǐ mò,'],['今日水犹寒。','jīn rì shuǐ yóu hán.']],note:'就在这易水边荆轲告别燕太子丹，怒发冲冠。当年的人已经不在了，今天的易水还是那么寒凉。'}
+,
+{title:'山行',author:'杜牧',dynasty:'唐',lines:[['远上寒山石径斜，','yuǎn shàng hán shān shí jìng xié,'],['白云生处有人家。','bái yún shēng chù yǒu rén jiā.'],['停车坐爱枫林晚，','tíng chē zuò ài fēng lín wǎn,'],['霜叶红于二月花。','shuāng yè hóng yú èr yuè huā.']],note:'弯弯曲曲的石头小路通到山里，白云生起的地方还有人家。我停下马车是因为太爱这傍晚的枫林，霜打的叶子比二月的花还红。'}
+,
+{title:'塞下曲(其三)',author:'卢纶',dynasty:'唐',lines:[['林暗草惊风，','lín àn cǎo jīng fēng,'],['将军夜引弓。','jiāng jūn yè yǐn gōng.'],['平明寻白羽，','píng míng xún bái yǔ,'],['没在石棱中。','mò zài shí léng zhōng.']],note:'树林昏暗、草被风吹得晃动，将军夜里拉开弓射箭。天亮去找那支白羽毛的箭，发现它竟然扎进石头缝里了。'}
+,
+{title:'赠刘景文',author:'苏轼',dynasty:'宋',lines:[['荷尽已无擎雨盖，','hé jǐn yǐ wú qíng yǔ gài,'],['菊残犹有傲霜枝。','jú cán yóu yǒu ào shuāng zhī.'],['一年好景君须记，','yī nián hǎo jǐng jūn xū jì,'],['最是橙黄橘绿时。','zuì shì chéng huáng jú lǜ shí.']],note:'荷花谢了像伞一样的叶子也没了，菊花虽残却还有不怕霜的枝条。你一定要记住一年最好的景色，就是橙子黄、橘子绿的时候。'}
+,
+{title:'逢雪宿芙蓉山主人',author:'刘长卿',dynasty:'唐',lines:[['日暮苍山远，','rì mù cāng shān yuǎn,'],['天寒白屋贫。','tiān hán bái wū pín.'],['柴门闻犬吠，','chái mén wén quǎn fèi,'],['风雪夜归人。','fēng xuě yè guī rén.']],note:'天快黑了远山更显遥远，天冷茅草屋显得清贫。柴门外传来狗叫，是主人在风雪夜里回来了。'}
+,
+
 {title:'春夜喜雨',author:'杜甫',dynasty:'唐',lines:[['好雨知时节，','hǎo yǔ zhī shí jié,'],['当春乃发生。','dāng chūn nǎi fā shēng.'],['随风潜入夜，','suí fēng qián rù yè,'],['润物细无声。','rùn wù xì wú shēng.'],['野径云俱黑，','yě jìng yún jù hēi,'],['江船火独明。','jiāng chuán huǒ dú míng.'],['晓看红湿处，','xiǎo kàn hóng shī chù,'],['花重锦官城。','huā zhòng jǐn guān chéng.']],note:'春天的雨真好，它知道时节，春天一到就悄悄下起来。它随着风在夜里轻轻落下，滋润小花小草却一点声音也没有。野外的小路和云都是黑黑的，只有江面上渔船的灯火亮着。第二天早上看那被雨水打湿的红花，成都城里到处是沉甸甸、湿漉漉的花儿。'}
-,{title:'夜宿山寺',author:'李白',dynasty:'唐',lines:[['危楼高百尺，','wēi lóu gāo bǎi chǐ,'],['手可摘星辰。','shǒu kě zhāi xīng chén.'],['不敢高声语，','bù gǎn gāo shēng yǔ,'],['恐惊天上人。','kǒng jīng tiān shàng rén.']],note:'山上的寺庙楼好像有一百尺高，站在上面手都能摘到星星。我不敢大声说话，怕惊动了天上的神仙。'}
-,{title:'梅花',author:'王安石',dynasty:'宋',lines:[['墙角数枝梅，','qiáng jiǎo shù zhī méi,'],['凌寒独自开。','líng hán dú zì kāi.'],['遥知不是雪，','yáo zhī bù shì xuě,'],['为有暗香来。','wèi yǒu àn xiāng lái.']],note:'墙角有几枝梅花，冒着寒冷独自开放。远远看去知道那不是雪，因为有淡淡的香味飘了过来。'}
-,{title:'悯农(其一)',author:'李绅',dynasty:'唐',lines:[['春种一粒粟，','chūn zhòng yī lì sù,'],['秋收万颗子。','qiū shōu wàn kē zi.'],['四海无闲田，','sì hǎi wú xián tián,'],['农夫犹饿死。','nóng fū yóu è sǐ.']],note:'春天种下一粒种子，秋天能收回很多粮食。天下没有一块空着的田地，可种地的农民还是饿死了。'}
-,{title:'江上渔者',author:'范仲淹',dynasty:'宋',lines:[['江上往来人，','jiāng shàng wǎng lái rén,'],['但爱鲈鱼美。','dàn ài lú yú měi.'],['君看一叶舟，','jūn kàn yī yè zhōu,'],['出没风波里。','chū mò fēng bō lǐ.']],note:'江上来来往往的人，都爱吃鲜美的鲈鱼。可你看那像树叶一样的小船，正在大风大浪里忽上忽下，多危险啊。'}
-,{title:'七步诗',author:'曹植',dynasty:'魏晋',lines:[['煮豆燃豆萁，','zhǔ dòu rán dòu qí,'],['豆在釜中泣。','dòu zài fǔ zhōng qì.'],['本是同根生，','běn shì tóng gēn shēng,'],['相煎何太急。','xiāng jiān hé tài jí.']],note:'烧豆子时点燃豆秆，豆子在锅里好像哭了：我们本来是同一条根长出来的，你为什么这么急着想煮了我？'}
-,{title:'回乡偶书',author:'贺知章',dynasty:'唐',lines:[['少小离家老大回，','shào xiǎo lí jiā lǎo dà huí,'],['乡音无改鬓毛衰。','xiāng yīn wú gǎi bìn máo shuāi.'],['儿童相见不相识，','ér tóng xiāng jiàn bù xiāng shí,'],['笑问客从何处来。','xiào wèn kè cóng hé chù lái.']],note:'小时候离开家，老了才回来，口音没变可头发已经白了。村里的孩子不认识我，笑着问我这个客人是从哪儿来的。'}
-,{title:'秋浦歌',author:'李白',dynasty:'唐',lines:[['白发三千丈，','bái fà sān qiān zhàng,'],['缘愁似个长。','yuán chóu shì gè cháng.'],['不知明镜里，','bù zhī míng jìng lǐ,'],['何处得秋霜。','hé chù dé qiū shuāng.']],note:'我的白头发好像有三千丈长，因为心里的忧愁也这么长。对着镜子一看，不知什么时候沾上了这一片白霜。'}
-,{title:'凉州词',author:'王之涣',dynasty:'唐',lines:[['黄河远上白云间，','huáng hé yuǎn shàng bái yún jiān,'],['一片孤城万仞山。','yī piàn gū chéng wàn rèn shān.'],['羌笛何须怨杨柳，','qiāng dí hé xū yuàn yáng liǔ,'],['春风不度玉门关。','chūn fēng bù dù yù mén guān.']],note:'黄河好像一直流到白云中间，一座孤城坐落在高山里。羌笛何必吹那哀怨的《折杨柳》呢，春风根本吹不到玉门关外呀。'}
-,{title:'一字诗',author:'陈沆',dynasty:'清',lines:[['一帆一桨一渔舟，','yī fān yī jiǎng yī yú zhōu,'],['一个渔翁一钓钩。','yī gè yú wēng yī diào gōu.'],['一俯一仰一场笑，','yī fǔ yī yǎng yī chǎng xiào,'],['一江明月一江秋。','yī jiāng míng yuè yī jiāng qiū.']],note:'一只帆、一支桨、一条小船，一个老渔翁拿着一根钓竿。他一低头一抬头地笑着唱，满江的明月，满江的秋色。'}
-,{title:'大林寺桃花',author:'白居易',dynasty:'唐',lines:[['人间四月芳菲尽，','rén jiān sì yuè fāng fēi jǐn,'],['山寺桃花始盛开。','shān sì táo huā shǐ shèng kāi.'],['长恨春归无觅处，','cháng hèn chūn guī wú mì chù,'],['不知转入此中来。','bù zhī zhuǎn rù cǐ zhōng lái.']],note:'四月的平地花儿都谢了，可山里寺庙的桃花才刚开。我总抱怨春天走得太快找不到它，没想到它转到这里来了。'}
-,{title:'前出塞',author:'杜甫',dynasty:'唐',lines:[['挽弓当挽强，','wǎn gōng dāng wǎn qiáng,'],['用箭当用长。','yòng jiàn dāng yòng cháng.'],['射人先射马，','shè rén xiān shè mǎ,'],['擒贼先擒王。','qín zéi xiān qín wáng.'],['杀人亦有限，','shā rén yì yǒu xiàn,'],['列国自有疆。','liè guó zì yǒu jiāng.'],['苟能制侵陵，','gǒu néng zhì qīn líng,'],['岂在多杀伤。','qǐ zài duō shā shāng.']],note:'拉弓要拉最硬的弓，用箭要用最长的箭。打仗要射敌人的马、抓敌人的头领。杀人也要有限度，只要能挡住侵犯，何必多杀人呢。'}
-,{title:'竹里馆',author:'王维',dynasty:'唐',lines:[['独坐幽篁里，','dú zuò yōu huáng lǐ,'],['弹琴复长啸。','dàn qín fù cháng xiào.'],['深林人不知，','shēn lín rén bù zhī,'],['明月来相照。','míng yuè lái xiāng zhào.']],note:'我一个人坐在幽静的竹林里，弹弹琴、吹吹口哨。树林深处没人知道我，只有明月来陪着我。'}
-,{title:'游园不值',author:'叶绍翁',dynasty:'宋',lines:[['应怜屐齿印苍苔，','yīng lián jī chǐ yìn cāng tái,'],['小扣柴扉久不开。','xiǎo kòu chái fēi jiǔ bù kāi.'],['春色满园关不住，','chūn sè mǎn yuán guān bù zhù,'],['一枝红杏出墙来。','yī zhī hóng xìng chū qiáng lái.']],note:'也许是园主爱惜青苔，怕我的木鞋踩坏它，我轻轻敲门好久也没人开。可满园的春色关不住，一枝红杏已经伸到墙外来了。'}
-,{title:'清明',author:'杜牧',dynasty:'唐',lines:[['清明时节雨纷纷，','qīng míng shí jié yǔ fēn fēn,'],['路上行人欲断魂。','lù shàng xíng rén yù duàn hún.'],['借问酒家何处有，','jiè wèn jiǔ jiā hé chù yǒu,'],['牧童遥指杏花村。','mù tóng yáo zhǐ xìng huā cūn.']],note:'清明这天雨下个不停，路上的行人心里酸酸的。请问哪儿有酒家？放牛的小孩远远地指向杏花村。'}
-,{title:'遗爱寺',author:'白居易',dynasty:'唐',lines:[['弄石临溪坐，','nòng shí lín xī zuò,'],['寻花绕寺行。','xún huā rào sì xíng.'],['时时闻鸟语，','shí shí wén niǎo yǔ,'],['处处是泉声。','chù chù shì quán shēng.']],note:'我搬着石头坐在溪边，绕着寺庙找花儿看。时不时听到小鸟叫，到处都能听见泉水叮咚响。'}
-,{title:'枫桥夜泊',author:'张继',dynasty:'唐',lines:[['月落乌啼霜满天，','yuè luò wū tí shuāng mǎn tiān,'],['江枫渔火对愁眠。','jiāng fēng yú huǒ duì chóu mián.'],['姑苏城外寒山寺，','gū sū chéng wài hán shān sì,'],['夜半钟声到客船。','yè bàn zhōng shēng dào kè chuán.']],note:'月亮落下、乌鸦啼叫，寒霜满天；江边的枫树和渔火陪着我发愁难眠。苏州城外寒山寺的钟声，半夜里敲到了我的小船边。'}
-,{title:'塞下曲',author:'卢纶',dynasty:'唐',lines:[['月黑雁飞高，','yuè hēi yàn fēi gāo,'],['单于夜遁逃。','chán yú yè dùn táo.'],['欲将轻骑逐，','yù jiāng qīng qí zhú,'],['大雪满弓刀。','dà xuě mǎn gōng dāo.']],note:'没有月亮的夜里大雁飞得很高，敌军头领趁黑逃跑了。将军正要带着轻骑兵去追，大雪却落满了弓和刀。'}
-,{title:'晓出净慈寺送林子方',author:'杨万里',dynasty:'宋',lines:[['毕竟西湖六月中，','bì jìng xī hú liù yuè zhōng,'],['风光不与四时同。','fēng guāng bù yǔ sì shí tóng.'],['接天莲叶无穷碧，','jiē tiān lián yè wú qióng bì,'],['映日荷花别样红。','yìng rì hé huā bié yàng hóng.']],note:'到底是六月的西湖，风景和别的季节不一样。连天的荷叶一片碧绿，阳光下的荷花格外红艳。'}
-,{title:'于易水送人',author:'骆宾王',dynasty:'唐',lines:[['此地别燕丹，','cǐ dì bié yān dān,'],['壮士发冲冠。','zhuàng shì fā chōng guān.'],['昔时人已没，','xī shí rén yǐ mò,'],['今日水犹寒。','jīn rì shuǐ yóu hán.']],note:'就在这易水边荆轲告别燕太子丹，怒发冲冠。当年的人已经不在了，今天的易水还是那么寒凉。'}
-,{title:'山行',author:'杜牧',dynasty:'唐',lines:[['远上寒山石径斜，','yuǎn shàng hán shān shí jìng xié,'],['白云生处有人家。','bái yún shēng chù yǒu rén jiā.'],['停车坐爱枫林晚，','tíng chē zuò ài fēng lín wǎn,'],['霜叶红于二月花。','shuāng yè hóng yú èr yuè huā.']],note:'弯弯曲曲的石头小路通到山里，白云生起的地方还有人家。我停下马车是因为太爱这傍晚的枫林，霜打的叶子比二月的花还红。'}
-,{title:'塞下曲(其三)',author:'卢纶',dynasty:'唐',lines:[['林暗草惊风，','lín àn cǎo jīng fēng,'],['将军夜引弓。','jiāng jūn yè yǐn gōng.'],['平明寻白羽，','píng míng xún bái yǔ,'],['没在石棱中。','mò zài shí léng zhōng.']],note:'树林昏暗、草被风吹得晃动，将军夜里拉开弓射箭。天亮去找那支白羽毛的箭，发现它竟然扎进石头缝里了。'}
-,{title:'赠刘景文',author:'苏轼',dynasty:'宋',lines:[['荷尽已无擎雨盖，','hé jǐn yǐ wú qíng yǔ gài,'],['菊残犹有傲霜枝。','jú cán yóu yǒu ào shuāng zhī.'],['一年好景君须记，','yī nián hǎo jǐng jūn xū jì,'],['最是橙黄橘绿时。','zuì shì chéng huáng jú lǜ shí.']],note:'荷花谢了像伞一样的叶子也没了，菊花虽残却还有不怕霜的枝条。你一定要记住一年最好的景色，就是橙子黄、橘子绿的时候。'}
-,{title:'逢雪宿芙蓉山主人',author:'刘长卿',dynasty:'唐',lines:[['日暮苍山远，','rì mù cāng shān yuǎn,'],['天寒白屋贫。','tiān hán bái wū pín.'],['柴门闻犬吠，','chái mén wén quǎn fèi,'],['风雪夜归人。','fēng xuě yè guī rén.']],note:'天快黑了远山更显遥远，天冷茅草屋显得清贫。柴门外传来狗叫，是主人在风雪夜里回来了。'}
-,{title:'咏柳',author:'贺知章',dynasty:'唐',lines:[['碧玉妆成一树高，','bì yù zhuāng chéng yī shù gāo,'],['万条垂下绿丝绦。','wàn tiáo chuí xià lǜ sī tāo.'],['不知细叶谁裁出，','bù zhī xì yè shuí cái chū,'],['二月春风似剪刀。','èr yuè chūn fēng shì jiǎn dāo.']],note:'高高的柳树像用碧玉打扮过，垂下千万条绿色的丝带。不知道细细的叶子是谁剪出来的，原来是二月的春风像剪刀。'}
-,{title:'惠崇春江晓景',author:'苏轼',dynasty:'宋',lines:[['竹外桃花三两枝，','zhú wài táo huā sān liǎng zhī,'],['春江水暖鸭先知。','chūn jiāng shuǐ nuǎn yā xiān zhī.'],['蒌蒿满地芦芽短，','lóu hāo mǎn dì lú yá duǎn,'],['正是河豚欲上时。','zhèng shì hé tún yù shàng shí.']],note:'竹林外桃花开了两三枝，江水暖了鸭子最先知道。满地蒌蒿、短短的芦苇芽，正是河豚要上游的时候。'}
-,{title:'春日',author:'朱熹',dynasty:'宋',lines:[['胜日寻芳泗水滨，','shèng rì xún fāng sì shuǐ bīn,'],['无边光景一时新。','wú biān guāng jǐng yī shí xīn.'],['等闲识得东风面，','děng xián shí dé dōng fēng miàn,'],['万紫千红总是春。','wàn zǐ qiān hóng zǒng shì chūn.']],note:'好天气里到泗水边赏花，一眼望不到边的景色一下子都新鲜了。随便都能认出春风的样子，万紫千红全是春天。'}
-,{title:'游子吟',author:'孟郊',dynasty:'唐',lines:[['慈母手中线，','cí mǔ shǒu zhōng xiàn,'],['游子身上衣。','yóu zi shēn shàng yī.'],['临行密密缝，','lín xíng mì mì fèng,'],['意恐迟迟归。','yì kǒng chí chí guī.'],['谁言寸草心，','shuí yán cùn cǎo xīn,'],['报得三春晖。','bào dé sān chūn huī.']],note:'母亲手里的针线，缝着远行孩子身上的衣服。临走前缝得密密的，怕孩子回来得晚。谁说小草的一点心意，能报答春天太阳的光辉呢。'}
-,{title:'送杜少府之任蜀州',author:'王勃',dynasty:'唐',lines:[['城阙辅三秦，','chéng quē fǔ sān qín,'],['风烟望五津。','fēng yān wàng wǔ jīn.'],['与君离别意，','yǔ jūn lí bié yì,'],['同是宦游人。','tóng shì huàn yóu rén.'],['海内存知己，','hǎi nèi cún zhī jǐ,'],['天涯若比邻。','tiān yá ruò bǐ lín.'],['无为在歧路，','wú wèi zài qí lù,'],['儿女共沾巾。','ér nǚ gòng zhān jīn.']],note:'长安城被三秦保卫，远远望见蜀地的五津。和你分别我心里难过，因为咱们都是在外做官的人。只要天下有知心朋友，就算远在天边也像邻居。不要在分手路口像小孩一样哭湿手巾。'}
-,{title:'绝句(迟日)',author:'杜甫',dynasty:'唐',lines:[['迟日江山丽，','chí rì jiāng shān lì,'],['春风花草香。','chūn fēng huā cǎo xiāng.'],['泥融飞燕子，','ní róng fēi yàn zi,'],['沙暖睡鸳鸯。','shā nuǎn shuì yuān yāng.']],note:'春天的太阳照着美丽的江山，春风送来花草香。泥土松软燕子飞来飞去，沙地暖和鸳鸯睡得正香。'}
-,{title:'江畔独步寻花',author:'杜甫',dynasty:'唐',lines:[['黄四娘家花满蹊，','huáng sì niáng jiā huā mǎn qī,'],['千朵万朵压枝低。','qiān duǒ wàn duǒ yā zhī dī.'],['留连戏蝶时时舞，','liú lián xì dié shí shí wǔ,'],['自在娇莺恰恰啼。','zì zài jiāo yīng qià qià tí.']],note:'黄四娘家门前小路开满花，千万朵把枝条都压弯了。蝴蝶恋着花不停地舞，黄莺自由自在地正好在啼叫。'}
-,{title:'乐游原',author:'李商隐',dynasty:'唐',lines:[['向晚意不适，','xiàng wǎn yì bù shì,'],['驱车登古原。','qū chē dēng gǔ yuán.'],['夕阳无限好，','xī yáng wú xiàn hǎo,'],['只是近黄昏。','zhǐ shì jìn huáng hūn.']],note:'傍晚我心里不太舒服，就坐车登上乐游原。夕阳真是美极了，只可惜已经快到黄昏了。'}
-,{title:'赠花卿',author:'杜甫',dynasty:'唐',lines:[['锦城丝管日纷纷，','jǐn chéng sī guǎn rì fēn fēn,'],['半入江风半入云。','bàn rù jiāng fēng bàn rù yún.'],['此曲只应天上有，','cǐ qǔ zhǐ yīng tiān shàng yǒu,'],['人间能得几回闻。','rén jiān néng dé jǐ huí wén.']],note:'成都城里音乐整天飘荡，一半随江风、一半入云端。这样的曲子只该在天上才有，人间能听见几回呢。'}
-,{title:'暮江吟',author:'白居易',dynasty:'唐',lines:[['一道残阳铺水中，','yī dào cán yáng pù shuǐ zhōng,'],['半江瑟瑟半江红。','bàn jiāng sè sè bàn jiāng hóng.'],['可怜九月初三夜，','kě lián jiǔ yuè chū sān yè,'],['露似真珠月似弓。','lù shì zhēn zhū yuè shì gōng.']],note:'一道夕阳铺在江水里，半江碧绿半江红。可爱的是九月初三的夜晚，露水像珍珠、月亮像弯弓。'}
-,{title:'秋夕',author:'杜牧',dynasty:'唐',lines:[['银烛秋光冷画屏，','yín zhú qiū guāng lěng huà píng,'],['轻罗小扇扑流萤。','qīng luó xiǎo shàn pū liú yíng.'],['天阶夜色凉如水，','tiān jiē yè sè liáng rú shuǐ,'],['卧看牵牛织女星。','wò kàn qiān niú zhī nǚ xīng.']],note:'秋天的烛光照在画屏上，宫女用小扇扑打着飞萤。石阶上的夜色凉得像水，她躺着看牛郎织女星。'}
-,{title:'秋夜将晓出篱门迎凉有感',author:'陆游',dynasty:'宋',lines:[['三万里河东入海，','sān wàn lǐ hé dōng rù hǎi,'],['五千仞岳上摩天。','wǔ qiān rèn yuè shàng mó tiān.'],['遗民泪尽胡尘里，','yí mín lèi jǐn hú chén lǐ,'],['南望王师又一年。','nán wàng wáng shī yòu yī nián.']],note:'三万里长的黄河东流入海，五千仞高的华山碰到天。沦陷区的百姓在胡人铁蹄下眼泪流干，向南盼望宋军又等了一年。'}
-,{title:'从军行(其四)',author:'王昌龄',dynasty:'唐',lines:[['青海长云暗雪山，','qīng hǎi cháng yún àn xuě shān,'],['孤城遥望玉门关。','gū chéng yáo wàng yù mén guān.'],['黄沙百战穿金甲，','huáng shā bǎi zhàn chuān jīn jiǎ,'],['不破楼兰终不还。','bù pò lóu lán zhōng bù huán.']],note:'青海湖上乌云遮暗了雪山，远远望着孤城和玉门关。在黄沙里打了许多仗铠甲都磨破了，不打败敌人绝不回家。'}
-,{title:'鸟鸣涧',author:'王维',dynasty:'唐',lines:[['人闲桂花落，','rén xián guì huā luò,'],['夜静春山空。','yè jìng chūn shān kōng.'],['月出惊山鸟，','yuè chū jīng shān niǎo,'],['时鸣春涧中。','shí míng chūn jiàn zhōng.']],note:'人悠闲时桂花悄悄落下，夜晚安静春山空空。月亮出来惊动了山鸟，不时在涧谷里啼叫。'}
-,{title:'采莲曲',author:'王昌龄',dynasty:'唐',lines:[['荷叶罗裙一色裁，','hé yè luó qún yī sè cái,'],['芙蓉向脸两边开。','fú róng xiàng liǎn liǎng biān kāi.'],['乱入池中看不见，','luàn rù chí zhōng kàn bù jiàn,'],['闻歌始觉有人来。','wén gē shǐ jué yǒu rén lái.']],note:'采莲姑娘的绿裙和荷叶像同一种布做成，荷花在脸旁两边开。她们混进荷塘就看不见了，听到歌声才发觉有人来。'}
-,{title:'夏日绝句',author:'李清照',dynasty:'宋',lines:[['生当作人杰，','shēng dāng zuò rén jié,'],['死亦为鬼雄。','sǐ yì wèi guǐ xióng.'],['至今思项羽，','zhì jīn sī xiàng yǔ,'],['不肯过江东。','bù kěn guò jiāng dōng.']],note:'活着要做人中豪杰，死了也要做鬼中英雄。到现在人们还想着项羽，他不肯回江东苟且偷生。'}
-,{title:'望洞庭',author:'刘禹锡',dynasty:'唐',lines:[['湖光秋月两相和，','hú guāng qiū yuè liǎng xiāng hé,'],['潭面无风镜未磨。','tán miàn wú fēng jìng wèi mó.'],['遥望洞庭山水翠，','yáo wàng dòng tíng shān shuǐ cuì,'],['白银盘里一青螺。','bái yín pán lǐ yī qīng luó.']],note:'湖光和秋月互相映衬，水面无风像没磨过的镜子。远远看洞庭山水一片翠绿，好像白银盘里一只青螺。'}
-,{title:'百忧集行',author:'杜甫',dynasty:'唐',lines:[['忆年十五心尚孩，','yì nián shí wǔ xīn shàng hái,'],['健如黄犊走复来。','jiàn rú huáng dú zǒu fù lái.'],['庭前八月梨枣熟，','tíng qián bā yuè lí zǎo shú,'],['一日上树能千回。','yī rì shàng shù néng qiān huí.']],note:'记得十五岁时心里还像孩子，身子壮得像小牛跑来跑去。八月院里梨枣熟了，我一天能爬上树一千回。'}
-,{title:'浪淘沙',author:'刘禹锡',dynasty:'唐',lines:[['九曲黄河万里沙，','jiǔ qū huáng hé wàn lǐ shā,'],['浪淘风簸自天涯。','làng táo fēng bǒ zì tiān yá.'],['如今直上银河去，','rú jīn zhí shàng yín hé qù,'],['同到牵牛织女家。','tóng dào qiān niú zhī nǚ jiā.']],note:'弯弯曲曲的黄河带着万里黄沙，浪和风把它从天边簸来。现在它一直上到银河，去到牛郎织女的家。'}
-,{title:'宿建德江',author:'孟浩然',dynasty:'唐',lines:[['移舟泊烟渚，','yí zhōu pō yān zhǔ,'],['日暮客愁新。','rì mù kè chóu xīn.'],['野旷天低树，','yě kuàng tiān dī shù,'],['江清月近人。','jiāng qīng yuè jìn rén.']],note:'把船停在雾气蒙蒙的小洲边，天晚了旅人的愁又涌上心。原野空旷天比树还低，江水清清月亮离人很近。'}
-,{title:'墨梅',author:'王冕',dynasty:'元',lines:[['我家洗砚池头树，','wǒ jiā xǐ yàn chí tóu shù,'],['朵朵花开淡墨痕。','duǒ duǒ huā kāi dàn mò hén.'],['不要人夸好颜色，','bù yào rén kuā hǎo yán sè,'],['只留清气满乾坤。','zhǐ liú qīng qì mǎn qián kūn.']],note:'我家洗砚池边的梅树，朵朵花开带着淡淡的墨色。不要人夸它颜色好看，只愿把清香留在天地间。'}
-,{title:'独坐敬亭山',author:'李白',dynasty:'唐',lines:[['众鸟高飞尽，','zhòng niǎo gāo fēi jǐn,'],['孤云独去闲。','gū yún dú qù xián.'],['相看两不厌，','xiāng kàn liǎng bù yàn,'],['只有敬亭山。','zhǐ yǒu jìng tíng shān.']],note:'鸟儿都高高地飞走了，一片云也悠闲地飘开。看来看去都不厌的，只有这敬亭山。'}
-,{title:'别董大',author:'高适',dynasty:'唐',lines:[['千里黄云白日曛，','qiān lǐ huáng yún bái rì xūn,'],['北风吹雁雪纷纷。','běi fēng chuī yàn xuě fēn fēn.'],['莫愁前路无知己，','mò chóu qián lù wú zhī jǐ,'],['天下谁人不识君。','tiān xià shuí rén bù shí jūn.']],note:'千里黄云遮暗了太阳，北风卷着大雪吹雁南飞。别担心前面没有朋友，天下谁不认识您呢。'}
-,{title:'忆江南',author:'白居易',dynasty:'唐',lines:[['江南好，','jiāng nán hǎo,'],['风景旧曾谙。','fēng jǐng jiù céng ān.'],['日出江花红胜火，','rì chū jiāng huā hóng shèng huǒ,'],['春来江水绿如蓝。','chūn lái jiāng shuǐ lǜ rú lán.'],['能不忆江南？','néng bù yì jiāng nán?']],note:'江南真好，那里的风景我从前就很熟悉。太阳出来江边的花比火还红，春天江水绿得像蓝草。怎么能不想念江南呢？'}
-,{title:'六月二十七日望湖楼醉书',author:'苏轼',dynasty:'宋',lines:[['黑云翻墨未遮山，','hēi yún fān mò wèi zhē shān,'],['白雨跳珠乱入船。','bái yǔ tiào zhū luàn rù chuán.'],['卷地风来忽吹散，','juǎn dì fēng lái hū chuī sàn,'],['望湖楼下水如天。','wàng hú lóu xià shuǐ rú tiān.']],note:'乌云像打翻的墨汁还没遮住山，白亮的雨点像珍珠乱跳进船。一阵卷地的大风忽然吹散了云，望湖楼下水面平静像天空。'}
-,{title:'江南春',author:'杜牧',dynasty:'唐',lines:[['千里莺啼绿映红，','qiān lǐ yīng tí lǜ yìng hóng,'],['水村山郭酒旗风。','shuǐ cūn shān guō jiǔ qí fēng.'],['南朝四百八十寺，','nán zhāo sì bǎi bā shí sì,'],['多少楼台烟雨中。','duō shǎo lóu tái yān yǔ zhōng.']],note:'千里江南黄莺啼叫、绿树红花相映，水乡山城酒旗在风里飘。南朝留下的无数寺庙，多少楼台都藏在烟雨中。'}
-,{title:'蜂',author:'罗隐',dynasty:'唐',lines:[['不论平地与山尖，','bù lùn píng dì yǔ shān jiān,'],['无限风光尽被占。','wú xiàn fēng guāng jǐn bèi zhàn.'],['采得百花成蜜后，','cǎi dé bǎi huā chéng mì hòu,'],['为谁辛苦为谁甜。','wèi shuí xīn kǔ wèi shuí tián.']],note:'不管平地还是山顶，好风景都被蜜蜂占满了。它们采尽百花酿成蜜，到底是替谁辛苦、替谁甜呢。'}
-,{title:'观书有感',author:'朱熹',dynasty:'宋',lines:[['半亩方塘一鉴开，','bàn mǔ fāng táng yī jiàn kāi,'],['天光云影共徘徊。','tiān guāng yún yǐng gòng pái huái.'],['问渠那得清如许，','wèn qú nà dé qīng rú xǔ,'],['为有源头活水来。','wèi yǒu yuán tóu huó shuǐ lái.']],note:'半亩方塘像一面镜子打开，天光云影在里面晃动。问它为什么这么清，因为有源头的活水不断流来。'}
-,{title:'乌衣巷',author:'刘禹锡',dynasty:'唐',lines:[['朱雀桥边野草花，','zhū què qiáo biān yě cǎo huā,'],['乌衣巷口夕阳斜。','wū yī xiàng kǒu xī yáng xié.'],['旧时王谢堂前燕，','jiù shí wáng xiè táng qián yàn,'],['飞入寻常百姓家。','fēi rù xún cháng bǎi xìng jiā.']],note:'朱雀桥边长满野草闲花，乌衣巷口夕阳西斜。从前王导谢安堂前的燕子，如今飞进了普通百姓家。'}
-,{title:'江南逢李龟年',author:'杜甫',dynasty:'唐',lines:[['岐王宅里寻常见，','qí wáng zhái lǐ xún cháng jiàn,'],['崔九堂前几度闻。','cuī jiǔ táng qián jǐ dù wén.'],['正是江南好风景，','zhèng shì jiāng nán hǎo fēng jǐng,'],['落花时节又逢君。','luò huā shí jié yòu féng jūn.']],note:'当年在岐王宅里常看见你，在崔九堂前多次听到你唱歌。现在正是江南好风景，落花时候又遇见了你。'}
-,{title:'绝句(江碧)',author:'杜甫',dynasty:'唐',lines:[['江碧鸟逾白，','jiāng bì niǎo yú bái,'],['山青花欲燃。','shān qīng huā yù rán.'],['今春看又过，','jīn chūn kàn yòu guò,'],['何日是归年。','hé rì shì guī nián.']],note:'江水碧绿衬得鸟更白，山色青翠花儿像要燃烧。眼看今年春天又要过去，哪一天才是回家的日子。'}
-,{title:'蜀中九日',author:'王勃',dynasty:'唐',lines:[['九月九日望乡台，','jiǔ yuè jiǔ rì wàng xiāng tái,'],['他席他乡送客杯。','tā xí tā xiāng sòng kè bēi.'],['人情已厌南中苦，','rén qíng yǐ yàn nán zhōng kǔ,'],['鸿雁那从北地来。','hóng yàn nà cóng běi dì lái.']],note:'九月九日重阳节登上望乡台，在异乡的酒席上送朋友离开。人已厌倦了南方漂泊的苦，大雁为什么要还从北方飞来。'}
-,{title:'逢入京使',author:'岑参',dynasty:'唐',lines:[['故园东望路漫漫，','gù yuán dōng wàng lù màn màn,'],['双袖龙钟泪不干。','shuāng xiù lóng zhōng lèi bù gàn.'],['马上相逢无纸笔，','mǎ shàng xiāng féng wú zhǐ bǐ,'],['凭君传语报平安。','píng jūn chuán yǔ bào píng ān.']],note:'向东望着家乡路途遥远，两袖湿透眼泪擦不干。在马上碰见回京的使者没带纸笔，就托你捎个口信报个平安。'}
-,{title:'竹石',author:'郑燮',dynasty:'清',lines:[['咬定青山不放松，','yǎo dìng qīng shān bù fàng sōng,'],['立根原在破岩中。','lì gēn yuán zài pò yán zhōng.'],['千磨万击还坚劲，','qiān mó wàn jī huán jiān jìn,'],['任尔东西南北风。','rèn ěr dōng xī nán běi fēng.']],note:'竹子死死咬住青山不放松，根原来扎在破石头缝里。经历千万次磨难还是那么坚韧，任凭你东西南北风吹。'}
-,{title:'题诗后',author:'贾岛',dynasty:'唐',lines:[['两句三年得，','liǎng jù sān nián dé,'],['一吟双泪流。','yī yín shuāng lèi liú.'],['知音如不赏，','zhī yīn rú bù shǎng,'],['归卧故山秋。','guī wò gù shān qiū.']],note:'两句诗想了三年才写成，一吟诵就流下两行泪。如果懂我的人不欣赏，我就回故乡山里过秋天去。'}
-,{title:'蜀相',author:'杜甫',dynasty:'唐',lines:[['丞相祠堂何处寻，','chéng xiāng cí táng hé chù xún,'],['锦官城外柏森森。','jǐn guān chéng wài bǎi sēn sēn.'],['映阶碧草自春色，','yìng jiē bì cǎo zì chūn sè,'],['隔叶黄鹂空好音。','gé yè huáng lí kōng hǎo yīn.'],['三顾频烦天下计，','sān gù pín fán tiān xià jì,'],['两朝开济老臣心。','liǎng zhāo kāi jì lǎo chén xīn.'],['出师未捷身先死，','chū shī wèi jié shēn xiān sǐ,'],['长使英雄泪满襟。','cháng shǐ yīng xióng lèi mǎn jīn.']],note:'到哪里去找丞相的祠堂？成都城外柏树茂密。石阶旁的绿草自有一番春色，叶里黄鹂空有好听的叫声。刘备三次拜访请他谋划天下，他辅佐两代君王。出征还没胜利人就死了，常让英雄们泪湿衣襟。'}
-,{title:'画眉鸟',author:'欧阳修',dynasty:'宋',lines:[['百啭千声随意移，','bǎi zhuàn qiān shēng suí yì yí,'],['山花红紫树高低。','shān huā hóng zǐ shù gāo dī.'],['始知锁向金笼听，','shǐ zhī suǒ xiàng jīn lóng tīng,'],['不及林间自在啼。','bù jí lín jiān zì zài tí.']],note:'画眉鸟千回百转随心地飞，在红花紫树间上下穿行。这才知道关在金笼里听它叫，比不上在树林里自由地啼。'}
-,{title:'乡村四月',author:'翁卷',dynasty:'宋',lines:[['绿遍山原白满川，','lǜ biàn shān yuán bái mǎn chuān,'],['子规声里雨如烟。','zi guī shēng lǐ yǔ rú yān.'],['乡村四月闲人少，','xiāng cūn sì yuè xián rén shǎo,'],['才了蚕桑又插田。','cái le cán sāng yòu chā tián.']],note:'山坡原野一片绿、河水映着白光，杜鹃声里细雨像烟。乡村四月没人闲着，刚忙完采桑养蚕又去插秧。'}
-,{title:'四时田园杂兴',author:'范成大',dynasty:'宋',lines:[['昼出耘田夜绩麻，','zhòu chū yún tián yè jì má,'],['村庄儿女各当家。','cūn zhuāng ér nǚ gè dāng jiā.'],['童孙未解供耕织，','tóng sūn wèi jiě gōng gēng zhī,'],['也傍桑阴学种瓜。','yě bàng sāng yīn xué zhòng guā.']],note:'白天除草晚上搓麻，村里的男女各自忙活。小孙子还不会耕田织布，也在桑树荫下学着种瓜。'}
-,{title:'题西林壁',author:'苏轼',dynasty:'宋',lines:[['横看成岭侧成峰，','héng kàn chéng lǐng cè chéng fēng,'],['远近高低各不同。','yuǎn jìn gāo dī gè bù tóng.'],['不识庐山真面目，','bù shí lú shān zhēn miàn mù,'],['只缘身在此山中。','zhǐ yuán shēn zài cǐ shān zhōng.']],note:'横看是岭侧看是峰，远近距离高低都不一样。认不清庐山的真样子，只因为自己就在这座山里。'}
-,{title:'溪上遇雨',author:'崔道融',dynasty:'唐',lines:[['坐看黑云衔猛雨，','zuò kàn hēi yún xián měng yǔ,'],['喷洒前山此独晴。','pēn sǎ qián shān cǐ dú qíng.'],['忽惊云雨在头上，','hū jīng yún yǔ zài tóu shàng,'],['却是山前晚照明。','què shì shān qián wǎn zhào míng.']],note:'坐着看黑云带着暴雨，洒在前山这边却还晴。忽然发现云雨到了自己头顶，原来是山前还映着夕阳的光。'}
-,{title:'过故人庄',author:'孟浩然',dynasty:'唐',lines:[['故人具鸡黍，','gù rén jù jī shǔ,'],['邀我至田家。','yāo wǒ zhì tián jiā.'],['绿树村边合，','lǜ shù cūn biān hé,'],['青山郭外斜。','qīng shān guō wài xié.'],['开轩面场圃，','kāi xuān miàn chǎng pǔ,'],['把酒话桑麻。','bǎ jiǔ huà sāng má.'],['待到重阳日，','dài dào chóng yáng rì,'],['还来就菊花。','huán lái jiù jú huā.']],note:'老朋友杀了鸡煮了黄米饭，请我到他村里家。绿树围住村庄，青山在城外斜斜。推开窗户面对打谷场菜园，端起酒聊着农事。等到重阳节，还要来赏菊花。'}
-,{title:'凉州词',author:'王翰',dynasty:'唐',lines:[['葡萄美酒夜光杯，','pú táo měi jiǔ yè guāng bēi,'],['欲饮琵琶马上催。','yù yǐn pí pá mǎ shàng cuī.'],['醉卧沙场君莫笑，','zuì wò shā chǎng jūn mò xiào,'],['古来征战几人回。','gǔ lái zhēng zhàn jǐ rén huí.']],note:'葡萄美酒倒在夜光杯里，正要喝琵琶声已在马上催。醉倒在沙场请你别笑，从古来打仗能有几人回。'}
-,{title:'示儿',author:'陆游',dynasty:'宋',lines:[['死去元知万事空，','sǐ qù yuán zhī wàn shì kōng,'],['但悲不见九州同。','dàn bēi bù jiàn jiǔ zhōu tóng.'],['王师北定中原日，','wáng shī běi dìng zhōng yuán rì,'],['家祭无忘告乃翁。','jiā jì wú wàng gào nǎi wēng.']],note:'本来知道人死了一切都空，只悲叹没见到国家统一。等宋军收复中原那天，家里祭祖别忘了告诉你的父亲。'}
-,{title:'山亭夏日',author:'高骈',dynasty:'唐',lines:[['绿树阴浓夏日长，','lǜ shù yīn nóng xià rì cháng,'],['楼台倒影入池塘。','lóu tái dào yǐng rù chí táng.'],['水晶帘动微风起，','shuǐ jīng lián dòng wēi fēng qǐ,'],['满架蔷薇一院香。','mǎn jià qiáng wēi yī yuàn xiāng.']],note:'绿树荫浓夏天白天长，楼台倒影映进池塘。水晶帘一动是微风起了，满架蔷薇让一院都香。'}
-,{title:'望天门山',author:'李白',dynasty:'唐',lines:[['天门中断楚江开，','tiān mén zhōng duàn chǔ jiāng kāi,'],['碧水东流至此回。','bì shuǐ dōng liú zhì cǐ huí.'],['两岸青山相对出，','liǎng àn qīng shān xiāng duì chū,'],['孤帆一片日边来。','gū fān yī piàn rì biān lái.']],note:'天门山被长江从中间断开，碧绿的江水到这里转了个弯。两岸青山面对面出现，一片孤帆从太阳那边驶来。'}
-,{title:'题乌江亭',author:'杜牧',dynasty:'唐',lines:[['胜败兵家事不期，','shèng bài bīng jiā shì bù qī,'],['包羞忍耻是男儿。','bāo xiū rěn chǐ shì nán ér.'],['江东子弟多才俊，','jiāng dōng zi dì duō cái jùn,'],['卷土重来未可知。','juǎn tǔ chóng lái wèi kě zhī.']],note:'胜败是打仗常有的事难预料，能忍辱负重才是真男儿。江东子弟很多有才干，卷土重来谁说一定不行。'}
-,{title:'芙蓉楼送辛渐',author:'王昌龄',dynasty:'唐',lines:[['寒雨连江夜入吴，','hán yǔ lián jiāng yè rù wú,'],['平明送客楚山孤。','píng míng sòng kè chǔ shān gū.'],['洛阳亲友如相问，','luò yáng qīn yǒu rú xiāng wèn,'],['一片冰心在玉壶。','yī piàn bīng xīn zài yù hú.']],note:'寒雨连着江面夜里来到吴地，清晨送朋友只觉楚山孤零。洛阳的亲友若问起我，就说我心像玉壶里的冰一样清白。'}
-,{title:'送元二使安西',author:'王维',dynasty:'唐',lines:[['渭城朝雨浥轻尘，','wèi chéng zhāo yǔ yì qīng chén,'],['客舍青青柳色新。','kè shě qīng qīng liǔ sè xīn.'],['劝君更尽一杯酒，','quàn jūn gèng jǐn yī bēi jiǔ,'],['西出阳关无故人。','xī chū yáng guān wú gù rén.']],note:'渭城早晨的雨打湿了轻尘，旅舍旁杨柳颜色清新。劝你再喝完这一杯酒，往西出了阳关就难见老朋友了。'}
-,{title:'春望',author:'杜甫',dynasty:'唐',lines:[['国破山河在，','guó pò shān hé zài,'],['城春草木深。','chéng chūn cǎo mù shēn.'],['感时花溅泪，','gǎn shí huā jiàn lèi,'],['恨别鸟惊心。','hèn bié niǎo jīng xīn.'],['烽火连三月，','fēng huǒ lián sān yuè,'],['家书抵万金。','jiā shū dǐ wàn jīn.'],['白头搔更短，','bái tóu sāo gèng duǎn,'],['浑欲不胜簪。','hún yù bù shèng zān.']],note:'国都破了山河还在，春天城里草木茂密。感伤时局花也像在流泪，恨离别鸟叫也让人心惊。战火连了三个月，家信比万金还贵。白发越抓越少，简直插不住发簪了。'}
-,{title:'出塞',author:'王昌龄',dynasty:'唐',lines:[['秦时明月汉时关，','qín shí míng yuè hàn shí guān,'],['万里长征人未还。','wàn lǐ cháng zhēng rén wèi huán.'],['但使龙城飞将在，','dàn shǐ lóng chéng fēi jiāng zài,'],['不教胡马度阴山。','bù jiào hú mǎ dù yīn shān.']],note:'还是秦汉时的明月和关口，远征的人还没回来。只要有李广那样的将军在，绝不让敌人越过阴山。'}
-,{title:'石灰吟',author:'于谦',dynasty:'明',lines:[['千锤万凿出深山，','qiān chuí wàn záo chū shēn shān,'],['烈火焚烧若等闲。','liè huǒ fén shāo ruò děng xián.'],['粉骨碎身浑不怕，','fěn gǔ suì shēn hún bù pà,'],['要留清白在人间。','yào liú qīng bái zài rén jiān.']],note:'石头经过千万次锤打才出深山，烈火焚烧也像平常事。粉身碎骨都不怕，只愿把清白留在人间。'}
-,{title:'长歌行',author:'汉乐府',dynasty:'汉',lines:[['青青园中葵，','qīng qīng yuán zhōng kuí,'],['朝露待日晞。','zhāo lù dài rì xī.'],['阳春布德泽，','yáng chūn bù dé zé,'],['万物生光辉。','wàn wù shēng guāng huī.'],['常恐秋节至，','cháng kǒng qiū jié zhì,'],['焜黄华叶衰。','kūn huáng huá yè shuāi.'],['百川东到海，','bǎi chuān dōng dào hǎi,'],['何时复西归。','hé shí fù xī guī.'],['少壮不努力，','shào zhuàng bù nǔ lì,'],['老大徒伤悲。','lǎo dà tú shāng bēi.']],note:'园里青青的葵菜，清晨的露水等着太阳晒干。春天把恩泽撒给万物，都闪着光辉。常怕秋天来到，花叶枯黄。百条大河东流入海，哪能再回西边。年轻时不努力，老了只能白白伤心。'}
-,{title:'元日',author:'王安石',dynasty:'宋',lines:[['爆竹声中一岁除，','bào zhú shēng zhōng yī suì chú,'],['春风送暖入屠苏。','chūn fēng sòng nuǎn rù tú sū.'],['千门万户曈曈日，','qiān mén wàn hù tóng tóng rì,'],['总把新桃换旧符。','zǒng bǎ xīn táo huàn jiù fú.']],note:'鞭炮声里旧年过去，春风送来喝屠苏酒的暖意。千家万户迎着初升的太阳，都把新桃符换下旧桃符。'}
-,{title:'渔歌子',author:'张志和',dynasty:'唐',lines:[['西塞山前白鹭飞，','xī sài shān qián bái lù fēi,'],['桃花流水鳜鱼肥。','táo huā liú shuǐ guì yú féi.'],['青箬笠，','qīng ruò lì,'],['绿蓑衣，','lǜ suō yī,'],['斜风细雨不须归。','xié fēng xì yǔ bù xū guī.']],note:'西塞山前白鹭飞，桃花开江水里鳜鱼正肥。戴着青斗笠、披着绿蓑衣，斜风细雨里不想回家。'}
-,{title:'早春呈水部十八员外',author:'韩愈',dynasty:'唐',lines:[['天街小雨润如酥，','tiān jiē xiǎo yǔ rùn rú sū,'],['草色遥看近却无。','cǎo sè yáo kàn jìn què wú.'],['最是一年春好处，','zuì shì yī nián chūn hǎo chù,'],['绝胜烟柳满皇都。','jué shèng yān liǔ mǎn huáng dōu.']],note:'京城街道小雨润得像酥油，草色远看有近看却没。这正是一年春天最好的时候，比烟柳满城的晚春还好。'}
-,{title:'寒食',author:'韩翃',dynasty:'唐',lines:[['春城无处不飞花，','chūn chéng wú chù bù fēi huā,'],['寒食东风御柳斜。','hán shí dōng fēng yù liǔ xié.'],['日暮汉宫传蜡烛，','rì mù hàn gōng chuán là zhú,'],['轻烟散入五侯家。','qīng yān sàn rù wǔ hóu jiā.']],note:'春天的长安到处飘着柳花，寒食节东风吹斜了宫柳。傍晚皇宫里传赐蜡烛，轻烟飘进了权贵人家。'}
-,{title:'峨眉山月歌',author:'李白',dynasty:'唐',lines:[['峨眉山月半轮秋，','é méi shān yuè bàn lún qiū,'],['影入平羌江水流。','yǐng rù píng qiāng jiāng shuǐ liú.'],['夜发清溪向三峡，','yè fā qīng xī xiàng sān xiá,'],['思君不见下渝州。','sī jūn bù jiàn xià yú zhōu.']],note:'峨眉山挂着半轮秋月，月影随平羌江水流。夜里从清溪出发去三峡，想你却见不到你，船已到了渝州。'}
-,{title:'宿新市徐公店',author:'杨万里',dynasty:'宋',lines:[['篱落疏疏一径深，','lí luò shū shū yī jìng shēn,'],['树头新绿未成阴。','shù tóu xīn lǜ wèi chéng yīn.'],['儿童急走追黄蝶，','ér tóng jí zǒu zhuī huáng dié,'],['飞入菜花无处寻。','fēi rù cài huā wú chù xún.']],note:'篱笆稀稀疏疏一条小路伸向远方，树枝刚发新绿还没成荫。小孩跑着追黄蝴蝶，蝴蝶飞进菜花里找不到了。'}
-,{title:'题临安邸',author:'林升',dynasty:'宋',lines:[['山外青山楼外楼，','shān wài qīng shān lóu wài lóu,'],['西湖歌舞几时休。','xī hú gē wǔ jǐ shí xiū.'],['暖风熏得游人醉，','nuǎn fēng xūn dé yóu rén zuì,'],['直把杭州作汴州。','zhí bǎ háng zhōu zuò biàn zhōu.']],note:'山外有山楼外有楼，西湖上的歌舞什么时候才停。暖风把游玩的人熏得陶醉，简直把杭州当成了从前的汴州。'}
-,{title:'钱塘湖春行',author:'白居易',dynasty:'唐',lines:[['孤山寺北贾亭西，','gū shān sì běi jiǎ tíng xī,'],['水面初平云脚低。','shuǐ miàn chū píng yún jiǎo dī.'],['几处早莺争暖树，','jǐ chù zǎo yīng zhēng nuǎn shù,'],['谁家新燕啄春泥。','shuí jiā xīn yàn zhuó chūn ní.'],['乱花渐欲迷人眼，','luàn huā jiàn yù mí rén yǎn,'],['浅草才能没马蹄。','qiǎn cǎo cái néng mò mǎ tí.'],['最爱湖东行不足，','zuì ài hú dōng xíng bù zú,'],['绿杨阴里白沙堤。','lǜ yáng yīn lǐ bái shā dī.']],note:'孤山寺北贾亭西，湖水刚涨平云脚低垂。几处早莺争着暖树，谁家新燕啄着春泥。杂花渐渐迷住眼，浅草才盖住马蹄。最爱的湖东走不够，绿杨荫里的白沙堤。'}
-,{title:'泊船瓜洲',author:'王安石',dynasty:'宋',lines:[['京口瓜洲一水间，','jīng kǒu guā zhōu yī shuǐ jiān,'],['钟山只隔数重山。','zhōng shān zhǐ gé shù chóng shān.'],['春风又绿江南岸，','chūn fēng yòu lǜ jiāng nán àn,'],['明月何时照我还。','míng yuè hé shí zhào wǒ huán.']],note:'京口和瓜洲只隔一条水，钟山也只隔几座山。春风又吹绿了江南岸，明月什么时候照我回家。'}
-,{title:'黄鹤楼送孟浩然之广陵',author:'李白',dynasty:'唐',lines:[['故人西辞黄鹤楼，','gù rén xī cí huáng hè lóu,'],['烟花三月下扬州。','yān huā sān yuè xià yáng zhōu.'],['孤帆远影碧空尽，','gū fān yuǎn yǐng bì kōng jǐn,'],['唯见长江天际流。','wéi jiàn cháng jiāng tiān jì liú.']],note:'老朋友在黄鹤楼向我告别，三月烟花里顺流去扬州。孤帆远影消失在蓝天尽头，只看见长江向天边流去。'}
-,{title:'晚春',author:'韩愈',dynasty:'唐',lines:[['草树知春不久归，','cǎo shù zhī chūn bù jiǔ guī,'],['百般红紫斗芳菲。','bǎi bān hóng zǐ dòu fāng fēi.'],['杨花榆荚无才思，','yáng huā yú jiá wú cái sī,'],['惟解漫天作雪飞。','wéi jiě màn tiān zuò xuě fēi.']],note:'花草树木知道春天就要走，开着百样红紫争奇斗艳。杨花榆钱没啥才思，只会像雪一样满天飞舞。'}
-,{title:'游山西村',author:'陆游',dynasty:'宋',lines:[['莫笑农家腊酒浑，','mò xiào nóng jiā là jiǔ hún,'],['丰年留客足鸡豚。','fēng nián liú kè zú jī tún.'],['山重水复疑无路，','shān chóng shuǐ fù yí wú lù,'],['柳暗花明又一村。','liǔ àn huā míng yòu yī cūn.'],['箫鼓追随春社近，','xiāo gǔ zhuī suí chūn shè jìn,'],['衣冠简朴古风存。','yī guān jiǎn pǔ gǔ fēng cún.'],['从今若许闲乘月，','cóng jīn ruò xǔ xián chéng yuè,'],['拄杖无时夜叩门。','zhǔ zhàng wú shí yè kòu mén.']],note:'别笑农家的腊酒浑浊，丰收年留客有充足的鸡和肉。山重水绕以为没路了，柳绿花红又是一个村。箫鼓声里春社快到了，衣冠朴素古风还在。今后若得空乘月闲游，拄拐杖随时来敲门。'}
-,{title:'竹枝词',author:'刘禹锡',dynasty:'唐',lines:[['杨柳青青江水平，','yáng liǔ qīng qīng jiāng shuǐ píng,'],['闻郎江上唱歌声。','wén láng jiāng shàng chàng gē shēng.'],['东边日出西边雨，','dōng biān rì chū xī biān yǔ,'],['道是无晴却有晴。','dào shì wú qíng què yǒu qíng.']],note:'杨柳青青江面平静，听见情郎在江上唱歌。东边出太阳西边下雨，说是没晴却又有晴（双关“情”）。'}
-,{title:'己亥杂诗',author:'龚自珍',dynasty:'清',lines:[['浩荡离愁白日斜，','hào dàng lí chóu bái rì xié,'],['吟鞭东指即天涯。','yín biān dōng zhǐ jí tiān yá.'],['落红不是无情物，','luò hóng bù shì wú qíng wù,'],['化作春泥更护花。','huà zuò chūn ní gèng hù huā.']],note:'无边离愁伴着夕阳西斜，挥鞭向东就是天涯。落花不是无情的东西，变成春泥更要护着花。'}];
+,
+{title:'咏柳',author:'贺知章',dynasty:'唐',lines:[['碧玉妆成一树高，','bì yù zhuāng chéng yī shù gāo,'],['万条垂下绿丝绦。','wàn tiáo chuí xià lǜ sī tāo.'],['不知细叶谁裁出，','bù zhī xì yè shuí cái chū,'],['二月春风似剪刀。','èr yuè chūn fēng shì jiǎn dāo.']],note:'高高的柳树像用碧玉打扮过，垂下千万条绿色的丝带。不知道细细的叶子是谁剪出来的，原来是二月的春风像剪刀。'}
+,
+{title:'惠崇春江晓景',author:'苏轼',dynasty:'宋',lines:[['竹外桃花三两枝，','zhú wài táo huā sān liǎng zhī,'],['春江水暖鸭先知。','chūn jiāng shuǐ nuǎn yā xiān zhī.'],['蒌蒿满地芦芽短，','lóu hāo mǎn dì lú yá duǎn,'],['正是河豚欲上时。','zhèng shì hé tún yù shàng shí.']],note:'竹林外桃花开了两三枝，江水暖了鸭子最先知道。满地蒌蒿、短短的芦苇芽，正是河豚要上游的时候。'}
+,
+{title:'春日',author:'朱熹',dynasty:'宋',lines:[['胜日寻芳泗水滨，','shèng rì xún fāng sì shuǐ bīn,'],['无边光景一时新。','wú biān guāng jǐng yī shí xīn.'],['等闲识得东风面，','děng xián shí dé dōng fēng miàn,'],['万紫千红总是春。','wàn zǐ qiān hóng zǒng shì chūn.']],note:'好天气里到泗水边赏花，一眼望不到边的景色一下子都新鲜了。随便都能认出春风的样子，万紫千红全是春天。'}
+,
+{title:'游子吟',author:'孟郊',dynasty:'唐',lines:[['慈母手中线，','cí mǔ shǒu zhōng xiàn,'],['游子身上衣。','yóu zi shēn shàng yī.'],['临行密密缝，','lín xíng mì mì fèng,'],['意恐迟迟归。','yì kǒng chí chí guī.'],['谁言寸草心，','shuí yán cùn cǎo xīn,'],['报得三春晖。','bào dé sān chūn huī.']],note:'母亲手里的针线，缝着远行孩子身上的衣服。临走前缝得密密的，怕孩子回来得晚。谁说小草的一点心意，能报答春天太阳的光辉呢。'}
+,
+{title:'送杜少府之任蜀州',author:'王勃',dynasty:'唐',lines:[['城阙辅三秦，','chéng quē fǔ sān qín,'],['风烟望五津。','fēng yān wàng wǔ jīn.'],['与君离别意，','yǔ jūn lí bié yì,'],['同是宦游人。','tóng shì huàn yóu rén.'],['海内存知己，','hǎi nèi cún zhī jǐ,'],['天涯若比邻。','tiān yá ruò bǐ lín.'],['无为在歧路，','wú wèi zài qí lù,'],['儿女共沾巾。','ér nǚ gòng zhān jīn.']],note:'长安城被三秦保卫，远远望见蜀地的五津。和你分别我心里难过，因为咱们都是在外做官的人。只要天下有知心朋友，就算远在天边也像邻居。不要在分手路口像小孩一样哭湿手巾。'}
+,
+{title:'绝句(迟日)',author:'杜甫',dynasty:'唐',lines:[['迟日江山丽，','chí rì jiāng shān lì,'],['春风花草香。','chūn fēng huā cǎo xiāng.'],['泥融飞燕子，','ní róng fēi yàn zi,'],['沙暖睡鸳鸯。','shā nuǎn shuì yuān yāng.']],note:'春天的太阳照着美丽的江山，春风送来花草香。泥土松软燕子飞来飞去，沙地暖和鸳鸯睡得正香。'}
+,
+{title:'江畔独步寻花',author:'杜甫',dynasty:'唐',lines:[['黄四娘家花满蹊，','huáng sì niáng jiā huā mǎn qī,'],['千朵万朵压枝低。','qiān duǒ wàn duǒ yā zhī dī.'],['留连戏蝶时时舞，','liú lián xì dié shí shí wǔ,'],['自在娇莺恰恰啼。','zì zài jiāo yīng qià qià tí.']],note:'黄四娘家门前小路开满花，千万朵把枝条都压弯了。蝴蝶恋着花不停地舞，黄莺自由自在地正好在啼叫。'}
+,
+{title:'乐游原',author:'李商隐',dynasty:'唐',lines:[['向晚意不适，','xiàng wǎn yì bù shì,'],['驱车登古原。','qū chē dēng gǔ yuán.'],['夕阳无限好，','xī yáng wú xiàn hǎo,'],['只是近黄昏。','zhǐ shì jìn huáng hūn.']],note:'傍晚我心里不太舒服，就坐车登上乐游原。夕阳真是美极了，只可惜已经快到黄昏了。'}
+,
+{title:'赠花卿',author:'杜甫',dynasty:'唐',lines:[['锦城丝管日纷纷，','jǐn chéng sī guǎn rì fēn fēn,'],['半入江风半入云。','bàn rù jiāng fēng bàn rù yún.'],['此曲只应天上有，','cǐ qǔ zhǐ yīng tiān shàng yǒu,'],['人间能得几回闻。','rén jiān néng dé jǐ huí wén.']],note:'成都城里音乐整天飘荡，一半随江风、一半入云端。这样的曲子只该在天上才有，人间能听见几回呢。'}
+,
+{title:'暮江吟',author:'白居易',dynasty:'唐',lines:[['一道残阳铺水中，','yī dào cán yáng pù shuǐ zhōng,'],['半江瑟瑟半江红。','bàn jiāng sè sè bàn jiāng hóng.'],['可怜九月初三夜，','kě lián jiǔ yuè chū sān yè,'],['露似真珠月似弓。','lù shì zhēn zhū yuè shì gōng.']],note:'一道夕阳铺在江水里，半江碧绿半江红。可爱的是九月初三的夜晚，露水像珍珠、月亮像弯弓。'}
+,
+{title:'秋夕',author:'杜牧',dynasty:'唐',lines:[['银烛秋光冷画屏，','yín zhú qiū guāng lěng huà píng,'],['轻罗小扇扑流萤。','qīng luó xiǎo shàn pū liú yíng.'],['天阶夜色凉如水，','tiān jiē yè sè liáng rú shuǐ,'],['卧看牵牛织女星。','wò kàn qiān niú zhī nǚ xīng.']],note:'秋天的烛光照在画屏上，宫女用小扇扑打着飞萤。石阶上的夜色凉得像水，她躺着看牛郎织女星。'}
+,
+{title:'秋夜将晓出篱门迎凉有感',author:'陆游',dynasty:'宋',lines:[['三万里河东入海，','sān wàn lǐ hé dōng rù hǎi,'],['五千仞岳上摩天。','wǔ qiān rèn yuè shàng mó tiān.'],['遗民泪尽胡尘里，','yí mín lèi jǐn hú chén lǐ,'],['南望王师又一年。','nán wàng wáng shī yòu yī nián.']],note:'三万里长的黄河东流入海，五千仞高的华山碰到天。沦陷区的百姓在胡人铁蹄下眼泪流干，向南盼望宋军又等了一年。'}
+,
+{title:'从军行(其四)',author:'王昌龄',dynasty:'唐',lines:[['青海长云暗雪山，','qīng hǎi cháng yún àn xuě shān,'],['孤城遥望玉门关。','gū chéng yáo wàng yù mén guān.'],['黄沙百战穿金甲，','huáng shā bǎi zhàn chuān jīn jiǎ,'],['不破楼兰终不还。','bù pò lóu lán zhōng bù huán.']],note:'青海湖上乌云遮暗了雪山，远远望着孤城和玉门关。在黄沙里打了许多仗铠甲都磨破了，不打败敌人绝不回家。'}
+,
+{title:'鸟鸣涧',author:'王维',dynasty:'唐',lines:[['人闲桂花落，','rén xián guì huā luò,'],['夜静春山空。','yè jìng chūn shān kōng.'],['月出惊山鸟，','yuè chū jīng shān niǎo,'],['时鸣春涧中。','shí míng chūn jiàn zhōng.']],note:'人悠闲时桂花悄悄落下，夜晚安静春山空空。月亮出来惊动了山鸟，不时在涧谷里啼叫。'}
+,
+{title:'采莲曲',author:'王昌龄',dynasty:'唐',lines:[['荷叶罗裙一色裁，','hé yè luó qún yī sè cái,'],['芙蓉向脸两边开。','fú róng xiàng liǎn liǎng biān kāi.'],['乱入池中看不见，','luàn rù chí zhōng kàn bù jiàn,'],['闻歌始觉有人来。','wén gē shǐ jué yǒu rén lái.']],note:'采莲姑娘的绿裙和荷叶像同一种布做成，荷花在脸旁两边开。她们混进荷塘就看不见了，听到歌声才发觉有人来。'}
+,
+{title:'夏日绝句',author:'李清照',dynasty:'宋',lines:[['生当作人杰，','shēng dāng zuò rén jié,'],['死亦为鬼雄。','sǐ yì wèi guǐ xióng.'],['至今思项羽，','zhì jīn sī xiàng yǔ,'],['不肯过江东。','bù kěn guò jiāng dōng.']],note:'活着要做人中豪杰，死了也要做鬼中英雄。到现在人们还想着项羽，他不肯回江东苟且偷生。'}
+,
+{title:'望洞庭',author:'刘禹锡',dynasty:'唐',lines:[['湖光秋月两相和，','hú guāng qiū yuè liǎng xiāng hé,'],['潭面无风镜未磨。','tán miàn wú fēng jìng wèi mó.'],['遥望洞庭山水翠，','yáo wàng dòng tíng shān shuǐ cuì,'],['白银盘里一青螺。','bái yín pán lǐ yī qīng luó.']],note:'湖光和秋月互相映衬，水面无风像没磨过的镜子。远远看洞庭山水一片翠绿，好像白银盘里一只青螺。'}
+,
+{title:'百忧集行',author:'杜甫',dynasty:'唐',lines:[['忆年十五心尚孩，','yì nián shí wǔ xīn shàng hái,'],['健如黄犊走复来。','jiàn rú huáng dú zǒu fù lái.'],['庭前八月梨枣熟，','tíng qián bā yuè lí zǎo shú,'],['一日上树能千回。','yī rì shàng shù néng qiān huí.']],note:'记得十五岁时心里还像孩子，身子壮得像小牛跑来跑去。八月院里梨枣熟了，我一天能爬上树一千回。'}
+,
+{title:'浪淘沙',author:'刘禹锡',dynasty:'唐',lines:[['九曲黄河万里沙，','jiǔ qū huáng hé wàn lǐ shā,'],['浪淘风簸自天涯。','làng táo fēng bǒ zì tiān yá.'],['如今直上银河去，','rú jīn zhí shàng yín hé qù,'],['同到牵牛织女家。','tóng dào qiān niú zhī nǚ jiā.']],note:'弯弯曲曲的黄河带着万里黄沙，浪和风把它从天边簸来。现在它一直上到银河，去到牛郎织女的家。'}
+,
+{title:'宿建德江',author:'孟浩然',dynasty:'唐',lines:[['移舟泊烟渚，','yí zhōu pō yān zhǔ,'],['日暮客愁新。','rì mù kè chóu xīn.'],['野旷天低树，','yě kuàng tiān dī shù,'],['江清月近人。','jiāng qīng yuè jìn rén.']],note:'把船停在雾气蒙蒙的小洲边，天晚了旅人的愁又涌上心。原野空旷天比树还低，江水清清月亮离人很近。'}
+,
+{title:'墨梅',author:'王冕',dynasty:'元',lines:[['我家洗砚池头树，','wǒ jiā xǐ yàn chí tóu shù,'],['朵朵花开淡墨痕。','duǒ duǒ huā kāi dàn mò hén.'],['不要人夸好颜色，','bù yào rén kuā hǎo yán sè,'],['只留清气满乾坤。','zhǐ liú qīng qì mǎn qián kūn.']],note:'我家洗砚池边的梅树，朵朵花开带着淡淡的墨色。不要人夸它颜色好看，只愿把清香留在天地间。'}
+,
+{title:'独坐敬亭山',author:'李白',dynasty:'唐',lines:[['众鸟高飞尽，','zhòng niǎo gāo fēi jǐn,'],['孤云独去闲。','gū yún dú qù xián.'],['相看两不厌，','xiāng kàn liǎng bù yàn,'],['只有敬亭山。','zhǐ yǒu jìng tíng shān.']],note:'鸟儿都高高地飞走了，一片云也悠闲地飘开。看来看去都不厌的，只有这敬亭山。'}
+,
+{title:'别董大',author:'高适',dynasty:'唐',lines:[['千里黄云白日曛，','qiān lǐ huáng yún bái rì xūn,'],['北风吹雁雪纷纷。','běi fēng chuī yàn xuě fēn fēn.'],['莫愁前路无知己，','mò chóu qián lù wú zhī jǐ,'],['天下谁人不识君。','tiān xià shuí rén bù shí jūn.']],note:'千里黄云遮暗了太阳，北风卷着大雪吹雁南飞。别担心前面没有朋友，天下谁不认识您呢。'}
+,
+
+{title:'村居',author:'高鼎',dynasty:'清',lines:[['草长莺飞二月天，','cǎo zhǎng yīng fēi èr yuè tiān,'],['拂堤杨柳醉春烟。','fú dī yáng liǔ zuì chūn yān,'],['儿童散学归来早，','ér tóng sàn xué guī lái zǎo,'],['忙趁东风放纸鸢。','máng chèn dōng fēng fàng zhǐ yuān.']],note:'二月里小草长高了，黄莺飞来飞去，河边的杨柳在春风中轻轻摇摆。小孩子们放学后早早回来，趁着春风赶紧去放风筝。'}
+,
+{title:'夜书所见',author:'叶绍翁',dynasty:'宋',lines:[['萧萧梧叶送寒声，','xiāo xiāo wú yè sòng hán shēng,'],['江上秋风动客情。','jiāng shàng qiū fēng dòng kè qíng.'],['知有儿童挑促织，','zhī yǒu ér tóng tiǎo cù zhī,'],['夜深篱落一灯明。','yè shēn lí luò yī dēng míng.']],note:'梧桐树叶沙沙地响，送来一阵凉意；江上的秋风，让出门在外的人想起了家乡。忽然看到有小朋友在捉蟋蟀，深夜里，篱笆旁边还亮着一盏小灯。'}
+,
+{title:'忆江南',author:'白居易',dynasty:'唐',lines:[['江南好，','jiāng nán hǎo,'],['风景旧曾谙。','fēng jǐng jiù céng ān.'],['日出江花红胜火，','rì chū jiāng huā hóng shèng huǒ,'],['春来江水绿如蓝。','chūn lái jiāng shuǐ lǜ rú lán.'],['能不忆江南？','néng bù yì jiāng nán?']],note:'江南真好，那里的风景我从前就很熟悉。太阳出来江边的花比火还红，春天江水绿得像蓝草。怎么能不想念江南呢？'}
+,
+{title:'六月二十七日望湖楼醉书',author:'苏轼',dynasty:'宋',lines:[['黑云翻墨未遮山，','hēi yún fān mò wèi zhē shān,'],['白雨跳珠乱入船。','bái yǔ tiào zhū luàn rù chuán.'],['卷地风来忽吹散，','juǎn dì fēng lái hū chuī sàn,'],['望湖楼下水如天。','wàng hú lóu xià shuǐ rú tiān.']],note:'乌云像打翻的墨汁还没遮住山，白亮的雨点像珍珠乱跳进船。一阵卷地的大风忽然吹散了云，望湖楼下水面平静像天空。'}
+,
+{title:'江南春',author:'杜牧',dynasty:'唐',lines:[['千里莺啼绿映红，','qiān lǐ yīng tí lǜ yìng hóng,'],['水村山郭酒旗风。','shuǐ cūn shān guō jiǔ qí fēng.'],['南朝四百八十寺，','nán zhāo sì bǎi bā shí sì,'],['多少楼台烟雨中。','duō shǎo lóu tái yān yǔ zhōng.']],note:'千里江南黄莺啼叫、绿树红花相映，水乡山城酒旗在风里飘。南朝留下的无数寺庙，多少楼台都藏在烟雨中。'}
+,
+{title:'蜂',author:'罗隐',dynasty:'唐',lines:[['不论平地与山尖，','bù lùn píng dì yǔ shān jiān,'],['无限风光尽被占。','wú xiàn fēng guāng jǐn bèi zhàn.'],['采得百花成蜜后，','cǎi dé bǎi huā chéng mì hòu,'],['为谁辛苦为谁甜。','wèi shuí xīn kǔ wèi shuí tián.']],note:'不管平地还是山顶，好风景都被蜜蜂占满了。它们采尽百花酿成蜜，到底是替谁辛苦、替谁甜呢。'}
+,
+{title:'观书有感',author:'朱熹',dynasty:'宋',lines:[['半亩方塘一鉴开，','bàn mǔ fāng táng yī jiàn kāi,'],['天光云影共徘徊。','tiān guāng yún yǐng gòng pái huái.'],['问渠那得清如许，','wèn qú nà dé qīng rú xǔ,'],['为有源头活水来。','wèi yǒu yuán tóu huó shuǐ lái.']],note:'半亩方塘像一面镜子打开，天光云影在里面晃动。问它为什么这么清，因为有源头的活水不断流来。'}
+,
+{title:'乌衣巷',author:'刘禹锡',dynasty:'唐',lines:[['朱雀桥边野草花，','zhū què qiáo biān yě cǎo huā,'],['乌衣巷口夕阳斜。','wū yī xiàng kǒu xī yáng xié.'],['旧时王谢堂前燕，','jiù shí wáng xiè táng qián yàn,'],['飞入寻常百姓家。','fēi rù xún cháng bǎi xìng jiā.']],note:'朱雀桥边长满野草闲花，乌衣巷口夕阳西斜。从前王导谢安堂前的燕子，如今飞进了普通百姓家。'}
+,
+{title:'江南逢李龟年',author:'杜甫',dynasty:'唐',lines:[['岐王宅里寻常见，','qí wáng zhái lǐ xún cháng jiàn,'],['崔九堂前几度闻。','cuī jiǔ táng qián jǐ dù wén.'],['正是江南好风景，','zhèng shì jiāng nán hǎo fēng jǐng,'],['落花时节又逢君。','luò huā shí jié yòu féng jūn.']],note:'当年在岐王宅里常看见你，在崔九堂前多次听到你唱歌。现在正是江南好风景，落花时候又遇见了你。'}
+,
+{title:'绝句(江碧)',author:'杜甫',dynasty:'唐',lines:[['江碧鸟逾白，','jiāng bì niǎo yú bái,'],['山青花欲燃。','shān qīng huā yù rán.'],['今春看又过，','jīn chūn kàn yòu guò,'],['何日是归年。','hé rì shì guī nián.']],note:'江水碧绿衬得鸟更白，山色青翠花儿像要燃烧。眼看今年春天又要过去，哪一天才是回家的日子。'}
+,
+{title:'蜀中九日',author:'王勃',dynasty:'唐',lines:[['九月九日望乡台，','jiǔ yuè jiǔ rì wàng xiāng tái,'],['他席他乡送客杯。','tā xí tā xiāng sòng kè bēi.'],['人情已厌南中苦，','rén qíng yǐ yàn nán zhōng kǔ,'],['鸿雁那从北地来。','hóng yàn nà cóng běi dì lái.']],note:'九月九日重阳节登上望乡台，在异乡的酒席上送朋友离开。人已厌倦了南方漂泊的苦，大雁为什么要还从北方飞来。'}
+,
+{title:'逢入京使',author:'岑参',dynasty:'唐',lines:[['故园东望路漫漫，','gù yuán dōng wàng lù màn màn,'],['双袖龙钟泪不干。','shuāng xiù lóng zhōng lèi bù gàn.'],['马上相逢无纸笔，','mǎ shàng xiāng féng wú zhǐ bǐ,'],['凭君传语报平安。','píng jūn chuán yǔ bào píng ān.']],note:'向东望着家乡路途遥远，两袖湿透眼泪擦不干。在马上碰见回京的使者没带纸笔，就托你捎个口信报个平安。'}
+,
+{title:'竹石',author:'郑燮',dynasty:'清',lines:[['咬定青山不放松，','yǎo dìng qīng shān bù fàng sōng,'],['立根原在破岩中。','lì gēn yuán zài pò yán zhōng.'],['千磨万击还坚劲，','qiān mó wàn jī huán jiān jìn,'],['任尔东西南北风。','rèn ěr dōng xī nán běi fēng.']],note:'竹子死死咬住青山不放松，根原来扎在破石头缝里。经历千万次磨难还是那么坚韧，任凭你东西南北风吹。'}
+,
+{title:'题诗后',author:'贾岛',dynasty:'唐',lines:[['两句三年得，','liǎng jù sān nián dé,'],['一吟双泪流。','yī yín shuāng lèi liú.'],['知音如不赏，','zhī yīn rú bù shǎng,'],['归卧故山秋。','guī wò gù shān qiū.']],note:'两句诗想了三年才写成，一吟诵就流下两行泪。如果懂我的人不欣赏，我就回故乡山里过秋天去。'}
+,
+{title:'蜀相',author:'杜甫',dynasty:'唐',lines:[['丞相祠堂何处寻，','chéng xiāng cí táng hé chù xún,'],['锦官城外柏森森。','jǐn guān chéng wài bǎi sēn sēn.'],['映阶碧草自春色，','yìng jiē bì cǎo zì chūn sè,'],['隔叶黄鹂空好音。','gé yè huáng lí kōng hǎo yīn.'],['三顾频烦天下计，','sān gù pín fán tiān xià jì,'],['两朝开济老臣心。','liǎng zhāo kāi jì lǎo chén xīn.'],['出师未捷身先死，','chū shī wèi jié shēn xiān sǐ,'],['长使英雄泪满襟。','cháng shǐ yīng xióng lèi mǎn jīn.']],note:'到哪里去找丞相的祠堂？成都城外柏树茂密。石阶旁的绿草自有一番春色，叶里黄鹂空有好听的叫声。刘备三次拜访请他谋划天下，他辅佐两代君王。出征还没胜利人就死了，常让英雄们泪湿衣襟。'}
+,
+{title:'画眉鸟',author:'欧阳修',dynasty:'宋',lines:[['百啭千声随意移，','bǎi zhuàn qiān shēng suí yì yí,'],['山花红紫树高低。','shān huā hóng zǐ shù gāo dī.'],['始知锁向金笼听，','shǐ zhī suǒ xiàng jīn lóng tīng,'],['不及林间自在啼。','bù jí lín jiān zì zài tí.']],note:'画眉鸟千回百转随心地飞，在红花紫树间上下穿行。这才知道关在金笼里听它叫，比不上在树林里自由地啼。'}
+,
+{title:'九月九日忆山东兄弟',author:'王维',dynasty:'唐',lines:[['独在异乡为异客，','dú zài yì xiāng wéi yì kè,'],['每逢佳节倍思亲。','měi féng jiā jié bèi sī qīn.'],['遥知兄弟登高处，','yáo zhī xiōng dì dēng gāo chù,'],['遍插茱萸少一人。','biàn chā zhū yú shǎo yī rén.']],note:'一个人住在别的地方，每到过节的时候就格外想念亲人。远远想到兄弟们今天登高插茱萸，只少了我一个人。'}
+,
+{title:'乡村四月',author:'翁卷',dynasty:'宋',lines:[['绿遍山原白满川，','lǜ biàn shān yuán bái mǎn chuān,'],['子规声里雨如烟。','zi guī shēng lǐ yǔ rú yān.'],['乡村四月闲人少，','xiāng cūn sì yuè xián rén shǎo,'],['才了蚕桑又插田。','cái le cán sāng yòu chā tián.']],note:'山坡原野一片绿、河水映着白光，杜鹃声里细雨像烟。乡村四月没人闲着，刚忙完采桑养蚕又去插秧。'}
+,
+{title:'四时田园杂兴',author:'范成大',dynasty:'宋',lines:[['昼出耘田夜绩麻，','zhòu chū yún tián yè jì má,'],['村庄儿女各当家。','cūn zhuāng ér nǚ gè dāng jiā.'],['童孙未解供耕织，','tóng sūn wèi jiě gōng gēng zhī,'],['也傍桑阴学种瓜。','yě bàng sāng yīn xué zhòng guā.']],note:'白天除草晚上搓麻，村里的男女各自忙活。小孙子还不会耕田织布，也在桑树荫下学着种瓜。'}
+,
+{title:'题西林壁',author:'苏轼',dynasty:'宋',lines:[['横看成岭侧成峰，','héng kàn chéng lǐng cè chéng fēng,'],['远近高低各不同。','yuǎn jìn gāo dī gè bù tóng.'],['不识庐山真面目，','bù shí lú shān zhēn miàn mù,'],['只缘身在此山中。','zhǐ yuán shēn zài cǐ shān zhōng.']],note:'横看是岭侧看是峰，远近距离高低都不一样。认不清庐山的真样子，只因为自己就在这座山里。'}
+,
+{title:'溪上遇雨',author:'崔道融',dynasty:'唐',lines:[['坐看黑云衔猛雨，','zuò kàn hēi yún xián měng yǔ,'],['喷洒前山此独晴。','pēn sǎ qián shān cǐ dú qíng.'],['忽惊云雨在头上，','hū jīng yún yǔ zài tóu shàng,'],['却是山前晚照明。','què shì shān qián wǎn zhào míng.']],note:'坐着看黑云带着暴雨，洒在前山这边却还晴。忽然发现云雨到了自己头顶，原来是山前还映着夕阳的光。'}
+,
+{title:'过故人庄',author:'孟浩然',dynasty:'唐',lines:[['故人具鸡黍，','gù rén jù jī shǔ,'],['邀我至田家。','yāo wǒ zhì tián jiā.'],['绿树村边合，','lǜ shù cūn biān hé,'],['青山郭外斜。','qīng shān guō wài xié.'],['开轩面场圃，','kāi xuān miàn chǎng pǔ,'],['把酒话桑麻。','bǎ jiǔ huà sāng má.'],['待到重阳日，','dài dào chóng yáng rì,'],['还来就菊花。','huán lái jiù jú huā.']],note:'老朋友杀了鸡煮了黄米饭，请我到他村里家。绿树围住村庄，青山在城外斜斜。推开窗户面对打谷场菜园，端起酒聊着农事。等到重阳节，还要来赏菊花。'}
+,
+{title:'凉州词',author:'王翰',dynasty:'唐',lines:[['葡萄美酒夜光杯，','pú táo měi jiǔ yè guāng bēi,'],['欲饮琵琶马上催。','yù yǐn pí pá mǎ shàng cuī.'],['醉卧沙场君莫笑，','zuì wò shā chǎng jūn mò xiào,'],['古来征战几人回。','gǔ lái zhēng zhàn jǐ rén huí.']],note:'葡萄美酒倒在夜光杯里，正要喝琵琶声已在马上催。醉倒在沙场请你别笑，从古来打仗能有几人回。'}
+,
+{title:'示儿',author:'陆游',dynasty:'宋',lines:[['死去元知万事空，','sǐ qù yuán zhī wàn shì kōng,'],['但悲不见九州同。','dàn bēi bù jiàn jiǔ zhōu tóng.'],['王师北定中原日，','wáng shī běi dìng zhōng yuán rì,'],['家祭无忘告乃翁。','jiā jì wú wàng gào nǎi wēng.']],note:'本来知道人死了一切都空，只悲叹没见到国家统一。等宋军收复中原那天，家里祭祖别忘了告诉你的父亲。'}
+,
+{title:'山亭夏日',author:'高骈',dynasty:'唐',lines:[['绿树阴浓夏日长，','lǜ shù yīn nóng xià rì cháng,'],['楼台倒影入池塘。','lóu tái dào yǐng rù chí táng.'],['水晶帘动微风起，','shuǐ jīng lián dòng wēi fēng qǐ,'],['满架蔷薇一院香。','mǎn jià qiáng wēi yī yuàn xiāng.']],note:'绿树荫浓夏天白天长，楼台倒影映进池塘。水晶帘一动是微风起了，满架蔷薇让一院都香。'}
+,
+{title:'望天门山',author:'李白',dynasty:'唐',lines:[['天门中断楚江开，','tiān mén zhōng duàn chǔ jiāng kāi,'],['碧水东流至此回。','bì shuǐ dōng liú zhì cǐ huí.'],['两岸青山相对出，','liǎng àn qīng shān xiāng duì chū,'],['孤帆一片日边来。','gū fān yī piàn rì biān lái.']],note:'天门山被长江从中间断开，碧绿的江水到这里转了个弯。两岸青山面对面出现，一片孤帆从太阳那边驶来。'}
+,
+{title:'题乌江亭',author:'杜牧',dynasty:'唐',lines:[['胜败兵家事不期，','shèng bài bīng jiā shì bù qī,'],['包羞忍耻是男儿。','bāo xiū rěn chǐ shì nán ér.'],['江东子弟多才俊，','jiāng dōng zi dì duō cái jùn,'],['卷土重来未可知。','juǎn tǔ chóng lái wèi kě zhī.']],note:'胜败是打仗常有的事难预料，能忍辱负重才是真男儿。江东子弟很多有才干，卷土重来谁说一定不行。'}
+,
+{title:'芙蓉楼送辛渐',author:'王昌龄',dynasty:'唐',lines:[['寒雨连江夜入吴，','hán yǔ lián jiāng yè rù wú,'],['平明送客楚山孤。','píng míng sòng kè chǔ shān gū.'],['洛阳亲友如相问，','luò yáng qīn yǒu rú xiāng wèn,'],['一片冰心在玉壶。','yī piàn bīng xīn zài yù hú.']],note:'寒雨连着江面夜里来到吴地，清晨送朋友只觉楚山孤零。洛阳的亲友若问起我，就说我心像玉壶里的冰一样清白。'}
+,
+{title:'送元二使安西',author:'王维',dynasty:'唐',lines:[['渭城朝雨浥轻尘，','wèi chéng zhāo yǔ yì qīng chén,'],['客舍青青柳色新。','kè shě qīng qīng liǔ sè xīn.'],['劝君更尽一杯酒，','quàn jūn gèng jǐn yī bēi jiǔ,'],['西出阳关无故人。','xī chū yáng guān wú gù rén.']],note:'渭城早晨的雨打湿了轻尘，旅舍旁杨柳颜色清新。劝你再喝完这一杯酒，往西出了阳关就难见老朋友了。'}
+,
+{title:'春望',author:'杜甫',dynasty:'唐',lines:[['国破山河在，','guó pò shān hé zài,'],['城春草木深。','chéng chūn cǎo mù shēn.'],['感时花溅泪，','gǎn shí huā jiàn lèi,'],['恨别鸟惊心。','hèn bié niǎo jīng xīn.'],['烽火连三月，','fēng huǒ lián sān yuè,'],['家书抵万金。','jiā shū dǐ wàn jīn.'],['白头搔更短，','bái tóu sāo gèng duǎn,'],['浑欲不胜簪。','hún yù bù shèng zān.']],note:'国都破了山河还在，春天城里草木茂密。感伤时局花也像在流泪，恨离别鸟叫也让人心惊。战火连了三个月，家信比万金还贵。白发越抓越少，简直插不住发簪了。'}
+,
+{title:'出塞',author:'王昌龄',dynasty:'唐',lines:[['秦时明月汉时关，','qín shí míng yuè hàn shí guān,'],['万里长征人未还。','wàn lǐ cháng zhēng rén wèi huán.'],['但使龙城飞将在，','dàn shǐ lóng chéng fēi jiāng zài,'],['不教胡马度阴山。','bù jiào hú mǎ dù yīn shān.']],note:'还是秦汉时的明月和关口，远征的人还没回来。只要有李广那样的将军在，绝不让敌人越过阴山。'}
+,
+{title:'石灰吟',author:'于谦',dynasty:'明',lines:[['千锤万凿出深山，','qiān chuí wàn záo chū shēn shān,'],['烈火焚烧若等闲。','liè huǒ fén shāo ruò děng xián.'],['粉骨碎身浑不怕，','fěn gǔ suì shēn hún bù pà,'],['要留清白在人间。','yào liú qīng bái zài rén jiān.']],note:'石头经过千万次锤打才出深山，烈火焚烧也像平常事。粉身碎骨都不怕，只愿把清白留在人间。'}
+,
+
+{title:'赠汪伦',author:'李白',dynasty:'唐',lines:[['李白乘舟将欲行，','lǐ bái chéng zhōu jiāng yù xíng,'],['忽闻岸上踏歌声。','hū wén àn shàng tà gē shēng.'],['桃花潭水深千尺，','táo huā tán shuǐ shēn qiān chǐ,'],['不及汪伦送我情。','bù jí wāng lún sòng wǒ qíng.']],note:'李白坐船正要离开，忽然听见岸上有人边走边唱歌来送他，那是好朋友汪伦。桃花潭的水就算有千尺深，也比不上汪伦送别我的情意深。'},
+{title:'长歌行',author:'汉乐府',dynasty:'汉',lines:[['青青园中葵，','qīng qīng yuán zhōng kuí,'],['朝露待日晞。','zhāo lù dài rì xī.'],['阳春布德泽，','yáng chūn bù dé zé,'],['万物生光辉。','wàn wù shēng guāng huī.'],['常恐秋节至，','cháng kǒng qiū jié zhì,'],['焜黄华叶衰。','kūn huáng huá yè shuāi.'],['百川东到海，','bǎi chuān dōng dào hǎi,'],['何时复西归。','hé shí fù xī guī.'],['少壮不努力，','shào zhuàng bù nǔ lì,'],['老大徒伤悲。','lǎo dà tú shāng bēi.']],note:'园里青青的葵菜，清晨的露水等着太阳晒干。春天把恩泽撒给万物，都闪着光辉。常怕秋天来到，花叶枯黄。百条大河东流入海，哪能再回西边。年轻时不努力，老了只能白白伤心。'}
+,
+{title:'元日',author:'王安石',dynasty:'宋',lines:[['爆竹声中一岁除，','bào zhú shēng zhōng yī suì chú,'],['春风送暖入屠苏。','chūn fēng sòng nuǎn rù tú sū.'],['千门万户曈曈日，','qiān mén wàn hù tóng tóng rì,'],['总把新桃换旧符。','zǒng bǎ xīn táo huàn jiù fú.']],note:'鞭炮声里旧年过去，春风送来喝屠苏酒的暖意。千家万户迎着初升的太阳，都把新桃符换下旧桃符。'}
+,
+{title:'渔歌子',author:'张志和',dynasty:'唐',lines:[['西塞山前白鹭飞，','xī sài shān qián bái lù fēi,'],['桃花流水鳜鱼肥。','táo huā liú shuǐ guì yú féi.'],['青箬笠，','qīng ruò lì,'],['绿蓑衣，','lǜ suō yī,'],['斜风细雨不须归。','xié fēng xì yǔ bù xū guī.']],note:'西塞山前白鹭飞，桃花开江水里鳜鱼正肥。戴着青斗笠、披着绿蓑衣，斜风细雨里不想回家。'}
+,
+{title:'早春呈水部十八员外',author:'韩愈',dynasty:'唐',lines:[['天街小雨润如酥，','tiān jiē xiǎo yǔ rùn rú sū,'],['草色遥看近却无。','cǎo sè yáo kàn jìn què wú.'],['最是一年春好处，','zuì shì yī nián chūn hǎo chù,'],['绝胜烟柳满皇都。','jué shèng yān liǔ mǎn huáng dōu.']],note:'京城街道小雨润得像酥油，草色远看有近看却没。这正是一年春天最好的时候，比烟柳满城的晚春还好。'}
+,
+{title:'寒食',author:'韩翃',dynasty:'唐',lines:[['春城无处不飞花，','chūn chéng wú chù bù fēi huā,'],['寒食东风御柳斜。','hán shí dōng fēng yù liǔ xié.'],['日暮汉宫传蜡烛，','rì mù hàn gōng chuán là zhú,'],['轻烟散入五侯家。','qīng yān sàn rù wǔ hóu jiā.']],note:'春天的长安到处飘着柳花，寒食节东风吹斜了宫柳。傍晚皇宫里传赐蜡烛，轻烟飘进了权贵人家。'}
+,
+{title:'峨眉山月歌',author:'李白',dynasty:'唐',lines:[['峨眉山月半轮秋，','é méi shān yuè bàn lún qiū,'],['影入平羌江水流。','yǐng rù píng qiāng jiāng shuǐ liú.'],['夜发清溪向三峡，','yè fā qīng xī xiàng sān xiá,'],['思君不见下渝州。','sī jūn bù jiàn xià yú zhōu.']],note:'峨眉山挂着半轮秋月，月影随平羌江水流。夜里从清溪出发去三峡，想你却见不到你，船已到了渝州。'}
+,
+{title:'宿新市徐公店',author:'杨万里',dynasty:'宋',lines:[['篱落疏疏一径深，','lí luò shū shū yī jìng shēn,'],['树头新绿未成阴。','shù tóu xīn lǜ wèi chéng yīn.'],['儿童急走追黄蝶，','ér tóng jí zǒu zhuī huáng dié,'],['飞入菜花无处寻。','fēi rù cài huā wú chù xún.']],note:'篱笆稀稀疏疏一条小路伸向远方，树枝刚发新绿还没成荫。小孩跑着追黄蝴蝶，蝴蝶飞进菜花里找不到了。'}
+,
+{title:'题临安邸',author:'林升',dynasty:'宋',lines:[['山外青山楼外楼，','shān wài qīng shān lóu wài lóu,'],['西湖歌舞几时休。','xī hú gē wǔ jǐ shí xiū.'],['暖风熏得游人醉，','nuǎn fēng xūn dé yóu rén zuì,'],['直把杭州作汴州。','zhí bǎ háng zhōu zuò biàn zhōu.']],note:'山外有山楼外有楼，西湖上的歌舞什么时候才停。暖风把游玩的人熏得陶醉，简直把杭州当成了从前的汴州。'}
+,
+{title:'钱塘湖春行',author:'白居易',dynasty:'唐',lines:[['孤山寺北贾亭西，','gū shān sì běi jiǎ tíng xī,'],['水面初平云脚低。','shuǐ miàn chū píng yún jiǎo dī.'],['几处早莺争暖树，','jǐ chù zǎo yīng zhēng nuǎn shù,'],['谁家新燕啄春泥。','shuí jiā xīn yàn zhuó chūn ní.'],['乱花渐欲迷人眼，','luàn huā jiàn yù mí rén yǎn,'],['浅草才能没马蹄。','qiǎn cǎo cái néng mò mǎ tí.'],['最爱湖东行不足，','zuì ài hú dōng xíng bù zú,'],['绿杨阴里白沙堤。','lǜ yáng yīn lǐ bái shā dī.']],note:'孤山寺北贾亭西，湖水刚涨平云脚低垂。几处早莺争着暖树，谁家新燕啄着春泥。杂花渐渐迷住眼，浅草才盖住马蹄。最爱的湖东走不够，绿杨荫里的白沙堤。'}
+,
+{title:'泊船瓜洲',author:'王安石',dynasty:'宋',lines:[['京口瓜洲一水间，','jīng kǒu guā zhōu yī shuǐ jiān,'],['钟山只隔数重山。','zhōng shān zhǐ gé shù chóng shān.'],['春风又绿江南岸，','chūn fēng yòu lǜ jiāng nán àn,'],['明月何时照我还。','míng yuè hé shí zhào wǒ huán.']],note:'京口和瓜洲只隔一条水，钟山也只隔几座山。春风又吹绿了江南岸，明月什么时候照我回家。'}
+,
+{title:'黄鹤楼送孟浩然之广陵',author:'李白',dynasty:'唐',lines:[['故人西辞黄鹤楼，','gù rén xī cí huáng hè lóu,'],['烟花三月下扬州。','yān huā sān yuè xià yáng zhōu.'],['孤帆远影碧空尽，','gū fān yuǎn yǐng bì kōng jǐn,'],['唯见长江天际流。','wéi jiàn cháng jiāng tiān jì liú.']],note:'老朋友在黄鹤楼向我告别，三月烟花里顺流去扬州。孤帆远影消失在蓝天尽头，只看见长江向天边流去。'}
+,
+{title:'晚春',author:'韩愈',dynasty:'唐',lines:[['草树知春不久归，','cǎo shù zhī chūn bù jiǔ guī,'],['百般红紫斗芳菲。','bǎi bān hóng zǐ dòu fāng fēi.'],['杨花榆荚无才思，','yáng huā yú jiá wú cái sī,'],['惟解漫天作雪飞。','wéi jiě màn tiān zuò xuě fēi.']],note:'花草树木知道春天就要走，开着百样红紫争奇斗艳。杨花榆钱没啥才思，只会像雪一样满天飞舞。'}
+,
+{title:'游山西村',author:'陆游',dynasty:'宋',lines:[['莫笑农家腊酒浑，','mò xiào nóng jiā là jiǔ hún,'],['丰年留客足鸡豚。','fēng nián liú kè zú jī tún.'],['山重水复疑无路，','shān chóng shuǐ fù yí wú lù,'],['柳暗花明又一村。','liǔ àn huā míng yòu yī cūn.'],['箫鼓追随春社近，','xiāo gǔ zhuī suí chūn shè jìn,'],['衣冠简朴古风存。','yī guān jiǎn pǔ gǔ fēng cún.'],['从今若许闲乘月，','cóng jīn ruò xǔ xián chéng yuè,'],['拄杖无时夜叩门。','zhǔ zhàng wú shí yè kòu mén.']],note:'别笑农家的腊酒浑浊，丰收年留客有充足的鸡和肉。山重水绕以为没路了，柳绿花红又是一个村。箫鼓声里春社快到了，衣冠朴素古风还在。今后若得空乘月闲游，拄拐杖随时来敲门。'}
+,
+{title:'竹枝词',author:'刘禹锡',dynasty:'唐',lines:[['杨柳青青江水平，','yáng liǔ qīng qīng jiāng shuǐ píng,'],['闻郎江上唱歌声。','wén láng jiāng shàng chàng gē shēng.'],['东边日出西边雨，','dōng biān rì chū xī biān yǔ,'],['道是无晴却有晴。','dào shì wú qíng què yǒu qíng.']],note:'杨柳青青江面平静，听见情郎在江上唱歌。东边出太阳西边下雨，说是没晴却又有晴（双关“情”）。'}
+,
+{title:'己亥杂诗',author:'龚自珍',dynasty:'清',lines:[['浩荡离愁白日斜，','hào dàng lí chóu bái rì xié,'],['吟鞭东指即天涯。','yín biān dōng zhǐ jí tiān yá.'],['落红不是无情物，','luò hóng bù shì wú qíng wù,'],['化作春泥更护花。','huà zuò chūn ní gèng hù huā.']],note:'无边离愁伴着夕阳西斜，挥鞭向东就是天涯。落花不是无情的东西，变成春泥更要护着花。'}
+];
 
 const POEM_META = {
   'hua': {title:'画', author:'王维', dynasty:'唐', textbook:'沪教', grade:'G1A', stage:'小学', req:'教材诵读', exam:false, theme:'山水', season:'无', emotion:'闲', scene:'山/水/花/鸟', form:'诗', meter:'五言', type:'绝句', lines:4, difficulty:1, art:'poem-hua', hasImg:true, hasAudio:false, inApp:true, gameReady:true, authorKey:'王维'},
@@ -346,35 +538,243 @@ const POEM_META = {
 function meta(slug){ return POEM_META[slug] || null; }
 
 const POEM_SCENES = [
-'<img src="images/poem-yonge.webp" alt="咏鹅" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-jingyesi.webp" alt="静夜思" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-chunxiao.webp" alt="春晓" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-minnong.webp" alt="悯农" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-hua.webp" alt="画" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-dengguanque.webp" alt="登鹳雀楼" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-cao.webp" alt="草" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-luoshanpubu.webp" alt="望庐山瀑布" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-jiangxue.webp" alt="江雪" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-suojian.webp" alt="所见" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-xiaochi.webp" alt="小池" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-cunju.webp" alt="村居" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-feng.webp" alt="风" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-chilege.webp" alt="敕勒歌" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-xiangsi.webp" alt="相思" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-chishang.webp" alt="池上" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-xunyinzhe.webp" alt="寻隐者不遇" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-jueju.webp" alt="绝句" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-gulang.webp" alt="古朗月行" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-xiaoer.webp" alt="小儿垂钓" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-luzhai.webp" alt="鹿柴" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-yeshu.webp" alt="夜书所见" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-baidi.webp" alt="早发白帝城" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-jiuyuejiu.webp" alt="九月九日忆山东兄弟" onerror="this.style.display=&#39;none&#39;">'
-,
-'<img src="images/poem-jiangnan.webp" alt="江南" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-zengwanglun.webp" alt="赠汪伦" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-huaji.webp" alt="画鸡" onerror="this.style.display=&#39;none&#39;">',
-'<img src="images/poem-chunyexiyu.webp" alt="春夜喜雨" onerror="this.style.display=&#39;none&#39;">'];
+
+  '<img src="images/poem-yonge.webp" alt="咏鹅"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-minnong.webp" alt="悯农"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-hua.webp" alt="画"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-dengguanque.webp" alt="登鹳雀楼"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-cao.webp" alt="草"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiangxue.webp" alt="江雪"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xiangsi.webp" alt="相思"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xunyinzhe.webp" alt="寻隐者不遇"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-gulang.webp" alt="古朗月行"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiangnan.webp" alt="江南"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-huaji.webp" alt="画鸡"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yesushansi.webp" alt="夜宿山寺"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-meihua.webp" alt="梅花"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jingyesi.webp" alt="静夜思"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chunxiao.webp" alt="春晓"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-suojian.webp" alt="所见"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-feng.webp" alt="风"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chishang.webp" alt="池上"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jueju.webp" alt="绝句"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-minnong1.webp" alt="悯农(其一)"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiangshangyuzhe.webp" alt="江上渔者"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qibushi.webp" alt="七步诗"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chilege.webp" alt="敕勒歌"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-baidi.webp" alt="早发白帝城"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-huixiangoushu.webp" alt="回乡偶书"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qiupuge.webp" alt="秋浦歌"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-liangzhouci.webp" alt="凉州词"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yizishi.webp" alt="一字诗"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-dalinsitaohua.webp" alt="大林寺桃花"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qianchusai.webp" alt="前出塞"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xiaochi.webp" alt="小池"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xiaoer.webp" alt="小儿垂钓"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zhuliguan.webp" alt="竹里馆"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-youyuanbuzhi.webp" alt="游园不值"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qingming.webp" alt="清明"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yiaisi.webp" alt="遗爱寺"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-fengqiaoyebo.webp" alt="枫桥夜泊"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-saixiaqu.webp" alt="塞下曲"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-luoshanpubu.webp" alt="望庐山瀑布"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-luzhai.webp" alt="鹿柴"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xiaochujingci.webp" alt="晓出净慈寺送林子方"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yuyishui.webp" alt="于易水送人"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-shanxing.webp" alt="山行"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-saixiaqu3.webp" alt="塞下曲(其三)"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zengliujingwen.webp" alt="赠刘景文"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-fengxuefurongshan.webp" alt="逢雪宿芙蓉山主人"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chunyexiyu.webp" alt="春夜喜雨"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yongliu.webp" alt="咏柳"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-huichong.webp" alt="惠崇春江晓景"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chunri.webp" alt="春日"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-youziyin.webp" alt="游子吟"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-songdushaofu.webp" alt="送杜少府之任蜀州"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jueju2.webp" alt="绝句(迟日)"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiangpan.webp" alt="江畔独步寻花"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-leyouyuan.webp" alt="乐游原"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zenghuaqing.webp" alt="赠花卿"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-mujiangyin.webp" alt="暮江吟"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qiuxi.webp" alt="秋夕"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qiuyejiangxiao.webp" alt="秋夜将晓出篱门迎凉有感"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-congjunxing.webp" alt="从军行(其四)"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-niaomingjian.webp" alt="鸟鸣涧"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-cailianqu.webp" alt="采莲曲"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xiarijueju.webp" alt="夏日绝句"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-wangdongting.webp" alt="望洞庭"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-baiyoujixing.webp" alt="百忧集行"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-langtaosha.webp" alt="浪淘沙"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-sujiandejiang.webp" alt="宿建德江"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-momei.webp" alt="墨梅"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-duzuojianting.webp" alt="独坐敬亭山"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-biedongda.webp" alt="别董大"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-cunju.webp" alt="村居"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yeshu.webp" alt="夜书所见"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yijiangnan.webp" alt="忆江南"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-liuyue.webp" alt="六月二十七日望湖楼醉书"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiangnanchun.webp" alt="江南春"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-fengmi.webp" alt="蜂"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-guanshuyougan.webp" alt="观书有感"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-wuyixiang.webp" alt="乌衣巷"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiangnanfeng.webp" alt="江南逢李龟年"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jueju3.webp" alt="绝句(江碧)"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-shuzhongjiuri.webp" alt="蜀中九日"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-fengrujingshi.webp" alt="逢入京使"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zhushi.webp" alt="竹石"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-tishihou.webp" alt="题诗后"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-shuxiang.webp" alt="蜀相"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-huameiniao.webp" alt="画眉鸟"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jiuyuejiu.webp" alt="九月九日忆山东兄弟"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xiangcunsiyue.webp" alt="乡村四月"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-sishitian.webp" alt="四时田园杂兴"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-tixilinbi.webp" alt="题西林壁"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-xishangyuyu.webp" alt="溪上遇雨"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-guogurenzhuang.webp" alt="过故人庄"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-liangzhouci2.webp" alt="凉州词"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-shier.webp" alt="示儿"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-shanting.webp" alt="山亭夏日"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-wangtianmen.webp" alt="望天门山"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-tiwujiangting.webp" alt="题乌江亭"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-furonglou.webp" alt="芙蓉楼送辛渐"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-songyuaner.webp" alt="送元二使安西"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chunwang.webp" alt="春望"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-chusai.webp" alt="出塞"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-shihuiyin.webp" alt="石灰吟"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zengwanglun.webp" alt="赠汪伦"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-changgexing.webp" alt="长歌行"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yuanri.webp" alt="元日"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-yugezi.webp" alt="渔歌子"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zaochun.webp" alt="早春呈水部十八员外"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-hanshi.webp" alt="寒食"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-emeishan.webp" alt="峨眉山月歌"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-suxingongdian.webp" alt="宿新市徐公店"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-tilinandi.webp" alt="题临安邸"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-qiantanghu.webp" alt="钱塘湖春行"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-bochuanguazhou.webp" alt="泊船瓜洲"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-huanghe.webp" alt="黄鹤楼送孟浩然之广陵"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-wanchun.webp" alt="晚春"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-youshanxi.webp" alt="游山西村"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-zhuzhici.webp" alt="竹枝词"> onerror="this.style.display=&#39;none&#39;"',
+
+  '<img src="images/poem-jihai.webp" alt="己亥杂诗"> onerror="this.style.display=&#39;none&#39;"'
+];
 
 /* ============================================================
    状态 + 存储
@@ -382,6 +782,10 @@ const POEM_SCENES = [
 const LS_EN = 'kids_english_progress';
 const LS_POEM = 'kids_poetry_progress';
 const LS_STAR = 'kids_stars';
+const LS_POEM_IDX = 'kids_poem_last_idx';
+const LS_POEM_FAV = 'kids_poem_fav';
+const LS_POEM_PINYIN = 'kids_poem_pinyin';
+const LS_POEM_RECITE = 'kids_poem_recite';
 
 function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{}}}
 function saveObj(key,obj){localStorage.setItem(key,JSON.stringify(obj))}
@@ -390,6 +794,11 @@ let engProgress = loadObj(LS_EN);
 let poemProgress = loadObj(LS_POEM);
 let stars = parseInt(localStorage.getItem(LS_STAR) || '0', 10);
 let poemIdx = 0;
+let pinyinOn = true;
+let reciteMode = false;
+let reciteRevealed = {};
+let favMap = loadObj(LS_POEM_FAV);
+let poemFilter = 'all';
 
 /* ============================================================
    语音朗读 (SpeechSynthesis)
@@ -461,8 +870,13 @@ function renderPoem(){
   const stCls=st===2?'s2':(st===1?'s1':'');
   let linesHtml='';
   p.lines.forEach((l,i)=>{
-    linesHtml+='<div class="poem-line" onclick="speakLine('+i+')" title="点击听这一句">'+
-      '<div class="zi">'+l[0]+'</div><div class="py">'+l[1]+'</div></div>';
+    if(reciteMode && !reciteRevealed[i]){
+      linesHtml+='<div class="poem-line covered" onclick="revealLine('+i+')" title="点击显示这一句">'+
+        '<div class="cover">👀</div></div>';
+    }else{
+      linesHtml+='<div class="poem-line" onclick="speakLine('+i+')" title="点击听这一句">'+
+        '<div class="zi">'+l[0]+'</div>'+(pinyinOn?'<div class="py">'+l[1]+'</div>':'')+'</div>';
+    }
   });
   area.innerHTML =
     '<div class="poem-card">'+
@@ -478,12 +892,29 @@ function renderPoem(){
     '<div class="action-row">'+
       '<button class="action-btn" style="background:#e3f2fd;color:#1976d2" id="readPoemBtn" onclick="readPoem()">🔊 朗读全文</button>'+
       '<button class="action-btn '+(st===2?'btn-know':'btn-review')+'" onclick="toggleMemorized()">'+(st===2?'⭐ 已背诵(点击取消)':'📝 标记已背诵')+'</button>'+
+      (reciteMode?'<button class="action-btn" style="background:#fff3e0;color:#e65100" onclick="revealAllLines()">👀 显示全部</button>':'')+
     '</div>'+
     '<div class="nav-row">'+
       '<button class="nav-btn" onclick="prevPoem()">←</button>'+
-      '<div class="card-counter">第 '+(poemIdx+1)+' / '+POEMS.length+' 首</div>'+
+      '<div class="card-counter">第 '+(poemIdx+1)+' / '+POEMS.length+' 首'+(poemFilter!=='all'?' · 筛选中':'')+'</div>'+
       '<button class="nav-btn" onclick="nextPoem()">→</button>'+
     '</div>';
+  updateToolButtons();
+  localStorage.setItem(LS_POEM_IDX,String(poemIdx));
+  preloadNeighbors();
+}
+function preloadNeighbors(){
+  const list=navList();
+  let pos=list.indexOf(poemIdx); if(pos<0)pos=0;
+  const seen={};
+  for(let d=-3;d<=3;d++){
+    if(d===0)continue;
+    const j=((pos+d)%list.length+list.length)%list.length;
+    const i=list[j];
+    if(seen[i])continue; seen[i]=1;
+    const m=slugOf(i);
+    if(m){const im=new Image(); im.src='images/poem-'+m+'.webp';}
+  }
 }
 function readPoem(){
   const p=POEMS[poemIdx];
@@ -502,12 +933,133 @@ function toggleMemorized(){
   saveObj(LS_POEM,poemProgress);
   refreshStars();renderPoem();
 }
-function nextPoem(){if(window.speechSynthesis) speechSynthesis.cancel();poemIdx=(poemIdx+1)%POEMS.length;renderPoem()}
-function prevPoem(){if(window.speechSynthesis) speechSynthesis.cancel();poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;renderPoem()}
+function nextPoem(){if(window.speechSynthesis) speechSynthesis.cancel();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx+1)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j+1)%lst.length];}renderPoem()}
+function prevPoem(){if(window.speechSynthesis) speechSynthesis.cancel();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j-1+lst.length)%lst.length];}renderPoem()}
+
+/* 搜索 + 目录 */
+function slugOf(i){const m=/poem-([\w-]+)\.webp/.exec(POEM_SCENES[i]||'');return m?m[1]:null;}
+function poemBody(i){return (POEMS[i].lines||[]).map(l=>l[0]).join('');}
+function gradeLabel(g){const map={G1A:'1上',G1B:'1下',G2A:'2上',G2B:'2下',G3A:'3上',G3B:'3下',G4A:'4上',G4B:'4下',G5A:'5上',G5B:'5下'};return map[g]||g;}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function poemSearchMatch(q){
+  q=q.trim().toLowerCase();
+  if(!q) return null;
+  const out=[];
+  for(let i=0;i<POEMS.length;i++){
+    const p=POEMS[i];
+    const hay=(p.title+' '+p.author+' '+p.dynasty+' '+poemBody(i)).toLowerCase();
+    if(hay.includes(q)) out.push(i);
+  }
+  return out;
+}
+function listItem(i,q){
+  const p=POEMS[i];const m=meta(slugOf(i)||'');const gd=m&&m.grade?gradeLabel(m.grade):'';
+  const fav=favMap[String(i)]?'<div class="gd" style="background:#fff8e1;color:#fbc02d">⭐</div>':'';
+  return '<div class="poem-list-item" onclick="jumpToPoem('+i+')">'+
+    '<div class="no">'+(i+1)+'</div>'+
+    '<div class="ti">'+escapeHtml(p.title)+'</div>'+
+    '<div class="au">'+escapeHtml(p.dynasty)+' · '+escapeHtml(p.author)+'</div>'+
+    fav+gd+
+    '</div>';
+}
+function renderPoemList(idxs){
+  const panel=document.getElementById('poemListPanel');
+  const q=document.getElementById('poemSearch').value.trim();
+  if(!idxs){ // 目录：受筛选影响
+    idxs=poemFilter==='all'?POEMS.map((_,i)=>i):filteredIndices();
+    const lab=poemFilter==='all'?'全部 '+POEMS.length+' 首':('筛选「'+filterLabel(poemFilter)+'」 '+idxs.length+' 首');
+    panel.innerHTML='<div class="poem-list-hint">'+lab+' · 点任意一首跳转</div>'+idxs.map(i=>listItem(i,'')).join('');
+  } else if(idxs.length===0){
+    panel.innerHTML='<div class="poem-list-empty">没找到「'+escapeHtml(q)+'」相关的诗 🤔</div>';
+  } else {
+    panel.innerHTML='<div class="poem-list-hint">找到 '+idxs.length+' 首</div>'+idxs.map(i=>listItem(i,q)).join('');
+  }
+  panel.classList.add('show');
+}
+function onPoemSearch(){
+  const idxs=poemSearchMatch(document.getElementById('poemSearch').value);
+  document.getElementById('poemStatPanel').classList.remove('show');
+  if(idxs) renderPoemList(idxs); else document.getElementById('poemListPanel').classList.remove('show');
+}
+function toggleToc(){
+  const panel=document.getElementById('poemListPanel');
+  document.getElementById('poemStatPanel').classList.remove('show');
+  if(panel.classList.contains('show')) panel.classList.remove('show');
+  else renderPoemList(null);
+}
+function jumpToPoem(i){
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  reciteRevealed={};
+  poemIdx=i;
+  document.getElementById('poemListPanel').classList.remove('show');
+  renderPoem();
+}
+
+/* 拼音 / 背诵 / 收藏 / 筛选 / 统计 */
+function updateToolButtons(){
+  const bp=document.getElementById('btnPinyin');
+  if(bp){bp.textContent=pinyinOn?'🔤 拼音 开':'🔤 拼音 关';bp.classList.toggle('on',pinyinOn);}
+  const br=document.getElementById('btnRecite');
+  if(br){br.classList.toggle('on',reciteMode);}
+  const bf=document.getElementById('btnFav');
+  if(bf){const on=!!favMap[String(poemIdx)];bf.classList.toggle('on',on);bf.textContent=on?'⭐ 已收藏':'⭐ 收藏';}
+}
+function togglePinyin(){pinyinOn=!pinyinOn;localStorage.setItem(LS_POEM_PINYIN,pinyinOn?'1':'0');updateToolButtons();renderPoem();}
+function toggleRecite(){reciteMode=!reciteMode;reciteRevealed={};localStorage.setItem(LS_POEM_RECITE,reciteMode?'1':'0');updateToolButtons();renderPoem();}
+function revealLine(i){reciteRevealed[i]=true;renderPoem();}
+function revealAllLines(){for(let i=0;i<POEMS[poemIdx].lines.length;i++)reciteRevealed[i]=true;renderPoem();}
+function toggleFav(){const k=String(poemIdx);if(favMap[k])delete favMap[k];else favMap[k]=1;saveObj(LS_POEM_FAV,favMap);updateToolButtons();renderPoem();}
+function filterLabel(f){const map={all:'全部',unlearned:'未学习',learning:'学习中',memorized:'已背诵',fav:'⭐ 收藏'};if(map[f])return map[f];if(f.indexOf('G')===0)return gradeLabel(f);return f;}
+function filteredIndices(){
+  const out=[];
+  for(let i=0;i<POEMS.length;i++){
+    const st=poemStatus(i);
+    if(poemFilter==='unlearned'&&st===0)out.push(i);
+    else if(poemFilter==='learning'&&st===1)out.push(i);
+    else if(poemFilter==='memorized'&&st===2)out.push(i);
+    else if(poemFilter==='fav'&&favMap[String(i)])out.push(i);
+    else if(poemFilter.indexOf('G')===0){const m=meta(slugOf(i)||'');if(m&&m.grade===poemFilter)out.push(i);}
+  }
+  return out;
+}
+function navList(){return poemFilter==='all'?POEMS.map((_,i)=>i):filteredIndices();}
+function setPoemFilter(v){
+  poemFilter=v;
+  const pl=document.getElementById('poemListPanel');
+  if(pl.classList.contains('show'))renderPoemList(null);
+  const lst=navList();
+  if(lst.length&&!lst.includes(poemIdx)){reciteRevealed={};poemIdx=lst[0];}
+  updateToolButtons();renderPoem();
+}
+function renderStats(){
+  const panel=document.getElementById('poemStatPanel');
+  const total=POEMS.length;
+  const mem=poemMemorizedCount();
+  let learning=0,unlearned=0;
+  for(let i=0;i<total;i++){const s=poemStatus(i);if(s===1)learning++;else if(s===0)unlearned++;}
+  const favCount=Object.keys(favMap).length;
+  const grades=['G1A','G1B','G2A','G2B','G3A','G3B','G4A','G4B','G5A','G5B'];
+  const gm={};grades.forEach(g=>gm[g]={t:0,m:0});
+  for(let i=0;i<total;i++){const m=meta(slugOf(i)||'');if(m&&gm[m.grade]){gm[m.grade].t++;if(poemStatus(i)===2)gm[m.grade].m++;}}
+  let bars='';
+  grades.forEach(g=>{const o=gm[g];const pct=o.t?Math.round(o.m/o.t*100):0;
+    bars+='<div class="stat-gd"><span class="stat-gd-lab">'+gradeLabel(g)+'</span><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><span class="stat-gd-num">'+o.m+'/'+o.t+'</span></div>';});
+  panel.innerHTML='<div class="stat-grid">'+
+    statCard('📜 已背诵',mem+' / '+total)+
+    statCard('📖 学习中',learning)+
+    statCard('⚪ 未学习',unlearned)+
+    statCard('⭐ 收藏',favCount)+
+    statCard('🌟 星星',stars)+
+    '</div><div class="stat-title">各年级掌握度</div>'+bars;
+  panel.classList.add('show');
+}
+function statCard(label,val){return '<div class="stat-card"><div class="stat-val">'+val+'</div><div class="stat-lab">'+label+'</div></div>';}
+function toggleStats(){const lp=document.getElementById('poemListPanel');if(lp)lp.classList.remove('show');const panel=document.getElementById('poemStatPanel');if(panel.classList.contains('show'))panel.classList.remove('show');else renderStats();}
 
 /* 键盘快捷键: ← → 切换, 空格/回车 朗读全文 */
 function handleKey(e){
   const t=e.target, tag=t&&t.tagName;
+  if(e.key==='Escape'){const pl=document.getElementById('poemListPanel');if(pl)pl.classList.remove('show');return;}
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   const k=e.key, isBtn=tag==='BUTTON';
   if(k==='ArrowLeft'){e.preventDefault();prevPoem();}
@@ -517,7 +1069,12 @@ function handleKey(e){
 document.addEventListener('keydown',handleKey);
 
 document.addEventListener('DOMContentLoaded',function(){
+  try{const v=parseInt(localStorage.getItem(LS_POEM_IDX)||'',10);if(!isNaN(v)&&v>=0&&v<POEMS.length)poemIdx=v;}catch(e){}
   document.getElementById('starCount').textContent=stars;
+  const sub=document.getElementById('poemSub'); if(sub) sub.textContent='共 '+POEMS.length+' 首 · 点诗句可听发音';
+  try{pinyinOn=localStorage.getItem(LS_POEM_PINYIN)!=='0';}catch(e){}
+  try{reciteMode=localStorage.getItem(LS_POEM_RECITE)==='1';}catch(e){}
+  updateToolButtons();
   renderPoem();
 });
 </script>
