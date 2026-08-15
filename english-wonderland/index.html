@@ -531,7 +531,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="header">
     <div class="top-right">
       <div class="star-pill">⭐ <span id="starCount">0</span></div>
-      <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20</span> 分</div>
+      <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20:00</span></div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
@@ -4372,13 +4372,26 @@ function applyUsage(st){
   usage.loaded=true;
   updateUsagePill();
 }
+function liveRemaining(){
+  if(usage.locked) return 0;
+  let live=usage.remaining;
+  if(isLearningTab()&&_activeStart!=null) live-=(Date.now()-_activeStart)/1000;
+  return Math.max(0,live);
+}
+function fmtRemain(sec){
+  sec=Math.max(0,Math.ceil(sec));
+  const m=Math.floor(sec/60), s=sec%60;
+  return m+':'+String(s).padStart(2,'0');
+}
 function updateUsagePill(){
   const p=document.getElementById('usagePill');if(!p)return;
   if(!auth){p.style.display='none';return;}
   p.style.display='';
-  document.getElementById('usageRemain').textContent=Math.ceil(usage.remaining/60);
+  document.getElementById('usageRemain').textContent=fmtRemain(liveRemaining());
   p.style.opacity=usage.locked?'0.5':'1';
 }
+let _pillTimer=null;
+function startPillTimer(){ if(_pillTimer)return; _pillTimer=setInterval(updateUsagePill,1000); }
 async function loadUsage(){
   if(!auth)return;
   const res=await api('/api/usage?token='+encodeURIComponent(auth.token)+'&date='+cnToday());
@@ -4441,11 +4454,14 @@ async function doUnlock(){
   if(admin) body.admin_pin='852121';
   const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!res.ok){if(msg)msg.textContent=res.data.error||'解锁失败';return;}
-  applyUsage(res.data);closeUnlockForm();hideLock();
+  applyUsage(res.data);closeUnlockForm();
+  if(!usage.locked)startActive();   // 解锁后务必重启计时起点，避免「倒计时不走了」
+  hideLock();
 }
 async function initUsage(){
   await loadUsage();
   startUsageTimer();
+  startPillTimer();
   if(auth&&!usage.locked)startActive();
 }
 
