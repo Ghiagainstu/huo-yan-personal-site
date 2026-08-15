@@ -609,7 +609,7 @@
         var coverHtml = p.cover
           ? '<div class="proj-cover hasimg"><img class="cover-img" src="' + esc(p.cover) + '" alt="' + esc(p.name) + '"></div>'
           : '<div class="proj-cover"><span class="cv">' + ch + '</span></div>';
-        return '<a class="proj-card" href="' + p.url + '">' +
+        return '<div class="proj-card" data-act="proj-go" data-url="' + esc(p.url) + '">' +
           coverHtml +
           '<div class="proj-body">' +
             '<div class="tag">' + esc(p.tag) + '</div>' +
@@ -617,7 +617,7 @@
             '<div class="desc">' + esc(p.desc) + '</div>' +
             '<div class="go">进入 →</div>' +
           '</div>' +
-        '</a>';
+        '</div>';
       }).join('') + '</div>' +
       '<h3 class="tl-title">项目时间线</h3>' +
       '<div class="timeline">' + tl.map(function (m, i) {
@@ -756,6 +756,9 @@
         selectedNews.src = selectedNews.src || currentNewsTab;
       } catch (e) {}
       render();
+    } else if (act === 'proj-go') {
+      ev.preventDefault();
+      promptProjectPassword(el.getAttribute('data-url'));
     }
   });
   function copyText(txt) {
@@ -770,6 +773,68 @@
     try { document.execCommand('copy'); toast('已复制'); } catch (e) { toast('复制失败，请手动复制'); }
     ta.remove();
   }
+
+  /* ---------- 项目访问密码弹窗 ---------- */
+  var PROJ_PASS = '1501';
+  var passModal = null;
+  function ensurePassModal() {
+    if (passModal) return passModal;
+    var ov = document.createElement('div');
+    ov.className = 'pass-modal-ov';
+    ov.innerHTML =
+      '<div class="pass-modal">' +
+        '<div class="pass-title">🔒 请输入访问密码</div>' +
+        '<div class="pass-hint">访问火哥的项目需输入密码</div>' +
+        '<input class="pass-input" type="password" placeholder="请输入密码" maxlength="20">' +
+        '<div class="pass-err"></div>' +
+        '<div class="pass-btns">' +
+          '<button class="btn ghost pass-cancel" type="button">取消</button>' +
+          '<button class="btn pass-ok" type="button">确认进入</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    var st = document.createElement('style');
+    st.textContent =
+      '.pass-modal-ov{position:fixed;inset:0;background:rgba(20,24,33,.55);display:none;align-items:center;justify-content:center;z-index:9999}' +
+      '.pass-modal-ov.show{display:flex}' +
+      '.pass-modal{background:#fff;border-radius:16px;padding:24px;width:300px;max-width:86vw;box-shadow:0 12px 40px rgba(0,0,0,.25);text-align:center}' +
+      '.pass-title{font-size:1.05rem;font-weight:600;margin-bottom:6px;color:#2d323c}' +
+      '.pass-hint{font-size:.78rem;color:#787d88;margin-bottom:14px}' +
+      '.pass-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d8dbe2;border-radius:10px;font-size:1rem;outline:none}' +
+      '.pass-input:focus{border-color:#E8A33D}' +
+      '.pass-err{color:#e5484d;font-size:.78rem;min-height:18px;margin-top:8px}' +
+      '.pass-btns{display:flex;gap:10px;margin-top:14px}' +
+      '.pass-btns .btn{flex:1}';
+    document.head.appendChild(st);
+    var input = ov.querySelector('.pass-input');
+    var err = ov.querySelector('.pass-err');
+    function close() { ov.classList.remove('show'); err.textContent = ''; input.value = ''; }
+    function submit() {
+      if (input.value === PROJ_PASS) {
+        var u = ov.getAttribute('data-url') || '';
+        close();
+        if (u) location.href = u;
+      } else {
+        err.textContent = '密码错误，请重试';
+        input.select();
+      }
+    }
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    ov.querySelector('.pass-cancel').addEventListener('click', close);
+    ov.querySelector('.pass-ok').addEventListener('click', submit);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+    passModal = {
+      ov: ov,
+      open: function (url) {
+        ov.setAttribute('data-url', url);
+        err.textContent = '';
+        ov.classList.add('show');
+        setTimeout(function () { input.focus(); }, 30);
+      }
+    };
+    return passModal;
+  }
+  function promptProjectPassword(url) { ensurePassModal().open(url); }
 
   /* ---------- 菜单 ---------- */
   function bindMenu() {
