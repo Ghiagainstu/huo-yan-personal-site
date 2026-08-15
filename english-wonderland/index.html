@@ -94,6 +94,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 /* ★ v2 修复点1(关键):显式 line-height,给 descender 留空间,避开过度紧凑的渲染截切 */
 .word-en{font-size:46px;font-weight:bold;color:#2d3436;letter-spacing:1px;line-height:1.18;padding:2px 0;}
 .word-zh{font-size:30px;font-weight:bold;color:#11998e;line-height:1.2;}
+.region-pill{display:inline-block;margin:4px auto 2px;padding:2px 12px;border-radius:999px;font-size:13px;font-weight:bold;letter-spacing:.5px;}
+.region-pill.us{background:#e3f2fd;color:#1565c0;}
+.region-pill.uk{background:#fce4ec;color:#ad1457;}
+.region-row{margin-top:8px;}
 .word-example{font-size:17px;color:#636e72;font-style:italic;text-align:center;line-height:1.35;}
 .tap-hint{font-size:12px;color:#b2bec3;}
 .speak-btn{border:none;border-radius:24px;padding:10px 22px;font-size:16px;font-weight:bold;background:#2575fc;color:#fff;cursor:pointer;transition:transform .15s;}
@@ -604,6 +608,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <button class="filter-chip" data-f="todo" onclick="setFilter('todo')">📖 待学习</button>
         <button class="filter-chip" data-f="done" onclick="setFilter('done')">✅ 已掌握</button>
         <button class="filter-chip" id="shuffleChip" onclick="toggleShuffle()">🔀 打乱</button>
+    </div>
+    <div class="filter-row region-row">
+        <button class="filter-chip" data-rg="all" onclick="setRegion('all')">🌐 通用</button>
+        <button class="filter-chip" data-rg="us" onclick="setRegion('us')">🇺🇸 美式</button>
+        <button class="filter-chip" data-rg="uk" onclick="setRegion('uk')">🇬🇧 英式</button>
     </div>
     <div id="enCardArea"></div>
 </div>
@@ -2480,6 +2489,7 @@ const LS_STAR = 'kids_stars';
 const LS_REVIEW = 'kids_game_review';
 const LS_POS = 'kids_card_pos';
 const LS_SHUFFLE = 'kids_card_shuffle';
+const LS_REGION = 'kids_card_region';
 const LS_LEARNED = 'kids_english_learned';
 const POEM_TOTAL = 28; // 古诗总数
   // 每词首次学会(从0→1)的时间戳 wordKey -> ts
@@ -2496,6 +2506,7 @@ let curTab = 'en';
 let curShuffle = localStorage.getItem(LS_SHUFFLE)==='1';   // 🔀 英语卡片顺序打乱(持久化)
 let curCat = 'all';
 let curFilter = 'all';
+let curRegion = localStorage.getItem(LS_REGION) || 'all';   // 🌐 美式(us)/英式(uk)/通用(all) 切换
 let cardList = [];
 let curSearch = '';   // 🔍 单词搜索关键字(已小写);为空表示不搜索
 let cardIdx = 0;
@@ -2863,6 +2874,42 @@ function makeExample(cat,w){
 function totalWords(){return CATS.reduce((s,c)=>s+c.words.length,0)}
 function masteredCount(){let n=0;for(const k in engProgress) if(engProgress[k]>=3) n++;return n}
 function catMastered(cat){return cat.words.filter(w=>getLevel(cat.id,w[0])>=3).length}
+/* ===== 美式(us)/英式(uk)地区标记 =====
+   未列出的词默认 'both'（英美通用）。成对词共用图片。
+   REGION 记录「与另一方写法/叫法不同」的词；下方 EXTRA_WORDS 把缺失的一方补进词库。 */
+const REGION = {
+  // 美式特有（英式用别的词）
+  apartment:'us', pants:'us', truck:'us', fries:'us', cookie:'us', candy:'us',
+  eggplant:'us', zucchini:'us', sneakers:'us', eraser:'us', subway:'us', gray:'us', soccer:'us',
+  // 英式特有
+  autumn:'uk',
+  // 下方 EXTRA_WORDS 补进来的对应词
+  flat:'uk', trousers:'uk', lorry:'uk', chips:'uk', biscuit:'uk', sweets:'uk',
+  aubergine:'uk', courgette:'uk', trainers:'uk', rubber:'uk', underground:'uk',
+  fall:'us', football:'uk', grey:'uk'
+};
+function regionOf(w){ const k=(Array.isArray(w)?w[0]:w).toLowerCase(); return REGION[k]||'both'; }
+/* 把缺失的英式/美式对应词补进词库，与已有词共用图片 */
+const EXTRA_WORDS = [
+  ['flat','公寓','img:apartment','places'],
+  ['trousers','裤子','img:pants','clothes'],
+  ['lorry','卡车','img:truck','transport'],
+  ['chips','薯条','img:fries','food'],
+  ['biscuit','饼干','img:cookie','food'],
+  ['sweets','糖果','img:candy','food'],
+  ['aubergine','茄子','img:eggplant','vegetables'],
+  ['courgette','西葫芦','img:zucchini','vegetables'],
+  ['trainers','运动鞋','img:sneakers','clothes'],
+  ['rubber','橡皮','img:eraser','objects'],
+  ['underground','地铁','img:subway','transport'],
+  ['fall','秋天','img:autumn','time'],
+  ['football','足球','img:soccer','sports'],
+  ['grey','灰色','#9E9E9E','colors']
+];
+EXTRA_WORDS.forEach(([en,zh,art,catId])=>{
+  const c=CATS.find(x=>x.id===catId);
+  if(c && !c.words.some(w=>w[0]===en)) c.words.push([en,zh,art]);
+});
 function renderCatChips(){
   const box = document.getElementById('catChips');
   let html = '<button class="chip'+(curCat==='all'?' active':'')+'" onclick="setCat(\'all\')">📚 全部<span class="cnt">'+masteredCount()+'/'+totalWords()+'</span></button>';
@@ -2875,6 +2922,12 @@ function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();buildList
 function setFilter(f){
   curFilter=f;cardIdx=0;flipped=false;
   document.querySelectorAll('.filter-chip[data-f]').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+  buildList();renderCard();
+}
+function setRegion(r){
+  curRegion=r;cardIdx=0;flipped=false;
+  try{localStorage.setItem(LS_REGION,r);}catch(e){}
+  document.querySelectorAll('.filter-chip[data-rg]').forEach(b=>b.classList.toggle('active',b.dataset.rg===r));
   buildList();renderCard();
 }
 function toggleShuffle(){
@@ -2990,6 +3043,7 @@ function buildList(){
       if(curFilter==='todo' && lv>=3) return;
       if(curFilter==='done' && lv<3) return;
       if(curSearch){ const en=w[0].toLowerCase(), zh=w[1]; if(en.indexOf(curSearch)===-1 && zh.indexOf(curSearch)===-1) return; }
+      if(curRegion!=='all'){ const r=regionOf(w); if(r!=='both' && r!==curRegion) return; }
       cardList.push({cat:c,w:w});
     });
   });
@@ -3070,6 +3124,7 @@ function renderCard(){
   const word=item.w[0],zh=item.w[1];
   currentWord=word;
   const lv=getLevel(item.cat.id,word);
+  const rg=regionOf(item.w);
   currentExample=makeExample(item.cat,word);
   const example=currentExample;
   const svg=wordArtSVG(item);
@@ -3084,6 +3139,7 @@ function renderCard(){
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
             '<div class="word-en">'+word+'</div>'+
+            (rg!=='both'?'<div class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸 美式':'🇬🇧 英式')+'</div>':'')+
             phonHTML(word)+
             '<div class="accent-row">'+
               '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(currentWord,\'uk\',this)">🇬🇧 英音</button>'+
@@ -4216,6 +4272,7 @@ document.addEventListener('DOMContentLoaded',function(){
   renderCatChips();
   syncFilterChips();
   const sc=document.getElementById('shuffleChip'); if(sc) sc.classList.toggle('active',curShuffle);
+  document.querySelectorAll('.filter-chip[data-rg]').forEach(b=>b.classList.toggle('active',b.dataset.rg===curRegion));
   renderCard();
   preloadIdle();
   enableDragScroll(document.getElementById('catChips'));
