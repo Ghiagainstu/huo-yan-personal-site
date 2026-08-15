@@ -649,6 +649,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <button class="filter-chip" data-rg="us" onclick="setRegion('us')">🇺🇸 美式</button>
         <button class="filter-chip" data-rg="uk" onclick="setRegion('uk')">🇬🇧 英式</button>
     </div>
+    <div class="filter-row tier-row">
+        <button class="filter-chip" data-tier="all" onclick="setTier('all')">📗 核心+拓展</button>
+        <button class="filter-chip" data-tier="core" onclick="setTier('core')">📘 核心</button>
+        <button class="filter-chip" data-tier="ext" onclick="setTier('ext')">📙 拓展</button>
+    </div>
     <div id="enCardArea"></div>
 </div>
 <!-- ================= 英语小游戏 ================= -->
@@ -2710,6 +2715,8 @@ let curShuffle = localStorage.getItem(LS_SHUFFLE)==='1';   // 🔀 英语卡片�
 let curCat = 'all';
 let curFilter = 'all';
 let curRegion = localStorage.getItem(LS_REGION) || 'all';   // 🌐 美式(us)/英式(uk)/通用(all) 切换
+const LS_TIER = 'kids_card_tier';
+let curTier = localStorage.getItem(LS_TIER) || 'all';      // 📘 核心(core)/📗核心+拓展(all)/📙拓展(ext) 切换
 let cardList = [];
 let curSearch = '';   // 🔍 单词搜索关键字(已小写);为空表示不搜索
 let cardIdx = 0;
@@ -3251,6 +3258,16 @@ const REGION = {
   fall:'us', football:'uk', grey:'uk'
 };
 function regionOf(w){ const k=(Array.isArray(w)?w[0]:w).toLowerCase(); return REGION[k]||'both'; }
+/* tier：核心词(core)=上海课标要求；拓展词(ext)=教材不要求。
+   初标（启发式，后续可调）：上海功能词分类(sh-*)整体 + 基础主题分类 = core；其余 = ext。
+   若需逐词微调，可在下方追加 CORE_WORDS=Set 覆盖分类默认。 */
+const CORE_CATS = new Set([
+  'sh-subjects','sh-school','sh-greet','sh-pron-pers','sh-pron-poss','sh-pron-other',
+  'sh-article','sh-prep','sh-conj','sh-modal','sh-adv',
+  'colors','numbers','body','family','food','fruits','vegetables',
+  'objects','clothes','nature','verbs','adjectives','time','animals'
+]);
+function tierOfCat(catId){ return CORE_CATS.has(catId) ? 'core' : 'ext'; }
 /* 把缺失的英式/美式对应词补进词库，与已有词共用图片 */
 const EXTRA_WORDS = [
   ['flat','公寓','img:apartment','places'],
@@ -3304,6 +3321,12 @@ function setRegion(r){
   curRegion=r;cardIdx=0;flipped=false;
   try{localStorage.setItem(LS_REGION,r);}catch(e){}
   document.querySelectorAll('.filter-chip[data-rg]').forEach(b=>b.classList.toggle('active',b.dataset.rg===r));
+  buildList();renderCard();
+}
+function setTier(t){
+  curTier=t;cardIdx=0;flipped=false;
+  try{localStorage.setItem(LS_TIER,t);}catch(e){}
+  document.querySelectorAll('.filter-chip[data-tier]').forEach(b=>b.classList.toggle('active',b.dataset.tier===t));
   buildList();renderCard();
 }
 function toggleShuffle(){
@@ -3420,6 +3443,7 @@ function buildList(){
       if(curFilter==='done' && lv<3) return;
       if(curSearch){ const en=w[0].toLowerCase(), zh=w[1]; if(en.indexOf(curSearch)===-1 && zh.indexOf(curSearch)===-1) return; }
       if(curRegion!=='all'){ const r=regionOf(w); if(r!=='both' && r!==curRegion) return; }
+      if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
       cardList.push({cat:c,w:w});
     });
   });
@@ -3659,6 +3683,7 @@ function gameBuildQueue(){
   const budget=Math.max(0, DAILY_NEW_CAP - getDailyNew());  // 今日剩余新词额度
   const all=[]; let newUsed=0;
   CATS.forEach(c=>c.words.forEach(w=>{
+    if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
     const key=wordKey(c.id,w[0]);
     const lv=getLevel(c.id,w[0]);
     if(lv>=3) return;
@@ -4865,6 +4890,7 @@ document.addEventListener('DOMContentLoaded',function(){
   syncFilterChips();
   const sc=document.getElementById('shuffleChip'); if(sc) sc.classList.toggle('active',curShuffle);
   document.querySelectorAll('.filter-chip[data-rg]').forEach(b=>b.classList.toggle('active',b.dataset.rg===curRegion));
+  document.querySelectorAll('.filter-chip[data-tier]').forEach(b=>b.classList.toggle('active',b.dataset.tier===curTier));
   renderCard();
   preloadIdle();
   preloadAvatarImgs();
