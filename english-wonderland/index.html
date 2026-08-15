@@ -94,10 +94,25 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 /* ★ v2 修复点1(关键):显式 line-height,给 descender 留空间,避开过度紧凑的渲染截切 */
 .word-en{font-size:46px;font-weight:bold;color:#2d3436;letter-spacing:1px;line-height:1.18;padding:2px 0;}
 .word-zh{font-size:30px;font-weight:bold;color:#11998e;line-height:1.2;}
-.region-pill{display:inline-block;margin:4px auto 2px;padding:2px 12px;border-radius:999px;font-size:13px;font-weight:bold;letter-spacing:.5px;}
+/* ★ 地区标签改为与单词同行显示(inline),避免单独一行挤占导致中文面排版异常 */
+.region-pill{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;padding:1px 8px;border-radius:999px;font-size:13px;font-weight:bold;letter-spacing:.5px;vertical-align:middle;line-height:1;}
 .region-pill.us{background:#e3f2fd;color:#1565c0;}
 .region-pill.uk{background:#fce4ec;color:#ad1457;}
+.region-pill.sm{font-size:12px;margin-left:6px;padding:0 7px;}
+.word-en-wrap{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;}
 .region-row{margin-top:8px;}
+/* ===== 小游戏开始选择界面 ===== */
+.game-modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+.game-mode-btn{border:none;border-radius:14px;padding:12px 18px;font-size:16px;font-weight:bold;background:#fff;color:#11998e;box-shadow:0 4px 12px rgba(0,0,0,.10);cursor:pointer;transition:transform .15s,background .15s,color .15s;}
+.game-mode-btn:hover{transform:translateY(-2px);background:#11998e;color:#fff;}
+/* ===== 拖拽配对：HTML5 DnD 支持(桌面) ===== */
+.game-chip{cursor:grab;user-select:none;-webkit-user-select:none;}
+.game-chip[draggable=true]:active{cursor:grabbing;}
+.game-drag-zone.drag-over{outline:3px dashed #11998e;background:#e8f8f3;}
+/* ===== 句式关：横线填空(不显示答案词) ===== */
+.blank{display:inline-block;min-width:92px;height:1.05em;border-bottom:3px solid #11998e;vertical-align:baseline;margin:0 2px;}
+/* ===== 上传头像解锁态 ===== */
+.avatar-upload.locked{opacity:.6;cursor:not-allowed;}
 .word-example{font-size:17px;color:#636e72;font-style:italic;text-align:center;line-height:1.35;}
 .word-example-zh{font-size:15px;color:#90a4ae;text-align:center;margin-top:3px;line-height:1.3;}
 .tap-hint{font-size:12px;color:#b2bec3;}
@@ -634,7 +649,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <!-- ================= 排行榜 ================= -->
 <div class="module" id="modRank">
     <div class="rank-top">
-      <button class="filter-chip active" data-r="total" onclick="setRankType('total')">🏆 总榜</button>
+      <button class="filter-chip active" data-r="total" onclick="setRankType('total')">🏆 词汇榜</button>
       <button class="filter-chip" data-r="score" onclick="setRankType('score')">⭐ 积分榜</button>
       <button class="filter-chip" data-r="week" onclick="setRankType('week')">📅 本周</button>
       <button class="filter-chip" data-r="day" onclick="setRankType('day')">☀️ 今日</button>
@@ -2688,6 +2703,7 @@ let gameStartTime = 0;
 let gameCurrent = null;
 let gameSessionStars = 0;
 let gameTimerInt = null;
+let gameMode = 'all';   // 'all' | 'listen' | 'see' | 'drag' | 'sentence' —— 开始前由选择界面设定
 const GAME_MS = 14*60*1000;
 const GAME_PER_SESSION = 10;
 function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{}}}
@@ -3216,9 +3232,23 @@ const EXTRA_WORDS = [
   ['football','足球','img:soccer','sports'],
   ['grey','灰色','#9E9E9E','colors']
 ];
+/* 每个美式/英式对应词紧跟在它的"基词"后面,保证「通用」视图里成对相邻显示 */
+const EXTRA_BASE={
+  flat:'apartment',trousers:'pants',lorry:'truck',chips:'fries',biscuit:'cookie',
+  sweets:'candy',aubergine:'eggplant',courgette:'zucchini',trainers:'sneakers',
+  rubber:'eraser',underground:'subway',fall:'autumn',football:'soccer',grey:'gray'
+};
 EXTRA_WORDS.forEach(([en,zh,art,catId])=>{
   const c=CATS.find(x=>x.id===catId);
-  if(c && !c.words.some(w=>w[0]===en)) c.words.push([en,zh,art]);
+  if(c && !c.words.some(w=>w[0]===en)){
+    const w=[en,zh,art];
+    c.words.push(w);
+    const base=EXTRA_BASE[en];
+    if(base){
+      const bi=c.words.findIndex(x=>x[0]===base);
+      if(bi>=0){ c.words.splice(c.words.length-1,1); c.words.splice(bi+1,0,w); }
+    }
+  }
 });
 function renderCatChips(){
   const box = document.getElementById('catChips');
@@ -3455,8 +3485,7 @@ function renderCard(){
         '<div class="card-face card-front">'+
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-en">'+word+'</div>'+
-            (rg!=='both'?'<div class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸 美式':'🇬🇧 英式')+'</div>':'')+
+            '<div class="word-en-wrap"><span class="word-en">'+word+'</span>'+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word)+
             '<div class="accent-row">'+
               '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(currentWord,\'uk\',this)">🇬🇧 英音</button>'+
@@ -3468,7 +3497,7 @@ function renderCard(){
         '<div class="card-face card-back">'+
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-zh">'+zh+'</div>'+
+            '<div class="word-zh">'+zh+(rg!=='both'?'<span class="region-pill sm '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             '<div class="word-en" style="font-size:26px">'+word+'</div>'+
             phonHTML(word)+
             (example?'<div class="word-example">💬 '+example.split('|')[0]+'</div>'+(example.split('|')[1]?'<div class="word-example-zh">'+example.split('|')[1]+'</div>':'')+'':'')+
@@ -3665,6 +3694,12 @@ function gameNext(){
   gameCurrent=gameQueue[gameIdx++];
   gameSave();
   preloadGameAhead();
+  if(gameMode!=='all'){
+    if(gameMode==='listen') return gameActListen();
+    if(gameMode==='see') return gameActSee();
+    if(gameMode==='drag') return gameActDrag();
+    if(gameMode==='sentence') return gameActSentence();
+  }
   const r=Math.random();
   if(r<0.4) gameActListen();
   else if(r<0.75) gameActSee();
@@ -3756,11 +3791,24 @@ function gameActDrag(){
     chip.className='game-chip';
     chip.textContent=c.w[0];
     chip.dataset.en=c.w[0];
+    chip.draggable=true;
     chip.onclick=()=>{
       if(selected) selected.classList.remove('selected');
       selected=chip; chip.classList.add('selected');
     };
+    chip.ondragstart=(e)=>{
+      selected=chip; chip.classList.add('selected');
+      try{ e.dataTransfer.setData('text/plain',c.w[0]); e.dataTransfer.effectAllowed='move'; }catch(_){}
+    };
+    chip.ondragend=()=>chip.classList.remove('selected');
     src.appendChild(chip);
+  });
+  zone.addEventListener('dragover',e=>{e.preventDefault(); zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const en=(e.dataTransfer&&e.dataTransfer.getData('text/plain'))||(selected&&selected.dataset.en);
+    if(en) gResolveDrag(en);
   });
   zone.onclick=()=>{ if(selected) gResolveDrag(selected.dataset.en); };
   function gResolveDrag(en){
@@ -3781,20 +3829,21 @@ function gameActSentence(){
   const cur=gameCurrent;
   const w=cur.w;
   const txt=makeExample(cur.cat,w[0]);
+  const enOnly=txt.split('|')[0];   // 只取英文句,中文翻译不显示,逼孩子去"听"
   const optWords=gameDistractors(cur.cat,w,3);
   const allOpts=shuffleArr([{cat:cur.cat,w},...optWords]);
   const stage=document.getElementById('gameStage');
   stage.innerHTML =
     '<div class="game-scene">'+
       '<div class="game-h1">补全句子!</div>'+
-      '<div class="game-sentence">'+txt.replace(w[0],'<span class="blank">'+w[0]+'</span>')+'</div>'+
+      '<div class="game-sentence">'+enOnly.replace(w[0],'<span class="blank"></span>')+'</div>'+
       '<div class="game-h2">听一听后,选对的词</div>'+
       '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">'+
         '<div class="game-speak" id="gSpk">🔊</div>'+
       '</div>'+
       '<div class="game-opts" id="gOpts"></div>'+
     '</div>';
-  document.getElementById('gSpk').onclick=()=>speak(txt,'en-US',null);
+  document.getElementById('gSpk').onclick=()=>speak(enOnly,'en-US',null);
   const box=document.getElementById('gOpts');
   allOpts.forEach(o=>{
     const b=document.createElement('div');
@@ -3803,7 +3852,7 @@ function gameActSentence(){
     b.onclick=()=>{
       if(o.w[0]===w[0]){
         gAnswer(b,true,w[0]);
-        setTimeout(()=>speak(txt,'en-US',null),400);
+        setTimeout(()=>speak(enOnly,'en-US',null),400);
       } else gAnswer(b,false,w[0]);
     };
     box.appendChild(b);
@@ -3902,16 +3951,28 @@ function soundWrong(){gWrong()}
 function renderGameIntro(){
   gSetPhase('准备开始');
   const total=masteredCount();
-  document.getElementById('gameStage').innerHTML =
-    '<div class="game-scene" style="text-align:center">'+
+  const modes=[
+    {k:'all',ic:'🎲',t:'全部随机'},
+    {k:'listen',ic:'🔊',t:'听音选图'},
+    {k:'see',ic:'🖼️',t:'看图选词'},
+    {k:'drag',ic:'🔗',t:'拖拽配对'},
+    {k:'sentence',ic:'✍️',t:'句式关'}
+  ];
+  let html='<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🚀</div>'+
     '<div class="game-h1">闯关游戏</div>'+
     '<div class="game-h2">听音选图 · 看图选词 · 拖拽配对 · 句式关</div>'+
     '<div class="game-h2">每天 5 个新词 + 到期复习 · 间隔重复防遗忘</div>'+
     '<div class="game-h2">已掌握 <b>'+total+'</b> / '+totalWords()+'</div>'+
-    '<button class="game-btn green" onclick="gameStart()">▶ 开始</button>'+
-    '</div>';
+    '<div class="game-h2">选择一种玩法开始 👇</div>'+
+    '<div class="game-modes">';
+  modes.forEach(m=>{
+    html+='<button class="game-mode-btn" onclick="startGameWithMode(\''+m.k+'\')">'+m.ic+' '+m.t+'</button>';
+  });
+  html+='</div></div>';
+  document.getElementById('gameStage').innerHTML=html;
 }
+function startGameWithMode(mode){ gameMode=mode; gameStart(); }
 function shuffleArr(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 /* ============================================================
    统计看板 📊 (基础 + 打卡)
@@ -4223,6 +4284,25 @@ const SHOP_ITEMS=[
 const FRAME_ORDER=['frame-teal','frame-silver','frame-pink','frame-orange','frame-gold','frame-rainbow','frame-star','frame-fire','frame-dia','frame-crown'];
 const TITLE_ORDER=['title-0','title-1','title-4','title-5','title-2','title-6','title-3','title-7'];
 function ownedItems(){ return (auth&&auth.me&&auth.me.items)||[]; }
+/* 是否集齐了商城里全部头像(用于解锁"上传自己的照片") */
+function allAvatarsOwned(){
+  const o=ownedItems();
+  const need=SHOP_ITEMS.filter(i=>i.type==='avatar');
+  return need.length>0 && need.every(i=>o.includes(i.id));
+}
+const UPLOAD_LABEL='📷 上传照片<small>自己拍 / 照片</small>';
+/* 根据解锁状态更新所有"上传照片"按钮的显示 */
+function refreshUploadLock(){
+  const locked=!allAvatarsOwned();
+  document.querySelectorAll('.avatar-upload').forEach(b=>{
+    b.innerHTML = locked ? '🔒 集齐头像解锁' : UPLOAD_LABEL;
+    b.classList.toggle('locked', locked);
+  });
+  const hint=document.getElementById('avatarMsg');
+  if(hint && document.getElementById('avatarModal').style.display==='flex'){
+    hint.textContent = locked ? '🔒 上传专属照片需先在商城集齐全部 '+SHOP_ITEMS.filter(i=>i.type==='avatar').length+' 个头像' : '';
+  }
+}
 function myFrame(){ const o=ownedItems(); return FRAME_ORDER.filter(f=>o.includes(f)).pop()||''; }
 function frameOf(items){ try{const a=JSON.parse(items||'[]');return FRAME_ORDER.filter(f=>a.includes(f)).pop()||'';}catch(e){return '';} }
 function myTitle(){ const o=ownedItems(); const t=TITLE_ORDER.filter(x=>o.includes(x)).pop(); if(!t) return ''; const it=SHOP_ITEMS.find(i=>i.id===t); return it?it.name:''; }
@@ -4295,7 +4375,7 @@ async function buyItem(id){
   const it=SHOP_ITEMS.find(x=>x.id===id);
   const res=await api('/api/shop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,item_id:id})});
   if(!res.ok){showToast(res.data.error||'兑换失败','err');return;}
-  await loadMe(); renderShop(); updateAuthUI();
+  await loadMe(); renderShop(); updateAuthUI(); refreshUploadLock();
   const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
   const ap=document.getElementById('avatarPresets2');
   if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
@@ -4348,7 +4428,13 @@ function refreshAvatarPreview(){
     else el.innerHTML='<img src="'+avatarSel+'" alt="" decoding="async"/>';
   });
 }
-function openAvatarFile(){const f=document.getElementById('avatarFile');if(f)f.value='';f.click();}
+function openAvatarFile(){
+  if(!allAvatarsOwned()){
+    showToast('🔒 需先在商城集齐全部头像,才能上传专属照片','err');
+    return;
+  }
+  const f=document.getElementById('avatarFile');if(f)f.value='';f.click();
+}
 function onAvatarFile(input){
   const f=input.files&&input.files[0];
   if(!f||!f.type.match(/^image\//)) return;
@@ -4381,6 +4467,7 @@ function updateAuthUI(){
     if(shop)shop.style.display='none';
   }
   updateUsagePill();
+  refreshUploadLock();
 }
 function openLogin(){
   avatarSel=(auth&&auth.user&&auth.user.avatar)||'e:🐭';
@@ -4429,6 +4516,7 @@ async function openAvatarModal(){
   // 先立即弹出弹层（头像图已瘦身，几乎瞬时），再异步补全"我的中心"数据，消除点击后 1-2 秒无响应
   document.getElementById('avatarModal').style.display='flex';
   await loadMe();
+  refreshUploadLock();
   const me=auth.me||{};
   const nm=document.getElementById('myCenterName'); if(nm) nm.textContent=auth.user.name||'';
   const ic=document.getElementById('myInviteCode'), iq=document.getElementById('myInviteQuota');
@@ -4535,7 +4623,7 @@ async function renderRank(){
     if(auth&&auth.me){
       const isScore=rankType==='score';
       const rk=isScore?auth.me.myRankScore:auth.me.myRankTotal;
-      html+='<div class="rank-me">我的'+(isScore?'积分榜':'总榜')+'排名：第 '+(rk||'-')+' 名（共 '+(auth.me.totalUsers||'-')+' 人）</div>';
+      html+='<div class="rank-me">我的'+(isScore?'积分榜':'词汇榜')+'排名：第 '+(rk||'-')+' 名（共 '+(auth.me.totalUsers||'-')+' 人）</div>';
     }
   } else {
     html+='<div class="empty-state">还没有人上榜<br>邀请小伙伴一起来学吧！</div>';
