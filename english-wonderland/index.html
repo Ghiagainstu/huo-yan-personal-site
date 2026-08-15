@@ -697,6 +697,23 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
    儿童英语学园 · 词库（生活主题，数量随版本增长）
    ============================================================ */
 const PHON={
+  'grey':['/ɡɹeɪ/','/ɡɹeɪ/','https://api.dictionaryapi.dev/media/pronunciations/en/grey-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/grey-us.mp3'],
+  'theatre':['/ˈθɪətə/','/ˈθiːətər/','https://api.dictionaryapi.dev/media/pronunciations/en/theatre-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/theatre-us.mp3'],
+  'racoon':['/ræˈkuːn/','/ræˈkuːn/','',''],
+  'flat':['/flæt/','/flæt/','https://api.dictionaryapi.dev/media/pronunciations/en/flat-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/flat-us.mp3'],
+  'trousers':['/ˈtɹaʊzəz/','/ˈtɹaʊzɚz/','https://api.dictionaryapi.dev/media/pronunciations/en/trousers-uk.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/trousers-us.mp3'],
+  'lorry':['/ˈlɒɹi/','/ˈlɒɹi/','',''],
+  'chips':['/tʃɪps/','/tʃɪps/','','https://api.dictionaryapi.dev/media/pronunciations/en/chips-us.mp3'],
+  'biscuit':['/ˈbɪskɪt/','/ˈbɪskɪt/','https://api.dictionaryapi.dev/media/pronunciations/en/biscuit-au.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/biscuit-us.mp3'],
+  'sweets':['/swiːts/','/swiːts/','',''],
+  'aubergine':['/ˈəʊ.bə.ʒiːn/','/ˈəʊ.bə.ʒiːn/','',''],
+  'courgette':['/kɔːˈʒɛt/','/kɔːˈʒɛt/','https://api.dictionaryapi.dev/media/pronunciations/en/courgette-uk.mp3',''],
+  'trainers':['/ˈtɹeɪnə(ɹ)z/','/ˈtɹeɪnə(ɹ)z/','',''],
+  'rubber':['/ˈɹʌbə(ɹ)/','/ˈɹʌbɚ/','','https://api.dictionaryapi.dev/media/pronunciations/en/rubber-us.mp3'],
+  'underground':['/ˈʌndəɡɹaʊnd/','/ˈʌndəɡɹaʊnd/','',''],
+  'fall':['/fɔːl/','/fɔl/','','https://api.dictionaryapi.dev/media/pronunciations/en/fall-1-us.mp3'],
+  'football':['/ˈfʊtbɔːl/','/ˈfʊtbɑːl/','https://api.dictionaryapi.dev/media/pronunciations/en/football-au.mp3',''],
+
   'with':['/wɪð/','/wɪð/','',''],
   'were':['/wɜː/','/wɜːr/','',''],
   'english':['/ˈɪŋ.ɡlɪʃ/','/ˈɪŋ.ɡlɪʃ/','https://api.dictionaryapi.dev/media/pronunciations/en/english-us.mp3','https://api.dictionaryapi.dev/media/pronunciations/en/english-us.mp3'],
@@ -1829,7 +1846,7 @@ const CATS = [
     ['pufferfish','河豚','img:pufferfish'],
     ['puppy','小狗','img:puppy'],
     ['python','蟒蛇','img:python'],
-    ['raccoon','浣熊','img:raccoon'],
+    ['raccoon','浣熊','img:raccoon','racoon'],
     ['rat','大老鼠','img:rat'],
     ['ray fish','鳐鱼','img:ray-fish'],
     ['rhino','犀牛','img:rhino'],
@@ -2011,7 +2028,7 @@ const CATS = [
     ['blue','蓝色','#2196F3'],
     ['brown','棕色','#795548'],
     ['gold','金色','img:gold'],
-    ['gray','灰色','#9E9E9E'],
+    ['gray','灰色','#9E9E9E','grey'],
     ['green','绿色','#4CAF50'],
     ['mint','薄荷绿','#98FB98'],
     ['navy','深蓝色','#000080'],
@@ -2478,7 +2495,7 @@ const CATS = [
     ['stadium','体育馆', 'img:stadium'],
     ['store','商店', 'img:store'],
     ['supermarket','超市', 'img:supermarket'],
-    ['theater','剧院', 'img:theater'],
+    ['theater','剧院','img:theater','theatre'],
     ['train station','火车站', 'img:train-station'],
     ['university','大学', 'img:university'],
     ['zoo','动物园','img:zoo'],
@@ -2873,6 +2890,7 @@ let flipped = false;
 let poemIdx = 0;
 let currentExample = '';
 let currentWord = '';
+let currentAlt = '';
 let gameQueue = [];
 let gameIdx = 0;
 let gameStartTime = 0;
@@ -3384,10 +3402,11 @@ const EXAMPLES = {
 };
 function makeExample(cat,w){
   const en = Array.isArray(w) ? w[0] : w;
+  const enDisp = (Array.isArray(w) && w[3] && w[3]!==w[0]) ? w[0]+' / '+w[3] : en;
   if (EXAMPLES[cat.id + '|' + en]) return EXAMPLES[cat.id + '|' + en];
   const arr = (cat.tpls && cat.tpls.length) ? cat.tpls : (cat.tpl ? [cat.tpl] : ['']);
   const t = arr[Math.floor(Math.random()*arr.length)];
-  return t.replace('{a}',article(en)).replace('{w}',en);
+  return t.replace('{a}',article(en)).replace('{w}',enDisp);
 }
 function totalWords(){return CATS.reduce((s,c)=>s+c.words.length,0)}
 function masteredCount(){let n=0;for(const k in engProgress) if(engProgress[k]>=3) n++;return n}
@@ -3398,13 +3417,13 @@ function catMastered(cat){return cat.words.filter(w=>getLevel(cat.id,w[0])>=3).l
 const REGION = {
   // 美式特有（英式用别的词）
   apartment:'us', pants:'us', truck:'us', fries:'us', cookie:'us', candy:'us',
-  eggplant:'us', zucchini:'us', sneakers:'us', eraser:'us', subway:'us', gray:'us', soccer:'us',
+  eggplant:'us', zucchini:'us', sneakers:'us', eraser:'us', subway:'us', gray:'both', soccer:'us',
   // 英式特有
   autumn:'uk',
   // 下方 EXTRA_WORDS 补进来的对应词
   flat:'uk', trousers:'uk', lorry:'uk', chips:'uk', biscuit:'uk', sweets:'uk',
   aubergine:'uk', courgette:'uk', trainers:'uk', rubber:'uk', underground:'uk',
-  fall:'us', football:'uk', grey:'uk'
+  fall:'us', football:'uk'
 };
 function regionOf(w){ const k=(Array.isArray(w)?w[0]:w).toLowerCase(); return REGION[k]||'both'; }
 /* tier：核心词(core)=上海课标要求；拓展词(ext)=教材不要求。
@@ -3431,14 +3450,13 @@ const EXTRA_WORDS = [
   ['rubber','橡皮','img:eraser','objects'],
   ['underground','地铁','img:subway','transport'],
   ['fall','秋天','img:autumn','time'],
-  ['football','足球','img:soccer','sports'],
-  ['grey','灰色','#9E9E9E','colors']
+  ['football','足球','img:soccer','sports']
 ];
 /* 每个美式/英式对应词紧跟在它的"基词"后面,保证「通用」视图里成对相邻显示 */
 const EXTRA_BASE={
   flat:'apartment',trousers:'pants',lorry:'truck',chips:'fries',biscuit:'cookie',
   sweets:'candy',aubergine:'eggplant',courgette:'zucchini',trainers:'sneakers',
-  rubber:'eraser',underground:'subway',fall:'autumn',football:'soccer',grey:'gray'
+  rubber:'eraser',underground:'subway',fall:'autumn',football:'soccer'
 };
 EXTRA_WORDS.forEach(([en,zh,art,catId])=>{
   const c=CATS.find(x=>x.id===catId);
@@ -3687,9 +3705,10 @@ function renderCard(){
   const item=cardList[cardIdx];
   const word=item.w[0],zh=item.w[1];
   currentWord=word;
+  currentAlt = (item.w[3] && item.w[3]!==word) ? item.w[3] : '';
   const lv=getLevel(item.cat.id,word);
   const rg=regionOf(item.w);
-  currentExample=makeExample(item.cat,word);
+  currentExample=makeExample(item.cat,item.w);
   const example=currentExample;
   const svg=wordArtSVG(item);
   let dots='';
@@ -3702,11 +3721,11 @@ function renderCard(){
         '<div class="card-face card-front">'+
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-en-wrap"><span class="word-en">'+word+'</span>'+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
-            phonHTML(word)+
+            '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
+            phonHTML(word,currentAlt)+
             '<div class="accent-row">'+
-              '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(currentWord,\'uk\',this)">🇬🇧 英音</button>'+
-              '<button class="accent-btn us" onclick="event.stopPropagation();playAccent(currentWord,\'us\',this)">🇺🇸 美音</button>'+
+              '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(\'uk\',this)">🇬🇧 英音</button>'+
+              '<button class="accent-btn us" onclick="event.stopPropagation();playAccent(\'us\',this)">🇺🇸 美音</button>'+
             '</div>'+
             '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
           '</div>'+
@@ -3715,8 +3734,8 @@ function renderCard(){
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
             '<div class="word-zh">'+zh+(rg!=='both'?'<span class="region-pill sm '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
-            '<div class="word-en" style="font-size:26px">'+word+'</div>'+
-            phonHTML(word)+
+            '<div class="word-en" style="font-size:26px">'+word+(currentAlt?' / '+currentAlt:'')+'</div>'+
+            phonHTML(word,currentAlt)+
             (example?'<div class="word-example">💬 '+example.split('|')[0]+'</div>'+(example.split('|')[1]?'<div class="word-example-zh">'+example.split('|')[1]+'</div>':'')+'':'')+
             '<button class="speak-btn" id="speakExBtn" onclick="event.stopPropagation();speakExample()">🔊 听例句</button>'+
           '</div>'+
@@ -3744,9 +3763,10 @@ function speakWord(){if(!cardList.length) return;speak(cardList[cardIdx].w[0],'e
 function speakExample(){if(!cardList.length) return;const item=cardList[cardIdx];if(!currentExample) currentExample=makeExample(item.cat,item.w[0]);const ex=currentExample.split('|')[0].replace(/<[^>]+>/g,'');speak(ex,'en-US',document.getElementById('speakExBtn'))}
 /* 音标: 英音(en-GB) / 美音(en-US)。优先用真人录音(dictionaryapi 音频)，
    若离线或加载失败则回退到浏览器语音合成对应口音。 */
-function playAccent(word,accent,btn){
-  if(!word) return;
-  const p=PHON[word]||[];
+function playAccent(accent,btn){
+  if(!currentWord) return;
+  const w = accent==='uk' ? (currentAlt||currentWord) : currentWord;
+  const p=PHON[w]||[];
   const ipa=accent==='uk'?p[0]:p[1];
   const url=accent==='uk'?p[2]:p[3];
   const lang=accent==='uk'?'en-GB':'en-US';
@@ -3758,22 +3778,24 @@ function playAccent(word,accent,btn){
     const a=new Audio();
     a.src=url;
     a.onended=()=>{done=true;stop();};
-    a.onerror=()=>{ if(!done){done=true;stop();speak(word,lang,btn);} };
+    a.onerror=()=>{ if(!done){done=true;stop();speak(w,lang,btn);} };
     const pr=a.play();
-    if(pr&&pr.catch) pr.catch(()=>{ if(!done){done=true;stop();speak(word,lang,btn);} });
+    if(pr&&pr.catch) pr.catch(()=>{ if(!done){done=true;stop();speak(w,lang,btn);} });
     // 安全兜底: 1.5s 内没成功播放就改用语音合成
-    setTimeout(()=>{ if(!done){done=true;stop();speak(word,lang,btn);} },1500);
+    setTimeout(()=>{ if(!done){done=true;stop();speak(w,lang,btn);} },1500);
   } else {
-    speak(word,lang,btn);
+    speak(w,lang,btn);
   }
 }
-function phonHTML(word){
+function phonHTML(word,alt){
   const p=PHON[word];
   if(!p) return '';
-  const uk=p[0]||'',us=p[1]||'';
+  const ukWord = alt||word;
+  const up=PHON[ukWord]||p;
+  const uk=up[0]||'',us=p[1]||'';
   let h='<div class="phon-row">';
-  if(uk) h+='<button class="phon-pill uk" onclick="event.stopPropagation();playAccent(currentWord,\'uk\',this)"><span class="flag">🇬🇧</span><span class="ipa">'+uk+'</span></button>';
-  if(us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(currentWord,\'us\',this)"><span class="flag">🇺🇸</span><span class="ipa">'+us+'</span></button>';
+  if(uk) h+='<button class="phon-pill uk" onclick="event.stopPropagation();playAccent(\'uk\',this)"><span class="flag">🇬🇧</span><span class="ipa">'+uk+'</span></button>';
+  if(us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(\'us\',this)"><span class="flag">🇺🇸</span><span class="ipa">'+us+'</span></button>';
   h+='</div>';
   return h;
 }
