@@ -106,6 +106,13 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .game-mode-btn{border:none;border-radius:14px;padding:12px 18px;font-size:16px;font-weight:bold;background:#fff;color:#11998e;box-shadow:0 4px 12px rgba(0,0,0,.10);cursor:pointer;transition:transform .15s,background .15s,color .15s;}
 .game-mode-btn:hover{transform:translateY(-2px);background:#11998e;color:#fff;}
 .game-wrong-bar{margin-top:14px;text-align:center;animation:pop .4s;}
+/* ===== 拼写输入关 ===== */
+.game-input{border:2px solid #dfe6e9;border-radius:12px;padding:12px 14px;font-size:18px;width:200px;max-width:60vw;text-align:center;outline:none;transition:border-color .15s;}
+.game-input:focus{border-color:#11998e;}
+/* ===== 真假判断关 ===== */
+.game-tf{display:flex;align-items:center;justify-content:center;gap:8px;min-width:140px;padding:16px 22px;font-size:20px;font-weight:bold;}
+/* ===== 正反义词 BOSS 关 ===== */
+.game-boss{display:inline-block;background:linear-gradient(90deg,#ff6b6b,#ee5253);color:#fff;font-weight:bold;padding:6px 16px;border-radius:999px;margin-bottom:8px;font-size:15px;box-shadow:0 4px 12px rgba(238,82,83,.35);}
 /* ===== 拖拽配对：HTML5 DnD 支持(桌面) ===== */
 .game-chip{cursor:grab;user-select:none;-webkit-user-select:none;}
 .game-chip[draggable=true]:active{cursor:grabbing;}
@@ -648,7 +655,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="module" id="modGame">
     <div class="game-top">
         <span class="pill">⭐ <span id="gStarCount">0</span> 星星</span>
-        <span class="pill">📚 已掌握 <span id="gMastered">0</span>/<span id="gTotal">685</span></span>
+        <span class="pill">📚 已掌握 <span id="gMastered">0</span>/<span id="gTotal">0</span></span>
+        <span class="pill">🎯 本轮 <span id="gRound">0</span></span>
         <span class="pill" id="gPhase">准备开始</span>
         <span class="pill">⏱ <span id="gTimer">00:00</span></span>
     </div>
@@ -1561,7 +1569,7 @@ function preloadGameAhead(){
   for(let k=0;k<PRELOAD_GAME_AHEAD;k++){
     const q = gameQueue[gameIdx+k];
     if(!q) break;
-    const art = q.w[2];
+    const art = q.w && q.w[2];
     if(art && art.slice(0,4)==='img:') preloadImg(art.slice(4));
   }
 }
@@ -2720,6 +2728,20 @@ const GAME_MS = 14*60*1000;
 const GAME_PER_SESSION = 10;
 const GAME_NEXT_DELAY = 1800;   // 答对后停留时长(ms)：放慢让小朋友看清鼓励动画
 let gameCurActFn = null;   // 当前关函数引用，用于「再试一次」重跑同一关
+/* ===== 每日新词上限(学习量防沉迷) ===== */
+const DAILY_NEW_CAP = 8;   // 每天最多引入的新词数;复习词不限
+const LS_WRONG = 'kids_wrong_log';
+function dailyNewKey(){return 'kids_daily_new_'+cnToday();}
+function getDailyNew(){ try{const d=JSON.parse(localStorage.getItem(dailyNewKey())||'null'); if(d&&d.date===cnToday()) return d.count||0;}catch(e){} return 0; }
+function addDailyNew(n){ if(n>0){ const c=getDailyNew()+n; localStorage.setItem(dailyNewKey(),JSON.stringify({date:cnToday(),count:c})); } }
+function wrongLog(){ try{return JSON.parse(localStorage.getItem(LS_WRONG)||'[]');}catch(e){return [];} }
+function addWrong(key){ if(!key) return; let a=wrongLog(); a=a.filter(k=>k!==key); a.unshift(key); if(a.length>60)a=a.slice(0,60); localStorage.setItem(LS_WRONG,JSON.stringify(a)); }
+function findWordEn(en){ const e=String(en).toLowerCase(); for(const c of CATS){ for(const w of c.words){ if(w[0].toLowerCase()===e) return {cat:c,w}; } } return null; }
+function randomWords(n,exclude){ const pool=[]; CATS.forEach(c=>c.words.forEach(w=>{ const k=w[0].toLowerCase(); if(!exclude||!exclude.has(k)) pool.push(w[0]); })); const a=pool.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a.slice(0,n); }
+/* 反义/近义词对(运行时仅保留词库中双方都存在的对,避免缺图) */
+const ANT_PAIRS=[['big','small'],['hot','cold'],['happy','sad'],['up','down'],['open','close'],['in','out'],['tall','short'],['fast','slow'],['day','night'],['good','bad'],['new','old'],['long','short'],['yes','no'],['come','go'],['left','right'],['black','white'],['on','off'],['happy','angry'],['big','little'],['wet','dry'],['clean','dirty'],['full','empty'],['young','old'],['hard','soft'],['high','low'],['front','back'],['win','lose'],['start','stop'],['push','pull'],['loud','quiet']];
+const SYN_PAIRS=[['happy','glad'],['big','large'],['small','little'],['sad','unhappy'],['fast','quick'],['cold','cool'],['hot','warm'],['smart','clever']];
+function validPairs(src){ const out=[]; for(const p of src){ const a=findWordEn(p[0]), b=findWordEn(p[1]); if(a&&b&&a.w[0].toLowerCase()!==b.w[0].toLowerCase()) out.push({a,b}); } return out; }
 function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{}}}
 function saveObj(key,obj){localStorage.setItem(key,JSON.stringify(obj))}
 function poemMemorizedCount(){let n=0;for(const k in poemProgress) if(poemProgress[k]===2) n++;return n}
@@ -3634,7 +3656,8 @@ function gameDistractors(catMe, wMe, n){
 /* 选本session队列: 优先新词,然后到期复习词,最多 GAME_PER_SESSION */
 function gameBuildQueue(){
   const now=Date.now();
-  const all=[];
+  const budget=Math.max(0, DAILY_NEW_CAP - getDailyNew());  // 今日剩余新词额度
+  const all=[]; let newUsed=0;
   CATS.forEach(c=>c.words.forEach(w=>{
     const key=wordKey(c.id,w[0]);
     const lv=getLevel(c.id,w[0]);
@@ -3642,17 +3665,50 @@ function gameBuildQueue(){
     const r=review[key];
     const isNew=(lv===0 && !r);
     const isDue=(r && r.due && r.due<=now);
+    if(isNew){
+      if(newUsed>=budget) return;   // 今日新词已达上限,本轮只放复习词
+      newUsed++;
+    }
     if(isNew||isDue) all.push({cat:c,w,key,lv,isNew});
   }));
   all.sort((a,b)=>(a.isNew?-1:1)-(b.isNew?-1:1));
   return all.slice(0,GAME_PER_SESSION);
 }
+/* 正反义词 BOSS 关：从词库筛选双方都存在的反义/近义词对 */
+function gameBuildBoss(){
+  const ant=validPairs(ANT_PAIRS).map(p=>({rel:'ant',a:p.a,b:p.b}));
+  const syn=validPairs(SYN_PAIRS).map(p=>({rel:'syn',a:p.a,b:p.b}));
+  const pairs=shuffleArr([...ant,...syn]);
+  const N=Math.min(8,pairs.length);
+  const out=[];
+  for(let i=0;i<N;i++){
+    const p=pairs[i];
+    const askFirst=Math.random()<0.5;
+    const a=askFirst?p.a:p.b, b=askFirst?p.b:p.a;
+    out.push({mode:'boss',rel:p.rel,a,b,key:wordKey(a.cat.id,a.w[0])});
+  }
+  return out;
+}
+/* 错题本专项：只刷最近答错、且尚未掌握的词 */
+function gameBuildWrongBook(){
+  const out=[];
+  for(const key of wrongLog()){
+    const f=findByKey(key); if(!f) continue;
+    if(getLevel(f.cat.id,f.w[0])>=3) continue;
+    out.push({cat:f.cat,w:f.w,key,lv:getLevel(f.cat.id,f.w[0]),isNew:false});
+    if(out.length>=GAME_PER_SESSION) break;
+  }
+  return out;
+}
 /* 游戏进度记忆：离开/刷新后回来继续本轮（6 小时内未完成的自动续玩） */
 const LS_GAME='kids_game_progress';
 function gameSave(){
   try{
-    const q=gameQueue.map(it=>({c:it.cat.id,w:it.w[0],lv:it.lv,isNew:it.isNew?1:0}));
-    localStorage.setItem(LS_GAME,JSON.stringify({q,idx:gameIdx,stars:gameSessionStars,t:gameStartTime}));
+    const q=gameQueue.map(it=>{
+      if(it.mode==='boss') return {boss:1,rel:it.rel,a:[it.a.cat.id,it.a.w[0]],b:[it.b.cat.id,it.b.w[0]]};
+      return {c:it.cat.id,w:it.w[0],lv:it.lv,isNew:it.isNew?1:0};
+    });
+    localStorage.setItem(LS_GAME,JSON.stringify({mode:gameMode,q,idx:gameIdx,stars:gameSessionStars,t:gameStartTime}));
   }catch(e){}
 }
 function gameLoad(){
@@ -3661,19 +3717,27 @@ function gameLoad(){
     if(!d||!Array.isArray(d.q)||!d.q.length) return null;
     const q=[];
     for(const it of d.q){
-      const cat=CATS.find(c=>c.id===it.c);
-      const w=cat&&cat.words.find(x=>x[0]===it.w);
-      if(!cat||!w) continue;
-      q.push({cat,w,key:wordKey(cat.id,w[0]),lv:getLevel(cat.id,w[0]),isNew:!!it.isNew});
+      if(it.boss){
+        const ac=CATS.find(c=>c.id===it.a[0]), aw=ac&&ac.words.find(x=>x[0]===it.a[1]);
+        const bc=CATS.find(c=>c.id===it.b[0]), bw=bc&&bc.words.find(x=>x[0]===it.b[1]);
+        if(!ac||!aw||!bc||!bw) continue;
+        q.push({mode:'boss',rel:it.rel,a:{cat:ac,w:aw},b:{cat:bc,w:bw},key:wordKey(ac.id,aw[0])});
+      } else {
+        const cat=CATS.find(c=>c.id===it.c);
+        const w=cat&&cat.words.find(x=>x[0]===it.w);
+        if(!cat||!w) continue;
+        q.push({cat,w,key:wordKey(cat.id,w[0]),lv:getLevel(cat.id,w[0]),isNew:!!it.isNew});
+      }
     }
     if(!q.length) return null;
-    return {q,idx:Math.max(0,Math.min(d.idx||0,q.length)),stars:d.stars||0,t:d.t||Date.now()};
+    return {q,mode:d.mode,idx:Math.max(0,Math.min(d.idx||0,q.length)),stars:d.stars||0,t:d.t||Date.now()};
   }catch(e){return null;}
 }
 function gameClearSave(){try{localStorage.removeItem(LS_GAME);}catch(e){}}
 function gSetPhase(t){document.getElementById('gPhase').textContent=t}
 function gRefreshTop(){
-  document.getElementById('gStarCount').textContent=gameSessionStars;
+  document.getElementById('gStarCount').textContent=stars;           // 累计星星(与页头一致)
+  document.getElementById('gRound').textContent=gameSessionStars;     // 本轮会话星(每次答对 +1)
   document.getElementById('gMastered').textContent=masteredCount();
   document.getElementById('gTotal').textContent=totalWords();
 }
@@ -3685,11 +3749,13 @@ function gTimerTick(){
 }
 function gameStart(){
   const saved=gameLoad();
-  if(saved&&Date.now()-saved.t<6*3600*1000){
+  if(saved&&saved.mode===gameMode&&Date.now()-saved.t<6*3600*1000){
     /* 有未完成的存档 → 继续上一轮 */
     gameQueue=saved.q; gameIdx=saved.idx; gameStartTime=saved.t; gameSessionStars=saved.stars;
   } else {
-    gameQueue=gameBuildQueue();
+    if(gameMode==='boss') gameQueue=gameBuildBoss();
+    else if(gameMode==='wrongbook') gameQueue=gameBuildWrongBook();
+    else { gameQueue=gameBuildQueue(); addDailyNew(gameQueue.filter(it=>it.isNew).length); }
     gameIdx=0;
     gameStartTime=Date.now();
     gameSessionStars=0;
@@ -3708,16 +3774,25 @@ function gameNext(){
   gameCurrent=gameQueue[gameIdx++];
   gameSave();
   preloadGameAhead();
-  if(gameMode!=='all'){
-    if(gameMode==='listen') return gameActListen();
-    if(gameMode==='see') return gameActSee();
-    if(gameMode==='drag') return gameActDrag();
-    if(gameMode==='sentence') return gameActSentence();
+  if(gameMode==='listen') return gameActListen();
+  if(gameMode==='see') return gameActSee();
+  if(gameMode==='drag') return gameActDrag();
+  if(gameMode==='sentence') return gameActSentence();
+  if(gameMode==='spell') return gameActSpell();
+  if(gameMode==='tf') return gameActTF();
+  if(gameMode==='boss') return gameActBoss();
+  if(gameMode==='wrongbook'){
+    const r=Math.random();
+    if(r<0.4) return gameActListen();
+    if(r<0.7) return gameActSee();
+    if(r<0.9) return gameActDrag();
+    return gameActSentence();
   }
+  /* 'all' 随机混合 */
   const r=Math.random();
-  if(r<0.4) gameActListen();
-  else if(r<0.75) gameActSee();
-  else if(r<0.92) gameActDrag();
+  if(r<0.35) gameActListen();
+  else if(r<0.65) gameActSee();
+  else if(r<0.85) gameActDrag();
   else gameActSentence();
 }
 function gameRenderEmpty(){
@@ -3874,8 +3949,87 @@ function gameActSentence(){
     box.appendChild(b);
   });
 }
-/* 统一判定 + 反馈 + 进度记录 */
-function gAnswer(node,correct,en){
+/* 拼写输入关：看图/听音 → 拼出单词 */
+function gameActSpell(){
+  gameCurActFn=gameActSpell;
+  gSetPhase('拼写关');
+  const cur=gameCurrent, w=cur.w;
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-h1">看图,把单词拼出来!</div>'+
+      '<div id="gPic">'+gameArt(cur)+'</div>'+
+      '<div class="game-h2">点图可听发音</div>'+
+      '<div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:8px">'+
+        '<div class="game-speak" id="gSpk">🔊</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap">'+
+        '<input id="gSpell" class="game-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入英文…">'+
+        '<button class="game-btn green" id="gSpellBtn">✅ 检查</button>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('gPic').onclick=()=>speak(w[0],'en-US',null);
+  document.getElementById('gSpk').onclick=()=>speak(w[0],'en-US',null);
+  const inp=document.getElementById('gSpell');
+  const check=()=>{
+    const v=inp.value.trim().toLowerCase();
+    if(!v) return;
+    gAnswer(inp, v===w[0].toLowerCase(), w[0]);
+  };
+  document.getElementById('gSpellBtn').onclick=check;
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); check(); } });
+  setTimeout(function(){ inp.focus(); speak(w[0],'en-US',null); },350);
+}
+/* 真假判断关：这句英文配这张图,对吗? */
+function gameActTF(){
+  gameCurActFn=gameActTF;
+  gSetPhase('真假判断');
+  const cur=gameCurrent, w=cur.w;
+  const isTrue=Math.random()<0.5;
+  let sentence;
+  if(isTrue){ sentence=makeExample(cur.cat,w[0]).split('|')[0]; }
+  else { const d=gameDistractors(cur.cat,w,1)[0]||w; sentence=makeExample(d.cat,d.w[0]).split('|')[0]; }
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-h1">这句话配这张图,对吗?</div>'+
+      '<div id="gPic">'+gameArt(cur)+'</div>'+
+      '<div class="game-sentence">'+esc(sentence)+'</div>'+
+      '<div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:16px;flex-wrap:wrap">'+
+        '<div class="game-opt game-tf" onclick="gAnswer(this,'+(isTrue?'true':'false')+',\''+w[0]+'\',\'应该是 ✅ 对的\')">✅ 对的</div>'+
+        '<div class="game-opt game-tf" onclick="gAnswer(this,'+(isTrue?'false':'true')+',\''+w[0]+'\',\'应该是 ❌ 错的\')">❌ 错的</div>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('gPic').onclick=()=>speak(sentence,'en-US',null);
+  setTimeout(function(){ speak(sentence,'en-US',null); },350);
+}
+/* 正反义词 BOSS 关 */
+function gameActBoss(){
+  gameCurActFn=gameActBoss;
+  const cur=gameCurrent, rel=cur.rel, a=cur.a, b=cur.b;
+  gSetPhase(rel==='ant'?'反义词 BOSS':'近义词 BOSS');
+  const ask=rel==='ant'?' 的反义词是?':' 的近义词是?';
+  const excl=new Set([a.w[0].toLowerCase(), b.w[0].toLowerCase()]);
+  const opts=shuffleArr([b.w[0], ...randomWords(3,excl)]);
+  const stage=document.getElementById('gameStage');
+  stage.innerHTML =
+    '<div class="game-scene">'+
+      '<div class="game-boss">🐉 BOSS 关 · 第 '+gameIdx+'/'+gameQueue.length+' 题</div>'+
+      '<div class="game-h1">'+esc(a.w[0])+ask+'</div>'+
+      '<div class="game-h2">选出正确的词</div>'+
+      '<div class="game-opts" id="gOpts"></div>'+
+    '</div>';
+  const box=document.getElementById('gOpts');
+  opts.forEach(function(o){
+    const b2=document.createElement('div');
+    b2.className='game-opt';
+    b2.innerHTML='<div class="word-en">'+esc(o)+'</div>';
+    b2.onclick=function(){ gAnswer(b2, o===b.w[0], b.w[0]); };
+    box.appendChild(b2);
+  });
+}
+/* 统一判定 + 反馈 + 进度记录。fb=自定义错误提示(如真假判断的"应该是✅/❌") */
+function gAnswer(node,correct,en,fb){
   const opts=document.querySelectorAll('.game-opt,.game-speak,#gPic');
   opts.forEach(o=>o.onclick=null);
   if(correct){
@@ -3883,13 +4037,13 @@ function gAnswer(node,correct,en){
     node.classList.add('correct');
     gameSessionStars++;
     gPraise();
-    gameReviewMark(gameCurrent.key,true);
+    if(gameCurrent&&gameCurrent.key) gameReviewMark(gameCurrent.key,true);
     gRefreshTop();
     setTimeout(gameNext,GAME_NEXT_DELAY);
   } else {
     gWrong();
     node.classList.add('wrong');
-    gameReviewMark(gameCurrent.key,false);
+    if(gameCurrent&&gameCurrent.key){ gameReviewMark(gameCurrent.key,false); addWrong(gameCurrent.key); }
     gRefreshTop();
     /* 答错不卡死：显示正确答案 + 再试一次 / 跳过 两个明确出口 */
     setTimeout(()=>{
@@ -3900,7 +4054,7 @@ function gAnswer(node,correct,en){
       });
       const bar=document.createElement('div');
       bar.className='game-wrong-bar';
-      bar.innerHTML='<div class="game-h2">❌ 正确答案：<b>'+esc(en)+'</b></div>'+
+      bar.innerHTML='<div class="game-h2">❌ '+(fb?esc(fb):'正确答案：<b>'+esc(en)+'</b>')+'</div>'+
         '<div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap">'+
         '<button class="game-btn green" onclick="gameRetry()">🔁 再试一次</button>'+
         '<button class="game-btn ghost" onclick="gameNext()">⏭ 跳过</button></div>';
@@ -3956,7 +4110,7 @@ function gameEnd(){
     '<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🌈</div>'+
     '<div class="game-h1">本轮结束!</div>'+
-    '<div class="game-h2">本轮 ⭐ '+gs+' 颗 · 用时 '+m+':'+s+'</div>'+
+    '<div class="game-h2">本轮 ⭐ '+gs+' 颗 · 累计 ⭐ '+stars+' 颗 · 用时 '+m+':'+s+'</div>'+
     gainHtml+
     '<div class="game-h2">已掌握 '+masteredCount()+'/'+totalWords()+'</div>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px">'+
@@ -3968,24 +4122,40 @@ function gameEnd(){
 function soundWrong(){gWrong()}
 function renderGameIntro(){
   gSetPhase('准备开始');
+  gRefreshTop();
   const total=masteredCount();
-  const modes=[
+  const usedNew=getDailyNew();
+  const leftNew=Math.max(0, DAILY_NEW_CAP-usedNew);
+  const baseModes=[
     {k:'all',ic:'🎲',t:'全部随机'},
     {k:'listen',ic:'🔊',t:'听音选图'},
     {k:'see',ic:'🖼️',t:'看图选词'},
     {k:'drag',ic:'🔗',t:'拖拽配对'},
-    {k:'sentence',ic:'✍️',t:'句式关'}
+    {k:'sentence',ic:'✍️',t:'句式关'},
+    {k:'spell',ic:'🔤',t:'拼写关'},
+    {k:'tf',ic:'✅',t:'真假判断'}
   ];
+  const chalModes=[
+    {k:'boss',ic:'🐉',t:'反义/近义词 BOSS'},
+    {k:'wrongbook',ic:'📕',t:'错题本专项'}
+  ];
+  const wrongCount=wrongLog().filter(k=>{const f=findByKey(k);return f&&getLevel(f.cat.id,f.w[0])<3;}).length;
   let html='<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🚀</div>'+
     '<div class="game-h1">闯关游戏</div>'+
     '<div class="game-h2">听音选图 · 看图选词 · 拖拽配对 · 句式关</div>'+
-    '<div class="game-h2">每天 5 个新词 + 到期复习 · 间隔重复防遗忘</div>'+
+    '<div class="game-h2">每天新词上限 <b>'+usedNew+'/'+DAILY_NEW_CAP+'</b>(剩 '+leftNew+' 个) · 到期复习不限</div>'+
     '<div class="game-h2">已掌握 <b>'+total+'</b> / '+totalWords()+'</div>'+
-    '<div class="game-h2">选择一种玩法开始 👇</div>'+
+    '<div class="game-h2">基础玩法 👇</div>'+
     '<div class="game-modes">';
-  modes.forEach(m=>{
-    html+='<button class="game-mode-btn" onclick="startGameWithMode(\''+m.k+'\')">'+m.ic+' '+m.t+'</button>';
+  baseModes.forEach(m=>{ html+='<button class="game-mode-btn" onclick="startGameWithMode(\''+m.k+'\')">'+m.ic+' '+m.t+'</button>'; });
+  html+='</div>'+
+    '<div class="game-h2" style="margin-top:16px">挑战玩法 👇</div>'+
+    '<div class="game-modes">';
+  chalModes.forEach(m=>{
+    let dis='';
+    if(m.k==='wrongbook' && wrongCount===0) dis=' disabled style="opacity:.5;cursor:not-allowed"';
+    html+='<button class="game-mode-btn"'+dis+' onclick="startGameWithMode(\''+m.k+'\')">'+m.ic+' '+m.t+(m.k==='wrongbook'?' ('+wrongCount+')':'')+'</button>';
   });
   html+='</div></div>';
   document.getElementById('gameStage').innerHTML=html;
