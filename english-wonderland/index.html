@@ -57,7 +57,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .chip .cnt{font-size:11px;opacity:.75;margin-left:4px;}
 .filter-row{display:flex;gap:8px;margin-bottom:14px;justify-content:space-between;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
 .filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{flex:0 0 auto;padding:9px 12px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;text-align:center;}
+.filter-chip{flex:1 1 0;min-width:0;padding:9px 4px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
 .filter-chip.active{background:#2575fc;color:#fff;}
 .filter-sep{flex:0 0 auto;width:1px;align-self:stretch;background:#dfe3e8;margin:2px 4px;}
 .filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
