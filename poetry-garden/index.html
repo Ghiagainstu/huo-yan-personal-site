@@ -13,8 +13,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .header{background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);color:#fff;padding:20px 16px 16px;text-align:center;position:relative;}
 .header h1{font-size:24px;margin-bottom:4px;}
 .header .sub{font-size:13px;opacity:.9;}
-.star-pill{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;font-size:16px;font-weight:bold;cursor:default;}
-.home-link{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:6px 12px;font-size:13px;text-decoration:none;font-weight:bold;}
+.header-top{position:absolute;top:14px;right:14px;display:flex;gap:8px;align-items:center;}
+.about-link{background:rgba(255,255,255,.25);color:#fff;border:none;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:bold;cursor:pointer;}
+.about-link:active{transform:scale(.97);}
+.star-pill{background:rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;font-size:16px;font-weight:bold;cursor:default;}
 
 /* ===== 容器 ===== */
 .module{display:none;max-width:640px;margin:0 auto;padding:16px 16px 40px;}
@@ -109,13 +111,35 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .stat-gd .progress-track{flex:1;}
 .stat-gd-num{width:48px;flex:0 0 auto;text-align:right;font-size:12px;color:#a1887f;}
 @media(max-width:480px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+/* ===== 关于弹窗 ===== */
+.about-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:9998;padding:26px 14px;overflow:auto;}
+.about-mask.show{display:flex;}
+.about-modal{background:#fff;border-radius:20px;max-width:560px;width:100%;padding:22px 20px 16px;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.3);margin:auto 0;}
+.about-close{position:absolute;top:12px;right:14px;border:none;background:#f1f3f5;color:#888;border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer;line-height:1;}
+.about-close:active{transform:scale(.92);}
+.about-h{font-size:22px;color:#8d6e63;margin-bottom:10px;padding-right:34px;}
+.about-p{font-size:14px;line-height:1.85;color:#555;margin-bottom:14px;}
+.about-feat{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px;margin-bottom:8px;font-size:13px;color:#666;}
+.about-feat div{line-height:1.5;}
+.about-h3{font-size:17px;color:#8d6e63;margin:14px 0 12px;border-top:1px solid #eee;padding-top:14px;}
+.timeline{position:relative;padding-left:18px;}
+.timeline:before{content:'';position:absolute;left:5px;top:5px;bottom:6px;width:2px;background:linear-gradient(#11998e,#38ef7d);}
+.tl-item{position:relative;margin-bottom:16px;}
+.tl-item:before{content:'';position:absolute;left:-18px;top:4px;width:10px;height:10px;border-radius:50%;background:#fff;border:3px solid #11998e;}
+.tl-date{font-size:12px;font-weight:bold;color:#11998e;margin-bottom:3px;}
+.tl-body b{font-size:14px;color:#5d4037;}
+.tl-body p{font-size:13px;color:#777;line-height:1.7;margin-top:3px;}
+.about-foot{text-align:center;font-size:12px;color:#bbb;margin-top:6px;}
+@media(max-width:480px){.about-feat{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
 <div class="header">
-    <a class="home-link" href="../">↩ 学习乐园</a>
-    <div class="star-pill">🌟 <span id="starCount">0</span></div>
+    <div class="header-top">
+      <button class="about-link" onclick="openAbout()">ℹ️ 关于</button>
+      <div class="star-pill">🌟 <span id="starCount">0</span></div>
+    </div>
     <h1>📜 古诗词</h1>
     <div class="sub" id="poemSub">共 28 首 · 点诗句可听发音</div>
 </div>
@@ -165,6 +189,40 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="star-toast" id="starToast">
     <div class="big">🌟</div>
     <div class="msg" id="starToastMsg">+1 星星！</div>
+</div>
+
+<div class="about-mask" id="aboutMask" onclick="if(event.target===this)closeAbout()">
+  <div class="about-modal">
+    <button class="about-close" onclick="closeAbout()" aria-label="关闭">✕</button>
+    <h2 class="about-h">📜 关于古诗词</h2>
+    <p class="about-p">这是一个专为小朋友打造的中文古诗词学习小天地，收录上海小学各年级必背古诗词（共 118 首）。通过生动的插画、拼音标注、背诵遮盖与朗读发音，帮孩子在“看—读—背”中感受诗词之美。</p>
+    <div class="about-feat">
+      <div>🔤 拼音：显示 / 隐藏每句拼音</div>
+      <div>🃏 背诵：遮盖诗句，自测记忆</div>
+      <div>⭐ 收藏：标记喜欢的诗词随时温习</div>
+      <div>📊 统计：查看学习进度与已背诵数</div>
+      <div>🔍 搜索 / 📋 目录：快速定位诗名作者</div>
+      <div>🎓 年级筛选：一年级到五年级分组</div>
+      <div>🔊 点读：点击诗句可听发音</div>
+      <div>🌟 积分：背诵打卡得星星（与学习乐园共享）</div>
+    </div>
+    <h3 class="about-h3">📝 更新日志</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-date">2026-08-13</div>
+        <div class="tl-body"><b>古诗词页上线</b><p>古诗词学习页正式上线，首批收录 26 首并配场景插画，支持拼音、背诵、收藏与进度追踪。随后修复配图加载脚本错误，卡片正常显示。</p></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2026-08-15</div>
+        <div class="tl-body"><b>篇目扩充与体验升级</b><p>扩充至 118 首上海小学必背古诗词，配图全部 webp 高清重制；全量配图接入预加载与浏览器长缓存，打开更快、更省流量；并修复个别配图占位失效的问题。</p></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2026-08-16</div>
+        <div class="tl-body"><b>细节打磨</b><p>筛选“某一年级”时，底部计数与定位改为该年级篇目总数；年级与状态筛选下拉补全中文全程与 emoji 标识，更易识别；积分图标由 ⭐ 改为 🌟，与“收藏 ⭐”区分，避免混淆。</p></div>
+      </div>
+    </div>
+    <div class="about-foot">火哥的绿龙虾 🦞 · 持续更新中</div>
+  </div>
 </div>
 
 <script>
@@ -1073,6 +1131,10 @@ function handleKey(e){
   else if((k===' '||k==='Enter')&&!isBtn){e.preventDefault();readPoem();}
 }
 document.addEventListener('keydown',handleKey);
+
+function openAbout(){ const m=document.getElementById('aboutMask'); if(m) m.classList.add('show'); document.body.style.overflow='hidden'; }
+function closeAbout(){ const m=document.getElementById('aboutMask'); if(m) m.classList.remove('show'); document.body.style.overflow=''; }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAbout(); });
 
 document.addEventListener('DOMContentLoaded',function(){
   try{const v=parseInt(localStorage.getItem(LS_POEM_IDX)||'',10);if(!isNaN(v)&&v>=0&&v<POEMS.length)poemIdx=v;}catch(e){}
