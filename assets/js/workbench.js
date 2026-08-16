@@ -537,6 +537,7 @@
       },
       {
         url: '/month-menu/',
+        locked: true,
         name: '一个月菜单总览 · 含食材调料',
         desc: '一整月午餐 / 晚餐规划，每天配好食材与调料清单，做饭不用再想。',
         tag: '家庭生活',
@@ -609,13 +610,13 @@
         var coverHtml = p.cover
           ? '<div class="proj-cover hasimg"><img class="cover-img" src="' + esc(p.cover) + '" alt="' + esc(p.name) + '"></div>'
           : '<div class="proj-cover"><span class="cv">' + ch + '</span></div>';
-        return '<div class="proj-card" data-act="proj-go" data-url="' + esc(p.url) + '">' +
+        return '<div class="proj-card" data-act="' + (p.locked ? 'proj-go' : 'proj-open') + '" data-url="' + esc(p.url) + '">' +
           coverHtml +
           '<div class="proj-body">' +
             '<div class="tag">' + esc(p.tag) + '</div>' +
             '<div class="name">' + esc(p.name) + '</div>' +
             '<div class="desc">' + esc(p.desc) + '</div>' +
-            '<div class="go">进入 →</div>' +
+            '<div class="go">' + (p.locked ? '🔒 ' : '') + '进入 →</div>' +
           '</div>' +
         '</div>';
       }).join('') + '</div>' +
@@ -759,6 +760,9 @@
     } else if (act === 'proj-go') {
       ev.preventDefault();
       promptProjectPassword(el.getAttribute('data-url'));
+    } else if (act === 'proj-open') {
+      ev.preventDefault();
+      window.location.href = el.getAttribute('data-url');
     }
   });
   function copyText(txt) {
