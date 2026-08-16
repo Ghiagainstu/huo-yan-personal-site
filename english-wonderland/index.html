@@ -62,16 +62,16 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .filter-sep{flex:0 0 auto;width:1px;align-self:stretch;background:#dfe3e8;margin:2px 4px;}
 .filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
 .filter-chip[data-tier].active{background:#8e44ad;} /* 核心/拓展 选中态用紫色，和 region 不混 */
-/* ===== 单词搜索（独立搜索框） + 分类下拉（独立控件，二者不嵌套） ===== */
-.search-block{margin:8px 0 6px;}
-.search-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+/* ===== 单词搜索（独立搜索框） + 分类下拉（同一行各占一半，互不嵌套） ===== */
+.search-block{margin:8px 0 6px;display:flex;gap:10px;align-items:stretch;}
+.search-row{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .search-row:focus-within{border-color:#2575fc;}
 .search-ico{font-size:18px;flex-shrink:0;}
 .search-input{flex:1;border:none;outline:none;font-size:16px;color:#2d3436;background:transparent;min-width:0;}
 .search-input::placeholder{color:#b2bec3;}
 .search-clear{border:none;background:#f0f2f5;color:#888;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;flex-shrink:0;}
 .search-clear:active{background:#e2e6ea;}
-.cat-row{margin-top:8px;}
+.cat-row{flex:1;margin-top:0;}
 .cat-select{width:100%;box-sizing:border-box;border:2px solid #e0e0e0;outline:none;background:#fff;color:#444;font-size:15px;font-weight:bold;font-family:inherit;border-radius:14px;padding:10px 12px;cursor:pointer;}
 .cat-select:focus{border-color:#2575fc;background:#f7fbff;}
 .search-results{margin:4px 0 10px;}
@@ -3448,7 +3448,37 @@ const CORE_CATS = new Set([
   'objects','clothes','nature','verbs','adjectives','time','animals',
   'transport','places','plants','sports','shapes'
 ]);
-function tierOfCat(catId){ return CORE_CATS.has(catId) ? 'core' : 'ext'; }
+/* 单词级覆盖(决定卡片「拓」角标 + 「核心/拓展」筛选): 分类只给默认,单词级可反向覆盖。
+   EXT_WORDS: 即便在核心分类,也强制标为拓展(适合日常分类里的偏门/进阶词)。
+   CORE_WORDS: 即便在拓展分类,也强制标为核心(适合进阶分类里的常见基础词)。
+   以下为初始默认清单,可按需增删。 */
+const EXT_WORDS = new Set([
+  // 动物里的冷门/非常见词 -> 标为拓展(词库实际存在)
+  'alpaca','anteater','chameleon','clownfish','komodo dragon','manta ray','pangolin','peacock','proboscis monkey','pufferfish','sabertooth','viper',
+  // 水果里的偏门
+  'durian','mangosteen','longan','lychee','persimmon','pitaya','pomelo','sugarcane','tangerine','lime','date','blackberry','blueberry','raspberry','guava','hawthorn','kiwi','fig','papaya','melon',
+  // 蔬菜里的偏门
+  'bamboo shoot','bitter melon','cauliflower','celery','chives','cilantro','lotus root','scallion','winter melon','okra','beet','turnip',
+  // 食物里的偏门
+  'pancake','donut','porridge','sausage','steamed bun','popcorn',
+  // 自然里的生僻
+  'frost','hail','puddle','slope','stream','typhoon','tornado','volcano'
+]);
+const CORE_WORDS = new Set([
+  // 拓展分类(insects/instruments/festivals/fantasy/jobs)里的高频基础词 -> 降为核心(不打标)
+  'ant','bee','beetle','butterfly','ladybug',                      // insects 常见
+  'drum','guitar','piano','violin',                                // instruments 常见
+  'birthday','Halloween','Easter','New Year','Spring Festival','Thanksgiving','National Day','Mid-Autumn Festival','Dragon Boat Festival','Lantern Festival', // festivals 常见
+  'doctor','teacher','police','firefighter','farmer','driver','nurse','cook','baker','vet','builder','painter','singer','dancer','writer','worker','pilot','postman','waiter','waitress' // jobs 常见
+]);
+/* 单词级判定: 优先逐词覆盖,否则回退分类默认 */
+function tierOfWord(catId, word){
+  if(EXT_WORDS.has(word)) return 'ext';
+  if(CORE_WORDS.has(word)) return 'core';
+  if(catId && catId.indexOf('sh-')===0) return 'ext';   // 功能词整体算拓展
+  return CORE_CATS.has(catId) ? 'core' : 'ext';
+}
+function tierOfCat(catId){ return tierOfWord(catId, null); }
 /* 把缺失的英式/美式对应词补进词库，与已有词共用图片 */
 const EXTRA_WORDS = [
   ['flat','公寓','img:apartment','places'],
@@ -3821,7 +3851,7 @@ function renderCard(){
   currentExample=makeExample(item.cat,item.w);
   const example=currentExample;
   const svg=wordArtSVG(item);
-  const isExt = tierOfCat(item.cat.id)==='ext';
+  const isExt = tierOfWord(item.cat.id, word)==='ext';
   const tierBadge = isExt ? '<span class="tier-badge">拓</span>' : '';
   let dots='';
   for(let i=0;i<3;i++) dots+='<span class="'+(i<lv?'on':'')+'"></span>';
