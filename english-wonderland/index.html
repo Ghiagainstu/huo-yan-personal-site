@@ -55,9 +55,13 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 }
 .chip.active{border-color:#11998e;background:#11998e;color:#fff;}
 .chip .cnt{font-size:11px;opacity:.75;margin-left:4px;}
-.filter-row{display:flex;gap:8px;margin-bottom:14px;}
-.filter-chip{flex:1;padding:9px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{flex:0 0 auto;padding:9px 12px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .filter-chip.active{background:#2575fc;color:#fff;}
+.filter-sep{flex:0 0 auto;width:1px;align-self:stretch;background:#dfe3e8;margin:2px 4px;}
+.filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
+.filter-chip[data-tier].active{background:#8e44ad;} /* 核心/拓展 选中态用紫色，和 region 不混 */
 /* ===== 单词搜索 ===== */
 .search-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:8px 12px;margin:8px 0 6px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .search-row:focus-within{border-color:#2575fc;}
@@ -89,8 +93,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
    不被 SVG 的宽高比反推撑高,这才是不卡的真正一行 */
 .card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column;}
 .card-back{transform:rotateY(180deg);}
-.card-art{flex:0 0 56%;min-height:0;display:flex;align-items:center;justify-content:center;}
+.card-art{flex:0 0 56%;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
 .card-art svg{width:100%;height:100%;display:block;}
+/* 拓展词角标: 固定在图片区右上角,与单词行的英/美式 pill 完全不重叠 */
+.tier-badge{position:absolute;top:8px;right:8px;z-index:3;background:#8e44ad;color:#fff;font-size:12px;font-weight:bold;line-height:1;padding:4px 8px;border-radius:999px;box-shadow:0 2px 6px rgba(142,68,173,.4);pointer-events:none;}
 .card-face.card-back .card-art{flex-basis:40%;}
 .card-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:10px;}
 /* ★ v2 修复点1(关键):显式 line-height,给 descender 留空间,避开过度紧凑的渲染截切 */
@@ -102,7 +108,6 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .region-pill.uk{background:#fce4ec;color:#ad1457;}
 .region-pill.sm{font-size:12px;margin-left:6px;padding:0 7px;}
 .word-en-wrap{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;}
-.region-row{margin-top:8px;}
 /* ===== 小游戏开始选择界面 ===== */
 .game-modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
 .game-mode-btn{border:none;border-radius:14px;padding:12px 18px;font-size:16px;font-weight:bold;background:#fff;color:#11998e;box-shadow:0 4px 12px rgba(0,0,0,.10);cursor:pointer;transition:transform .15s,background .15s,color .15s;}
@@ -633,7 +638,6 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <div class="txt"><span>🏆 已掌握 Mastered</span><span id="enMasteredTxt">0 / 808</span></div>
         <div class="progress-track"><div class="progress-fill" id="enProgressFill" style="width:0%"></div></div>
     </div>
-    <div class="chip-scroll" id="catChips"></div>
     <div class="search-row">
       <span class="search-ico">🔍</span>
       <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文，例如 cat 或 猫…" oninput="doSearch()" />
@@ -648,14 +652,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <button class="filter-chip" data-f="todo" onclick="setFilter('todo')">📖 待学习</button>
         <button class="filter-chip" data-f="done" onclick="setFilter('done')">✅ 已掌握</button>
         <button class="filter-chip" id="shuffleChip" onclick="toggleShuffle()">🔀 打乱</button>
-    </div>
-    <div class="filter-row region-row">
-        <button class="filter-chip" data-rg="all" onclick="setRegion('all')">🌐 通用</button>
+        <span class="filter-sep"></span>
+        <button class="filter-chip active" data-rg="all" onclick="setRegion('all')">🌐 通用</button>
         <button class="filter-chip" data-rg="us" onclick="setRegion('us')">🇺🇸 美式</button>
         <button class="filter-chip" data-rg="uk" onclick="setRegion('uk')">🇬🇧 英式</button>
-    </div>
-    <div class="filter-row tier-row">
-        <button class="filter-chip" data-tier="all" onclick="setTier('all')">📗 核心+拓展</button>
+        <span class="filter-sep"></span>
+        <button class="filter-chip active" data-tier="all" onclick="setTier('all')">📗 核心+拓展</button>
         <button class="filter-chip" data-tier="core" onclick="setTier('core')">📘 核心</button>
         <button class="filter-chip" data-tier="ext" onclick="setTier('ext')">📙 拓展</button>
     </div>
@@ -3470,10 +3472,26 @@ EXTRA_WORDS.forEach(([en,zh,art,catId])=>{
     }
   }
 });
+/* 分类展示顺序：按儿童认知梯度（具体到抽象）。未列出的分类排在最后,保持可回退。 */
+const CAT_ORDER = [
+  'animals','colors','numbers','body','fruits','vegetables','food','clothes','family',
+  'nature','plants','transport','places','insects','objects','sports','instruments','festivals','fantasy','time',
+  'verbs','adjectives','shapes',
+  'sh-subjects','sh-school','sh-greet','sh-pron-pers','sh-pron-poss','sh-pron-other',
+  'sh-article','sh-prep','sh-conj','sh-modal','sh-adv'
+];
+function SORTED_CATS(){
+  const byId={}; CATS.forEach(c=>byId[c.id]=c);
+  const out=CAT_ORDER.filter(id=>byId[id]).map(id=>byId[id]);
+  // 兜底: 任何新增/遗漏的分类(不在 CAT_ORDER 中)追加到末尾,不丢失
+  CATS.forEach(c=>{ if(CAT_ORDER.indexOf(c.id)===-1) out.push(c); });
+  return out;
+}
 function renderCatChips(){
   const box = document.getElementById('catChips');
+  if(!box) return; // 上方分类栏已移除,直接返回(下拉框承担筛选)
   let html = '<button class="chip'+(curCat==='all'?' active':'')+'" onclick="setCat(\'all\')">📚 全部<span class="cnt">'+masteredCount()+'/'+totalWords()+'</span></button>';
-  CATS.forEach(c=>{
+  SORTED_CATS().forEach(c=>{
     html += '<button class="chip'+(curCat===c.id?' active':'')+'" onclick="setCat(\''+c.id+'\')">'+c.zh+' '+c.en+'<span class="cnt">'+catMastered(c)+'/'+c.words.length+'</span></button>';
   });
   box.innerHTML = html;
@@ -3482,7 +3500,7 @@ function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();syncCatSe
 function populateCatSelect(){
   const sel=document.getElementById('catSelect'); if(!sel) return;
   let html='<option value="all">📚 全部</option>';
-  CATS.forEach(c=>{ html+='<option value="'+c.id+'">'+esc(c.zh)+' '+esc(c.en)+'</option>'; });
+  SORTED_CATS().forEach(c=>{ html+='<option value="'+c.id+'">'+esc(c.zh)+' '+esc(c.en)+'</option>'; });
   sel.innerHTML=html; syncCatSelect();
 }
 function onCatSelect(val){ setCat(val); }
@@ -3691,7 +3709,7 @@ function orderWords(catId, words){
 }
 function buildList(){
   cardList=[];
-  CATS.forEach(c=>{
+  SORTED_CATS().forEach(c=>{
     if(!curSearch && curCat!=='all' && c.id!==curCat) return;
     orderWords(c.id, c.words).forEach(w=>{
       const lv=getLevel(c.id,w[0]);
@@ -3792,6 +3810,8 @@ function renderCard(){
   currentExample=makeExample(item.cat,item.w);
   const example=currentExample;
   const svg=wordArtSVG(item);
+  const isExt = tierOfCat(item.cat.id)==='ext';
+  const tierBadge = isExt ? '<span class="tier-badge">拓</span>' : '';
   let dots='';
   for(let i=0;i<3;i++) dots+='<span class="'+(i<lv?'on':'')+'"></span>';
   /* ★ v2: 把圆角裁切从 .card-face 移到 .card-art-wrap,face 改 visible,
@@ -3800,7 +3820,7 @@ function renderCard(){
     '<div class="card-stage">'+
       '<div class="card-inner'+(flipped?' flipped':'')+'" id="cardInner" onclick="flipCard()">'+
         '<div class="card-face card-front">'+
-          '<div class="card-art">'+svg+'</div>'+
+          '<div class="card-art">'+svg+tierBadge+'</div>'+
           '<div class="card-body">'+
             '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word,currentAlt)+
