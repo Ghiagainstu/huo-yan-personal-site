@@ -1286,7 +1286,7 @@
         if(adaptMode) return;
         gradeKey=g.id; modIdx=0; catGroup=curModule().label; catKey=curModule().cats[0];
         roundActive=false; saveState();
-        renderCatGroups(); renderCats();
+        renderGrades(); renderCatGroups(); renderCats();
         if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
         current=genQuestion(); render();
       });
@@ -1302,7 +1302,7 @@
       b.addEventListener('click',()=>{
         if(adaptMode) return;
         modIdx=i; catGroup=m.label; catKey=m.cats[0]; roundActive=false; saveState();
-        renderCats();
+        renderCatGroups(); renderCats();
         if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
         current=genQuestion(); render();
       });
