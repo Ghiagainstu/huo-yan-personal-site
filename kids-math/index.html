@@ -138,8 +138,14 @@
   /* 弹窗通用 */
   .modal{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:40;}
   .modal.show{display:flex;}
-  .modal-card{background:#fff; border-radius:24px; padding:24px; width:100%; max-width:380px; box-shadow:var(--shadow); text-align:center; animation:popIn .3s ease;}
+  .modal-card{background:#fff; border-radius:24px; padding:24px; width:100%; max-width:380px; box-shadow:var(--shadow); text-align:center; animation:popIn .3s ease; max-height:86vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
   .modal-card h2{margin:0 0 14px; font-size:1.5rem;}
+  /* 弹窗顶部常驻标题栏 + 圆形关闭键（内容再长也始终可见可点） */
+  .modal-head{position:sticky; top:0; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:12px; margin-bottom:6px; z-index:3; border-bottom:1px solid #f1f1f4;}
+  .modal-head h2{margin:0; font-size:1.3rem;}
+  .modal-x{flex:none; border:none; background:#f1f1f4; color:#999; width:34px; height:34px; border-radius:50%; font-size:1.05rem; line-height:1; cursor:pointer; transition:.15s;}
+  .modal-x:hover{background:#e6e6ea; color:#666;}
+  .modal-body{padding-top:6px;}
   .stat-row{display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px dashed #eee; font-size:1.05rem;}
   .stat-row b{font-size:1.2rem; color:var(--orange);}
   .reset{margin-top:16px; border:none; border-radius:999px; padding:10px 24px; background:var(--red); color:#fff; font-weight:700; cursor:pointer;}
@@ -316,31 +322,35 @@
 
   <!-- 家长统计 -->
   <div class="modal" id="parentModal">
-    <div class="modal-card">
-      <h2>👨‍👩‍👧 练习统计</h2>
-      <div class="stat-row"><span>总题数</span><b id="sTotal">0</b></div>
-      <div class="stat-row"><span>答对</span><b id="sCorrect">0</b></div>
-      <div class="stat-row"><span>正确率</span><b id="sRate">0%</b></div>
-      <div class="stat-row"><span>当前连对</span><b id="sCur">0</b></div>
-      <div class="stat-row"><span>最佳连对</span><b id="sBest">0</b></div>
-      <button class="ghost" id="openWrongBook">📕 错题本</button>
-      <button class="reset" id="resetStats">清空统计</button>
-      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
-      <h3 style="margin:4px 0 8px;font-size:1rem;">👀 护眼家长锁</h3>
-      <div class="stat-row"><span>今日已用</span><b id="eyeTodayUsed">0 分</b></div>
-      <div id="pinStatus" style="font-size:.85rem;color:#888;margin:4px 0 8px;"></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
-        <input id="pinNew" inputmode="numeric" maxlength="4" placeholder="新密码4位" style="width:92px;padding:8px;border:2px solid #ddd;border-radius:10px;text-align:center;">
-        <input id="pinConfirm" inputmode="numeric" maxlength="4" placeholder="再输一次" style="width:92px;padding:8px;border:2px solid #ddd;border-radius:10px;text-align:center;">
+    <div class="modal-card" style="max-width:400px;">
+      <div class="modal-head">
+        <h2>👨‍👩‍👧 练习统计</h2>
+        <button class="modal-x" id="closeParent" aria-label="关闭">✕</button>
       </div>
-      <div style="margin:6px 0;">
-        <button class="ghost" id="pinSave">保存密码</button>
-        <button class="ghost" id="pinClear">清除密码</button>
+      <div class="modal-body">
+        <div class="stat-row"><span>总题数</span><b id="sTotal">0</b></div>
+        <div class="stat-row"><span>答对</span><b id="sCorrect">0</b></div>
+        <div class="stat-row"><span>正确率</span><b id="sRate">0%</b></div>
+        <div class="stat-row"><span>当前连对</span><b id="sCur">0</b></div>
+        <div class="stat-row"><span>最佳连对</span><b id="sBest">0</b></div>
+        <button class="ghost" id="openWrongBook">📕 错题本</button>
+        <button class="reset" id="resetStats">清空统计</button>
+        <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+        <h3 style="margin:4px 0 8px;font-size:1rem;">👀 护眼家长锁</h3>
+        <div class="stat-row"><span>今日已用</span><b id="eyeTodayUsed">0 分</b></div>
+        <div id="pinStatus" style="font-size:.85rem;color:#888;margin:4px 0 8px;"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+          <input id="pinNew" inputmode="numeric" maxlength="4" placeholder="新密码4位" style="width:92px;padding:8px;border:2px solid #ddd;border-radius:10px;text-align:center;">
+          <input id="pinConfirm" inputmode="numeric" maxlength="4" placeholder="再输一次" style="width:92px;padding:8px;border:2px solid #ddd;border-radius:10px;text-align:center;">
+        </div>
+        <div style="margin:6px 0;">
+          <button class="ghost" id="pinSave">保存密码</button>
+          <button class="ghost" id="pinClear">清除密码</button>
+        </div>
+        <div id="pinMsg" style="font-size:.82rem;color:#e8554e;min-height:1.1em;"></div>
+        <button class="ghost" id="resetTodayBtn" style="margin-top:8px;">重置今日时长</button>
+        <div id="resetTodayMsg" style="font-size:.82rem;color:#4ecdc4;min-height:1.1em;"></div>
       </div>
-      <div id="pinMsg" style="font-size:.82rem;color:#e8554e;min-height:1.1em;"></div>
-      <button class="ghost" id="resetTodayBtn" style="margin-top:8px;">重置今日时长</button>
-      <div id="resetTodayMsg" style="font-size:.82rem;color:#4ecdc4;min-height:1.1em;"></div>
-      <div><button class="ghost" id="closeParent">关闭</button></div>
     </div>
   </div>
 
@@ -357,20 +367,21 @@
 
   <!-- 关于本项目 -->
   <div class="modal" id="aboutModal">
-    <div class="modal-card" style="max-width:420px; text-align:left;">
-      <h2 style="text-align:center;">🧮 关于 幼儿口算</h2>
-      <div style="font-size:.96rem; line-height:1.75; color:#555;">
-        <p>这是一款面向 <b>3–8 岁幼儿</b> 的口算练习网页，<b>触屏优先、零图片依赖</b>（用 emoji 当图形），帮孩子练加减乘除口算。</p>
-        <p><b>题型</b>：5以内 / 10以内 / 三个数(10·20·30内) / 凑十法 / 破十法 / 10以内乘除法；<b>20以内</b>（混合·进位加·不进位加·退位减·不退位减）；<b>100以内</b>（整十数·混合·进位加·不进位加·退位减·不退位减，按由易到难分级，退位减复用破十法思路）。</p>
-        <p><b>答题方式</b>：选择（点选项）或填空（数字键盘），适配幼儿手指操作。</p>
-        <p><b>闯关 &amp; 反馈</b>：5 / 10 / 20 题一轮，结束有得分卡（星级＋彩带）；「错题分析」看板按题型统计正确率、回顾错题，并可「🔁 只练错题」一键重做本轮错题。</p>
-        <p><b>难度自适应</b>：控制条「🤖 自适应」开启后，按实时正确率自动升降难度（5以内→10以内→20以内平缓→20以内挑战→100以内），无需手动切分类。</p>
-        <p><b>错题本</b>：每道错题跨轮累积进长期「错题本」（家长弹窗内查看，按出错次数排序，可清除）。</p>
-        <p><b>家长统计</b>：本地记录总题数、正确率、连对（localStorage），右下角「家长」查看。</p>
-        <p><b>音效</b>：答对「叮」、答错「噗」、闯关完成有庆祝旋律；控制条「🔊 音效」可一键开关（默认开）。</p>
-        <p style="color:#999;">纯前端单文件 HTML，离线可用，适配手机 / 平板 / 桌面。</p>
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-head">
+        <h2>🧮 关于 幼儿口算</h2>
+        <button class="modal-x" id="closeAbout" aria-label="关闭">✕</button>
       </div>
-      <div style="text-align:center;"><button class="ghost" id="closeAbout">关闭</button></div>
+      <div class="modal-body" style="text-align:left; font-size:.96rem; line-height:1.7; color:#555;">
+        <p style="margin-top:0;">面向 <b>3–8 岁幼儿</b> 的口算练习网页：触屏优先、用 emoji 当图形、纯前端单文件、离线可用，适配手机 / 平板 / 桌面。</p>
+        <p><b>📚 年级体系</b>：一年级～五年级，按上海沪教版进度分级，覆盖加减乘除、分数、小数与方程启蒙。</p>
+        <p><b>✍️ 答题方式</b>：选择（点选项）或填空（数字键盘），适配幼儿手指操作。</p>
+        <p><b>🏆 闯关 &amp; 反馈</b>：5 / 10 / 20 题一轮，结束有得分卡；「错题分析」按题型统计正确率、回顾错题，可「只练错题」。</p>
+        <p><b>🤖 难度自适应</b>：开启后按实时正确率自动升降难度，无需手动切分类。</p>
+        <p><b>📕 错题本 &amp; 👀 护眼锁</b>：错题跨轮累积（家长弹窗查看、可清除）；单次 20 分钟 / 每日 40 分钟护眼上限，超时需家长验证。</p>
+        <p><b>💡 解题方法</b>：方法类题型点 💡 灯泡看分步讲解。</p>
+        <p style="color:#999;margin-bottom:0;">数据保存在本机（localStorage），不经网络上传。</p>
+      </div>
     </div>
   </div>
 
@@ -1410,6 +1421,11 @@
   $('resetWrong').addEventListener('click',()=>{ if(confirm('确定清除所有累积错题吗？')){ wrongBook=[]; saveWrongBook(); showWrongBook(); } });
   $('openAbout').addEventListener('click',()=>$('aboutModal').classList.add('show'));
   $('closeAbout').addEventListener('click',()=>$('aboutModal').classList.remove('show'));
+  /* 点弹窗遮罩空白处即可关闭（降低找不到关闭键的困扰） */
+  document.querySelectorAll('.modal').forEach(m=>{
+    m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('show'); });
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal.show').forEach(m=>m.classList.remove('show')); });
   $('resetStats').addEventListener('click',()=>{ if(confirm('确定清空所有练习统计吗？')){ stats={total:0,correct:0,cur:0,best:0}; saveStats(); refreshStats(); }});
   $('againRound').addEventListener('click',()=>{$('scoreModal').classList.remove('show'); startRound();});
   $('freeMode').addEventListener('click',()=>{$('scoreModal').classList.remove('show'); replayMode=false; roundActive=false; freeDone=0; freeCorrect=0; roundLog=[]; current=nextQ(); render(); saveState();});
