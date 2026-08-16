@@ -145,16 +145,16 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <option value="learning">学习中</option>
         <option value="memorized">已背诵</option>
         <option value="fav">⭐ 收藏</option>
-        <option value="G1A">1上</option>
-        <option value="G1B">1下</option>
-        <option value="G2A">2上</option>
-        <option value="G2B">2下</option>
-        <option value="G3A">3上</option>
-        <option value="G3B">3下</option>
-        <option value="G4A">4上</option>
-        <option value="G4B">4下</option>
-        <option value="G5A">5上</option>
-        <option value="G5B">5下</option>
+        <option value="G1A">🐣 一年级上</option>
+        <option value="G1B">🐣 一年级下</option>
+        <option value="G2A">🐥 二年级上</option>
+        <option value="G2B">🐥 二年级下</option>
+        <option value="G3A">🐤 三年级上</option>
+        <option value="G3B">🐤 三年级下</option>
+        <option value="G4A">🦅 四年级上</option>
+        <option value="G4B">🦅 四年级下</option>
+        <option value="G5A">🎓 五年级上</option>
+        <option value="G5B">🎓 五年级下</option>
       </select>
     </div>
     <div id="poemListPanel" class="poem-list-panel"></div>
@@ -945,7 +945,7 @@ function prevPoem(){if(window.speechSynthesis) speechSynthesis.cancel();reciteRe
 /* 搜索 + 目录 */
 function slugOf(i){const m=/poem-([\w-]+)\.webp/.exec(POEM_SCENES[i]||'');return m?m[1]:null;}
 function poemBody(i){return (POEMS[i].lines||[]).map(l=>l[0]).join('');}
-function gradeLabel(g){const map={G1A:'1上',G1B:'1下',G2A:'2上',G2B:'2下',G3A:'3上',G3B:'3下',G4A:'4上',G4B:'4下',G5A:'5上',G5B:'5下'};return map[g]||g;}
+function gradeLabel(g){const map={G1A:'一年级上',G1B:'一年级下',G2A:'二年级上',G2B:'二年级下',G3A:'三年级上',G3B:'三年级下',G4A:'四年级上',G4B:'四年级下',G5A:'五年级上',G5B:'五年级下'};return map[g]||g;}
 function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function poemSearchMatch(q){
   q=q.trim().toLowerCase();
