@@ -55,9 +55,9 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 }
 .chip.active{border-color:#11998e;background:#11998e;color:#fff;}
 .chip .cnt{font-size:11px;opacity:.75;margin-left:4px;}
-.filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;justify-content:space-between;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
 .filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{flex:0 0 auto;padding:9px 12px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.filter-chip{flex:0 0 auto;padding:9px 12px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;text-align:center;}
 .filter-chip.active{background:#2575fc;color:#fff;}
 .filter-sep{flex:0 0 auto;width:1px;align-self:stretch;background:#dfe3e8;margin:2px 4px;}
 .filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
@@ -68,7 +68,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .search-row:focus-within{border-color:#2575fc;}
 .search-ico{font-size:18px;flex-shrink:0;}
 .search-input{flex:1;border:none;outline:none;font-size:16px;color:#2d3436;background:transparent;min-width:0;}
-.search-input::placeholder{color:#b2bec3;}
+.search-input::placeholder{color:#b2bec3;font-size:13px;}
 .search-clear{border:none;background:#f0f2f5;color:#888;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;flex-shrink:0;}
 .search-clear:active{background:#e2e6ea;}
 .cat-row{flex:1;margin-top:0;}
@@ -98,7 +98,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .card-art{flex:0 0 56%;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
 .card-art svg{width:100%;height:100%;display:block;}
 /* 拓展词角标: 固定在图片区右上角,与单词行的英/美式 pill 完全不重叠 */
-.tier-badge{position:absolute;top:8px;right:8px;z-index:3;background:#8e44ad;color:#fff;font-size:12px;font-weight:bold;line-height:1;padding:4px 8px;border-radius:999px;box-shadow:0 2px 6px rgba(142,68,173,.4);pointer-events:none;}
+.tier-badge{position:absolute;top:6px;right:8px;z-index:3;background:transparent;color:inherit;font-size:18px;line-height:1;padding:0;border:none;box-shadow:none;pointer-events:none;}
 .card-face.card-back .card-art{flex-basis:40%;}
 .card-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:10px;}
 /* ★ v2 修复点1(关键):显式 line-height,给 descender 留空间,避开过度紧凑的渲染截切 */
@@ -643,7 +643,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div class="search-block">
       <div class="search-row">
         <span class="search-ico">🔍</span>
-        <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文，例如 cat 或 猫…" oninput="doSearch()" />
+        <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文" oninput="doSearch()" />
         <button id="searchClear" class="search-clear" type="button" onclick="clearSearch()" title="清除">✕</button>
       </div>
       <div class="cat-row">
@@ -4388,10 +4388,19 @@ function renderCatChips(){
   box.innerHTML = html;
 }
 function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();syncCatSelect();buildList();renderCard()}
+/* 下拉分类对应的 emoji 图标(无对应图标的分类统一用 🏷️) */
+const CAT_ICON = {
+  'animals':'🐾','fantasy':'🐉','fruits':'🍎','vegetables':'🥦','food':'🍔','colors':'🎨','shapes':'🔷',
+  'numbers':'🔢','body':'🧍','family':'👨‍👩‍👧','clothes':'👕','nature':'🌿','plants':'🌱','objects':'🧸',
+  'transport':'🚗','verbs':'🏃','adjectives':'😊','places':'📍','festivals':'🎉','jobs':'👷','instruments':'🎻',
+  'sports':'⚽','insects':'🐝','time':'⏰','sh-subjects':'📚','sh-school':'🏫','sh-greet':'👋','sh-pron-pers':'👤',
+  'sh-pron-poss':'💼','sh-pron-other':'💬','sh-article':'🔤','sh-prep':'📌','sh-conj':'🔗','sh-modal':'💡','sh-adv':'⏩'
+};
+function catIcon(id){ return CAT_ICON[id] || '🏷️'; }
 function populateCatSelect(){
   const sel=document.getElementById('catSelect'); if(!sel) return;
   let html='<option value="all">📚 全部</option>';
-  SORTED_CATS().forEach(c=>{ html+='<option value="'+c.id+'">'+esc(c.zh)+' '+esc(c.en)+'</option>'; });
+  SORTED_CATS().forEach(c=>{ html+='<option value="'+c.id+'">'+catIcon(c.id)+' '+esc(c.zh)+' '+esc(c.en)+'</option>'; });
   sel.innerHTML=html; syncCatSelect();
 }
 function onCatSelect(val){ setCat(val); }
@@ -4702,7 +4711,7 @@ function renderCard(){
   const example=currentExample;
   const svg=wordArtSVG(item);
   const isExt = tierOfWord(item.cat.id, word)==='ext';
-  const tierBadge = isExt ? '<span class="tier-badge">拓</span>' : '';
+  const tierBadge = isExt ? '<span class="tier-badge">📙</span>' : '';
   let dots='';
   for(let i=0;i<3;i++) dots+='<span class="'+(i<lv?'on':'')+'"></span>';
   /* ★ v2: 把圆角裁切从 .card-face 移到 .card-art-wrap,face 改 visible,
@@ -4716,8 +4725,8 @@ function renderCard(){
             '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word,currentAlt)+
             '<div class="accent-row">'+
-              '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(\'uk\',this)">🇬🇧 英音</button>'+
-              '<button class="accent-btn us" onclick="event.stopPropagation();playAccent(\'us\',this)">🇺🇸 美音</button>'+
+              '<button class="accent-btn uk" onclick="event.stopPropagation();playAccent(\'uk\',this)">🔊 🇬🇧 英音</button>'+
+              '<button class="accent-btn us" onclick="event.stopPropagation();playAccent(\'us\',this)">🔊 🇺🇸 美音</button>'+
             '</div>'+
             '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
           '</div>'+
