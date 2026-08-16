@@ -85,13 +85,13 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .poem-list-item .au{font-size:13px;color:#8d6e63;flex:0 0 auto;}
 .poem-list-item .gd{font-size:11px;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:8px;flex:0 0 auto;}
 .poem-list-empty{padding:18px;text-align:center;color:#a1887f;}
-/* 拼音/背诵/筛选/统计 工具条 */
-.poem-toolbar2{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;align-items:center;}
-.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;}
-.tool-btn{width:100%;padding:11px 12px;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#8d6e63;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:4px;box-sizing:border-box;}
+/* 拼音/背诵/筛选/统计 工具条（单行） */
+.poem-toolbar2{display:flex;flex-wrap:nowrap;gap:6px;margin:0 0 12px;align-items:center;overflow-x:auto;}
+.tool-grid{display:contents;}
+.tool-btn{flex:0 0 auto;padding:9px 11px;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#8d6e63;font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:4px;box-sizing:border-box;}
 .tool-btn:active{transform:scale(.97);}
 .tool-btn.on{background:#ffe0b2;color:#e65100;border-color:#ffb74d;}
-.tool-sel{padding:10px;width:100%;box-sizing:border-box;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#5d4037;font-size:14px;font-weight:bold;cursor:pointer;}
+.tool-sel{flex:1 1 auto;min-width:64px;padding:9px 10px;box-sizing:border-box;border:2px solid #ffe0b2;border-radius:14px;background:#fffdf7;color:#5d4037;font-size:14px;font-weight:bold;cursor:pointer;}
 /* 背诵遮盖 */
 .poem-line.covered{cursor:pointer;background:#fff3e0;border:2px dashed #ffcc80;}
 .poem-line.covered .zi,.poem-line.covered .py{display:none;}
