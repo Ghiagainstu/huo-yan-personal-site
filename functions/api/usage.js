@@ -74,16 +74,23 @@ export async function onRequestPost(ctx) {
   if (action === 'unlock') {
     // 解锁码由前端在锁屏时随机生成（中文数字文字展示），家长按对应阿拉伯数字输入；
     // 后端不再校验固定 PIN，只负责记账：未达上限则 +1 解锁次数（预算延长由 stateOf 计算）。
-    // admin_pin === ADMIN_PIN（852121）为内测管理解锁：跳过每日次数上限，仍 +1 延长预算。
+    // admin_pin === ADMIN_PIN（852121）为内测管理解锁：跳过每日次数上限，并重置当日已用时长，
+    // 使 remaining 充足、locked=false，实现「实质无限」（无论当日已用多久都能继续倒计时）。
     const admin = body.admin_pin === ADMIN_PIN;
     if (!admin) {
       const st0 = stateOf(await getRow(db, u.id, today));
       if (st0.unlock_count >= MAX_UNLOCKS) return json({ error: '今日解锁次数已用完' }, 429);
+      await db.prepare(
+        `INSERT INTO usage_limit(user_id, date, used_seconds, unlock_count) VALUES(?, ?, 0, 1)
+         ON CONFLICT(user_id, date) DO UPDATE SET unlock_count = unlock_count + 1`
+      ).bind(u.id, today).run();
+    } else {
+      // admin：把 used_seconds 清零、解锁次数 +1（跳过 MAX_UNLOCKS 上限），剩余恢复满额
+      await db.prepare(
+        `INSERT INTO usage_limit(user_id, date, used_seconds, unlock_count) VALUES(?, ?, 0, 1)
+         ON CONFLICT(user_id, date) DO UPDATE SET unlock_count = unlock_count + 1, used_seconds = 0`
+      ).bind(u.id, today).run();
     }
-    await db.prepare(
-      `INSERT INTO usage_limit(user_id, date, used_seconds, unlock_count) VALUES(?, ?, 0, 1)
-       ON CONFLICT(user_id, date) DO UPDATE SET unlock_count = unlock_count + 1`
-    ).bind(u.id, today).run();
     return json({ ok: true, date: today, ...stateOf(await getRow(db, u.id, today)) });
   }
 

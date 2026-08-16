@@ -62,16 +62,18 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .filter-sep{flex:0 0 auto;width:1px;align-self:stretch;background:#dfe3e8;margin:2px 4px;}
 .filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
 .filter-chip[data-tier].active{background:#8e44ad;} /* 核心/拓展 选中态用紫色，和 region 不混 */
-/* ===== 单词搜索 ===== */
-.search-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:8px 12px;margin:8px 0 6px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+/* ===== 单词搜索（独立搜索框） + 分类下拉（独立控件，二者不嵌套） ===== */
+.search-block{margin:8px 0 6px;}
+.search-row{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .search-row:focus-within{border-color:#2575fc;}
 .search-ico{font-size:18px;flex-shrink:0;}
 .search-input{flex:1;border:none;outline:none;font-size:16px;color:#2d3436;background:transparent;min-width:0;}
 .search-input::placeholder{color:#b2bec3;}
 .search-clear{border:none;background:#f0f2f5;color:#888;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;flex-shrink:0;}
 .search-clear:active{background:#e2e6ea;}
-.cat-select{flex-shrink:0;max-width:42%;border:none;outline:none;background:#f0f2f5;color:#444;font-size:14px;font-weight:bold;font-family:inherit;border-radius:10px;padding:6px 8px;cursor:pointer;margin-left:2px;min-width:0;}
-.cat-select:focus{background:#e2e6ea;}
+.cat-row{margin-top:8px;}
+.cat-select{width:100%;box-sizing:border-box;border:2px solid #e0e0e0;outline:none;background:#fff;color:#444;font-size:15px;font-weight:bold;font-family:inherit;border-radius:14px;padding:10px 12px;cursor:pointer;}
+.cat-select:focus{border-color:#2575fc;background:#f7fbff;}
 .search-results{margin:4px 0 10px;}
 .search-info{font-size:13px;color:#888;margin-bottom:8px;}
 .search-tags{display:flex;flex-wrap:wrap;gap:8px;}
@@ -638,13 +640,17 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <div class="txt"><span>🏆 已掌握 Mastered</span><span id="enMasteredTxt">0 / 808</span></div>
         <div class="progress-track"><div class="progress-fill" id="enProgressFill" style="width:0%"></div></div>
     </div>
-    <div class="search-row">
-      <span class="search-ico">🔍</span>
-      <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文，例如 cat 或 猫…" oninput="doSearch()" />
-      <button id="searchClear" class="search-clear" type="button" onclick="clearSearch()" title="清除">✕</button>
-      <select id="catSelect" class="cat-select" onchange="onCatSelect(this.value)" title="按分类筛选">
-        <option value="all">📚 全部</option>
-      </select>
+    <div class="search-block">
+      <div class="search-row">
+        <span class="search-ico">🔍</span>
+        <input id="wordSearch" class="search-input" type="text" placeholder="搜索英文或中文，例如 cat 或 猫…" oninput="doSearch()" />
+        <button id="searchClear" class="search-clear" type="button" onclick="clearSearch()" title="清除">✕</button>
+      </div>
+      <div class="cat-row">
+        <select id="catSelect" class="cat-select" onchange="onCatSelect(this.value)" title="按分类筛选">
+          <option value="all">📚 全部分类</option>
+        </select>
+      </div>
     </div>
     <div id="searchResults" class="search-results" style="display:none"></div>
     <div class="filter-row">
@@ -4720,7 +4726,8 @@ async function doUnlock(){
   const res=await api('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!res.ok){if(msg)msg.textContent=res.data.error||'解锁失败';return;}
   applyUsage(res.data);closeUnlockForm();
-  if(!usage.locked)startActive();   // 解锁后务必重启计时起点，避免「倒计时不走了」
+  startPillTimer();                 // 确保每秒刷新定时器在跑（防异常未启动导致显示静止）
+  startActive();                    // 解锁后无条件重启计时起点，避免「倒计时不走了」
   hideLock();
 }
 async function initUsage(){
