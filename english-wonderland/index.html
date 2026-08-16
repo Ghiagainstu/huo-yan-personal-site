@@ -4592,25 +4592,51 @@ const ORDER_BY_CAT = {
   festivals: [ORDER_SEQ.festivals, ORDER_GROUPS.festivalsItems, ORDER_GROUPS.festivalsActions]
 };
 function orderWords(catId, words){
-  const rules = ORDER_BY_CAT[catId];
-  if(!rules) return words.slice();
+  let rules = ORDER_BY_CAT[catId];
+  if(!rules) rules = [];
   const pos = {};
   rules.forEach((grp, gi)=> grp.forEach((en, i)=>{ if(!(en in pos)) pos[en] = {g:gi, i:i}; }));
   const enOf = w => Array.isArray(w) ? w[0] : w;
   return words.slice().sort((a,b)=>{
     const ea = enOf(a), eb = enOf(b);
+    /* ① 核心词排前、拓展词排后(同分类内) */
+    const ta = tierOfWord(catId, ea), tb = tierOfWord(catId, eb);
+    const tr = (t=> t==='core'?0:1)(ta) - (t=> t==='core'?0:1)(tb);
+    if(tr!==0) return tr;
+    /* ② 分类自定义顺序优先 */
     const pa = pos[ea], pb = pos[eb];
     if(pa && pb){ if(pa.g!==pb.g) return pa.g-pb.g; return pa.i-pb.i; }
     if(pa && !pb) return -1;
     if(!pa && pb) return 1;
+    /* ③ 英文升序兜底 */
     const la = ea.toLowerCase(), lb = eb.toLowerCase();
     return la<lb ? -1 : la>lb ? 1 : 0;
   });
 }
+/* 反义/近义词对 → 用于"正反义、近义相邻"归组(同分类内) */
+const PAIR_GROUPS = [];
+{ const seen = new Set();
+  [...ANT_PAIRS, ...SYN_PAIRS].forEach(([a,b])=>{
+    const ka=a.toLowerCase(), kb=b.toLowerCase();
+    if(seen.has(ka)||seen.has(kb)) return;
+    seen.add(ka); seen.add(kb);
+    PAIR_GROUPS.push([ka,kb]);
+  });
+}
 function buildList(){
   cardList=[];
-  SORTED_CATS().forEach(c=>{
-    if(!curSearch && curCat!=='all' && c.id!==curCat) return;
+  // 分类优先级: 核心分类整体排前、拓展分类整体排后
+  const cats = SORTED_CATS().filter(c=>{
+    if(!curSearch && curCat!=='all' && c.id!==curCat) return false;
+    return true;
+  });
+  const tierOfCatRank = c => (tierOfCat(c.id)==='core'?0:1);
+  cats.sort((a,b)=>{
+    const r = tierOfCatRank(a)-tierOfCatRank(b);
+    if(r!==0) return r;
+    return SORTED_CATS().indexOf(a)-SORTED_CATS().indexOf(b); // 维持认知梯度
+  });
+  cats.forEach(c=>{
     orderWords(c.id, c.words).forEach(w=>{
       const lv=getLevel(c.id,w[0]);
       if(curFilter==='todo' && lv>=3) return;
@@ -4621,8 +4647,81 @@ function buildList(){
       cardList.push({cat:c,w:w});
     });
   });
+  /* 分类边界已固定(核心分类在前、拓展在后)。下面在每个分类【内部】做相邻归组:
+     - US/英式变体紧跟基词, 且 US 在前(若两者都在)
+     - 正反义/近义词同组相邻(同分类内) */
+  if(!curShuffle && !curSearch){
+    const enKey = it => (Array.isArray(it.w)?it.w[0]:it.w);
+    const regOf = it => regionOf(enKey(it));
+    const out = [];
+    let i = 0;
+    while(i < cardList.length){
+      const catId = cardList[i].cat.id;
+      // 收集同分类连续片段
+      let j = i; while(j < cardList.length && cardList[j].cat.id===catId) j++;
+      let seg = cardList.slice(i, j);
+      // ① 变体归并: 把 EXTRA 变体移到其基准词之后; 同一基准的 US 在前
+      seg = clusterVariants(seg, enKey, regOf);
+      // ② 正反义/近义相邻(同分类内)
+      seg = clusterPairs(seg, enKey);
+      out.push(...seg);
+      i = j;
+    }
+    cardList = out;
+  }
   if(curShuffle && !curSearch) cardList=shuffleArr(cardList);
   if(cardIdx>=cardList.length) cardIdx=Math.max(0,cardList.length-1);
+}
+/* 把 EXTRA_WORDS 变体插到基准词后; 同一基准 US 在前 */
+function clusterVariants(seg, enKey, regOf){
+  const idxByEn = {}; seg.forEach((it,k)=>{ const key=enKey(it).toLowerCase(); if(!(key in idxByEn)) idxByEn[key]=k; });
+  // 某词是否"依附于本段内基词"的变体(若是,则跳过,等基词处理时一并插入,避免重复/错位)
+  const isVariantOfPresent = en => {
+    for(const [ven] of EXTRA_WORDS){ if(ven.toLowerCase()===en){ const base=EXTRA_BASE[ven]; return !!base && (base in idxByEn); } }
+    return false;
+  };
+  const out = [];
+  for(let k=0;k<seg.length;k++){
+    const it = seg[k]; const key = enKey(it).toLowerCase();
+    if(isVariantOfPresent(key)) continue; // 变体: 等基词处理时插入(不在自身位置输出)
+    out.push(it);
+    const baseEn = key;
+    // 找依附于该基词的变体(基词存在时才插; US 在前)
+    const variants = [];
+    EXTRA_WORDS.forEach(([ven])=>{
+      const base = EXTRA_BASE[ven];
+      if(base===baseEn){
+        const vk = idxByEn[ven.toLowerCase()];
+        if(vk!=null) variants.push(seg[vk]);
+      }
+    });
+    variants.sort((a,b)=>{ const ra=regOf(a), rb=regOf(b); return (ra==='us'?0:1)-(rb==='us'?0:1); });
+    variants.forEach(v=> out.push(v));
+  }
+  return out;
+}
+/* 把正反义/近义词对在同分类内相邻(对已存在的双方才归并, 否则不动) */
+function clusterPairs(seg, enKey){
+  const present = new Set(seg.map(it=>enKey(it).toLowerCase()));
+  const grouped = new Set();
+  const out = [];
+  for(let k=0;k<seg.length;k++){
+    const it = seg[k]; const key = enKey(it).toLowerCase();
+    if(grouped.has(key)) continue;
+    out.push(it);
+    // 找同组另一词(若存在本分类)
+    let mate = null;
+    for(const [a,b] of PAIR_GROUPS){
+      if(a===key && present.has(b)){ mate=b; break; }
+      if(b===key && present.has(a)){ mate=a; break; }
+    }
+    if(mate){
+      const mi = seg.findIndex(x=>enKey(x).toLowerCase()===mate);
+      if(mi>=0 && !grouped.has(mate)){ grouped.add(mate); out.push(seg[mi]); }
+    }
+    grouped.add(key);
+  }
+  return out;
 }
 function wordArtSVG(item){
   const tint=item.cat.tint,art=item.w[2];
