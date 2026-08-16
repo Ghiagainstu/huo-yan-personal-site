@@ -899,7 +899,7 @@ function renderPoem(){
     '</div>'+
     '<div class="nav-row">'+
       '<button class="nav-btn" onclick="prevPoem()">←</button>'+
-      '<div class="card-counter">第 '+(poemIdx+1)+' / '+POEMS.length+' 首'+(poemFilter!=='all'?' · 筛选中':'')+'</div>'+
+      '<div class="card-counter">第 '+((poemFilter==='all'?poemIdx+1:(function(){const j=filteredIndices().indexOf(poemIdx);return (j<0?0:j)+1;})()))+' / '+(poemFilter==='all'?POEMS.length:filteredIndices().length)+' 首'+(poemFilter!=='all'?' · 筛选中':'')+'</div>'+
       '<button class="nav-btn" onclick="nextPoem()">→</button>'+
     '</div>';
   // 配图加载失败则隐藏，避免破图（动态挂载 onerror，规避 HTML 实体+> 解析陷阱）
