@@ -658,7 +658,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <button class="filter-chip" data-f="todo" onclick="setFilter('todo')">📖 待学习</button>
         <button class="filter-chip" data-f="done" onclick="setFilter('done')">✅ 已掌握</button>
         <button class="filter-chip" id="shuffleChip" onclick="toggleShuffle()">🔀 打乱</button>
-        <span class="filter-sep"></span>
+    </div>
+    <div class="filter-row">
         <button class="filter-chip active" data-rg="all" onclick="setRegion('all')">🌐 通用</button>
         <button class="filter-chip" data-rg="us" onclick="setRegion('us')">🇺🇸 美式</button>
         <button class="filter-chip" data-rg="uk" onclick="setRegion('uk')">🇬🇧 英式</button>
@@ -3437,11 +3438,15 @@ function regionOf(w){ const k=(Array.isArray(w)?w[0]:w).toLowerCase(); return RE
 /* tier：核心词(core)=上海课标要求；拓展词(ext)=教材不要求。
    初标（启发式，后续可调）：上海功能词分类(sh-*)整体 + 基础主题分类 = core；其余 = ext。
    若需逐词微调，可在下方追加 CORE_WORDS=Set 覆盖分类默认。 */
+/* 核心分类 = 日常高频基础词; 拓展分类 = 进阶/补充词(卡片正面图片右上角打「拓」角标)。
+   日常词 transport/places/plants/sports/shapes 归核心(不打标);
+   拓展仅保留: insects(昆虫)/instruments(乐器)/festivals(节日)/fantasy(幻想)/jobs(职业) + sh-*功能词 */
 const CORE_CATS = new Set([
   'sh-subjects','sh-school','sh-greet','sh-pron-pers','sh-pron-poss','sh-pron-other',
   'sh-article','sh-prep','sh-conj','sh-modal','sh-adv',
   'colors','numbers','body','family','food','fruits','vegetables',
-  'objects','clothes','nature','verbs','adjectives','time','animals'
+  'objects','clothes','nature','verbs','adjectives','time','animals',
+  'transport','places','plants','sports','shapes'
 ]);
 function tierOfCat(catId){ return CORE_CATS.has(catId) ? 'core' : 'ext'; }
 /* 把缺失的英式/美式对应词补进词库，与已有词共用图片 */
