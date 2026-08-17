@@ -292,6 +292,38 @@
   .sudoku-key{height:52px; border:none; border-radius:14px; font-size:1.5rem; font-weight:800; color:#fff; background:var(--teal); box-shadow:var(--shadow); cursor:pointer; transition:.12s;}
   .sudoku-key:active{transform:scale(.94);}
   @media (max-width:480px){ .sudoku-key{height:46px; font-size:1.3rem;} .sudoku-board{max-width:96vw;} }
+
+  /* 平板适配（iPad 竖屏 768 / 横屏 1024，覆盖 481–1024） */
+  @media (min-width:481px) and (max-width:1024px){
+    body{padding:20px 16px;}
+    #calcArea, #sudokuArea{width:100%; max-width:800px;}
+    h1{font-size:1.9rem;}
+    .mode-tabs{gap:14px;}
+    .mode-tab{padding:12px 28px; font-size:1.15rem; border-radius:16px;}
+    .grades{max-width:800px; gap:10px;}
+    .grade-btn{padding:12px 24px; font-size:1.12rem; border-radius:16px;}
+    .cats{max-width:800px; gap:16px;}
+    .cat-mod-title{font-size:1.05rem;}
+    .cat-grid{gap:10px;}
+    .cat-card{width:126px; min-height:64px; font-size:1.05rem; padding:14px 10px;}
+    .controls{max-width:800px;}
+    .setup-panel{max-width:800px; padding:14px 16px;}
+    .ctrl-btn.start.big{font-size:1.25rem; padding:15px 30px;}
+    .board{max-width:720px; padding:24px 20px 28px; border-radius:28px;}
+    .equation{font-size:2.6rem; gap:8px;}
+    .num{font-size:2.7rem;} .op{font-size:2.4rem;} .equal{font-size:2.4rem;} .unknown{font-size:3rem;}
+    .options{gap:14px;}
+    .opt{width:120px; height:120px; max-width:none; max-height:none; font-size:2.4rem; border-radius:24px;}
+    .next{font-size:1.25rem; padding:14px 32px;}
+    .keypad{max-width:360px;}
+    .kp{height:76px; font-size:2rem;}
+    .sudoku-board{max-width:700px;}
+    .sudoku-pad{max-width:700px;}
+    .sudoku-cell{font-size:clamp(1.8rem,4.5vw,2.8rem);}
+    .sudoku-keys{gap:12px;}
+    .sudoku-key{height:66px; font-size:1.8rem;}
+    .eye-card{max-width:440px;}
+  }
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
