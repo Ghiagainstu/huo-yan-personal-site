@@ -24,19 +24,24 @@
   }
   h1{font-size:1.85rem; margin:6px 0 18px; letter-spacing:2px; text-align:center; text-shadow:0 2px 5px rgba(0,0,0,.08);}
 
-  /* 题型分类 */
-  .cats{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:600px; margin-bottom:16px;}
-  .cat-btn{
-    border:2px solid transparent; border-radius:999px; padding:9px 16px; font-size:.95rem; font-weight:700; line-height:1;
+  /* 题型分类：按模块分组的卡片网格（扁平化，去掉模块 Tab） */
+  .cats{display:flex; flex-direction:column; gap:14px; max-width:600px; margin:0 auto 16px;}
+  .cat-mod{display:flex; flex-direction:column; gap:8px;}
+  .cat-mod-title{font-size:.92rem; font-weight:800; color:#8a8f99; text-align:left; padding:0 4px; letter-spacing:.5px;}
+  .cat-mod-title::after{content:''; display:block; height:2px; background:linear-gradient(90deg,rgba(255,140,66,.4),transparent); margin-top:4px; border-radius:2px;}
+  .cat-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:10px;}
+  .cat-card{
+    border:2px solid transparent; border-radius:16px; padding:14px 10px; font-size:.95rem; font-weight:800; line-height:1.25;
     background:#fff; color:#555; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer; transition:.18s;
+    display:flex; align-items:center; justify-content:center; text-align:center; min-height:54px;
   }
-  .cat-btn:hover{transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.12);}
-  .cat-btn.active{
+  .cat-card:hover{transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.12);}
+  .cat-card.active{
     background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; border-color:rgba(255,255,255,.55);
     transform:translateY(-2px); box-shadow:0 8px 18px rgba(255,140,66,.35);
   }
   /* 自适应开启时锁定手动题型选择 */
-  .cats.locked .cat-btn{opacity:.4; filter:grayscale(.5); pointer-events:none; cursor:default;}
+  .cats.locked .cat-card{opacity:.4; filter:grayscale(.5); pointer-events:none; cursor:default;}
   .subcats.locked{display:none!important;}
 
   /* 子开关（如 20以内细分） */
@@ -60,11 +65,12 @@
   .grade-btn.active{background:linear-gradient(135deg,#ff8c42,#ff6b6b); color:#fff; box-shadow:0 4px 12px rgba(255,107,107,.4);}
   .grades.locked .grade-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
 
-  /* 分类分组标签 */
-  .cat-groups{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:600px; margin-bottom:12px;}
-  .cat-group-btn{border:none; border-radius:999px; padding:7px 16px; font-weight:700; font-size:.9rem; background:#fff; color:#888; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer; transition:.18s;}
-  .cat-group-btn.active{background:var(--teal); color:#fff;}
-  .cat-groups.locked .cat-group-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
+  /* 设置折叠面板（⚙️，默认收起） */
+  .setup{display:flex; flex-direction:column; gap:8px; align-items:center; max-width:600px; margin:0 auto;}
+  .setup-toggle{border:2px solid #eee; background:#fff; color:#777; box-shadow:0 2px 6px rgba(0,0,0,.08);}
+  .setup-toggle.open{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; border-color:transparent;}
+  .setup-panel{display:flex; flex-direction:column; gap:10px; align-items:center; background:rgba(255,140,66,.08); border-radius:16px; padding:12px 14px; width:100%; max-width:600px;}
+  .setup-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;}
 
   /* 控制条分层：设置行 / 操作行 */
   .controls{flex-direction:column; gap:14px;}
@@ -225,15 +231,15 @@
   @media (max-width:480px){
     body{padding:10px 8px;}
     h1{font-size:1.4rem;}
-    .cats{gap:6px;}
-    .cat-btn{padding:8px 11px; font-size:.9rem;}
+    .cats{gap:10px;}
+    .cat-grid{gap:8px;}
+    .cat-card{padding:11px 6px; font-size:.88rem; min-height:48px;}
     .subcats{padding:7px 8px;}
     .subcat-btn{padding:6px 11px; font-size:.86rem;}
     .controls{gap:10px;}
     .grades{gap:6px;}
     .grade-btn{padding:8px 14px; font-size:.92rem; border-radius:12px;}
-    .cat-groups{gap:6px;}
-    .cat-group-btn{padding:6px 13px; font-size:.85rem;}
+    .setup-panel{padding:10px;}
     .setup-row,.action-row{gap:8px;}
     .mini-btn{padding:7px 10px; font-size:1rem;}
     .ctrl-btn.start.big{font-size:1.12rem; padding:13px 26px;}
@@ -304,23 +310,28 @@
     <button class="mode-tab" data-app="sudoku">🧩 数独</button>
   </div>
 
-  <div id="calcArea">
   <div class="grades" id="grades"></div>
-  <div class="cat-groups" id="catGroups"></div>
+
+  <div id="calcArea">
   <div class="cats" id="cats"></div>
   <div class="subcats" id="subcats"></div>
 
   <div class="controls">
-    <div class="setup-row">
-      <span class="lbl">题数</span>
-      <button class="size-btn" data-size="5">5</button>
-      <button class="size-btn active" data-size="10">10</button>
-      <button class="size-btn" data-size="20">20</button>
-      <span class="lbl">方式</span>
-      <button class="mode2-btn active" data-mode2="choice">选择</button>
-      <button class="mode2-btn" data-mode2="fill">填空</button>
-      <button class="mini-btn" id="soundBtn" title="音效开关">🔊</button>
-      <button class="mini-btn" id="adaptBtn" title="难度自适应">🤖</button>
+    <div class="setup">
+      <button class="mini-btn setup-toggle" id="setupToggle" title="设置（题数 / 方式 / 音效 / 自适应）">⚙️ 设置</button>
+      <div class="setup-panel" id="setupPanel" style="display:none">
+        <div class="setup-row">
+          <span class="lbl">题数</span>
+          <button class="size-btn" data-size="5">5</button>
+          <button class="size-btn active" data-size="10">10</button>
+          <button class="size-btn" data-size="20">20</button>
+          <span class="lbl">方式</span>
+          <button class="mode2-btn active" data-mode2="choice">选择</button>
+          <button class="mode2-btn" data-mode2="fill">填空</button>
+          <button class="mini-btn" id="soundBtn" title="音效开关">🔊</button>
+          <button class="mini-btn" id="adaptBtn" title="难度自适应">🤖</button>
+        </div>
+      </div>
     </div>
     <div class="action-row">
       <button class="ctrl-btn start big" id="startRound">🏁 开始闯关</button>
@@ -348,7 +359,6 @@
   </div><!-- /calcArea -->
 
   <div id="sudokuArea" style="display:none">
-    <div class="grades" id="sudokuGrades"></div>
     <div class="controls">
       <div class="setup-row">
         <span class="lbl" id="sudokuDiff">难度</span>
@@ -591,7 +601,6 @@
   let roundSize=10;
   /* ===== 数独模式状态 ===== */
   let appMode='calc';               // 'calc' | 'sudoku'
-  let sudokuGrade='g1';
   let sd={};                        // 当前数独棋盘状态
   let sdSelected=-1;                // 选中格 index (r*N+c)
   let sdNoteMode=false;             // false=填数 / true=笔记
@@ -685,7 +694,6 @@
   function applyAdaptUI(){
     gradesEl.classList.toggle('locked', adaptMode);
     catsEl.classList.toggle('locked', adaptMode);
-    catGroupsEl.classList.toggle('locked', adaptMode);
     subcatsEl.classList.toggle('locked', adaptMode);
     if(adaptMode && CATS[catKey] && CATS[catKey].sub) subcatsEl.classList.remove('show');
     updateAdaptBtn();
@@ -1334,9 +1342,8 @@
 
   /* ---------- 绑定 ---------- */
   const catsEl=$('cats');
-  const catGroupsEl=$('catGroups');
   const gradesEl=$('grades');
-  renderGrades(); renderCatGroups(); renderCats();
+  renderGrades(); renderCats();
 
   hintBtn.addEventListener('click',()=>{
     if(!current || !current.hint) return;
@@ -1356,45 +1363,38 @@
       b.className='grade-btn'+(g.id===gradeKey?' active':''); b.textContent=g.label; b.dataset.g=g.id;
       b.addEventListener('click',()=>{
         if(adaptMode) return;
-        gradeKey=g.id; modIdx=0; catGroup=curModule().label; catKey=curModule().cats[0];
+        gradeKey=g.id; modIdx=0; catKey=curModule().cats[0];
         roundActive=false; saveState();
-        renderGrades(); renderCatGroups(); renderCats();
-        if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
-        current=genQuestion(); render();
+        renderGrades(); renderCats();
+        if(appMode==='sudoku'){ sdNew(); }
+        else {
+          if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
+          current=genQuestion(); render();
+        }
       });
       gradesEl.appendChild(b);
     });
   }
-  function renderCatGroups(){
-    catGroupsEl.innerHTML='';
-    const g=curGrade();
-    g.modules.forEach((m,i)=>{
-      const b=document.createElement('button');
-      b.className='cat-group-btn'+(i===modIdx?' active':''); b.textContent=m.label; b.dataset.m=i;
-      b.addEventListener('click',()=>{
-        if(adaptMode) return;
-        modIdx=i; catGroup=m.label; catKey=m.cats[0]; roundActive=false; saveState();
-        renderCatGroups(); renderCats();
-        if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
-        current=genQuestion(); render();
-      });
-      catGroupsEl.appendChild(b);
-    });
-  }
   function renderCats(){
     catsEl.innerHTML='';
-    const m=curModule();
-    m.cats.forEach(k=>{
-      const b=document.createElement('button');
-      b.className='cat-btn'+(k===catKey?' active':''); b.textContent=(CAT_ICO[k]||'')+' '+CATS[k].label; b.dataset.cat=k;
-      b.addEventListener('click',()=>{
-        if(adaptMode) return;
-        document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
-        b.classList.add('active'); catKey=k; roundActive=false; saveState();
-        if(CATS[k].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
-        current=genQuestion(); render();
+    const g=curGrade();
+    g.modules.forEach(m=>{
+      const sec=document.createElement('div'); sec.className='cat-mod';
+      const t=document.createElement('div'); t.className='cat-mod-title'; t.textContent=m.label; sec.appendChild(t);
+      const grid=document.createElement('div'); grid.className='cat-grid';
+      m.cats.forEach(k=>{
+        const b=document.createElement('button');
+        b.className='cat-card'+(k===catKey?' active':''); b.textContent=(CAT_ICO[k]||'')+' '+CATS[k].label; b.dataset.cat=k;
+        b.addEventListener('click',()=>{
+          if(adaptMode) return;
+          document.querySelectorAll('.cat-card').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active'); catKey=k; roundActive=false; saveState();
+          if(CATS[k].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
+          current=genQuestion(); render();
+        });
+        grid.appendChild(b);
       });
-      catsEl.appendChild(b);
+      sec.appendChild(grid); catsEl.appendChild(sec);
     });
   }
 
@@ -1641,7 +1641,7 @@
     return {puzzle,solution:sol};
   }
   function sdNew(){
-    const L=SUDOKU_LEVELS.find(x=>x.id===sudokuGrade)||SUDOKU_LEVELS[0];
+    const L=SUDOKU_LEVELS.find(x=>x.id===gradeKey)||SUDOKU_LEVELS[0];
     const {puzzle,solution}=sdMake(L.N,L.givens);
     sd={ N:L.N, boxR:sdBoxDims(L.N)[0], boxC:sdBoxDims(L.N)[1],
          puzzle:sdClone(puzzle), solution:sdClone(solution),
@@ -1650,15 +1650,6 @@
     $('sudokuFillMode').classList.add('active'); $('sudokuNoteMode').classList.remove('active');
     $('sudokuFeedback').textContent=''; $('sudokuFeedback').className='feedback';
     renderSudoku();
-  }
-  function renderSudokuGrades(){
-    const el=$('sudokuGrades'); el.innerHTML='';
-    SUDOKU_LEVELS.forEach(g=>{
-      const b=document.createElement('button');
-      b.className='grade-btn'+(g.id===sudokuGrade?' active':''); b.textContent=g.label;
-      b.addEventListener('click',()=>{ sudokuGrade=g.id; renderSudokuGrades(); sdNew(); });
-      el.appendChild(b);
-    });
   }
   function sdConflictSet(){
     const set=new Set();
@@ -1792,8 +1783,8 @@
 
   /* 启动 */
   buildKeypad(); renderSubcats(); updateSoundBtn();
-  renderSudokuGrades();
   document.querySelectorAll('.mode-tab').forEach(b=> b.addEventListener('click',()=>setAppMode(b.dataset.app)));
+  $('setupToggle').addEventListener('click',()=>{ const p=$('setupPanel'); const open=p.style.display==='none'; p.style.display=open?'':'none'; $('setupToggle').classList.toggle('open',open); });
   $('sudokuHint').addEventListener('click',sdHint);
   $('sudokuNew').addEventListener('click',sdNew);
   $('sudokuCheck').addEventListener('click',sdCheck);
