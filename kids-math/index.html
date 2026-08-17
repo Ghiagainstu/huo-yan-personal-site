@@ -262,6 +262,29 @@
   .eye-input{width:150px; font-size:1.3rem; text-align:center; padding:10px; border:2px solid var(--orange); border-radius:12px; margin:8px 0; outline:none;}
   .eye-math-q{font-size:1.6rem; font-weight:800; margin:6px 0; color:var(--ink);}
   .eye-msg{min-height:1.2em; font-size:.85rem; color:#e8554e; margin-top:6px;}
+
+  /* ===== 模式切换 Tab（口算 / 数独） ===== */
+  .mode-tabs{display:flex; gap:10px; justify-content:center; margin:0 auto 14px;}
+  .mode-tab{border:none; border-radius:14px; padding:10px 22px; font-weight:800; font-size:1.05rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
+  .mode-tab.active{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; box-shadow:0 4px 12px rgba(255,140,66,.35);}
+
+  /* ===== 数独 ===== */
+  .sudoku-board{display:grid; gap:3px; background:#cfd8e3; padding:3px; border-radius:12px; max-width:460px; margin:6px auto 4px; touch-action:manipulation;}
+  .sudoku-cell{position:relative; aspect-ratio:1; border:1px solid #cfd8e3; background:#fff; display:flex; align-items:center; justify-content:center; font-size:clamp(1.1rem,5vw,1.9rem); font-weight:800; color:var(--ink); cursor:pointer; padding:0; font-family:inherit;}
+  .sudoku-cell.given{background:#eef2f7; color:#3a3a44; font-weight:900; cursor:default;}
+  .sudoku-cell.peer{background:#eaf2ff;}
+  .sudoku-cell.sel{background:#fff3d6; outline:3px solid var(--gold); outline-offset:-3px; z-index:2;}
+  .sudoku-cell.conflict{color:var(--red);}
+  .sudoku-cell.wrong{background:#ffd9d9 !important; color:#c0392b !important;}
+  .sudoku-cell.br{border-right:3px solid #2b4a6b;}
+  .sudoku-cell.bb{border-bottom:3px solid #2b4a6b;}
+  .sudoku-cell .note{display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); width:100%; height:100%; font-size:.4em; font-weight:600; color:#9aa3ad; line-height:1; padding:3px; text-align:center; align-content:center;}
+  .sudoku-cell .note b{font-weight:700;}
+  .sudoku-pad{max-width:460px; margin:6px auto 0;}
+  .sudoku-keys{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:4px auto 0;}
+  .sudoku-key{height:52px; border:none; border-radius:14px; font-size:1.5rem; font-weight:800; color:#fff; background:var(--teal); box-shadow:var(--shadow); cursor:pointer; transition:.12s;}
+  .sudoku-key:active{transform:scale(.94);}
+  @media (max-width:480px){ .sudoku-key{height:46px; font-size:1.3rem;} .sudoku-board{max-width:96vw;} }
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -276,6 +299,12 @@
 <body>
   <h1>🧮 小学数学口算</h1>
 
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-app="calc">🧮 口算</button>
+    <button class="mode-tab" data-app="sudoku">🧩 数独</button>
+  </div>
+
+  <div id="calcArea">
   <div class="grades" id="grades"></div>
   <div class="cat-groups" id="catGroups"></div>
   <div class="cats" id="cats"></div>
@@ -315,6 +344,31 @@
     </div>
     <div class="feedback" id="feedback"></div>
     <button class="next" id="next">继续 ➡️</button>
+  </div>
+  </div><!-- /calcArea -->
+
+  <div id="sudokuArea" style="display:none">
+    <div class="grades" id="sudokuGrades"></div>
+    <div class="controls">
+      <div class="setup-row">
+        <span class="lbl" id="sudokuDiff">难度</span>
+        <button class="mini-btn" id="sudokuHint" title="提示一个正确格">💡</button>
+        <button class="mini-btn" id="sudokuNew" title="换一题">🔄</button>
+        <button class="mini-btn" id="sudokuCheck" title="检查答案">✅</button>
+        <button class="mini-btn" id="sudokuSound" title="音效开关">🔊</button>
+      </div>
+    </div>
+    <div class="progress" id="sudokuProgress">已填 0 / 0</div>
+    <div class="sudoku-board" id="sudokuBoard"></div>
+    <div class="sudoku-pad">
+      <div class="setup-row" style="margin:8px auto 4px;">
+        <button class="mode2-btn active" id="sudokuFillMode">✏️ 填数</button>
+        <button class="mode2-btn" id="sudokuNoteMode">📝 笔记</button>
+        <button class="mini-btn" id="sudokuErase">⌫ 擦除</button>
+      </div>
+      <div class="sudoku-keys" id="sudokuKeys"></div>
+    </div>
+    <div class="feedback" id="sudokuFeedback"></div>
   </div>
 
   <button class="about-btn" id="openAbout">关于</button>
@@ -535,6 +589,12 @@
   function pickOpts(correct,list){ const p=[correct,...list]; for(let i=p.length-1;i>0;i--){ const j=randInt(0,i); [p[i],p[j]]=[p[j],p[i]]; } return p; }
   function expr(a,o,b,ansNum,hint){ const ans=String(ansNum); return {display:sp(a)+opx(o)+sp(b)+eqq()+unk(), ans, opts:pickOpts(ans,[String(ansNum+1),String(Math.max(0,ansNum-1)),String(ansNum+2)]), hint}; }
   let roundSize=10;
+  /* ===== 数独模式状态 ===== */
+  let appMode='calc';               // 'calc' | 'sudoku'
+  let sudokuGrade='g1';
+  let sd={};                        // 当前数独棋盘状态
+  let sdSelected=-1;                // 选中格 index (r*N+c)
+  let sdNoteMode=false;             // false=填数 / true=笔记
   let inputMode='choice';            // 'choice' 选择 | 'fill' 填空
   let subMode='mix';                 // 20以内子开关：mix/carry/ncarry/subB/subNB
   let roundActive=false, roundIndex=0, roundCorrect=0;
@@ -558,7 +618,7 @@
       roundActive, roundIndex, roundCorrect,
       roundLog, current, answered, firstAttempt, qEverWrong, qWrongVal,
       adaptMode, adaptLevel, replayMode, replayQueue,
-      freeDone, freeCorrect
+      freeDone, freeCorrect, appMode
     })); }catch(e){}
   }
   function loadUI(){
@@ -579,6 +639,7 @@
     if(Array.isArray(savedUI.replayQueue)) replayQueue=savedUI.replayQueue;
     if(typeof savedUI.freeDone==='number') freeDone=savedUI.freeDone;
     if(typeof savedUI.freeCorrect==='number') freeCorrect=savedUI.freeCorrect;
+    if(savedUI.appMode==='sudoku'||savedUI.appMode==='calc') appMode=savedUI.appMode;
   }
   /* 校准模块：让当前 catKey 高亮其所在模块（跨年级/模块恢复时防错位） */
   outer: for(const g of GRADES){ for(let i=0;i<g.modules.length;i++){ if(g.modules[i].cats.includes(catKey)){ if(g.id===gradeKey){ modIdx=i; catGroup=g.modules[i].label; } break outer; } } }
@@ -617,7 +678,7 @@
   function playCorrect(){ if(!soundOn) return; tone(880,0,0.12,'sine',0.2); tone(1318,0.10,0.16,'sine',0.18); }
   function playWrong(){ if(!soundOn) return; tone(233,0,0.18,'square',0.14); tone(175,0.10,0.22,'sawtooth',0.12); }
   function playFanfare(){ if(!soundOn) return; const n=[523,659,784,1047]; n.forEach((f,i)=>tone(f,i*0.13,0.18,'triangle',0.2)); tone(1047,n.length*0.13,0.42,'triangle',0.2); }
-  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊':'🔇'; }
+  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊':'🔇'; const s=$('sudokuSound'); if(s) s.textContent=soundOn?'🔊':'🔇'; }
   function setSound(on){ soundOn=on; try{ localStorage.setItem(SOUND_STORE,on?'1':'0'); }catch(e){} updateSoundBtn(); }
 
   function updateAdaptBtn(){ const b=$('adaptBtn'); if(b){ b.textContent='🤖'; b.classList.toggle('active', adaptMode); } }
@@ -1509,8 +1570,237 @@
   $('pinClear').addEventListener('click', clearPin);
   $('resetTodayBtn').addEventListener('click', resetToday);
 
+  /* ===================== 数独模式 ===================== */
+  const SUDOKU_LEVELS=[
+    {id:'g1',label:'一年级',N:4,givens:10},
+    {id:'g2',label:'二年级',N:4,givens:8},
+    {id:'g3',label:'三年级',N:6,givens:22},
+    {id:'g4',label:'四年级',N:9,givens:45},
+    {id:'g5',label:'五年级',N:9,givens:33}
+  ];
+  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; return [3,3]; }
+  function sdRange(a,b){ const o=[]; for(let i=a;i<b;i++)o.push(i); return o; }
+  function sdShuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+  function sdClone(g){ return g.map(r=>r.slice()); }
+  function sdGenFull(N){
+    const [br,bc]=sdBoxDims(N);
+    const g=Array.from({length:N},()=>new Array(N).fill(0));
+    function can(r,c,v){
+      for(let i=0;i<N;i++){ if(g[r][i]===v||g[i][c]===v) return false; }
+      const R=Math.floor(r/br)*br, C=Math.floor(c/bc)*bc;
+      for(let i=0;i<br;i++) for(let j=0;j<bc;j++){ if(g[R+i][C+j]===v) return false; }
+      return true;
+    }
+    function fill(pos){
+      if(pos===N*N) return true;
+      const r=Math.floor(pos/N), c=pos%N;
+      for(const v of sdShuffle(sdRange(1,N+1))){
+        if(can(r,c,v)){ g[r][c]=v; if(fill(pos+1)) return true; g[r][c]=0; }
+      }
+      return false;
+    }
+    fill(0);
+    return g;
+  }
+  function sdCount(g,N,lim){
+    const [br,bc]=sdBoxDims(N);
+    let cnt=0;
+    function can(r,c,v){
+      for(let i=0;i<N;i++){ if(g[r][i]===v||g[i][c]===v) return false; }
+      const R=Math.floor(r/br)*br, C=Math.floor(c/bc)*bc;
+      for(let i=0;i<br;i++) for(let j=0;j<bc;j++){ if(g[R+i][C+j]===v) return false; }
+      return true;
+    }
+    function solve(){
+      if(cnt>=lim) return;
+      for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+        if(g[r][c]===0){
+          for(const v of sdRange(1,N+1)){
+            if(can(r,c,v)){ g[r][c]=v; solve(); g[r][c]=0; if(cnt>=lim) return; }
+          }
+          return;
+        }
+      }
+      cnt++;
+    }
+    solve();
+    return cnt;
+  }
+  function sdMake(N,targetGivens){
+    const sol=sdGenFull(N);
+    const puzzle=sdClone(sol);
+    let givens=N*N;
+    for(const idx of sdShuffle(sdRange(0,N*N))){
+      if(givens<=targetGivens) break;
+      const r=Math.floor(idx/N), c=idx%N;
+      const backup=puzzle[r][c];
+      puzzle[r][c]=0;
+      if(sdCount(puzzle,N,2)!==1){ puzzle[r][c]=backup; }
+      else givens--;
+    }
+    return {puzzle,solution:sol};
+  }
+  function sdNew(){
+    const L=SUDOKU_LEVELS.find(x=>x.id===sudokuGrade)||SUDOKU_LEVELS[0];
+    const {puzzle,solution}=sdMake(L.N,L.givens);
+    sd={ N:L.N, boxR:sdBoxDims(L.N)[0], boxC:sdBoxDims(L.N)[1],
+         puzzle:sdClone(puzzle), solution:sdClone(solution),
+         given:puzzle.map(r=>r.map(v=>v!==0)), notes:puzzle.map(r=>r.map(()=>[])), level:L };
+    sdSelected=-1; sdNoteMode=false;
+    $('sudokuFillMode').classList.add('active'); $('sudokuNoteMode').classList.remove('active');
+    $('sudokuFeedback').textContent=''; $('sudokuFeedback').className='feedback';
+    renderSudoku();
+  }
+  function renderSudokuGrades(){
+    const el=$('sudokuGrades'); el.innerHTML='';
+    SUDOKU_LEVELS.forEach(g=>{
+      const b=document.createElement('button');
+      b.className='grade-btn'+(g.id===sudokuGrade?' active':''); b.textContent=g.label;
+      b.addEventListener('click',()=>{ sudokuGrade=g.id; renderSudokuGrades(); sdNew(); });
+      el.appendChild(b);
+    });
+  }
+  function sdConflictSet(){
+    const set=new Set();
+    for(let r=0;r<sd.N;r++) for(let c=0;c<sd.N;c++){
+      const v=sd.puzzle[r][c]; if(!v) continue;
+      for(let i=0;i<sd.N;i++){
+        if(i!==c && sd.puzzle[r][i]===v){ set.add(r*sd.N+c); set.add(r*sd.N+i); }
+        if(i!==r && sd.puzzle[i][c]===v){ set.add(r*sd.N+c); set.add(i*sd.N+c); }
+      }
+      const R=Math.floor(r/sd.boxR)*sd.boxR, C=Math.floor(c/sd.boxC)*sd.boxC;
+      for(let i=0;i<sd.boxR;i++) for(let j=0;j<sd.boxC;j++){
+        const rr=R+i, cc=C+j;
+        if((rr!==r||cc!==c) && sd.puzzle[rr][cc]===v){ set.add(r*sd.N+c); set.add(rr*sd.N+cc); }
+      }
+    }
+    return set;
+  }
+  function renderSudoku(){
+    const board=$('sudokuBoard'); board.innerHTML='';
+    board.style.gridTemplateColumns='repeat('+sd.N+',1fr)';
+    const conflicts=sdConflictSet();
+    const sr = sdSelected>=0 ? Math.floor(sdSelected/sd.N) : -1;
+    const sc = sdSelected>=0 ? sdSelected%sd.N : -1;
+    const sameBox=(r,c)=> Math.floor(r/sd.boxR)===Math.floor(sr/sd.boxR) && Math.floor(c/sd.boxC)===Math.floor(sc/sd.boxC);
+    for(let r=0;r<sd.N;r++){
+      for(let c=0;c<sd.N;c++){
+        const idx=r*sd.N+c, v=sd.puzzle[r][c];
+        const cell=document.createElement('button');
+        cell.className='sudoku-cell'; cell.type='button';
+        if(sd.given[r][c]) cell.classList.add('given');
+        if(conflicts.has(idx)) cell.classList.add('conflict');
+        if(sdSelected===idx) cell.classList.add('sel');
+        else if(sdSelected>=0 && (r===sr||c===sc||sameBox(r,c))) cell.classList.add('peer');
+        if((c+1)%sd.boxC===0 && c+1<sd.N) cell.classList.add('br');
+        if((r+1)%sd.boxR===0 && r+1<sd.N) cell.classList.add('bb');
+        if(v){ cell.textContent=v; }
+        else {
+          const notes=sd.notes[r][c];
+          if(notes&&notes.length){
+            cell.innerHTML='<span class="note">'+sdRange(1,sd.N+1).map(n=>notes.includes(n)?('<b>'+n+'</b>'):'&nbsp;').join('')+'</span>';
+          }
+        }
+        cell.addEventListener('click',()=>{ if(sd.given[r][c]) return; sdSelected=idx; renderSudoku(); });
+        board.appendChild(cell);
+      }
+    }
+    renderSudokuPad();
+    const total=sd.N*sd.N, filled=sd.puzzle.flat().filter(x=>x!==0).length;
+    $('sudokuProgress').textContent='已填 '+filled+' / '+total;
+    $('sudokuDiff').textContent='难度：'+sd.level.label+' · '+sd.N+'×'+sd.N+'（'+sd.given.flat().filter(Boolean).length+' 个提示）';
+  }
+  function renderSudokuPad(){
+    const pad=$('sudokuKeys'); pad.innerHTML='';
+    sdRange(1,sd.N+1).forEach(n=>{
+      const b=document.createElement('button'); b.className='sudoku-key'; b.type='button'; b.textContent=n;
+      b.addEventListener('click',()=>sdInput(n));
+      pad.appendChild(b);
+    });
+  }
+  function sdInput(n){
+    if(sdSelected<0) return;
+    const r=Math.floor(sdSelected/sd.N), c=sdSelected%sd.N;
+    if(sd.given[r][c]) return;
+    if(sdNoteMode){
+      const arr=sd.notes[r][c]; const i=arr.indexOf(n);
+      if(i>=0) arr.splice(i,1); else arr.push(n);
+      sd.puzzle[r][c]=0;
+    } else {
+      sd.puzzle[r][c] = (sd.puzzle[r][c]===n) ? 0 : n;
+      sd.notes[r][c]=[];
+    }
+    renderSudoku();
+  }
+  function sdErase(){
+    if(sdSelected<0) return;
+    const r=Math.floor(sdSelected/sd.N), c=sdSelected%sd.N;
+    if(sd.given[r][c]) return;
+    sd.puzzle[r][c]=0; sd.notes[r][c]=[];
+    renderSudoku();
+  }
+  function sdHint(){
+    const blanks=[];
+    for(let r=0;r<sd.N;r++) for(let c=0;c<sd.N;c++){ if(sd.puzzle[r][c]!==sd.solution[r][c]) blanks.push([r,c]); }
+    if(!blanks.length) return;
+    const [r,c]=sdShuffle(blanks)[0];
+    sd.puzzle[r][c]=sd.solution[r][c]; sd.given[r][c]=true; sd.notes[r][c]=[];
+    if(sdSelected===r*sd.N+c) sdSelected=-1;
+    playCorrect();
+    renderSudoku();
+  }
+  function sdCheck(){
+    const fb=$('sudokuFeedback');
+    let filled=true, correct=true;
+    for(let r=0;r<sd.N;r++) for(let c=0;c<sd.N;c++){
+      if(sd.puzzle[r][c]===0) filled=false;
+      else if(sd.puzzle[r][c]!==sd.solution[r][c]) correct=false;
+    }
+    if(!filled){ fb.textContent='还有空格没填哦～'; fb.className='feedback try'; return; }
+    if(correct){
+      fb.textContent='🎉 全部正确，太棒了！'; fb.className='feedback good';
+      playFanfare(); sdConfetti();
+    } else {
+      fb.textContent='有填错的地方，红底格检查一下～'; fb.className='feedback try';
+      renderSudoku();
+      const board=$('sudokuBoard');
+      [...board.children].forEach((cell,idx)=>{
+        const r=Math.floor(idx/sd.N), c=idx%sd.N;
+        if(sd.puzzle[r][c]!==0 && sd.puzzle[r][c]!==sd.solution[r][c]) cell.classList.add('wrong');
+      });
+    }
+  }
+  function sdConfetti(){
+    const colors=['#ff8c42','#4ecdc4','#2ecc71','#f4c430','#a78bfa','#ff6b6b'];
+    for(let i=0;i<40;i++){
+      const c=document.createElement('div'); c.className='conf';
+      c.style.left=(Math.random()*100)+'vw';
+      c.style.background=colors[i%colors.length];
+      c.style.animationDuration=(0.9+Math.random()*0.8)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),1800);
+    }
+  }
+  function setAppMode(m){
+    appMode=m;
+    $('calcArea').style.display = m==='calc' ? '' : 'none';
+    $('sudokuArea').style.display = m==='sudoku' ? '' : 'none';
+    document.querySelectorAll('.mode-tab').forEach(b=> b.classList.toggle('active', b.dataset.app===m));
+    if(m==='sudoku'){ if(!sd.N) sdNew(); else renderSudoku(); }
+    saveState();
+  }
+
   /* 启动 */
   buildKeypad(); renderSubcats(); updateSoundBtn();
+  renderSudokuGrades();
+  document.querySelectorAll('.mode-tab').forEach(b=> b.addEventListener('click',()=>setAppMode(b.dataset.app)));
+  $('sudokuHint').addEventListener('click',sdHint);
+  $('sudokuNew').addEventListener('click',sdNew);
+  $('sudokuCheck').addEventListener('click',sdCheck);
+  $('sudokuErase').addEventListener('click',sdErase);
+  $('sudokuSound').addEventListener('click',()=>setSound(!soundOn));
+  $('sudokuFillMode').addEventListener('click',()=>{ sdNoteMode=false; $('sudokuFillMode').classList.add('active'); $('sudokuNoteMode').classList.remove('active'); });
+  $('sudokuNoteMode').addEventListener('click',()=>{ sdNoteMode=true; $('sudokuFillMode').classList.remove('active'); $('sudokuNoteMode').classList.add('active'); });
   document.querySelectorAll('.size-btn').forEach(x=>x.classList.toggle('active', parseInt(x.dataset.size,10)===roundSize));
   document.querySelectorAll('.mode2-btn').forEach(x=>{ if(x.id!=='soundBtn') x.classList.toggle('active', x.dataset.mode2===inputMode); });
   applyAdaptUI();
@@ -1536,6 +1826,7 @@
     else { current = adaptMode ? nextQ() : genQuestion(); }
     render(); saveState();
   }
+  setAppMode(appMode);
   refreshStats();
   refreshEyeInfo();
   startEyeTimer();
