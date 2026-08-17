@@ -25,4 +25,4 @@
 # HTML 文档必须每次重新校验，否则浏览器会启发式缓存旧 index.html，
 # 导致音频引用停留在被污染的空缓存版本、朗读回退到浏览器 TTS。
 /poetry-garden/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate

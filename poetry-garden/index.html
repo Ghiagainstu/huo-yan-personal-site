@@ -897,17 +897,33 @@ function speak(text,lang,btn){
 let poemAudio = null;
 function ensureAudio(){ if(!poemAudio) poemAudio = document.getElementById('poemAudio'); return poemAudio; }
 // 优先播放预生成神经 TTS 音频；失败则降级到浏览器内置 SpeechSynthesis
+// === TEMP DIAGNOSTIC (debug 朗读回退用，定位后删除) ===
+function diag(msg){
+  let d=document.getElementById('audioDiag');
+  if(!d){
+    d=document.createElement('div'); d.id='audioDiag';
+    d.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#1a1a1a;color:#0f0;font:12px/1.45 monospace;padding:8px 10px;border-radius:8px;white-space:pre-wrap;max-height:42vh;overflow:auto;box-shadow:0 2px 12px rgba(0,0,0,.45)';
+    (document.body||document.documentElement).appendChild(d);
+  }
+  d.style.display='block';
+  d.textContent=(new Date().toLocaleTimeString())+' '+msg+'\n'+d.textContent;
+}
 function playAudio(src, text, lang, btn){
   const a = ensureAudio();
   let usedFallback = false;
-  function fallback(){ if(!usedFallback){ usedFallback = true; if(btn) btn.classList.remove('speaking'); speak(text, lang, btn); } }
-  if(!a){ fallback(); return; }
+  function fb(reason){ if(!usedFallback){ usedFallback = true; if(btn) btn.classList.remove('speaking'); diag('FALLBACK→TTS ('+reason+') text='+text.slice(0,20)); speak(text, lang, btn); } }
+  if(!a){ diag('NO <audio> el'); fb('no-audio-el'); return; }
   if(btn) btn.classList.add('speaking');
-  a.onended = function(){ if(btn) btn.classList.remove('speaking'); };
-  a.onerror = function(){ if(btn) btn.classList.remove('speaking'); fallback(); };
+  diag('try src='+src);
+  a.oncanplay=null;
+  a.onplaying=function(){ diag('PLAYING ok src='+src); if(btn) btn.classList.remove('speaking');
+    setTimeout(function(){ var d=document.getElementById('audioDiag'); if(d && d.textContent.indexOf('FALLBACK')<0 && d.textContent.indexOf('rejected')<0 && d.textContent.indexOf('onerror')<0) d.style.display='none'; },1500); };
+  a.onended=function(){ if(btn) btn.classList.remove('speaking'); };
+  a.onerror=function(){ diag('onerror code='+(a.error?a.error.code:'?')+' ns='+a.networkState+' src='+src); if(btn) btn.classList.remove('speaking'); fb('onerror'); };
   a.src = src;
+  try{ a.load(); }catch(e){ diag('load() threw: '+e); }
   const pr = a.play();
-  if(pr && pr.catch) pr.catch(function(){ if(btn) btn.classList.remove('speaking'); fallback(); });
+  if(pr && pr.catch) pr.catch(function(err){ diag('play() rejected: '+(err&&err.name||err)+' ns='+a.networkState+' src='+src); if(btn) btn.classList.remove('speaking'); fb('play-rejected'); });
 }
 function stopSpeak(){
   if(window.speechSynthesis) speechSynthesis.cancel();
@@ -1018,14 +1034,14 @@ function preloadNeighbors(){
 function readPoem(){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
-  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=2', text, 'zh-CN', document.getElementById('readPoemBtn'));
+  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=3', text, 'zh-CN', document.getElementById('readPoemBtn'));
   else speak(text,'zh-CN',document.getElementById('readPoemBtn'));
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
 function speakLine(i){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   if(p.lines[i]){
-    if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3?cb=2', p.lines[i][0], 'zh-CN', null);
+    if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3?cb=3', p.lines[i][0], 'zh-CN', null);
     else speak(p.lines[i][0],'zh-CN',null);
   }
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
