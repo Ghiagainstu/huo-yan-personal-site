@@ -98,7 +98,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .card-art{flex:0 0 56%;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
 .card-art svg{width:100%;height:100%;display:block;}
 /* 拓展词角标: 固定在图片区右上角,与单词行的英/美式 pill 完全不重叠 */
-.tier-badge{position:absolute;top:6px;right:8px;z-index:3;background:rgba(142,68,173,0.12);color:#8e44ad;font-size:12px;font-weight:700;line-height:1;padding:2px 6px;border-radius:6px;box-shadow:none;pointer-events:none;}
+.tier-badge{position:absolute;top:6px;right:8px;z-index:3;background:rgba(229,57,53,0.12);color:#E53935;font-size:12px;font-weight:700;line-height:1;padding:2px 6px;border-radius:6px;box-shadow:none;pointer-events:none;}
 .card-face.card-back .card-art{flex-basis:40%;}
 .card-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:10px;}
 /* ★ v2 修复点1(关键):显式 line-height,给 descender 留空间,避开过度紧凑的渲染截切 */
@@ -4942,15 +4942,14 @@ const CORE_CATS = new Set([
   'objects','clothes','nature','verbs','adjectives','time','animals',
   'transport','places','plants','sports','shapes'
 ]);
-/* 单词级判定: 优先 WORD_META.freq,否则回退(sh-* 与英式变体=拓展,其余按分类) */
-/* 单词级 tier：上海小学(age∈{5-6,6-7,7-8})=非拓展(core)，其余(功能词/英式变体/初高中)=拓展(ext) */
+/* 单词级 tier：仅上海小学(age∈{5-6,6-7,7-8})=非拓展(core)；其余(功能词/初高中/无标签)=拓展(ext)。
+   规则：非小学的单词为拓展词 —— 判定只看 age 标签，不回退到分类(CORE_CATS)。 */
 function tierOfWord(catId, word){
   if(!word) return tierOfCat(catId);
   const m = meta(word);
   const a = m && m.age;
-  if(a==='5-6'||a==='6-7'||a==='7-8') return 'core';       // 上海小学 → 非拓展
-  if(catId && catId.indexOf('sh-')===0) return 'ext';        // 功能词整体算拓展
-  return CORE_CATS.has(catId) ? 'core' : 'ext';
+  if(a==='5-6'||a==='6-7'||a==='7-8') return 'core';   // 上海小学 → 非拓展
+  return 'ext';                                          // 非小学(功能词/初高中/无标签) → 拓展
 }
 function tierOfCat(catId){
   const c = CATS.find(x=>x.id===catId);
@@ -5439,7 +5438,7 @@ function renderCard(){
   const example=currentExample;
   const svg=wordArtSVG(item);
   const isExt = tierOfWord(item.cat.id, word)==='ext';
-  const tierBadge = isExt ? '<span class="tier-badge">拓展</span>' : '';
+  const tierBadge = isExt ? '<span class="tier-badge">📙 拓展</span>' : '';
   let dots='';
   for(let i=0;i<3;i++) dots+='<span class="'+(i<lv?'on':'')+'"></span>';
   /* ★ v2: 把圆角裁切从 .card-face 移到 .card-art-wrap,face 改 visible,
