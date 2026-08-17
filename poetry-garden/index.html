@@ -1018,7 +1018,7 @@ function preloadNeighbors(){
 function readPoem(){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
-  if(slug) playAudio('audio/poem-'+slug+'.mp3?v=2', text, 'zh-CN', document.getElementById('readPoemBtn'));
+  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3', text, 'zh-CN', document.getElementById('readPoemBtn'));
   else speak(text,'zh-CN',document.getElementById('readPoemBtn'));
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
