@@ -582,7 +582,7 @@ async function idbPut(date,val){try{const db=await idbOpen();return await new Pr
 async function idbDel(date){try{const db=await idbOpen();return await new Promise((res,rej)=>{const tx=db.transaction('shots','readwrite');tx.objectStore('shots').delete(date);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}catch(e){}}
 function amtKey(date){ return 'mm_amt_'+date; }
 function getLocalAmt(date){ try{const v=localStorage.getItem(amtKey(date)); return v?JSON.parse(v):null;}catch(e){return null;} }
-function setLocalAmt(date,obj){ try{localStorage.setItem(amtKey(date),JSON.stringify(obj));}catch(e){} }
+function setLocalAmt(date,obj){ try{localStorage.setItem(amtKey(date),JSON.stringify({amount:obj.amount,note:obj.note}));}catch(e){} }
 
 // ============ 云端同步 ============
 async function apiGetMonth(y,m){
@@ -613,7 +613,7 @@ async function loadMonth(){
   if(state.token){
     setSync('同步中…');
     const entries=await apiGetMonth(state.y,state.m);
-    if(entries){ Object.keys(entries).forEach(date=>{ const e=entries[date]; const rec=state.data[date]||{amount:0,note:'',screenshot:null,hasCloud:false}; rec.amount=e.amount||0; rec.note=e.note||''; rec.hasCloud=!!e.has_screenshot; if(!rec.screenshot && e.has_screenshot){ rec.screenshot='__CLOUD__'; } state.data[date]=rec; }); }
+    if(entries){ Object.keys(entries).forEach(date=>{ const e=entries[date]; const rec=state.data[date]||{amount:0,note:'',screenshot:null,hasCloud:false}; const cloudAmt=e.amount||0, localAmt=rec.amount||0; rec.amount = cloudAmt || localAmt; rec.note = (e.note && e.note.trim()) ? e.note : rec.note; rec.hasCloud=!!e.has_screenshot; if(!rec.screenshot && e.has_screenshot){ rec.screenshot='__CLOUD__'; } state.data[date]=rec; }); }
     setSync('');
   }
   document.getElementById('ylabel').textContent = `${state.y}年${state.m}月`;
