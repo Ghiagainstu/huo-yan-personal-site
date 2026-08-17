@@ -1,20 +1,47 @@
 // 一个月菜单 · 云端同步：买菜金额 / 备注 / 截图
+// 共享单份数据模型：所有已登录用户读写同一份记录（按 date 唯一），非按用户分库。
 // GET  /api/month-menu?token=...&year=YYYY&month=M        -> 当月所有日期的金额/备注/是否有截图（不含截图本体）
 // GET  /api/month-menu?token=...&date=YYYY-MM-DD&full=1    -> 单日截图 base64（按需拉取，避免列表臃肿）
 // POST /api/month-menu  body {token, date, amount, note, screenshot}  -> upsert 当日记录
 import { json, getUserByToken } from './_lib.js';
 
-// 建表（幂等）—— 无需单独迁移，首次访问自动创建
+// 从旧版「按用户分库」(user_id,date) 迁移到「共享单份」(date) 主键。
+// 幂等：仅当表仍是旧结构（含 user_id 列）时执行一次；用事务保证原子性，避免中途丢数据。
+async function migrateIfNeeded(db) {
+  const cols = await db.prepare("PRAGMA table_info(month_menu)").all();
+  const hasUserId = (cols.results || []).some(c => c.name === 'user_id');
+  if (!hasUserId) return; // 已是新结构，跳过
+
+  // 同一 date 可能有多位用户的行，按 updated_at 取最新一条合并为单份。
+  await db.exec(`
+    CREATE TABLE month_menu_new (
+      date       TEXT    NOT NULL PRIMARY KEY,
+      amount     REAL    DEFAULT 0,
+      note       TEXT    DEFAULT '',
+      screenshot TEXT,
+      updated_at INTEGER
+    );
+    INSERT INTO month_menu_new (date, amount, note, screenshot, updated_at)
+      SELECT m1.date,
+        (SELECT amount     FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
+        (SELECT note       FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
+        (SELECT screenshot FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
+        (SELECT updated_at FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1)
+      FROM (SELECT DISTINCT date FROM month_menu) m1;
+    DROP TABLE month_menu;
+    ALTER TABLE month_menu_new RENAME TO month_menu;
+  `);
+}
+
+// 建表（幂等）—— 共享单份结构：主键仅 date
 async function ensureTable(db) {
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS month_menu (
-       user_id   INTEGER NOT NULL,
-       date      TEXT    NOT NULL,
-       amount    REAL    DEFAULT 0,
-       note      TEXT    DEFAULT '',
+       date       TEXT    NOT NULL PRIMARY KEY,
+       amount     REAL    DEFAULT 0,
+       note       TEXT    DEFAULT '',
        screenshot TEXT,
-       updated_at INTEGER,
-       PRIMARY KEY(user_id, date)
+       updated_at INTEGER
      )`
   ).run();
 }
@@ -25,6 +52,7 @@ export async function onRequestGet(ctx) {
   const token = url.searchParams.get('token') || '';
   const u = await getUserByToken(db, token);
   if (!u) return json({ error: '未登录' }, 401);
+  await migrateIfNeeded(db);
   await ensureTable(db);
 
   const date = url.searchParams.get('date');
@@ -33,8 +61,8 @@ export async function onRequestGet(ctx) {
   // 单日 + 完整截图
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
     const row = await db.prepare(
-      'SELECT amount, note, screenshot FROM month_menu WHERE user_id=? AND date=?'
-    ).bind(u.id, date).first();
+      'SELECT amount, note, screenshot FROM month_menu WHERE date=?'
+    ).bind(date).first();
     if (!row) return json({ date, amount: 0, note: '', screenshot: null });
     if (full) return json({ date, amount: row.amount || 0, note: row.note || '', screenshot: row.screenshot || null });
     return json({ date, amount: row.amount || 0, note: row.note || '', has_screenshot: !!row.screenshot });
@@ -47,8 +75,8 @@ export async function onRequestGet(ctx) {
     const ym = `${year}-${String(month).padStart(2, '0')}`;
     const rows = await db.prepare(
       "SELECT date, amount, note, CASE WHEN screenshot IS NOT NULL THEN 1 ELSE 0 END AS has_screenshot " +
-      'FROM month_menu WHERE user_id=? AND date LIKE ?'
-    ).bind(u.id, ym + '%').all();
+      'FROM month_menu WHERE date LIKE ?'
+    ).bind(ym + '%').all();
     const map = {};
     (rows.results || []).forEach(r => {
       map[r.date] = { amount: r.amount || 0, note: r.note || '', has_screenshot: !!r.has_screenshot };
@@ -65,6 +93,7 @@ export async function onRequestPost(ctx) {
     || (await ctx.request.json().catch(() => ({}))).token || '';
   const u = await getUserByToken(db, token);
   if (!u) return json({ error: '未登录' }, 401);
+  await migrateIfNeeded(db);
   await ensureTable(db);
 
   const body = await ctx.request.json().catch(() => ({}));
@@ -89,18 +118,18 @@ export async function onRequestPost(ctx) {
 
   if (setShot) {
     await db.prepare(
-      `INSERT INTO month_menu(user_id, date, amount, note, screenshot, updated_at)
-       VALUES(?, ?, ?, ?, ?, ?)
-       ON CONFLICT(user_id, date) DO UPDATE SET
+      `INSERT INTO month_menu(date, amount, note, screenshot, updated_at)
+       VALUES(?, ?, ?, ?, ?)
+       ON CONFLICT(date) DO UPDATE SET
          amount=excluded.amount, note=excluded.note, screenshot=excluded.screenshot, updated_at=excluded.updated_at`
-    ).bind(u.id, date, amount, note, screenshot, Date.now()).run();
+    ).bind(date, amount, note, screenshot, Date.now()).run();
   } else {
     await db.prepare(
-      `INSERT INTO month_menu(user_id, date, amount, note, updated_at)
-       VALUES(?, ?, ?, ?, ?)
-       ON CONFLICT(user_id, date) DO UPDATE SET
+      `INSERT INTO month_menu(date, amount, note, updated_at)
+       VALUES(?, ?, ?, ?)
+       ON CONFLICT(date) DO UPDATE SET
          amount=excluded.amount, note=excluded.note, updated_at=excluded.updated_at`
-    ).bind(u.id, date, amount, note, Date.now()).run();
+    ).bind(date, amount, note, Date.now()).run();
   }
 
   return json({ ok: true, date, amount, note, has_screenshot: setShot ? !!screenshot : undefined });
