@@ -40,10 +40,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .poem-status.s1{background:#e3f2fd;color:#1976d2;}
 .poem-status.s2{background:#fff8e1;color:#f39c12;}
 .poem-lines{padding:10px 20px 16px;}
-.poem-line{text-align:center;margin-bottom:12px;cursor:pointer;border-radius:10px;padding:4px;transition:background .2s;}
+.poem-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:4px 8px;margin-bottom:12px;cursor:pointer;border-radius:10px;padding:4px;transition:background .2s;}
 .poem-line:hover{background:#f8f9fa;}
-.poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:4px;}
-.poem-line .py{font-size:13px;color:#b0bec5;margin-top:2px;letter-spacing:.5px;}
+.poem-line .ch{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;line-height:1.1;}
+.poem-line .py{font-size:13px;color:#b0bec5;margin-bottom:2px;letter-spacing:0;}
+.poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:0;}
 .poem-note{margin:0 16px 16px;background:#fffde7;border-left:4px solid #ffd600;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.7;color:#666;}
 
 /* ===== 操作按钮 ===== */
@@ -68,6 +69,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
   .header h1{font-size:20px}
   .poem-title{font-size:22px}
   .poem-line .zi{font-size:26px}
+  .poem-line .py{font-size:11px}
 }
 /* 搜索 + 目录 */
 .poem-toolbar{display:flex;gap:8px;margin:0 0 12px;align-items:center;}
@@ -950,13 +952,26 @@ function renderPoem(){
   const stTxt=st===2?'⭐ 已背诵':(st===1?'📖 已学习':'未学习');
   const stCls=st===2?'s2':(st===1?'s1':'');
   let linesHtml='';
+  function buildChars(cn,py){
+    const chars=Array.from(cn);
+    const syls=py.split(/\s+/).filter(Boolean);
+    let html='',si=0;
+    for(const c of chars){
+      if(/[\u4e00-\u9fff]/.test(c)){
+        const s=syls[si++]||'';
+        html+='<span class="ch">'+(pinyinOn?'<span class="py">'+s+'</span>':'')+'<span class="zi">'+c+'</span></span>';
+      }else{
+        html+='<span class="ch punc"><span class="zi">'+c+'</span></span>';
+      }
+    }
+    return html;
+  }
   p.lines.forEach((l,i)=>{
     if(reciteMode && !reciteRevealed[i]){
       linesHtml+='<div class="poem-line covered" onclick="revealLine('+i+')" title="点击显示这一句">'+
         '<div class="cover">👀</div></div>';
     }else{
-      linesHtml+='<div class="poem-line" onclick="speakLine('+i+')" title="点击听这一句">'+
-        '<div class="zi">'+l[0]+'</div>'+(pinyinOn?'<div class="py">'+l[1]+'</div>':'')+'</div>';
+      linesHtml+='<div class="poem-line" onclick="speakLine('+i+')" title="点击听这一句">'+buildChars(l[0],l[1])+'</div>';
     }
   });
   area.innerHTML =
@@ -1003,7 +1018,7 @@ function preloadNeighbors(){
 function readPoem(){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
-  if(slug) playAudio('audio/poem-'+slug+'.mp3', text, 'zh-CN', document.getElementById('readPoemBtn'));
+  if(slug) playAudio('audio/poem-'+slug+'.mp3?v=2', text, 'zh-CN', document.getElementById('readPoemBtn'));
   else speak(text,'zh-CN',document.getElementById('readPoemBtn'));
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
