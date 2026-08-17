@@ -917,6 +917,15 @@ function diag(msg){
   log.textContent=(new Date().toLocaleTimeString())+' '+msg+'\n'+log.textContent;
   audioDiagEl.scrollTop=0;
 }
+// 全局包裹 speechSynthesis.speak：任何 TTS 调用都记到诊断条，避免“第二路径”漏抓
+(function(){
+  if(!window.speechSynthesis) return;
+  const _orig = window.speechSynthesis.speak.bind(window.speechSynthesis);
+  window.speechSynthesis.speak = function(u){
+    try{ diag('TTS-SPEAK text='+(u&&u.text?u.text.slice(0,28):'(no text)')); }catch(e){}
+    return _orig(u);
+  };
+})();
 let currentAudio = null;
 function playAudio(src, text, lang, btn){
   let usedFallback = false;
