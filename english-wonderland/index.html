@@ -4942,14 +4942,24 @@ const CORE_CATS = new Set([
   'objects','clothes','nature','verbs','adjectives','time','animals',
   'transport','places','plants','sports','shapes'
 ]);
-/* 单词级 tier：仅上海小学(age∈{5-6,6-7,7-8})=非拓展(core)；其余(功能词/初高中/无标签)=拓展(ext)。
-   规则：非小学的单词为拓展词 —— 判定只看 age 标签，不回退到分类(CORE_CATS)。 */
+/* 单词级 tier：上海小学 = 核心(core)。包括两类：
+   ① 功能词：图片为 fw-* 前缀的词（科目/问候/代词/冠词/介词/连词/情态/副词），对应「上海小学英语词汇·带标签.md」142 词；
+   ② 内容词：age∈{5-6,6-7,7-8}（github 上海小学全集 864）。
+   其余(初高中/无标签) = 拓展(ext)。 */
+// 上海小学补充核心词：来自「上海小学英语词汇·带标签.md」142 词（科目/问候/代词/冠词/介词/连词/情态/副词/橡皮）。
+// 其中 141 个功能词图片为 img:fw-*；rubber 是 eraser 的英式变体(图片 img:eraser)，一并归核心。
+const SH_WORDS = new Set();
+for (const _cat of CATS) for (const _w of (_cat.words || [])) {
+  if (Array.isArray(_w) && typeof _w[2] === 'string' && _w[2].indexOf('img:fw-') === 0) SH_WORDS.add(_w[0]);
+}
+SH_WORDS.add('rubber'); // .md 上海小学(橡皮, eraser 英式变体)，非 fw- 图片，单独补入
 function tierOfWord(catId, word){
   if(!word) return tierOfCat(catId);
+  if(SH_WORDS.has(word)) return 'core';               // 上海小学补充词(.md 142)
   const m = meta(word);
   const a = m && m.age;
-  if(a==='5-6'||a==='6-7'||a==='7-8') return 'core';   // 上海小学 → 非拓展
-  return 'ext';                                          // 非小学(功能词/初高中/无标签) → 拓展
+  if(a==='5-6'||a==='6-7'||a==='7-8') return 'core';   // 上海小学内容词 → 核心
+  return 'ext';                                          // 非小学(初高中/无标签) → 拓展
 }
 function tierOfCat(catId){
   const c = CATS.find(x=>x.id===catId);
