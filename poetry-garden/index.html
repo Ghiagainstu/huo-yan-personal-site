@@ -1018,14 +1018,14 @@ function preloadNeighbors(){
 function readPoem(){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
-  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=1', text, 'zh-CN', document.getElementById('readPoemBtn'));
+  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=2', text, 'zh-CN', document.getElementById('readPoemBtn'));
   else speak(text,'zh-CN',document.getElementById('readPoemBtn'));
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
 function speakLine(i){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   if(p.lines[i]){
-    if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3', p.lines[i][0], 'zh-CN', null);
+    if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3?cb=2', p.lines[i][0], 'zh-CN', null);
     else speak(p.lines[i][0],'zh-CN',null);
   }
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
