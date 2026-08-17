@@ -260,6 +260,9 @@
     .keypad{max-width:280px;}
     .kp{height:62px; font-size:1.7rem;}
     .parent-btn{font-size:.66rem; padding:5px 8px;}
+    .topbar{flex-direction:column; gap:6px;}
+    .topbar h1{text-align:center; margin:2px 0 4px;}
+    .mode-switch .ms-opt{padding:7px 14px; font-size:.9rem;}
   }
   /* 护眼锁 */
   .eye-lock{position:fixed; inset:0; background:linear-gradient(160deg,#e8f3ff,#fef6e4); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000;}
@@ -276,10 +279,13 @@
   .eye-math-q{font-size:1.6rem; font-weight:800; margin:6px 0; color:var(--ink);}
   .eye-msg{min-height:1.2em; font-size:.85rem; color:#e8554e; margin-top:6px;}
 
-  /* ===== 模式切换 Tab（口算 / 数独） ===== */
-  .mode-tabs{display:flex; gap:10px; justify-content:center; margin:0 auto 8px;}
-  .mode-tab{border:none; border-radius:14px; padding:10px 22px; font-weight:800; font-size:1.05rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
-  .mode-tab.active{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; box-shadow:0 4px 12px rgba(255,140,66,.35);}
+  /* ===== 顶部栏：标题 + 模式切换（口算 / 数独，右上角） ===== */
+  .topbar{width:100%; max-width:800px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .topbar h1{margin:4px 0 8px; flex:1 1 auto; text-align:left;}
+  .mode-switch{position:relative; display:flex; align-items:center; background:#fff; border-radius:999px; padding:4px; box-shadow:0 3px 12px rgba(0,0,0,.16); flex:0 0 auto;}
+  .mode-switch .ms-opt{position:relative; z-index:2; border:none; background:transparent; cursor:pointer; padding:8px 16px; font-weight:800; font-size:.95rem; color:#666; border-radius:999px; transition:color .2s; white-space:nowrap;}
+  .mode-switch .ms-opt.active{color:#fff;}
+  .mode-switch .ms-knob{position:absolute; top:4px; left:4px; height:calc(100% - 8px); border-radius:999px; background:linear-gradient(135deg,var(--orange),var(--gold)); transition:.22s cubic-bezier(.4,0,.2,1); z-index:1;}
 
   /* ===== 数独 ===== */
   .sudoku-board{display:grid; gap:3px; background:#cfd8e3; padding:3px; border-radius:12px; max-width:460px; margin:6px auto 4px; touch-action:manipulation;}
@@ -306,6 +312,8 @@
     h1{font-size:1.9rem;}
     .mode-tabs{gap:14px;}
     .mode-tab{padding:12px 28px; font-size:1.15rem; border-radius:16px;}
+    .topbar h1{font-size:1.9rem;}
+    .mode-switch .ms-opt{padding:11px 22px; font-size:1.1rem; border-radius:18px;}
     .grades{max-width:800px; gap:10px;}
     .grade-btn{padding:12px 24px; font-size:1.12rem; border-radius:16px;}
     .cats{max-width:800px; gap:11px;}
@@ -342,11 +350,13 @@
 </script>
 </head>
 <body>
-  <h1>🧮 小学数学口算</h1>
-
-  <div class="mode-tabs">
-    <button class="mode-tab active" data-app="calc">🧮 口算</button>
-    <button class="mode-tab" data-app="sudoku">🧩 数独</button>
+  <div class="topbar">
+    <h1>🧮 小学数学口算</h1>
+    <div class="mode-switch" id="modeSwitch">
+      <span class="ms-knob" id="msKnob"></span>
+      <button class="ms-opt active" data-app="calc">🧮 口算</button>
+      <button class="ms-opt" data-app="sudoku">🧩 数独</button>
+    </div>
   </div>
 
   <div class="grades" id="grades"></div>
@@ -1811,18 +1821,28 @@
       setTimeout(()=>c.remove(),1800);
     }
   }
+  function positionModeKnob(){
+    const sw=document.getElementById('modeSwitch'); if(!sw) return;
+    const active=sw.querySelector('.ms-opt.active'); if(!active) return;
+    const knob=document.getElementById('msKnob');
+    knob.style.left=active.offsetLeft+'px';
+    knob.style.width=active.offsetWidth+'px';
+  }
   function setAppMode(m){
     appMode=m;
     $('calcArea').style.display = m==='calc' ? '' : 'none';
     $('sudokuArea').style.display = m==='sudoku' ? '' : 'none';
-    document.querySelectorAll('.mode-tab').forEach(b=> b.classList.toggle('active', b.dataset.app===m));
+    document.querySelectorAll('.ms-opt').forEach(b=> b.classList.toggle('active', b.dataset.app===m));
+    positionModeKnob();
     if(m==='sudoku'){ if(!sd.N) sdNew(); else renderSudoku(); }
     saveState();
   }
 
   /* 启动 */
   buildKeypad(); renderSubcats(); updateSoundBtn();
-  document.querySelectorAll('.mode-tab').forEach(b=> b.addEventListener('click',()=>setAppMode(b.dataset.app)));
+  document.querySelectorAll('.ms-opt').forEach(b=> b.addEventListener('click',()=>setAppMode(b.dataset.app)));
+  window.addEventListener('resize', positionModeKnob);
+  window.addEventListener('load', positionModeKnob);
   $('setupToggle').addEventListener('click',()=>{ const p=$('setupPanel'); const open=p.style.display==='none'; p.style.display=open?'':'none'; $('setupToggle').classList.toggle('open',open); });
   $('sudokuHint').addEventListener('click',sdHint);
   $('sudokuNew').addEventListener('click',sdNew);
