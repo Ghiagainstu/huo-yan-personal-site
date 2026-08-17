@@ -22,16 +22,18 @@
     min-height:100vh; display:flex; flex-direction:column; align-items:center;
     padding:22px 16px; user-select:none;
   }
-  h1{font-size:1.85rem; margin:6px 0 18px; letter-spacing:2px; text-align:center; text-shadow:0 2px 5px rgba(0,0,0,.08);}
+  h1{font-size:1.85rem; margin:4px 0 8px; letter-spacing:2px; text-align:center; text-shadow:0 2px 5px rgba(0,0,0,.08);}
 
   /* 题型分类：按模块分组的卡片网格（扁平化，去掉模块 Tab） */
-  .cats{display:flex; flex-direction:column; gap:11px; max-width:560px; margin:0 auto 16px;}
-  .cat-mod{display:flex; flex-direction:column; gap:6px;}
-  .cat-mod-title{font-size:.92rem; font-weight:800; color:#8a8f99; text-align:left; padding:0 4px; letter-spacing:.5px;}
-  .cat-mod-title::after{content:''; display:block; height:2px; background:linear-gradient(90deg,rgba(255,140,66,.4),transparent); margin-top:4px; border-radius:2px;}
-  .cat-grid{display:flex; flex-wrap:wrap; gap:7px; justify-content:center;}
+  .cats{display:flex; flex-direction:column; gap:9px; max-width:560px; margin:0 auto 10px;}
+  /* 桌面/平板：模块标签在左，卡片行在右，更省竖向空间 */
+  .cat-mod{display:flex; flex-direction:row; align-items:center; gap:8px; align-self:center;}
+  .cat-mod-title{flex:0 0 auto; width:52px; text-align:right; font-size:.85rem; font-weight:800; color:#8a8f99; padding-right:8px; border-right:2px solid rgba(255,140,66,.35); letter-spacing:.5px;}
+  .cat-mod-title::after{display:none;}
+  .cat-grid{flex:1; display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-start;}
+
   .cat-card{
-    flex:0 0 auto; width:106px; min-height:48px; border-radius:14px; padding:11px 8px;
+    flex:0 0 auto; width:106px; min-height:46px; border-radius:14px; padding:10px 8px;
     font-size:.92rem; font-weight:800; line-height:1.2;
     background:#fff; color:#555; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer; transition:.18s;
     display:flex; align-items:center; justify-content:center; text-align:center;
@@ -46,13 +48,13 @@
   .subcats.locked{display:none!important;}
 
   /* 子开关（如 20以内细分） */
-  .subcats{display:none; gap:6px; flex-wrap:wrap; justify-content:center; max-width:600px; margin:0 auto 12px; padding:8px 10px; background:rgba(255,140,66,.10); border-radius:16px;}
+  .subcats{display:none; gap:6px; flex-wrap:wrap; justify-content:center; max-width:600px; margin:0 auto 8px; padding:8px 10px; background:rgba(255,140,66,.10); border-radius:16px;}
   .subcats.show{display:flex;}
   .subcat-btn{border:1.5px solid transparent; border-radius:999px; padding:6px 14px; font-size:.88rem; font-weight:700; background:#fff; color:#777; box-shadow:0 2px 5px rgba(0,0,0,.06); cursor:pointer; transition:.18s;}
   .subcat-btn.active{background:rgba(255,140,66,.16); color:var(--orange); border-color:var(--orange);}
 
   /* 控制条 */
-  .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; max-width:600px; margin:0 auto 12px;}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; max-width:600px; margin:0 auto 8px;}
   .size-btn{border:none; border-radius:12px; padding:8px 14px; font-weight:700; background:#fff; color:#888; box-shadow:var(--shadow); cursor:pointer; font-size:.95rem;}
   .size-btn.active{background:var(--teal); color:#fff;}
   .ctrl-btn{border:none; border-radius:12px; padding:10px 16px; font-weight:800; font-size:.98rem; color:#fff; box-shadow:var(--shadow); cursor:pointer;}
@@ -61,7 +63,7 @@
   .ctrl-btn:active{transform:scale(.95);}
 
   /* 年级一级 Tab */
-  .grades{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:680px; margin:0 auto 10px;}
+  .grades{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:680px; margin:0 auto 8px;}
   .grade-btn{border:none; border-radius:14px; padding:9px 18px; font-weight:800; font-size:1rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
   .grade-btn.active{background:linear-gradient(135deg,#ff8c42,#ff6b6b); color:#fff; box-shadow:0 4px 12px rgba(255,107,107,.4);}
   .grades.locked .grade-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
@@ -87,12 +89,12 @@
   .prog-wrap{width:100%; max-width:560px; margin:0 auto 2px;}
   .prog-bar{width:100%; height:10px; background:#e6e6ee; border-radius:999px; overflow:hidden;}
   .prog-bar i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--green)); border-radius:999px; transition:width .3s ease;}
-  .progress{font-size:1rem; font-weight:700; color:#777; max-width:560px; margin:8px auto 14px; min-height:22px;}
+  .progress{font-size:1rem; font-weight:700; color:#777; max-width:560px; margin:6px auto 10px; min-height:22px;}
 
   /* 题目卡 */
   .board{
     width:100%; max-width:560px; background:var(--card); border-radius:28px;
-    box-shadow:var(--shadow); padding:26px 22px 30px; text-align:center;
+    box-shadow:var(--shadow); padding:20px 22px 26px; text-align:center;
   }
   .equation{
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px;
@@ -235,6 +237,10 @@
     .cats{gap:9px;}
     .cat-grid{gap:6px;}
     .cat-card{width:92px; padding:10px 5px; font-size:.84rem; min-height:44px;}
+    .cat-mod{flex-direction:column; align-items:stretch; align-self:stretch; gap:6px;}
+    .cat-mod-title{width:auto; text-align:left; padding-right:0; border-right:none; font-size:.9rem;}
+    .cat-mod-title::after{display:block; height:2px; background:linear-gradient(90deg,rgba(255,140,66,.4),transparent); margin-top:2px; border-radius:2px;}
+    .cat-grid{justify-content:center;}
     .subcats{padding:7px 8px;}
     .subcat-btn{padding:6px 11px; font-size:.86rem;}
     .controls{gap:10px;}
@@ -271,7 +277,7 @@
   .eye-msg{min-height:1.2em; font-size:.85rem; color:#e8554e; margin-top:6px;}
 
   /* ===== 模式切换 Tab（口算 / 数独） ===== */
-  .mode-tabs{display:flex; gap:10px; justify-content:center; margin:0 auto 14px;}
+  .mode-tabs{display:flex; gap:10px; justify-content:center; margin:0 auto 8px;}
   .mode-tab{border:none; border-radius:14px; padding:10px 22px; font-weight:800; font-size:1.05rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
   .mode-tab.active{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; box-shadow:0 4px 12px rgba(255,140,66,.35);}
 
@@ -302,14 +308,14 @@
     .mode-tab{padding:12px 28px; font-size:1.15rem; border-radius:16px;}
     .grades{max-width:800px; gap:10px;}
     .grade-btn{padding:12px 24px; font-size:1.12rem; border-radius:16px;}
-    .cats{max-width:800px; gap:16px;}
+    .cats{max-width:800px; gap:11px;}
     .cat-mod-title{font-size:1.05rem;}
     .cat-grid{gap:10px;}
     .cat-card{width:126px; min-height:64px; font-size:1.05rem; padding:14px 10px;}
     .controls{max-width:800px;}
     .setup-panel{max-width:800px; padding:14px 16px;}
     .ctrl-btn.start.big{font-size:1.25rem; padding:15px 30px;}
-    .board{max-width:720px; padding:24px 20px 28px; border-radius:28px;}
+    .board{max-width:720px; padding:20px 20px 24px; border-radius:28px;}
     .equation{font-size:2.6rem; gap:8px;}
     .num{font-size:2.7rem;} .op{font-size:2.4rem;} .equal{font-size:2.4rem;} .unknown{font-size:3rem;}
     .options{gap:14px;}
