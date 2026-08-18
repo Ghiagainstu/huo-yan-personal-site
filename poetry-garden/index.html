@@ -1130,16 +1130,32 @@ function fallbackFull(p,btn,text,fromV6){
   }
 }
 // 浏览器 TTS 全文朗读（无预生成音频 / 预生成音频失败兜底），结束后自动读注解
+// 逐句拼接播放：避免 iOS Safari 长文本被系统截断（约 15s 上限）；置 fullReadActive 使「再点=停止」
 function readFullWithTTS(p, btn, text){
   if(!('speechSynthesis' in window)){ if(btn) btn.classList.remove('speaking'); return; }
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='zh-CN'; u.rate=0.75;
-  const v=voices.find(vv=>vv.lang&&vv.lang.toLowerCase()==='zh-CN'); if(v) u.voice=v;
+  fullReadActive=true; fullReadPaused=false; fullReadBtn=btn;
   if(btn) btn.classList.add('speaking');
-  u.onend=function(){ if(btn) btn.classList.remove('speaking'); speakNote(p,btn); };
-  u.onerror=function(){ if(btn) btn.classList.remove('speaking'); };
-  speechSynthesis.speak(u);
+  // 逐句拆分：标题。朝代。作者。 + 每句诗，独立 utterance 顺序播放
+  const head=[p.title,p.dynasty,p.author].filter(Boolean).join('。')+'。';
+  const parts=[head].concat((p.lines||[]).map(l=>l[0]));
+  let i=0;
+  function playNext(){
+    if(!fullReadActive){ return; }   // 已被停止/切诗
+    if(i>=parts.length){
+      if(btn) btn.classList.remove('speaking');
+      fullReadActive=false; fullReadBtn=null;
+      speakNote(p,btn);
+      return;
+    }
+    const u=new SpeechSynthesisUtterance(parts[i++]);
+    u.lang='zh-CN'; u.rate=0.75;
+    const v=voices.find(vv=>vv.lang&&vv.lang.toLowerCase()==='zh-CN'); if(v) u.voice=v;
+    u.onend=playNext;
+    u.onerror=function(){ playNext(); };   // 单句失败跳过继续，避免整段卡死
+    speechSynthesis.speak(u);
+  }
+  playNext();
 }
 function speakLine(i){
   // 暂停正在进行的全文朗读，改读点击的句子
@@ -1231,11 +1247,11 @@ function updateToolButtons(){
   if(bm){bm.classList.toggle('on',moodRead);bm.textContent=moodRead?'🎭 意境 开':'🎭 意境 关';}
 }
 function togglePinyin(){pinyinOn=!pinyinOn;localStorage.setItem(LS_POEM_PINYIN,pinyinOn?'1':'0');updateToolButtons();renderPoem();}
-function toggleRecite(){reciteMode=!reciteMode;reciteRevealed={};localStorage.setItem(LS_POEM_RECITE,reciteMode?'1':'0');updateToolButtons();renderPoem();}
+function toggleRecite(){stopAllAudio();reciteMode=!reciteMode;reciteRevealed={};localStorage.setItem(LS_POEM_RECITE,reciteMode?'1':'0');updateToolButtons();renderPoem();}
 function revealLine(i){reciteRevealed[i]=true;renderPoem();}
 function revealAllLines(){for(let i=0;i<POEMS[poemIdx].lines.length;i++)reciteRevealed[i]=true;renderPoem();}
 function toggleFav(){const k=String(poemIdx);if(favMap[k])delete favMap[k];else favMap[k]=1;saveObj(LS_POEM_FAV,favMap);updateToolButtons();renderPoem();}
-function toggleMood(){moodRead=!moodRead;localStorage.setItem(LS_POEM_MOOD,moodRead?'1':'0');updateToolButtons();renderPoem();}
+function toggleMood(){stopAllAudio();moodRead=!moodRead;localStorage.setItem(LS_POEM_MOOD,moodRead?'1':'0');updateToolButtons();renderPoem();}
 function filterLabel(f){const map={all:'全部',unlearned:'未学习',learning:'学习中',memorized:'已背诵',fav:'⭐ 收藏'};if(map[f])return map[f];if(f.indexOf('G')===0)return gradeLabel(f);return f;}
 function filteredIndices(){
   const out=[];
@@ -1291,7 +1307,7 @@ function handleKey(e){
   const k=e.key, isBtn=tag==='BUTTON';
   if(k==='ArrowLeft'){e.preventDefault();prevPoem();}
   else if(k==='ArrowRight'){e.preventDefault();nextPoem();}
-  else if((k===' '||k==='Enter')&&!isBtn){e.preventDefault();readPoem();}
+  else if(k==='Enter'&&!isBtn){e.preventDefault();readPoem();}
 }
 document.addEventListener('keydown',handleKey);
 
