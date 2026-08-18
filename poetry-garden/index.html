@@ -68,12 +68,27 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .star-toast .msg{font-size:20px;font-weight:bold;color:#f39c12;margin-top:8px}
 
 @media(max-width:480px){
+  /* 整体更紧凑：去掉左右大留白、让卡片贴近屏边，腾出古诗空间 */
+  .header{padding:12px 12px 10px;}
   .header h1{font-size:20px}
+  .header .sub{font-size:12px}
+  .module{padding:0 0 24px;}
+  .poem-card{margin:0 8px 12px;border-radius:14px;}
+  .overall-progress{margin:10px 8px 10px;padding:10px 12px;}
+  .poem-toolbar{margin:0 8px 10px;}
+  /* 配图 21:9 被固有尺寸撑成 608px，强制限高 + object-fit:cover 居中裁切 */
+  .poem-art{aspect-ratio:21/9;max-height:200px;overflow:hidden;}
+  .poem-art img{object-fit:cover;}
+  .poem-head{padding:12px 12px 4px;}
   .poem-title{font-size:22px}
   .poem-line .zi{font-size:26px}
   .poem-line .py{font-size:11px}
   .poem-line .ch{width:40px}
   .poem-line .ch.punc .zi{font-size:26px}
+  .poem-lines{padding:8px 14px 12px;}
+  .poem-note{margin:0 10px 12px;padding:10px 12px;font-size:13px;}
+  .action-row{padding:0 8px;}
+  .nav-row{padding:0 8px;}
 }
 /* 搜索 + 目录 */
 .poem-toolbar{display:flex;gap:8px;margin:0 0 12px;align-items:center;}

@@ -54,6 +54,17 @@ def classify_mood(p):
             best, best_score = m, scores[m]
     return best if best_score > 0 else "serene"
 
+# 单诗朗读特例（叠字/特殊读法定制）：slug -> 覆盖全文文本与 v6 参数
+# 咏鹅：「鹅，鹅，鹅，」叠字连读为「鹅鹅鹅」更自然（用户 2026-08-18 选定）；
+# v6 意境版语速 -10%（full_m10 方案），v5 标准版保持默认语速。
+POEM_OVERRIDES = {
+    "yonge": {
+        "full_text": "咏鹅。唐。骆宾王。鹅鹅鹅，曲项向天歌。白毛浮绿水，红掌拨清波。",
+        "v6_rate": "-10%", "v6_pitch": "+3Hz",
+        "line0": "鹅鹅鹅，",
+    },
+}
+
 async def gen_text(text, out, rate="+0%", pitch="+0Hz"):
     c = edge_tts.Communicate(text, VOICE, rate=rate, pitch=pitch)
     await c.save(out)
@@ -64,21 +75,26 @@ def build_jobs(poems, mode):
         slug = p.get("slug")
         if not slug:
             print('SKIP no-slug', p.get('title')); continue
+        ov = POEM_OVERRIDES.get(slug)
         parts = [x for x in [p.get('title'), p.get('dynasty'), p.get('author')] if x]
         body = ''.join(p.get('lines', []))
-        full_text = '。'.join(parts) + '。' + body
+        full_text = (ov.get('full_text') if ov and ov.get('full_text') else ('。'.join(parts) + '。' + body))
         if mode in ('full', 'both', 'all'):
             jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.v5.mp3' % slug), full_text, "+0%", "+0Hz"))
         if mode in ('mood', 'all'):
             mood = classify_mood(p)
             prof = MOOD_PROFILES[mood]
-            jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.v6.mp3' % slug), full_text, prof['rate'], prof['pitch']))
+            rate = ov.get('v6_rate', prof['rate']) if ov else prof['rate']
+            pitch = ov.get('v6_pitch', prof['pitch']) if ov else prof['pitch']
+            jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.v6.mp3' % slug), full_text, rate, pitch))
         if mode in ('note', 'both', 'all'):
             note = (p.get('note') or '').strip()
             if note:
                 jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.note.mp3' % slug), note, "+0%", "+0Hz"))
         if mode in ('line', 'both', 'all'):
             for i, ln in enumerate(p.get('lines', [])):
+                if ov and ov.get('line0') and i == 0:
+                    ln = ov['line0']
                 jobs.append((os.path.join(AUDIO_DIR, 'poem-%s-%d.mp3' % (slug, i)), ln, "+0%", "+0Hz"))
     return jobs
 

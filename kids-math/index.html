@@ -242,37 +242,37 @@
 
   /* 手机适配（仅影响 ≤480px，平板/桌面不变） */
   @media (max-width:480px){
-    body{padding:18px 12px;}
-    h1{font-size:1.5rem; margin:12px 0 40px;}
+    body{padding:16px 10px;}
+    h1{font-size:1.5rem; margin:14px 0 44px;}
     .cats{gap:16px;}
     .cat-grid{grid-template-columns:repeat(3,1fr); gap:9px;}
-    .cat-card{height:44px; font-size:.95rem;}
+    .cat-card{height:48px; font-size:1.02rem;}
     .cat-mod{display:block;}
     .cat-mod-title{border-left:3px solid var(--orange); padding:0 0 0 10px; margin-bottom:8px; font-size:.95rem;}
     .subcats{padding:7px 8px;}
     .subcat-btn{padding:8px 14px; font-size:.95rem;}
     .controls{gap:10px;}
     .grades{gap:8px; margin:8px auto 24px;}
-    .grade-btn{padding:12px 20px; font-size:1.1rem; border-radius:14px;}
+    .grade-btn{padding:13px 22px; font-size:1.15rem; border-radius:14px;}
     .setup-panel{padding:10px;}
     .setup-row,.action-row{gap:8px;}
-    .mini-btn{padding:9px 13px; font-size:1.08rem;}
-    .controls .main-row .ctrl-btn, .controls .main-row .setup-toggle{height:44px;}
-    .ctrl-btn.start.big{font-size:1.2rem; padding:0 26px;}
-    .board{padding:24px 16px 28px; border-radius:24px;}
-    .equation{font-size:2.5rem; gap:10px;}
-    .num{font-size:2.7rem;} .op{font-size:2.5rem;} .equal{font-size:2.5rem;} .unknown{font-size:3.1rem;}
+    .mini-btn{padding:10px 14px; font-size:1.1rem;}
+    .controls .main-row .ctrl-btn, .controls .main-row .setup-toggle{height:48px;}
+    .ctrl-btn.start.big{font-size:1.25rem; padding:0 26px;}
+    .board{padding:26px 16px 30px; border-radius:24px;}
+    .equation{font-size:2.8rem; gap:10px;}
+    .num{font-size:3rem;} .op{font-size:2.8rem;} .equal{font-size:2.8rem;} .unknown{font-size:3.4rem;}
     .options{gap:14px;}
-    .opt{width:33vw; height:33vw; max-width:112px; max-height:112px; font-size:2.4rem; border-radius:24px;}
+    .opt{width:33vw; height:33vw; max-width:112px; max-height:112px; font-size:2.6rem; border-radius:24px;}
     .hint{font-size:.95rem;}
-    .next{font-size:1.3rem; padding:15px 34px;}
-    .keypad{max-width:320px;}
-    .kp{height:72px; font-size:2rem;}
+    .next{font-size:1.35rem; padding:16px 36px;}
+    .keypad{max-width:340px;}
+    .kp{height:78px; font-size:2.1rem;}
     .parent-btn{font-size:.66rem; padding:5px 8px;}
     .topright{position:static; margin:4px auto 18px; justify-content:center;}
     /* 手机上「关于」独立悬浮右上角，让口算/数独切换组真正居中 */
     .about-btn{position:fixed; top:20px; right:12px;}
-    .mode-switch .ms-opt{padding:4px 13px; font-size:.82rem; line-height:1;}
+    .mode-switch .ms-opt{padding:5px 14px; font-size:.86rem; line-height:1;}
   }
   /* 护眼锁 */
   .eye-lock{position:fixed; inset:0; background:linear-gradient(160deg,#e8f3ff,#fef6e4); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000;}
@@ -1159,6 +1159,7 @@
     }
     eqEl.innerHTML=html;
 
+    const useFill = inputMode==='fill' && !q.opts && !q.display && typeof q.ans==='number' && Number.isInteger(q.ans) && q.ans>=0;
     if(q.hint){
       hintBtn.style.display='inline-flex';
       hintBtn.classList.remove('on'); hintBtn.textContent='💡 解题方法';
@@ -1166,11 +1167,9 @@
     }else{
       hintBtn.style.display='none';
       hintEl.style.display='';
-      hintEl.textContent = inputMode==='fill' ? '算出答案，按数字键填入 👇' : '数一数 / 算一算，点出正确答案 👇';
+      hintEl.textContent = useFill ? '算出答案，按数字键填入 👇' : (inputMode==='fill' ? '此题请在下方选择答案 👇' : '数一数 / 算一算，点出正确答案 👇');
       hintEl.className='hint plain';
     }
-
-    const useFill = inputMode==='fill' && !q.opts && !q.display && typeof q.ans==='number' && Number.isInteger(q.ans) && q.ans>=0;
     if(useFill){
       optEl.style.display='none'; keypadEl.style.display='block';
       inputStr=''; kpDisplay.classList.remove('correct','wrong'); kpDisplay.textContent='?';
@@ -1525,8 +1524,9 @@
   });
 
   document.querySelectorAll('.mode2-btn').forEach(b=>{
+    if(b.closest('#sudokuArea')) return;   // 数独「填数/笔记」由数独模块管理，勿污染答题 inputMode
     b.addEventListener('click',()=>{
-      document.querySelectorAll('.mode2-btn').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.mode2-btn').forEach(x=>{ if(!x.closest('#sudokuArea')) x.classList.remove('active'); });
       b.classList.add('active'); inputMode=b.dataset.mode2; saveState();
       current=genQuestion(); render();
     });
@@ -1886,7 +1886,7 @@
   $('sudokuFillMode').addEventListener('click',()=>{ sdNoteMode=false; $('sudokuFillMode').classList.add('active'); $('sudokuNoteMode').classList.remove('active'); });
   $('sudokuNoteMode').addEventListener('click',()=>{ sdNoteMode=true; $('sudokuFillMode').classList.remove('active'); $('sudokuNoteMode').classList.add('active'); });
   document.querySelectorAll('.size-btn').forEach(x=>x.classList.toggle('active', parseInt(x.dataset.size,10)===roundSize));
-  document.querySelectorAll('.mode2-btn').forEach(x=>{ if(x.id!=='soundBtn') x.classList.toggle('active', x.dataset.mode2===inputMode); });
+  document.querySelectorAll('.mode2-btn').forEach(x=>{ if(x.closest('#sudokuArea')||x.id==='soundBtn') return; x.classList.toggle('active', x.dataset.mode2===inputMode); });
   applyAdaptUI();
   // 恢复闯关进度：若上次在题目中途，回到原题目继续（已答则显示「继续」，不重复计分）
   if(savedUI && savedUI.roundActive && isValidQ(savedUI.current)){
