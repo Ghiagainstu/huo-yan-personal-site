@@ -929,11 +929,21 @@ function stopFullRead(){
   fullReadPaused = false;
   if(fullReadBtn){ fullReadBtn.classList.remove('speaking'); fullReadBtn = null; }
 }
-// 朗读完成后自动读中文注解（无预生成音频，走浏览器 TTS）
+// 朗读完成后自动读中文注解（与正文同一神经语音预生成，避免系统 TTS 平淡音）
 function speakNote(p, btn){
   const note = (p.note || '').trim();
   if(!note) return;
-  speak(note, 'zh-CN', btn);
+  const slug = slugOf(poemIdx);
+  if(slug){
+    if(btn) btn.classList.add('speaking');
+    const a = new Audio('audio/poem-'+slug+'.note.mp3?cb=6');
+    a.onended = function(){ if(btn) btn.classList.remove('speaking'); };
+    a.onerror = function(){ if(btn) btn.classList.remove('speaking'); speak(note, 'zh-CN', btn); };
+    const pr = a.play();
+    if(pr && pr.catch) pr.catch(function(){ if(btn) btn.classList.remove('speaking'); speak(note, 'zh-CN', btn); });
+  } else {
+    speak(note, 'zh-CN', btn);
+  }
 }
 
 /* ============================================================

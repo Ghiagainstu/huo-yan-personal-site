@@ -22,6 +22,11 @@ def build_jobs(poems, mode):
             body = ''.join(p.get('lines', []))
             full_text = '。'.join(parts) + '。' + body
             jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.v5.mp3' % slug), full_text))
+        if mode in ('note', 'both'):
+            # 白话文注解也用同一神经语音预生成，避免朗读完正文后用浏览器系统 TTS（平淡机器音）造成音色不一致
+            note = (p.get('note') or '').strip()
+            if note:
+                jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.note.mp3' % slug), note))
         if mode in ('line', 'both'):
             for i, ln in enumerate(p.get('lines', [])):
                 jobs.append((os.path.join(AUDIO_DIR, 'poem-%s-%d.mp3' % (slug, i)), ln))

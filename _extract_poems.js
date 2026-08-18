@@ -22,7 +22,7 @@ const out = POEMS.map((p, idx) => {
   const lineText = arr => Array.isArray(arr) ? arr.map(l => Array.isArray(l) ? l[0] : l).join('') : '';
   const text = p.title + '。' + p.author + '。' + lineText(p.lines);
   const lines = (p.lines || []).map(l => Array.isArray(l) ? l[0] : l);
-  return { slug, title: p.title, author: p.author, dynasty: p.dynasty, text, lines };
+  return { slug, title: p.title, author: p.author, dynasty: p.dynasty, note: p.note || '', text, lines };
 });
 fs.writeFileSync('_poems.json', JSON.stringify(out));
 console.log('extracted', out.length, 'poems; slugs with null:', out.filter(o => !o.slug).length);
