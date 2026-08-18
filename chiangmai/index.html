@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>清迈亲子景点手册 · 火哥的个人站</title>
 <meta name="description" content="清迈亲子游景点卡片：黏黏瀑布、丛林飞跃、彩虹溶洞、打铁手工、大象自然保护公园、山顶绵羊牧场、夜间动物园。点击卡片看详情。">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#ffffff">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XSB4FETFN"></script>
@@ -98,9 +99,31 @@
     font-size:13.5px;color:#7a5a1e;margin-top:6px}
   footer{margin-top:30px;text-align:center;font-size:12px;color:var(--sub)}
   footer a{color:var(--gold-dark);text-decoration:none}
+  /* ===== 访问密码门 ===== */
+  #pw-gate{display:none;position:fixed;inset:0;z-index:9999;background:rgba(20,16,8,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}
+  #pw-gate .pw-card{background:#fff;border-radius:18px;padding:38px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  #pw-gate .pw-emoji{font-size:42px;margin-bottom:12px}
+  #pw-gate h3{font-size:20px;font-weight:800;color:#1a1a1a;margin-bottom:6px}
+  #pw-gate .pw-sub{font-size:13px;color:#8a8a8e;margin-bottom:24px;line-height:1.6}
+  #pw-gate input{width:100%;padding:13px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:16px;text-align:center;outline:none;transition:border-color .15s}
+  #pw-gate input:focus{border-color:#E8A33D}
+  #pw-gate button{width:100%;margin-top:14px;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#E8A33D,#B87A1E);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s}
+  #pw-gate button:hover{opacity:.9}
+  #pw-gate .pw-err{color:#c0392b;font-size:13px;margin-top:14px}
 </style>
 </head>
 <body>
+<!-- 访问密码门（改密码：找到页面底部 PASS 变量修改即可） -->
+<div id="pw-gate">
+  <div class="pw-card">
+    <div class="pw-emoji">🔒</div>
+    <h3>私密攻略 · 请输入密码</h3>
+    <p class="pw-sub">清迈亲子景点手册为火哥家庭私有内容<br>仅限受邀访问</p>
+    <input type="password" id="pw-input" placeholder="输入访问密码" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button id="pw-btn" type="button">进入攻略 →</button>
+    <p class="pw-err" id="pw-err" style="display:none">密码不对，再试一次</p>
+  </div>
+</div>
 <div class="wrap">
   <div class="topbar">
     <span style="font-size:12px;color:var(--sub)">清迈 · 亲子</span>
@@ -351,6 +374,33 @@
   });
   mask.addEventListener('click', function(e){ if(e.target===mask) closeSheet(); });
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSheet(); });
+</script>
+
+<script>
+/* ===== 访问密码门 ===== */
+(function(){
+  var PASS = 'huoyan2026'; /* ← 想改密码就改这一行，保存即生效 */
+  var gate = document.getElementById('pw-gate');
+  var input = document.getElementById('pw-input');
+  var btn = document.getElementById('pw-btn');
+  var err = document.getElementById('pw-err');
+  if (!gate || !input || !btn) return;
+  function unlock(){
+    gate.style.display = 'none';
+    try { sessionStorage.setItem('pwg_ok', '1'); } catch(e) {}
+  }
+  function check(){
+    if (input.value === PASS) { unlock(); }
+    else { err.style.display = 'block'; input.value = ''; input.focus(); }
+  }
+  try {
+    if (sessionStorage.getItem('pwg_ok') === '1') { unlock(); return; }
+  } catch(e) {}
+  gate.style.display = 'flex';
+  btn.addEventListener('click', check);
+  input.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') check(); });
+  setTimeout(function(){ input.focus(); }, 100);
+})();
 </script>
 </body>
 </html>
