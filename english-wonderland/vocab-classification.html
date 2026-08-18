@@ -19,6 +19,8 @@ header p{color:var(--gray);margin:0 0 14px;font-size:14px;line-height:1.7;}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .filters button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 13px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s;}
 .filters button.active{background:var(--gold);color:#fff;border-color:var(--gold);}
+.filters button b{font-weight:700;color:var(--gold);margin-left:4px;}
+.filters button.active b{color:#fff;}
 .search{width:100%;max-width:340px;padding:9px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-bottom:14px;outline:none;}
 .search:focus{border-color:var(--gold);}
 .legend{font-size:12px;color:var(--gray);margin-bottom:16px;line-height:1.9;}
@@ -51,17 +53,14 @@ header p{color:var(--gray);margin:0 0 14px;font-size:14px;line-height:1.7;}
 .card .cmtbtn.has{border-style:solid;border-color:var(--gold);color:var(--gold);background:#fffdf6;}
 .loadmore{display:block;margin:22px auto 0;padding:11px 26px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;font-size:14px;cursor:pointer;}
 .loadmore:hover{border-color:var(--gold);color:var(--gold);}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
-.modal.open{display:flex;}
-.modal-box{background:#fff;border-radius:14px;width:min(520px,92vw);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.modal-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600;}
-.modal-h button{border:none;background:#f2f2f4;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px;color:var(--gray);}
-.modal-h button:hover{background:#e5e5ea;}
-.modal-ta{margin:14px 18px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;min-height:140px;resize:vertical;color:#333;line-height:1.6;outline:none;}
-.modal-ta:focus{border-color:var(--gold);}
-.modal-foot{display:flex;align-items:center;gap:10px;padding:10px 18px 16px;border-top:1px solid var(--line);}
-.modal-foot button{margin-left:auto;border:none;background:var(--gold);color:#fff;padding:9px 22px;border-radius:10px;font-size:14px;cursor:pointer;}
-.modal-foot .mtip{font-size:12px;color:var(--green);}
+.card .card-cmt{margin-top:8px;}
+.card .cmt{width:100%;font-size:11px;padding:6px 7px;border:1px solid var(--line);border-radius:8px;resize:vertical;min-height:42px;font-family:inherit;color:#333;line-height:1.4;}
+.card .cmt:focus{border-color:var(--gold);outline:none;}
+.card .cmt.has{border-left:3px solid var(--gold);background:#fffdf6;}
+.card .cmt-actions{margin-top:5px;text-align:right;}
+.card .cmt-done{border:1px solid var(--line);background:#fff;color:var(--gray);font-size:11px;padding:3px 10px;border-radius:8px;cursor:pointer;}
+.card .cmt-done:hover{border-color:var(--gold);color:var(--gold);}
+.card .cmtview{font-size:11px;color:#333;line-height:1.5;white-space:pre-wrap;word-break:break-word;margin-bottom:5px;}
 footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 </style></head>
 <body><div class="container">
@@ -73,9 +72,9 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 <div class="note">
   <b>上海小学词汇 = 命中牛津2024标准（启发式匹配）</b><br>
   规则：把 txt 词条归一化（去冠词 a/an、去 a pair of / a X of 量词、去括号、简单复数转单数、短语取中心词）后，与 github 已部署词的<b>英文</b>或<b>图片 slug</b>匹配；命中即判为「上海小学」。匹配为启发式，短语/量词类可能存在少量偏差，请以下方卡片逐词核对。<br>
-  <b>逐词核对方法</b>：点「上海小学(牛津)」看全部小学词；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>303</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应；功能词点「功能词」。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
+  <b>逐词核对方法</b>：点「上海小学(合计)」看全部小学词；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>303</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应；功能词点「功能词」。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
   <b>统计</b>：线上已部署词 <b>1317</b> ｜ 上海小学合计 <b>672</b>（牛津内容词 <b>532</b> ＋ 功能词 <b>140</b>）｜ 拓展 <b>645</b> ｜ 带图 <b>1292</b> ｜ 图缺失 <b>25</b> ｜ 标准缺口 <b>303</b>。<br>
-  <b>逐词评价</b>：点每张卡下方的「✎ 写评价」按钮，弹出<b>单个评价框</b>（全页只此一个，不随卡片增多而卡顿），可写「图要重出 / 标签要改 / 归错类」等意见，<b>自动存浏览器本地（刷新不丢）</b>；上方「⬇️ 导出评价」下载 JSON 发我，或存为 <code>_vocab_comments.json</code> 让我重生成时嵌入；「⬆️ 导入评价」重新载入。列表默认只渲染 80 张，点「加载更多」继续翻看，避免一次载入全部卡片卡顿。
+  <b>逐词评价</b>：点每张卡下方的「✎ 写评价」按钮，该卡<b>就地展开一个文本框</b>（不再弹窗），可写「图要重出 / 标签要改 / 归错类」等意见，<b>自动存浏览器本地（刷新不丢）</b>；上方「⬇️ 导出评价」下载 JSON 发我，或存为 <code>_vocab_comments.json</code> 让我重生成时嵌入；「⬆️ 导入评价」重新载入。列表默认只渲染 80 张，点「加载更多」继续翻看，避免一次载入全部卡片卡顿。
 </div>
 
 <div class="stats">
@@ -89,13 +88,13 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 </div>
 
 <div class="filters">
-  <button data-f="all" class="active">全部</button>
-  <button data-f="core">上海小学(合计)</button>
-  <button data-f="oxcontent">牛津内容词</button>
-  <button data-f="ext">拓展</button>
-  <button data-f="func">功能词</button>
-  <button data-f="noimg">仅看图缺失</button>
-  <button data-f="gap">标准缺口</button>
+  <button data-f="all" class="active">全部 <b>1620</b></button>
+  <button data-f="core">上海小学(合计) <b>672</b></button>
+  <button data-f="oxcontent">牛津内容词 <b>532</b></button>
+  <button data-f="ext">拓展 <b>645</b></button>
+  <button data-f="func">功能词 <b>140</b></button>
+  <button data-f="noimg">仅看图缺失 <b>25</b></button>
+  <button data-f="gap">标准缺口 <b>303</b></button>
 </div>
 <div class="toolbar">
   <button id="btnExport" type="button">⬇️ 导出评价(JSON)</button>
@@ -115,11 +114,6 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 
 <div class="grid" id="grid"></div>
 <button class="loadmore" id="loadMore" type="button">加载更多</button>
-<div class="modal" id="modal"><div class="modal-box">
-  <div class="modal-h"><span id="modalW"></span><button id="modalClose" type="button">✕</button></div>
-  <textarea class="modal-ta" id="modalTa" placeholder="写评价…（图要重出/标签要改/归错类…）"></textarea>
-  <div class="modal-foot"><span class="mtip" id="modalTip"></span><button id="modalSave" type="button">保存</button></div>
-</div></div>
 
 <footer>数据快照来自 index.html（本地源）＋ 牛津上海版2024词表；生成于 _build_class.js</footer>
 </div>
@@ -139,6 +133,24 @@ function saveLocal(w,v){ try{ localStorage.setItem(STORE_PRE+w,v); }catch(e){} }
 var localComments = {};
 ALL.forEach(function(d){ var lv = loadLocal(d.w); localComments[d.w] = (lv!=='' ? lv : (d.comment||'')); });
 function imgFail(img){ var box = img.parentNode; if(box){ box.innerHTML = '<div class="noimg">图缺失(文件未找到)</div>'; } }
+// ---- 评价：就地内联文本框（openSet 记录被展开的词，避免一次性 1620 个 textarea）----
+var openSet = {};
+function cmtInner(w){
+  var v = localComments[w] || '';
+  var has = v.trim();
+  if(openSet[w]){
+    return '<textarea class="cmt' + (has?' has':'') + '" data-w="' + w + '" placeholder="写评价…（图要重出/标签要改/归错类…）">' + esc(v) + '</textarea>'
+      + '<div class="cmt-actions"><button class="cmt-done" data-w="' + w + '">收起</button></div>';
+  }
+  if(has){
+    return '<div class="cmtview">' + esc(v) + '</div><button class="cmtbtn" data-w="' + w + '">✎ 改评价</button>';
+  }
+  return '<button class="cmtbtn" data-w="' + w + '">✎ 写评价</button>';
+}
+function replaceCmt(w){
+  var el = grid.querySelector('.card-cmt[data-w="' + w + '"]');
+  if(el) el.innerHTML = cmtInner(w);
+}
 function matches(d){
   if(filter === 'all') return true;
   if(filter === 'core') return d.tier === 'core';
@@ -160,8 +172,7 @@ function makeCard(d){
   var dot = d.img ? '<span class="dot ok" title="图片存在"></span>' : (d.tier === 'gap' ? '' : '<span class="dot miss" title="图片缺失"></span>');
   var tierBadge = d.tier === 'core' ? '<span class="badge core">📘 上海小学</span>' : d.tier === 'ext' ? '<span class="badge ext">📙 拓展</span>' : '<span class="badge gap">⚠️ 标准缺口</span>';
   var funcBadge = d.functional ? '<span class="badge func">功能词</span>' : '';
-  var has = (localComments[d.w]||'').trim();
-  var cmt = '<button class="cmtbtn' + (has?' has':'') + '" data-act="cmt" data-w="' + d.w + '">' + (has?'✎ 已评':'✎ 写评价') + '</button>';
+  var cmt = '<div class="card-cmt" data-w="' + d.w + '">' + cmtInner(d.w) + '</div>';
   var origLine = d.orig ? '<div class="orig">原始词形: ' + esc(d.orig) + '</div>' : '';
   div.innerHTML = thumb
     + '<div class="body"><div class="en">' + esc(d.w) + ' ' + dot + '</div>'
@@ -204,36 +215,29 @@ document.querySelectorAll('.filters button').forEach(function(b){
 q.addEventListener('input', computeList);
 grid.addEventListener('click', function(e){
   var t = e.target;
-  if(t && t.classList && t.classList.contains('cmtbtn')){ openModal(t.getAttribute('data-w')); }
+  if(t && t.classList && t.classList.contains('cmtbtn')){
+    var w = t.getAttribute('data-w');
+    openSet[w] = true;
+    replaceCmt(w);
+    var ta = grid.querySelector('textarea.cmt[data-w="' + w + '"]');
+    if(ta){ ta.focus(); var v = ta.value; ta.setSelectionRange(v.length, v.length); }
+  } else if(t && t.classList && t.classList.contains('cmt-done')){
+    var w2 = t.getAttribute('data-w');
+    delete openSet[w2];
+    replaceCmt(w2);
+  }
+});
+grid.addEventListener('input', function(e){
+  var t = e.target;
+  if(t && t.classList && t.classList.contains('cmt')){
+    var w = t.getAttribute('data-w');
+    localComments[w] = t.value;
+    saveLocal(w, t.value);
+    if(t.value.trim()) t.classList.add('has'); else t.classList.remove('has');
+    tip('已保存「' + w + '」的评价（本地）');
+  }
 });
 document.getElementById('loadMore').addEventListener('click', appendChunk);
-// ---- 评价弹窗（全页仅 1 个 textarea，不随卡片膨胀）----
-var modal = document.getElementById('modal');
-var modalW = document.getElementById('modalW');
-var modalTa = document.getElementById('modalTa');
-var modalTip = document.getElementById('modalTip');
-var activeW = null;
-function openModal(w){
-  activeW = w;
-  modalW.textContent = w;
-  modalTa.value = localComments[w] || '';
-  modalTip.textContent = '';
-  modal.classList.add('open');
-  modalTa.focus();
-}
-function closeModal(){ modal.classList.remove('open'); activeW = null; }
-document.getElementById('modalClose').addEventListener('click', closeModal);
-modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
-document.getElementById('modalSave').addEventListener('click', function(){
-  if(!activeW) return;
-  var v = modalTa.value;
-  localComments[activeW] = v;
-  saveLocal(activeW, v);
-  var btn = grid.querySelector('.cmtbtn[data-w="'+activeW+'"]');
-  if(btn){ var has = v.trim(); btn.classList.toggle('has', !!has); btn.textContent = has ? '✎ 已评' : '✎ 写评价'; }
-  modalTip.textContent = '已保存「'+activeW+'」的评价（本地）';
-  setTimeout(closeModal, 600);
-});
 function tip(msg){ var el=document.getElementById('saveTip'); if(el) el.textContent = msg; }
 document.getElementById('btnExport').addEventListener('click', function(){
   var data = {};
@@ -255,7 +259,7 @@ fileInput.addEventListener('change', function(e){
       var data = JSON.parse(r.result);
       var n = 0;
       ALL.forEach(function(d){ if(Object.prototype.hasOwnProperty.call(data, d.w)){ localComments[d.w]=data[d.w]; saveLocal(d.w, data[d.w]); n++; } });
-      grid.querySelectorAll('.cmtbtn').forEach(function(btn){ var w=btn.getAttribute('data-w'); var has=(localComments[w]||'').trim(); btn.classList.toggle('has',!!has); btn.textContent= has?'✎ 已评':'✎ 写评价'; });
+      grid.querySelectorAll('.card-cmt').forEach(function(box){ replaceCmt(box.getAttribute('data-w')); });
       tip('已导入 ' + n + ' 条评价');
     }catch(err){ alert('JSON 解析失败：' + err.message); }
   };
