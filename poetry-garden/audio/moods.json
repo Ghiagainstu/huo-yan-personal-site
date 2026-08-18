@@ -1,0 +1,474 @@
+{
+"yonge": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"minnong": {
+"mood": "solemn",
+"label": "沉郁庄重"
+},
+"hua": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"dengguanque": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"cao": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"jiangxue": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"xiangsi": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"xunyinzhe": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"gulang": {
+"mood": "solemn",
+"label": "沉郁庄重"
+},
+"jiangnan": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"huaji": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"yesushansi": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"meihua": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"jingyesi": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"chunxiao": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"suojian": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"feng": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"chishang": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"jueju": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"minnong1": {
+"mood": "solemn",
+"label": "沉郁庄重"
+},
+"jiangshangyuzhe": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"qibushi": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"chilege": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"baidi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"huixiangoushu": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"qiupuge": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"liangzhouci": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"yizishi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"dalinsitaohua": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"qianchusai": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"xiaochi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"xiaoer": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"zhuliguan": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"youyuanbuzhi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"qingming": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"yiaisi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"fengqiaoyebo": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"saixiaqu": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"luoshanpubu": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"luzhai": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"xiaochujingci": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"yuyishui": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"shanxing": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"saixiaqu3": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"zengliujingwen": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"fengxuefurongshan": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"chunyexiyu": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"yongliu": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"huichong": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"chunri": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"youziyin": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"songdushaofu": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"jueju2": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"jiangpan": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"leyouyuan": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"zenghuaqing": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"mujiangyin": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"qiuxi": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"qiuyejiangxiao": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"congjunxing": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"niaomingjian": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"cailianqu": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"xiarijueju": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"wangdongting": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"baiyoujixing": {
+"mood": "solemn",
+"label": "沉郁庄重"
+},
+"langtaosha": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"sujiandejiang": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"momei": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"duzuojianting": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"biedongda": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"cunju": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"yeshu": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"yijiangnan": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"liuyue": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"jiangnanchun": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"fengmi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"guanshuyougan": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"wuyixiang": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"jiangnanfeng": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"jueju3": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"shuzhongjiuri": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"fengrujingshi": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"zhushi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"tishihou": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"shuxiang": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"huameiniao": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"jiuyuejiu": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"xiangcunsiyue": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"sishitian": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"tixilinbi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"xishangyuyu": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"guogurenzhuang": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"liangzhouci2": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"shier": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"shanting": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"wangtianmen": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"tiwujiangting": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"furonglou": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"songyuaner": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"chunwang": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"chusai": {
+"mood": "heroic",
+"label": "豪放雄壮"
+},
+"shihuiyin": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"zengwanglun": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"changgexing": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"yuanri": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"yugezi": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"zaochun": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"hanshi": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"emeishan": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"suxingongdian": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"tilinandi": {
+"mood": "cheerful",
+"label": "明快欢畅"
+},
+"qiantanghu": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"bochuanguazhou": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"huanghe": {
+"mood": "serene",
+"label": "宁静淡远"
+},
+"wanchun": {
+"mood": "melancholy",
+"label": "思乡悲愁"
+},
+"youshanxi": {
+"mood": "solemn",
+"label": "沉郁庄重"
+},
+"zhuzhici": {
+"mood": "lyrical",
+"label": "婉约柔情"
+},
+"jihai": {
+"mood": "lyrical",
+"label": "婉约柔情"
+}
+}

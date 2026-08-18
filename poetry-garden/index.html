@@ -39,6 +39,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .poem-status{display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:12px;background:#eceff1;color:#90a4ae;}
 .poem-status.s1{background:#e3f2fd;color:#1976d2;}
 .poem-status.s2{background:#fff8e1;color:#f39c12;}
+.mood-badge{display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:12px;background:rgba(197,164,82,.16);color:#a9821f;border:1px solid rgba(197,164,82,.4);}
 .poem-lines{padding:10px 20px 16px;}
 .poem-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:4px 8px;margin-bottom:12px;cursor:pointer;border-radius:10px;padding:4px;transition:background .2s;}
 .poem-line:hover{background:#f8f9fa;}
@@ -163,6 +164,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <button class="tool-btn" id="btnPinyin" onclick="togglePinyin()">🔤 拼音</button>
         <button class="tool-btn" id="btnRecite" onclick="toggleRecite()">🃏 背诵</button>
         <button class="tool-btn" id="btnFav" onclick="toggleFav()">⭐ 收藏</button>
+        <button class="tool-btn" id="btnMood" onclick="toggleMood()">🎭 意境</button>
         <button class="tool-btn" onclick="toggleStats()">📊 统计</button>
       </div>
       <select id="poemFilter" class="tool-sel" onchange="setPoemFilter(this.value)">
@@ -849,6 +851,7 @@ const LS_POEM_IDX = 'kids_poem_last_idx';
 const LS_POEM_FAV = 'kids_poem_fav';
 const LS_POEM_PINYIN = 'kids_poem_pinyin';
 const LS_POEM_RECITE = 'kids_poem_recite';
+const LS_POEM_MOOD = 'kids_poem_mood';   // 1=意境朗读(v6) 0=标准朗读(v5)
 
 function loadObj(key){try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{}}}
 function saveObj(key,obj){localStorage.setItem(key,JSON.stringify(obj))}
@@ -902,6 +905,9 @@ let fullAudio = null;        // 当前全文朗读的 Audio 对象
 let fullReadActive = false;  // 全文朗读进行中（含暂停）
 let fullReadPaused = false;  // 全文朗读处于暂停态
 let fullReadBtn = null;      // 朗读全文按钮引用
+// 意境朗读：默认开。开启时用 prosody 调制的 v6 音频（按各诗意境快慢高低），关时用标准 v5
+let moodRead = (localStorage.getItem(LS_POEM_MOOD) !== '0');
+let MOODS = {};              // slug -> {mood,label}，启动时从 audio/moods.json 加载（best-effort）
 function playAudio(src, text, lang, btn){
   // 停掉上一个正在播放的音频，避免叠播（点 A 句又点 B 句时只留 B）
   if(currentAudio){ try{ currentAudio.pause(); currentAudio.currentTime = 0; }catch(e){} }
@@ -1012,6 +1018,7 @@ function renderPoem(){
         '<div class="poem-title">'+p.title+'</div>'+
         '<div class="poem-author">'+p.dynasty+' · '+p.author+'</div>'+
         '<span class="poem-status '+stCls+'">'+stTxt+'</span>'+
+        (function(){const ms=slugOf(poemIdx);const mm=MOODS[ms];return mm?'<span class="mood-badge">🎭 意境·'+mm.label+'</span>':'';})()+
       '</div>'+
       '<div class="poem-lines">'+linesHtml+'</div>'+
       '<div class="poem-note">📖 '+p.note+'</div>'+
@@ -1073,18 +1080,37 @@ function readPoem(){
   const text=[p.title,p.dynasty,p.author].filter(Boolean).join('。')+'。'+p.lines.map(l=>l[0]).join('');
   fullReadActive=true; fullReadPaused=false; fullReadBtn=btn;
   if(slug){
-    const a=new Audio('audio/poem-'+slug+'.v5.mp3?cb=6');
+    // 意境朗读用 v6（prosody 按意境调制快慢高低），标准用 v5；v6 缺失降级 v5，再不行才用浏览器 TTS
+    const useV6 = moodRead;
+    const a=new Audio('audio/poem-'+slug+'.'+(useV6?'v6':'v5')+'.mp3?cb='+(useV6?7:6));
     fullAudio=a;
     a.preload='auto';
+    a.onended=function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; speakNote(p,btn); };
+    a.onerror=function(){ if(btn) btn.classList.remove('speaking'); fallbackFull(p,btn,text,useV6); };
+    if(btn) btn.classList.add('speaking');
+    const pr=a.play();
+    if(pr&&pr.catch)pr.catch(function(){ if(btn) btn.classList.remove('speaking'); fallbackFull(p,btn,text,useV6); });
+  }else{
+    readFullWithTTS(p,btn,text);
+  }
+  if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
+}
+// 全文朗读降级：v6 失败→v5（仍为预生成音频）；v5 也失败→浏览器 TTS
+function fallbackFull(p,btn,text,fromV6){
+  if(fromV6){
+    const slug=slugOf(poemIdx);
+    const a=new Audio('audio/poem-'+slug+'.v5.mp3?cb=6');
+    fullAudio=a; a.preload='auto';
     a.onended=function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; speakNote(p,btn); };
     a.onerror=function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; readFullWithTTS(p,btn,text); };
     if(btn) btn.classList.add('speaking');
     const pr=a.play();
     if(pr&&pr.catch)pr.catch(function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; readFullWithTTS(p,btn,text); });
   }else{
+    if(btn) btn.classList.remove('speaking');
+    fullAudio=null; fullReadActive=false; fullReadBtn=null;
     readFullWithTTS(p,btn,text);
   }
-  if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
 // 浏览器 TTS 全文朗读（无预生成音频 / 预生成音频失败兜底），结束后自动读注解
 function readFullWithTTS(p, btn, text){
@@ -1184,12 +1210,15 @@ function updateToolButtons(){
   if(br){br.classList.toggle('on',reciteMode);}
   const bf=document.getElementById('btnFav');
   if(bf){const on=!!favMap[String(poemIdx)];bf.classList.toggle('on',on);bf.textContent=on?'⭐ 已收藏':'⭐ 收藏';}
+  const bm=document.getElementById('btnMood');
+  if(bm){bm.classList.toggle('on',moodRead);bm.textContent=moodRead?'🎭 意境 开':'🎭 意境 关';}
 }
 function togglePinyin(){pinyinOn=!pinyinOn;localStorage.setItem(LS_POEM_PINYIN,pinyinOn?'1':'0');updateToolButtons();renderPoem();}
 function toggleRecite(){reciteMode=!reciteMode;reciteRevealed={};localStorage.setItem(LS_POEM_RECITE,reciteMode?'1':'0');updateToolButtons();renderPoem();}
 function revealLine(i){reciteRevealed[i]=true;renderPoem();}
 function revealAllLines(){for(let i=0;i<POEMS[poemIdx].lines.length;i++)reciteRevealed[i]=true;renderPoem();}
 function toggleFav(){const k=String(poemIdx);if(favMap[k])delete favMap[k];else favMap[k]=1;saveObj(LS_POEM_FAV,favMap);updateToolButtons();renderPoem();}
+function toggleMood(){moodRead=!moodRead;localStorage.setItem(LS_POEM_MOOD,moodRead?'1':'0');updateToolButtons();renderPoem();}
 function filterLabel(f){const map={all:'全部',unlearned:'未学习',learning:'学习中',memorized:'已背诵',fav:'⭐ 收藏'};if(map[f])return map[f];if(f.indexOf('G')===0)return gradeLabel(f);return f;}
 function filteredIndices(){
   const out=[];
@@ -1259,6 +1288,9 @@ document.addEventListener('DOMContentLoaded',function(){
   const sub=document.getElementById('poemSub'); if(sub) sub.textContent='共 '+POEMS.length+' 首 · 点诗句可听发音';
   try{pinyinOn=localStorage.getItem(LS_POEM_PINYIN)!=='0';}catch(e){}
   try{reciteMode=localStorage.getItem(LS_POEM_RECITE)==='1';}catch(e){}
+  try{moodRead=localStorage.getItem(LS_POEM_MOOD)!=='0';}catch(e){}
+  // 意境标签：best-effort 加载，失败不影响朗读（播放逻辑不依赖它）
+  fetch('audio/moods.json?cb=1').then(r=>r.ok?r.json():null).then(j=>{ if(j) MOODS=j; renderPoem(); }).catch(()=>{});
   updateToolButtons();
   renderPoem();
 });
