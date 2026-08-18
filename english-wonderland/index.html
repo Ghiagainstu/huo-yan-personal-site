@@ -537,7 +537,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 </div>
 <div class="header">
     <div class="top-right">
-      <div class="star-pill">⭐ <span id="starCount">0</span> 积分</div>
+      <div class="star-pill">⭐ <span id="starCount">0</span> 可用积分</div>
       <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20:00</span></div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
@@ -673,7 +673,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <!-- ================= 英语小游戏 ================= -->
 <div class="module" id="modGame">
     <div class="game-top">
-        <span class="pill">⭐ <span id="gStarCount">0</span> 积分</span>
+        <span class="pill">⭐ <span id="gStarCount">0</span> 可用积分</span>
         <span class="pill">📚 已掌握 <span id="gMastered">0</span>/<span id="gTotal">0</span></span>
         <span class="pill">🎯 本轮 <span id="gRound">0</span></span>
         <span class="pill" id="gPhase">准备开始</span>
@@ -4562,6 +4562,20 @@ function gBurst(){
 /* ============================================================
    积分系统 (主顶部 + 游戏顶部 + 工具累计)
    ============================================================ */
+function topPointsValue(){
+  // ⭐ 全局=积分：已登录显示后端「可用积分」(与商城同源)，未登录回退本地星星计数
+  if(auth && auth.me){
+    if(auth.me.points_available!=null) return auth.me.points_available;
+    if(auth.me.score!=null) return auth.me.score;
+  }
+  return stars;
+}
+function refreshTopPoints(){
+  const el=document.getElementById('starCount');
+  if(el) el.textContent=topPointsValue();
+  const ge=document.getElementById('gStarCount');
+  if(ge) ge.textContent=topPointsValue();
+}
 function earnedStars(){
   let m=0; for(const k in engProgress) if(engProgress[k]>=3) m++;
   let p=0; for(const k in poemProgress) if(poemProgress[k]===2) p++;
@@ -4573,7 +4587,7 @@ function refreshStars(){
     const d=e-stars; stars=e; localStorage.setItem(LS_STAR,String(stars));
     showStarToast(d);
   }
-  document.getElementById('starCount').textContent=stars;
+  refreshTopPoints();
 }
 function showStarToast(d){
   const t=document.getElementById('starToast');
@@ -5684,7 +5698,7 @@ function gameLoad(){
 function gameClearSave(){try{localStorage.removeItem(LS_GAME);}catch(e){}}
 function gSetPhase(t){document.getElementById('gPhase').textContent=t}
 function gRefreshTop(){
-  document.getElementById('gStarCount').textContent=stars;           // 累计积分(与页头一致)
+  document.getElementById('gStarCount').textContent=topPointsValue();  // 可用积分(与页头、商城同源)
   document.getElementById('gRound').textContent=gameSessionStars;     // 本轮会话星(每次答对 +1)
   document.getElementById('gMastered').textContent=masteredCount();
   document.getElementById('gTotal').textContent=totalWords();
@@ -6200,7 +6214,7 @@ function renderDashboard(){
     '<div class="rate">'+rate+'% <small>掌握率 · 还剩 '+remain+' 个</small></div>'+
   '</div>';
   html+='<div class="dash-mini" style="margin-bottom:14px">'+
-    miniCard('⭐',stars,'游戏积分')+
+    miniCard('⭐',(auth&&auth.me&&auth.me.score!=null?auth.me.score:stars),'累计积分')+
     miniCard('📜',poemMem+' / '+poemTotal,'已背诵古诗')+
     miniCard('🔥',streak,'连续打卡(天)')+
     miniCard('🌱',todayCount,'今日新学')+
@@ -6711,7 +6725,7 @@ async function saveAvatar(){
 async function loadMe(){
   if(!auth) return;
   const res=await api('/api/me?token='+encodeURIComponent(auth.token));
-  if(res.ok&&res.data.user){auth.me=res.data;saveAuth(auth);updateAuthUI();}
+  if(res.ok&&res.data.user){auth.me=res.data;saveAuth(auth);updateAuthUI();refreshTopPoints();}
 }
 /* 进度上报：登录后本地改动 5 秒内防抖批量同步云端 */
 function queueReport(){
@@ -6734,6 +6748,7 @@ async function flushReport(){
   const list=progressList();
   if(!list.length) return;
   await api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,progress:list,date:cnToday()})});
+  if(auth) loadMe();   // 同步后刷新顶部「可用积分」，与商城保持一致
 }
 async function syncAllProgress(){
   if(!auth) return;
@@ -6824,7 +6839,7 @@ document.addEventListener('DOMContentLoaded',function(){
   auth=loadAuth(); updateAuthUI();
   if(auth){closeLogin(); loadMe(); syncAllProgress(); initUsage();}  // ★ 已登录：直接关掉登录层，刷新不再弹登录界面（仅用户主动 logout 才回登录层）
   else { openLogin(); }
-  document.getElementById('starCount').textContent=stars;
+  refreshTopPoints();
   restorePos();
   renderCatChips();
   populateCatSelect();
