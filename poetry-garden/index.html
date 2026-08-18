@@ -897,7 +897,14 @@ function speak(text,lang,btn){
 // 优先播放预生成神经 TTS 音频；失败则降级到浏览器内置 SpeechSynthesis
 // 注意：预生成音频由 Edge TTS 用【纯文本】生成（绝不用 SSML），否则会念出 "speak version"
 let currentAudio = null;
+// 全文朗读状态机：用于「再次点击暂停 / 点击句子切换」
+let fullAudio = null;        // 当前全文朗读的 Audio 对象
+let fullReadActive = false;  // 全文朗读进行中（含暂停）
+let fullReadPaused = false;  // 全文朗读处于暂停态
+let fullReadBtn = null;      // 朗读全文按钮引用
 function playAudio(src, text, lang, btn){
+  // 停掉上一个正在播放的音频，避免叠播（点 A 句又点 B 句时只留 B）
+  if(currentAudio){ try{ currentAudio.pause(); currentAudio.currentTime = 0; }catch(e){} }
   let usedFallback = false;
   function fb(){ if(!usedFallback){ usedFallback = true; if(btn) btn.classList.remove('speaking'); speak(text, lang, btn); } }
   if(btn) btn.classList.add('speaking');
@@ -914,6 +921,19 @@ function playAudio(src, text, lang, btn){
 function stopSpeak(){
   if(window.speechSynthesis) speechSynthesis.cancel();
   if(currentAudio){ try{ currentAudio.pause(); currentAudio.currentTime = 0; }catch(e){} }
+}
+// 停掉进行中的全文朗读（点击具体句子 / 切诗 / 标记背诵等场景调用）
+function stopFullRead(){
+  if(fullAudio){ try{ fullAudio.pause(); fullAudio.currentTime = 0; }catch(e){} fullAudio = null; }
+  fullReadActive = false;
+  fullReadPaused = false;
+  if(fullReadBtn){ fullReadBtn.classList.remove('speaking'); fullReadBtn = null; }
+}
+// 朗读完成后自动读中文注解（无预生成音频，走浏览器 TTS）
+function speakNote(p, btn){
+  const note = (p.note || '').trim();
+  if(!note) return;
+  speak(note, 'zh-CN', btn);
 }
 
 /* ============================================================
@@ -1018,12 +1038,57 @@ function preloadNeighbors(){
 }
 function readPoem(){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
-  const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
-  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=5', text, 'zh-CN', document.getElementById('readPoemBtn'));
-  else speak(text,'zh-CN',document.getElementById('readPoemBtn'));
+  const btn=document.getElementById('readPoemBtn');
+  // 正在朗读或暂停中：再次点击 = 暂停 / 继续 切换
+  if(fullReadActive){
+    if(fullAudio){
+      if(fullReadPaused){
+        const pr=fullAudio.play(); if(pr&&pr.catch)pr.catch(function(){});
+        fullReadPaused=false; if(btn) btn.classList.add('speaking');
+      }else{
+        try{ fullAudio.pause(); }catch(e){}
+        fullReadPaused=true; if(btn) btn.classList.remove('speaking');
+      }
+    }else{
+      // 浏览器 TTS 路径无暂停能力：再次点击直接停止
+      stopSpeak(); fullReadActive=false; if(btn) btn.classList.remove('speaking');
+    }
+    return;
+  }
+  // 全新开始：先停掉可能正在播放的单句音频
+  stopSpeak();
+  // 朗读顺序：标题。朝代。作者。诗句
+  const text=[p.title,p.dynasty,p.author].filter(Boolean).join('。')+'。'+p.lines.map(l=>l[0]).join('');
+  fullReadActive=true; fullReadPaused=false; fullReadBtn=btn;
+  if(slug){
+    const a=new Audio('audio/poem-'+slug+'.v5.mp3?cb=6');
+    fullAudio=a;
+    a.preload='auto';
+    a.onended=function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; speakNote(p,btn); };
+    a.onerror=function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; readFullWithTTS(p,btn,text); };
+    if(btn) btn.classList.add('speaking');
+    const pr=a.play();
+    if(pr&&pr.catch)pr.catch(function(){ if(btn) btn.classList.remove('speaking'); fullAudio=null; fullReadActive=false; fullReadBtn=null; readFullWithTTS(p,btn,text); });
+  }else{
+    readFullWithTTS(p,btn,text);
+  }
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
+// 浏览器 TTS 全文朗读（无预生成音频 / 预生成音频失败兜底），结束后自动读注解
+function readFullWithTTS(p, btn, text){
+  if(!('speechSynthesis' in window)){ if(btn) btn.classList.remove('speaking'); return; }
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='zh-CN'; u.rate=0.75;
+  const v=voices.find(vv=>vv.lang&&vv.lang.toLowerCase()==='zh-CN'); if(v) u.voice=v;
+  if(btn) btn.classList.add('speaking');
+  u.onend=function(){ if(btn) btn.classList.remove('speaking'); speakNote(p,btn); };
+  u.onerror=function(){ if(btn) btn.classList.remove('speaking'); };
+  speechSynthesis.speak(u);
+}
 function speakLine(i){
+  // 暂停正在进行的全文朗读，改读点击的句子
+  stopFullRead();
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   if(p.lines[i]){
     if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3?cb=5', p.lines[i][0], 'zh-CN', null);
@@ -1037,8 +1102,8 @@ function toggleMemorized(){
   saveObj(LS_POEM,poemProgress);
   refreshStars();renderPoem();
 }
-function nextPoem(){stopSpeak();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx+1)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j+1)%lst.length];}renderPoem()}
-function prevPoem(){stopSpeak();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j-1+lst.length)%lst.length];}renderPoem()}
+function nextPoem(){stopFullRead();stopSpeak();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx+1)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j+1)%lst.length];}renderPoem()}
+function prevPoem(){stopFullRead();stopSpeak();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j-1+lst.length)%lst.length];}renderPoem()}
 
 /* 搜索 + 目录 */
 function slugOf(i){const m=/poem-([\w-]+)\.webp/.exec(POEM_SCENES[i]||'');return m?m[1]:null;}

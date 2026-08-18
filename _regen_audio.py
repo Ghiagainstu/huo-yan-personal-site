@@ -17,10 +17,11 @@ def build_jobs(poems, mode):
         if not slug:
             print('SKIP no-slug', p.get('title')); continue
         if mode in ('full', 'both'):
-            parts = [x for x in [p.get('title'), p.get('author'), p.get('dynasty')] if x]
+            # 朗读顺序：标题。朝代。作者。诗句（朝代在作者前）
+            parts = [x for x in [p.get('title'), p.get('dynasty'), p.get('author')] if x]
             body = ''.join(p.get('lines', []))
             full_text = '。'.join(parts) + '。' + body
-            jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.v4.mp3' % slug), full_text))
+            jobs.append((os.path.join(AUDIO_DIR, 'poem-%s.v5.mp3' % slug), full_text))
         if mode in ('line', 'both'):
             for i, ln in enumerate(p.get('lines', [])):
                 jobs.append((os.path.join(AUDIO_DIR, 'poem-%s-%d.mp3' % (slug, i)), ln))
