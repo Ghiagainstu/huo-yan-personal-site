@@ -895,53 +895,21 @@ function speak(text,lang,btn){
   }catch(e){}
 }
 // 优先播放预生成神经 TTS 音频；失败则降级到浏览器内置 SpeechSynthesis
-// === TEMP DIAGNOSTIC (debug 朗读回退用，定位后删除) ===
-let audioDiagEl = null;
-function diag(msg){
-  if(!audioDiagEl){
-    const d=document.createElement('div'); d.id='audioDiag';
-    d.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#1a1a1a;color:#0f0;font:12px/1.45 monospace;padding:8px 10px;border-radius:8px;white-space:pre-wrap;max-height:60vh;overflow:auto;box-shadow:0 2px 12px rgba(0,0,0,.45)';
-    const bar=document.createElement('div'); bar.style.cssText='margin-bottom:6px;display:flex;gap:6px';
-    const copy=document.createElement('button'); copy.textContent='复制'; copy.style.cssText='font:11px monospace;cursor:pointer';
-    copy.onclick=function(){ try{ navigator.clipboard.writeText(d.querySelector('.log').textContent); copy.textContent='已复制'; setTimeout(function(){copy.textContent='复制';},1200); }catch(e){ copy.textContent='复制失败'; } };
-    const close=document.createElement('button'); close.textContent='关闭'; close.style.cssText='font:11px monospace;cursor:pointer';
-    close.onclick=function(){ d.style.display='none'; };
-    bar.appendChild(copy); bar.appendChild(close);
-    const log=document.createElement('div'); log.className='log';
-    d.appendChild(bar); d.appendChild(log);
-    (document.body||document.documentElement).appendChild(d);
-    audioDiagEl=d;
-  }
-  audioDiagEl.style.display='block';
-  const log=audioDiagEl.querySelector('.log');
-  log.textContent=(new Date().toLocaleTimeString())+' '+msg+'\n'+log.textContent;
-  audioDiagEl.scrollTop=0;
-}
-// 全局包裹 speechSynthesis.speak：任何 TTS 调用都记到诊断条，避免“第二路径”漏抓
-(function(){
-  if(!window.speechSynthesis) return;
-  const _orig = window.speechSynthesis.speak.bind(window.speechSynthesis);
-  window.speechSynthesis.speak = function(u){
-    try{ diag('TTS-SPEAK text='+(u&&u.text?u.text.slice(0,28):'(no text)')); }catch(e){}
-    return _orig(u);
-  };
-})();
+// 注意：预生成音频由 Edge TTS 用【纯文本】生成（绝不用 SSML），否则会念出 "speak version"
 let currentAudio = null;
 function playAudio(src, text, lang, btn){
   let usedFallback = false;
-  function fb(reason){ if(!usedFallback){ usedFallback = true; if(btn) btn.classList.remove('speaking'); diag('FALLBACK→TTS ('+reason+') text='+text.slice(0,24)); speak(text, lang, btn); } }
+  function fb(){ if(!usedFallback){ usedFallback = true; if(btn) btn.classList.remove('speaking'); speak(text, lang, btn); } }
   if(btn) btn.classList.add('speaking');
-  diag('try src='+src);
   // 每次用全新 Audio 对象：规避复用 <audio> 元素的 stale 状态 / 手势失效导致 play() 被拒
   let a;
-  try { a = new Audio(src); } catch(e){ diag('new Audio() threw: '+e); fb('new-audio-threw'); return; }
+  try { a = new Audio(src); } catch(e){ if(btn) btn.classList.remove('speaking'); fb(); return; }
   currentAudio = a;
   a.preload = 'auto';
-  a.onplaying=function(){ diag('PLAYING ok src='+a.currentSrc); if(btn) btn.classList.remove('speaking'); };
   a.onended=function(){ if(btn) btn.classList.remove('speaking'); };
-  a.onerror=function(){ diag('onerror code='+(a.error?a.error.code:'?')+' ns='+a.networkState+' curr='+a.currentSrc); if(btn) btn.classList.remove('speaking'); fb('onerror'); };
+  a.onerror=function(){ if(btn) btn.classList.remove('speaking'); fb(); };
   const pr = a.play();
-  if(pr && pr.catch) pr.catch(function(err){ diag('play() rejected: '+(err&&err.name||err)+' msg='+(err&&err.message||'')+' ns='+a.networkState); if(btn) btn.classList.remove('speaking'); fb('play-rejected'); });
+  if(pr && pr.catch) pr.catch(function(){ if(btn) btn.classList.remove('speaking'); fb(); });
 }
 function stopSpeak(){
   if(window.speechSynthesis) speechSynthesis.cancel();
@@ -1051,14 +1019,14 @@ function preloadNeighbors(){
 function readPoem(){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   const text=p.title+'。'+p.author+'。'+p.lines.map(l=>l[0]).join('');
-  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=4', text, 'zh-CN', document.getElementById('readPoemBtn'));
+  if(slug) playAudio('audio/poem-'+slug+'.v4.mp3?cb=5', text, 'zh-CN', document.getElementById('readPoemBtn'));
   else speak(text,'zh-CN',document.getElementById('readPoemBtn'));
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
 }
 function speakLine(i){
   const p=POEMS[poemIdx], slug=slugOf(poemIdx);
   if(p.lines[i]){
-    if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3?cb=4', p.lines[i][0], 'zh-CN', null);
+    if(slug) playAudio('audio/poem-'+slug+'-'+i+'.mp3?cb=5', p.lines[i][0], 'zh-CN', null);
     else speak(p.lines[i][0],'zh-CN',null);
   }
   if(poemStatus(poemIdx)===0){poemProgress[String(poemIdx)]=1;saveObj(LS_POEM,poemProgress);setTimeout(renderPoem,500)}
