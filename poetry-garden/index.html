@@ -43,9 +43,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .poem-lines{padding:10px 20px 16px;}
 .poem-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:4px 8px;margin-bottom:12px;cursor:pointer;border-radius:10px;padding:4px;transition:background .2s;}
 .poem-line:hover{background:#f8f9fa;}
-.poem-line .ch{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;line-height:1.1;}
-.poem-line .py{font-size:13px;color:#b0bec5;margin-bottom:2px;letter-spacing:0;}
-.poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:0;}
+.poem-line .ch{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;line-height:1.1;width:48px;box-sizing:border-box;}
+.poem-line .py{font-size:13px;color:#b0bec5;margin-bottom:2px;letter-spacing:0;text-align:center;white-space:nowrap;}
+.poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:0;text-align:center;}
+.poem-line .ch.punc .zi{font-size:32px;font-weight:normal;color:#78909c;}
 .poem-note{margin:0 16px 16px;background:#fffde7;border-left:4px solid #ffd600;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.7;color:#666;}
 
 /* ===== 操作按钮 ===== */
@@ -71,6 +72,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
   .poem-title{font-size:22px}
   .poem-line .zi{font-size:26px}
   .poem-line .py{font-size:11px}
+  .poem-line .ch{width:40px}
+  .poem-line .ch.punc .zi{font-size:26px}
 }
 /* 搜索 + 目录 */
 .poem-toolbar{display:flex;gap:8px;margin:0 0 12px;align-items:center;}
@@ -905,6 +908,7 @@ let fullAudio = null;        // 当前全文朗读的 Audio 对象
 let fullReadActive = false;  // 全文朗读进行中（含暂停）
 let fullReadPaused = false;  // 全文朗读处于暂停态
 let fullReadBtn = null;      // 朗读全文按钮引用
+let noteAudio = null;        // 正在播放的注解音频（全局管理以便切诗时停止）
 // 意境朗读：默认开。开启时用 prosody 调制的 v6 音频（按各诗意境快慢高低），关时用标准 v5
 let moodRead = (localStorage.getItem(LS_POEM_MOOD) !== '0');
 let MOODS = {};              // slug -> {mood,label}，启动时从 audio/moods.json 加载（best-effort）
@@ -935,20 +939,29 @@ function stopFullRead(){
   fullReadPaused = false;
   if(fullReadBtn){ fullReadBtn.classList.remove('speaking'); fullReadBtn = null; }
 }
+// 统一停止所有朗读/音频：切诗、刷新、隐藏标签页等场景调用
+function stopAllAudio(){
+  stopSpeak();
+  stopFullRead();
+  if(noteAudio){ try{ noteAudio.pause(); noteAudio.currentTime = 0; }catch(e){} noteAudio = null; }
+}
 // 朗读完成后自动读中文注解（与正文同一神经语音预生成，避免系统 TTS 平淡音）
 function speakNote(p, btn){
   const note = (p.note || '').trim();
   if(!note) return;
   const slug = slugOf(poemIdx);
+  function removeSpeaking(){ if(btn) btn.classList.remove('speaking'); }
+  function noteFb(){ removeSpeaking(); speak(note, 'zh-CN', btn); }
   if(slug){
     if(btn) btn.classList.add('speaking');
     const a = new Audio('audio/poem-'+slug+'.note.mp3?cb=6');
-    a.onended = function(){ if(btn) btn.classList.remove('speaking'); };
-    a.onerror = function(){ if(btn) btn.classList.remove('speaking'); speak(note, 'zh-CN', btn); };
+    noteAudio = a;
+    a.onended = function(){ removeSpeaking(); noteAudio = null; };
+    a.onerror = function(){ removeSpeaking(); noteAudio = null; noteFb(); };
     const pr = a.play();
-    if(pr && pr.catch) pr.catch(function(){ if(btn) btn.classList.remove('speaking'); speak(note, 'zh-CN', btn); });
+    if(pr && pr.catch) pr.catch(function(){ removeSpeaking(); noteAudio = null; noteFb(); });
   } else {
-    speak(note, 'zh-CN', btn);
+    noteFb();
   }
 }
 
@@ -990,12 +1003,16 @@ function renderPoem(){
   const stCls=st===2?'s2':(st===1?'s1':'');
   let linesHtml='';
   function buildChars(cn,py){
+    // 把拼音里的标点剥离，避免“guāng,”这种带标点的拼音压到汉字头上
+    const cleanPy=function(s){return (s||'').replace(/^[\u3000-\u303F\uFF00-\uFF64\u2000-\u206F\s,.!?;:'"()]+|[\u3000-\u303F\uFF00-\uFF64\u2000-\u206F\s,.!?;:'"()]+$/g,'');};
     const chars=Array.from(cn);
     const syls=py.split(/\s+/).filter(Boolean);
     let html='',si=0;
     for(const c of chars){
       if(/[\u4e00-\u9fff]/.test(c)){
-        const s=syls[si++]||'';
+        let s='';
+        while(si<syls.length && cleanPy(syls[si])==='') si++;
+        if(si<syls.length) s=cleanPy(syls[si++]);
         html+='<span class="ch">'+(pinyinOn?'<span class="py">'+s+'</span>':'')+'<span class="zi">'+c+'</span></span>';
       }else{
         html+='<span class="ch punc"><span class="zi">'+c+'</span></span>';
@@ -1140,8 +1157,8 @@ function toggleMemorized(){
   saveObj(LS_POEM,poemProgress);
   refreshStars();renderPoem();
 }
-function nextPoem(){stopFullRead();stopSpeak();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx+1)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j+1)%lst.length];}renderPoem()}
-function prevPoem(){stopFullRead();stopSpeak();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j-1+lst.length)%lst.length];}renderPoem()}
+function nextPoem(){stopAllAudio();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx+1)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j+1)%lst.length];}renderPoem()}
+function prevPoem(){stopAllAudio();reciteRevealed={};const lst=navList();if(lst.length<2){poemIdx=(poemIdx-1+POEMS.length)%POEMS.length;}else{let j=lst.indexOf(poemIdx);if(j<0)j=0;poemIdx=lst[(j-1+lst.length)%lst.length];}renderPoem()}
 
 /* 搜索 + 目录 */
 function slugOf(i){const m=/poem-([\w-]+)\.webp/.exec(POEM_SCENES[i]||'');return m?m[1]:null;}
@@ -1195,7 +1212,7 @@ function toggleToc(){
   else renderPoemList(null);
 }
 function jumpToPoem(i){
-  stopSpeak();
+  stopAllAudio();
   reciteRevealed={};
   poemIdx=i;
   document.getElementById('poemListPanel').classList.remove('show');
@@ -1294,6 +1311,10 @@ document.addEventListener('DOMContentLoaded',function(){
   updateToolButtons();
   renderPoem();
 });
+// 刷新/切页/隐藏标签页时停止所有朗读
+window.addEventListener('beforeunload', stopAllAudio);
+window.addEventListener('pagehide', stopAllAudio);
+document.addEventListener('visibilitychange', function(){ if(document.hidden) stopAllAudio(); });
 </script>
 </body>
 </html>
