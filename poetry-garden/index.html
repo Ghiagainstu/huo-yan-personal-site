@@ -1022,6 +1022,8 @@ function renderPoem(){
   updateToolButtons();
   localStorage.setItem(LS_POEM_IDX,String(poemIdx));
   preloadNeighbors();
+  // 若当前诗正在全文朗读，重渲染后保持按钮高亮（避免标记已学导致的 500ms 重渲染闪烁）
+  if(fullReadActive){ const rb=document.getElementById('readPoemBtn'); if(rb) rb.classList.add('speaking'); }
 }
 function preloadNeighbors(){
   const list=navList();
