@@ -49,6 +49,11 @@ header p{color:var(--gray);margin:0 0 14px;font-size:14px;line-height:1.7;}
 .card .cmt{width:100%;margin-top:8px;font-size:11px;padding:6px 7px;border:1px solid var(--line);border-radius:8px;resize:vertical;min-height:32px;font-family:inherit;color:#333;line-height:1.4;}
 .card .cmt:focus{border-color:var(--gold);outline:none;}
 .card .cmt.has{border-left:3px solid var(--gold);background:#fffdf6;}
+.card .cmtbtn{display:block;width:100%;font-size:11px;margin-top:8px;padding:5px 0;border:1px dashed var(--line);background:#fafafa;color:var(--gray);border-radius:8px;cursor:pointer;transition:.15s;}
+.card .cmtbtn:hover{border-color:var(--gold);color:var(--gold);}
+.card .cmtview{font-size:11px;margin-top:8px;color:#333;line-height:1.5;}
+.card .cmtview .cmtbtn{display:inline-block;width:auto;margin-top:0;margin-left:6px;padding:2px 8px;}
+.card .cmttxt{white-space:pre-wrap;word-break:break-word;}
 footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 </style></head>
 <body><div class="container">
@@ -116,6 +121,7 @@ function loadLocal(w){ try{ return localStorage.getItem(STORE_PRE+w)||''; }catch
 function saveLocal(w,v){ try{ localStorage.setItem(STORE_PRE+w,v); }catch(e){} }
 var localComments = {};
 ALL.forEach(function(d){ var lv = loadLocal(d.w); localComments[d.w] = (lv!=='' ? lv : (d.comment||'')); });
+var editingSet = {}; // 仅记录被点开编辑的词，避免 1620 个 textarea 常驻吃内存
 function imgFail(img){ var box = img.parentNode; if(box){ box.innerHTML = '<div class="noimg">图缺失(文件未找到)</div>'; } }
 function matches(d){
   if(filter === 'all') return true;
@@ -147,7 +153,15 @@ function render(){
     var tierBadge = d.tier === 'core' ? '<span class="badge core">📘 上海小学</span>' : d.tier === 'ext' ? '<span class="badge ext">📙 拓展</span>' : '<span class="badge gap">⚠️ 标准缺口</span>';
     var funcBadge = d.functional ? '<span class="badge func">功能词</span>' : '';
     var cv = localComments[d.w] || '';
-    var cmt = '<textarea class="cmt' + (cv?' has':'') + '" data-w="' + d.w + '" placeholder="写评价…（图要重出/标签要改/归错类…）">' + esc(cv) + '</textarea>';
+    var editing = !!editingSet[d.w];
+    var cmt;
+    if(editing){
+      cmt = '<textarea class="cmt' + (cv?' has':'') + '" data-w="' + d.w + '" placeholder="写评价…（图要重出/标签要改/归错类…）">' + esc(cv) + '</textarea>';
+    } else if(cv){
+      cmt = '<div class="cmtview has" data-w="' + d.w + '"><span class="cmttxt">' + esc(cv) + '</span> <button class="cmtbtn" data-act="edit" data-w="' + d.w + '">✎改</button></div>';
+    } else {
+      cmt = '<button class="cmtbtn add" data-act="add" data-w="' + d.w + '">✎ 写评价</button>';
+    }
     var origLine = d.orig ? '<div class="orig">原始词形: ' + d.orig + '</div>' : '';
     div.innerHTML = thumb
       + '<div class="body"><div class="en">' + d.w + ' ' + dot + '</div>'
@@ -176,6 +190,23 @@ grid.addEventListener('input', function(e){
     saveLocal(w, t.value);
     if(t.value.trim()) t.classList.add('has'); else t.classList.remove('has');
     tip('已保存「' + w + '」的评价（本地）');
+  }
+});
+grid.addEventListener('click', function(e){
+  var t = e.target;
+  if(t && t.classList && t.classList.contains('cmtbtn')){
+    var w = t.getAttribute('data-w');
+    editingSet[w] = true;
+    render();
+    var ta = grid.querySelector('textarea.cmt[data-w="' + w + '"]');
+    if(ta){ ta.focus(); var v = ta.value; ta.setSelectionRange(v.length, v.length); }
+  }
+});
+grid.addEventListener('focusout', function(e){
+  var t = e.target;
+  if(t && t.classList && t.classList.contains('cmt')){
+    var w = t.getAttribute('data-w');
+    if(!t.value.trim()){ delete editingSet[w]; render(); }
   }
 });
 function tip(msg){ var el=document.getElementById('saveTip'); if(el) el.textContent = msg; }
