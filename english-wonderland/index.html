@@ -185,7 +185,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .poem-line .zi{font-size:32px;font-weight:bold;color:#37474f;letter-spacing:4px;}
 .poem-line .py{font-size:13px;color:#b0bec5;margin-top:2px;letter-spacing:.5px;}
 .poem-note{margin:0 16px 16px;background:#fffde7;border-left:4px solid #ffd600;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.7;color:#666;}
-/* ===== 星星弹窗 ===== */
+/* ===== 积分弹窗 ===== */
 .star-toast{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border-radius:20px;padding:30px 40px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);z-index:9999;transition:transform .3s cubic-bezier(.68,-.55,.27,1.55);pointer-events:none;}
 .star-toast.show{transform:translate(-50%,-50%) scale(1)}
 .star-toast .big{font-size:64px}
@@ -537,7 +537,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 </div>
 <div class="header">
     <div class="top-right">
-      <div class="star-pill">⭐ <span id="starCount">0</span></div>
+      <div class="star-pill">⭐ <span id="starCount">0</span> 积分</div>
       <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20:00</span></div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
@@ -554,7 +554,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <p>这是一份专为 <strong>小学低年级（含幼小衔接）</strong> 小朋友设计的英语启蒙小工具，用大量贴近生活的主题陪孩子边玩边记，轻松入门。</p>
     <ul>
       <li>🃏 <strong>英语卡片</strong>：点一下翻到中文，跟读英美双发音，标记「已掌握」。</li>
-      <li>🎮 <strong>英语小游戏</strong>：拼词、指认、听音选图，闯关赢星星。</li>
+      <li>🎮 <strong>英语小游戏</strong>：拼词、指认、听音选图，闯关赢积分。</li>
       <li>📊 <strong>统计看板</strong>：掌握进度、连续打卡、本周新学一目了然。</li>
     </ul>
     <p class="tip">💡 建议每天 5–10 分钟，先翻卡再闯关，坚持就有惊喜！</p>
@@ -673,7 +673,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <!-- ================= 英语小游戏 ================= -->
 <div class="module" id="modGame">
     <div class="game-top">
-        <span class="pill">⭐ <span id="gStarCount">0</span> 星星</span>
+        <span class="pill">⭐ <span id="gStarCount">0</span> 积分</span>
         <span class="pill">📚 已掌握 <span id="gMastered">0</span>/<span id="gTotal">0</span></span>
         <span class="pill">🎯 本轮 <span id="gRound">0</span></span>
         <span class="pill" id="gPhase">准备开始</span>
@@ -697,7 +697,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 </div>
 <div class="star-toast" id="starToast">
     <div class="big">⭐</div>
-    <div class="msg" id="starToastMsg">+1 星星！</div>
+    <div class="msg" id="starToastMsg">+1 积分！</div>
 </div>
 <div class="game-fx" id="gameFx"></div>
 <div class="game-praise" id="gamePraise"></div>
@@ -4560,7 +4560,7 @@ function gBurst(){
   }
 }
 /* ============================================================
-   星星系统 (主顶部 + 游戏顶部 + 工具累计)
+   积分系统 (主顶部 + 游戏顶部 + 工具累计)
    ============================================================ */
 function earnedStars(){
   let m=0; for(const k in engProgress) if(engProgress[k]>=3) m++;
@@ -4577,7 +4577,7 @@ function refreshStars(){
 }
 function showStarToast(d){
   const t=document.getElementById('starToast');
-  document.getElementById('starToastMsg').textContent='+'+d+' 星星！太棒了！';
+  document.getElementById('starToastMsg').textContent='+'+d+' 积分！太棒了！';
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),1800);
 }
@@ -5684,7 +5684,7 @@ function gameLoad(){
 function gameClearSave(){try{localStorage.removeItem(LS_GAME);}catch(e){}}
 function gSetPhase(t){document.getElementById('gPhase').textContent=t}
 function gRefreshTop(){
-  document.getElementById('gStarCount').textContent=stars;           // 累计星星(与页头一致)
+  document.getElementById('gStarCount').textContent=stars;           // 累计积分(与页头一致)
   document.getElementById('gRound').textContent=gameSessionStars;     // 本轮会话星(每次答对 +1)
   document.getElementById('gMastered').textContent=masteredCount();
   document.getElementById('gTotal').textContent=totalWords();
@@ -6049,7 +6049,7 @@ function gameEnd(){
     api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,game_stars:gs,date:cnToday()})}).then(function(r){
       if(r.ok&&r.data.game_gained>0){
         const el=document.getElementById('gameGainLine');
-        if(el) el.textContent='🎮 本轮 '+gs+' 星 → 入账 '+r.data.game_gained+' 积分！';
+        if(el) el.textContent='🎮 本轮 '+gs+' 积分 → 入账 '+r.data.game_gained+' 积分！';
         loadMe();
       }
     });
@@ -6058,7 +6058,7 @@ function gameEnd(){
     '<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🌈</div>'+
     '<div class="game-h1">本轮结束!</div>'+
-    '<div class="game-h2">本轮 ⭐ '+gs+' 颗 · 累计 ⭐ '+stars+' 颗 · 用时 '+m+':'+s+'</div>'+
+    '<div class="game-h2">本轮 ⭐ '+gs+' 分 · 累计 ⭐ '+stars+' 分 · 用时 '+m+':'+s+'</div>'+
     gainHtml+
     '<div class="game-h2">已掌握 '+masteredCount()+'/'+totalWords()+'</div>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px">'+
@@ -6190,7 +6190,7 @@ function renderDashboard(){
     const sd=auth.me.score_detail||{};
     html+='<div class="dash-card dash-score-card">'+
       '<div class="dash-score-total">⭐ '+auth.me.score+' 分</div>'+
-      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分 · 游戏星 ×1：'+(sd.game||0)+' 分</div>'+
+      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分 · 游戏 ×1：'+(sd.game||0)+' 分</div>'+
       '<div class="dash-score-note">多学词、每天打卡、邀请朋友、闯关游戏，都能攒积分</div>'+
     '</div>';
   }
@@ -6200,7 +6200,7 @@ function renderDashboard(){
     '<div class="rate">'+rate+'% <small>掌握率 · 还剩 '+remain+' 个</small></div>'+
   '</div>';
   html+='<div class="dash-mini" style="margin-bottom:14px">'+
-    miniCard('⭐',stars,'累计星星')+
+    miniCard('⭐',stars,'游戏积分')+
     miniCard('📜',poemMem+' / '+poemTotal,'已背诵古诗')+
     miniCard('🔥',streak,'连续打卡(天)')+
     miniCard('🌱',todayCount,'今日新学')+
@@ -6684,7 +6684,7 @@ async function openAvatarModal(){
   const sd=document.getElementById('myScoreDetail');
   if(sd){
     const d=me.score_detail||{};
-    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 星 ×1';
+    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 分 ×1';
   }
 }
 function copyInvite(){
