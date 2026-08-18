@@ -35,6 +35,13 @@ const CATS = new Function('return ' + extractBalanced('const CATS = ') + '')();
 const EXTRA_WORDS = new Function('return ' + extractBalanced('const EXTRA_WORDS = ') + '')();
 const HAVE_IMG = new Function('return new Set(' + extractBalanced('const HAVE_IMG = new Set(') + ')')();
 
+// ---------- 评价数据（用户逐词写的核对意见，供以后重分标签/重出图 prompt）----------
+// 文件不存在时为空对象；build 时把评价嵌入 HTML，用户编辑后导出/导入同一 JSON 即可持久化。
+const COMMENTS_PATH = 'D:/Fire/火哥的个人站/english-wonderland/_vocab_comments.json';
+let COMMENTS = {};
+try { COMMENTS = JSON.parse(fs.readFileSync(COMMENTS_PATH, 'utf8')); if(!COMMENTS || typeof COMMENTS!=='object') COMMENTS = {}; }
+catch(e){ COMMENTS = {}; }
+
 // ---------- normalizers (mirror _build_std.js) ----------
 const PLURAL_ONLY = new Set(['glasses','jeans','trousers','scissors','shorts','clothes','pants','tights','pyjamas']);
 function singular(w){
@@ -130,7 +137,7 @@ for(const info of deployed.values()){
     else if(a) reason='拓展 · 其他学段 '+a;
     else reason='拓展 · 无学段标签';
   }
-  DATA.push({ w:info.en, zh:info.zh, tier: sh?'core':'ext', reason, img: hasImg?info.img:'', cat: info.catName, functional: info.functional });
+  DATA.push({ w:info.en, zh:info.zh, tier: sh?'core':'ext', reason, img: hasImg?info.img:'', cat: info.catName, functional: info.functional, comment: COMMENTS[info.en] || '' });
 }
 DATA.sort((a,b)=> (a.tier===b.tier?0:(a.tier==='core'?-1:1)) || a.w.localeCompare(b.w));
 
@@ -141,19 +148,20 @@ for(const [disp, info] of standardMap){
   const dispKeys = keysFor(disp);
   let found=false;
   for(const d of deployed.values()){ if(!isShanghai(d)) continue; const dk=dkOf(d); let hit=false; for(const k of dispKeys) if(dk.has(k)){hit=true;break;} if(hit){found=true;break;} }
-  if(!found) GAPS.push({ w:disp, zh:info.zh, tier:'gap', reason:'牛津2024标准词 · app 无词卡（缺口）', orig:[...info.originals].join(' / '), img:'', cat:'' });
+  if(!found) GAPS.push({ w:disp, zh:info.zh, tier:'gap', reason:'牛津2024标准词 · app 无词卡（缺口）', orig:[...info.originals].join(' / '), img:'', cat:'', comment: COMMENTS[disp] || '' });
 }
 GAPS.sort((a,b)=> a.w.localeCompare(b.w));
 
 // ---------- stats ----------
 const totalN = DATA.length;
-const coreN = DATA.filter(d=>d.tier==='core').length;
+const coreN = DATA.filter(d=>d.tier==='core').length;                          // 上海小学合计（含功能词）
+const coreContentN = DATA.filter(d=>d.tier==='core' && !d.functional).length;  // 牛津内容词（不含功能词）
 const extN = totalN - coreN;
-const funcN = DATA.filter(d=>d.functional).length;
+const funcN = DATA.filter(d=>d.functional).length;                            // 功能词（已计入 core）
 const imgN = DATA.filter(d=>d.img).length;
 const noimgN = totalN - imgN;
 const gapN = GAPS.length;
-console.log('deployed(unique)', totalN, 'core(牛津)', coreN, 'ext', extN, 'func', funcN, 'img', imgN, 'noimg', noimgN, 'gaps', gapN);
+console.log('deployed(unique)', totalN, 'coreContent(牛津内容词)', coreContentN, 'func', funcN, 'core合计', coreN, 'ext', extN, 'img', imgN, 'noimg', noimgN, 'gaps', gapN);
 
 // ---------- HTML ----------
 const ALL = DATA.concat(GAPS);
@@ -201,6 +209,13 @@ header p{color:var(--gray);margin:0 0 14px;font-size:14px;line-height:1.7;}
 .badge.gap{background:rgba(255,159,10,.16);color:var(--blue);}
 .card .reason{font-size:11px;color:#666;line-height:1.45;margin-top:6px;}
 .card .orig{font-size:11px;color:#999;margin-top:5px;line-height:1.4;}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.toolbar button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 13px;border-radius:10px;font-size:13px;cursor:pointer;transition:.15s;}
+.toolbar button:hover{border-color:var(--gold);}
+.toolbar .tip{font-size:12px;color:var(--green);}
+.card .cmt{width:100%;margin-top:8px;font-size:11px;padding:6px 7px;border:1px solid var(--line);border-radius:8px;resize:vertical;min-height:32px;font-family:inherit;color:#333;line-height:1.4;}
+.card .cmt:focus{border-color:var(--gold);outline:none;}
+.card .cmt.has{border-left:3px solid var(--gold);background:#fffdf6;}
 footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 </style></head>
 <body><div class="container">
@@ -213,14 +228,15 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
   <b>上海小学词汇 = 命中牛津2024标准（启发式匹配）</b><br>
   规则：把 txt 词条归一化（去冠词 a/an、去 a pair of / a X of 量词、去括号、简单复数转单数、短语取中心词）后，与 github 已部署词的<b>英文</b>或<b>图片 slug</b>匹配；命中即判为「上海小学」。匹配为启发式，短语/量词类可能存在少量偏差，请以下方卡片逐词核对。<br>
   <b>逐词核对方法</b>：点「上海小学(牛津)」看全部小学词；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>${gapN}</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应；功能词点「功能词」。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
-  <b>统计</b>：线上已部署词 <b>${totalN}</b> ｜ 上海小学(牛津) <b>${coreN}</b> ｜ 拓展 <b>${extN}</b> ｜ 其中功能词 <b>${funcN}</b> ｜ 带图 <b>${imgN}</b> ｜ 图缺失 <b>${noimgN}</b> ｜ 标准缺口 <b>${gapN}</b>。
+  <b>统计</b>：线上已部署词 <b>${totalN}</b> ｜ 上海小学合计 <b>${coreN}</b>（牛津内容词 <b>${coreContentN}</b> ＋ 功能词 <b>${funcN}</b>）｜ 拓展 <b>${extN}</b> ｜ 带图 <b>${imgN}</b> ｜ 图缺失 <b>${noimgN}</b> ｜ 标准缺口 <b>${gapN}</b>。<br>
+  <b>逐词评价</b>：每张卡下方有「评价」框，可写「图要重出 / 标签要改 / 归错类」等意见，<b>自动存浏览器本地（刷新不丢）</b>；点上方「⬇️ 导出评价」下载 JSON 发我，或存为 <code>_vocab_comments.json</code> 让我重生成时嵌入；「⬆️ 导入评价」可把 JSON 重新载入本机。
 </div>
 
 <div class="stats">
   <div class="chip total"><b>${totalN}</b><span>线上已部署词</span></div>
-  <div class="chip core"><b>${coreN}</b><span>上海小学(牛津)</span></div>
+  <div class="chip core"><b>${coreContentN}</b><span>牛津内容词</span></div>
   <div class="chip ext"><b>${extN}</b><span>拓展</span></div>
-  <div class="chip"><b>${funcN}</b><span>功能词</span></div>
+  <div class="chip core"><b>${funcN}</b><span>功能词</span></div>
   <div class="chip"><b>${imgN}</b><span>带图</span></div>
   <div class="chip"><b style="color:var(--red)">${noimgN}</b><span>图缺失</span></div>
   <div class="chip gap"><b>${gapN}</b><span>标准缺口</span></div>
@@ -228,12 +244,19 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 
 <div class="filters">
   <button data-f="all" class="active">全部</button>
-  <button data-f="core">上海小学(牛津)</button>
+  <button data-f="core">上海小学(合计)</button>
+  <button data-f="oxcontent">牛津内容词</button>
   <button data-f="ext">拓展</button>
   <button data-f="func">功能词</button>
   <button data-f="noimg">仅看图缺失</button>
   <button data-f="gap">标准缺口</button>
 </div>
+<div class="toolbar">
+  <button id="btnExport" type="button">⬇️ 导出评价(JSON)</button>
+  <button id="btnImport" type="button">⬆️ 导入评价</button>
+  <span class="tip" id="saveTip"></span>
+</div>
+<input type="file" id="fileInput" accept="application/json,.json" style="display:none">
 <input class="search" id="q" placeholder="搜索英文 / 中文…" />
 
 <div class="legend">
@@ -254,10 +277,17 @@ var ALL = ${JSON.stringify(ALL)};
 var grid = document.getElementById('grid');
 var q = document.getElementById('q');
 var filter = 'all';
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+var STORE_PRE = 'vc_cmt_';
+function loadLocal(w){ try{ return localStorage.getItem(STORE_PRE+w)||''; }catch(e){ return ''; } }
+function saveLocal(w,v){ try{ localStorage.setItem(STORE_PRE+w,v); }catch(e){} }
+var localComments = {};
+ALL.forEach(function(d){ var lv = loadLocal(d.w); localComments[d.w] = (lv!=='' ? lv : (d.comment||'')); });
 function imgFail(img){ var box = img.parentNode; if(box){ box.innerHTML = '<div class="noimg">图缺失(文件未找到)</div>'; } }
 function matches(d){
   if(filter === 'all') return true;
   if(filter === 'core') return d.tier === 'core';
+  if(filter === 'oxcontent') return d.tier === 'core' && !d.functional;
   if(filter === 'ext') return d.tier === 'ext';
   if(filter === 'func') return !!d.functional;
   if(filter === 'noimg') return d.tier !== 'gap' && !d.img;
@@ -283,13 +313,15 @@ function render(){
     var dot = d.img ? '<span class="dot ok" title="图片存在"></span>' : (d.tier === 'gap' ? '' : '<span class="dot miss" title="图片缺失"></span>');
     var tierBadge = d.tier === 'core' ? '<span class="badge core">📘 上海小学</span>' : d.tier === 'ext' ? '<span class="badge ext">📙 拓展</span>' : '<span class="badge gap">⚠️ 标准缺口</span>';
     var funcBadge = d.functional ? '<span class="badge func">功能词</span>' : '';
+    var cv = localComments[d.w] || '';
+    var cmt = '<textarea class="cmt' + (cv?' has':'') + '" data-w="' + d.w + '" placeholder="写评价…（图要重出/标签要改/归错类…）">' + esc(cv) + '</textarea>';
     var origLine = d.orig ? '<div class="orig">原始词形: ' + d.orig + '</div>' : '';
     div.innerHTML = thumb
       + '<div class="body"><div class="en">' + d.w + ' ' + dot + '</div>'
       + '<div class="zh">' + (d.zh||'') + '</div>'
       + tierBadge + funcBadge
       + '<div class="reason">' + d.reason + '</div>'
-      + origLine + '</div>';
+      + origLine + cmt + '</div>';
     grid.appendChild(div);
   }
   if(n === 0){ grid.innerHTML = '<div style="color:#999;padding:30px;">无匹配</div>'; }
@@ -303,6 +335,44 @@ document.querySelectorAll('.filters button').forEach(function(b){
   });
 });
 q.addEventListener('input', render);
+grid.addEventListener('input', function(e){
+  var t = e.target;
+  if(t && t.classList && t.classList.contains('cmt')){
+    var w = t.getAttribute('data-w');
+    localComments[w] = t.value;
+    saveLocal(w, t.value);
+    if(t.value.trim()) t.classList.add('has'); else t.classList.remove('has');
+    tip('已保存「' + w + '」的评价（本地）');
+  }
+});
+function tip(msg){ var el=document.getElementById('saveTip'); if(el) el.textContent = msg; }
+document.getElementById('btnExport').addEventListener('click', function(){
+  var data = {};
+  ALL.forEach(function(d){ var v=(localComments[d.w]||'').trim(); if(v) data[d.w]=v; });
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vocab_comments.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  tip('已导出 ' + Object.keys(data).length + ' 条评价（vocab_comments.json）');
+});
+var fileInput = document.getElementById('fileInput');
+document.getElementById('btnImport').addEventListener('click', function(){ fileInput.click(); });
+fileInput.addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try{
+      var data = JSON.parse(r.result);
+      var n = 0;
+      ALL.forEach(function(d){ if(Object.prototype.hasOwnProperty.call(data, d.w)){ localComments[d.w]=data[d.w]; saveLocal(d.w, data[d.w]); n++; } });
+      render();
+      tip('已导入 ' + n + ' 条评价');
+    }catch(err){ alert('JSON 解析失败：' + err.message); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
 render();
 </script>
 </body></html>`;
