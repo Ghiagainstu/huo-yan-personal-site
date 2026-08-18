@@ -670,7 +670,7 @@
   let savedUI=null;
   /* 难度自适应 + 只练错题 状态（必须在 loadUI 还原之前声明，否则命中 TDZ 直接崩整个初始化） */
   let adaptMode=false, adaptLevel=1, adaptStreakCorrect=0, adaptStreakWrong=0;
-  let replayMode=false, replayQueue=[];
+  let replayMode=false, replayQueue=[], replaySize=0;  // replaySize=错题重练轮的实际题数（不改写 roundSize）
   function saveState(){
     try{ localStorage.setItem(UI_STORE, JSON.stringify({
       gradeKey, modIdx, catKey, subMode, roundSize, inputMode,
@@ -926,7 +926,7 @@
     if(sub==='subB'){            // 退位减：两位−一位 退位(破十) 或 两位−两位 退位
       if(Math.random()<0.5){
         let a=randInt(10,99); while(a%10===9) a=randInt(10,99); const ones=a%10, b=randInt(ones+1,9);
-        return {type:'num',a,b,op:'−',ans:a-b, hint:'💡 破十：'+a+' = '+(a-ones)+' + '+ones+'，先算 10 − '+b+' = '+(10-b)+'，再算 '+(a-ones)+(10-b)+' = '+(a-b)};
+        return {type:'num',a,b,op:'−',ans:a-b, hint:'💡 破十：'+a+' = '+(a-ones)+' + '+ones+'，先算 10 − '+b+' = '+(10-b)+'，再算 '+(a-10)+' + '+(10-b)+' = '+(a-b)};
       }
       let a,b,ans; do{ a=randInt(20,99); b=randInt(10,99); ans=a-b; }while(a<b || (a%10)-(b%10)>=0 || ans<0 || ans>99);
       return {type:'num',a,b,op:'−',ans};
@@ -968,15 +968,39 @@
     return expr(a,'×',b,a*b);
   }
   function genDivX1(){ let b,d,p; do{ b=randInt(2,9); d=randInt(2,9); p=b*d; }while(p>99); return expr(p,'÷',b,d); }
-  function genFracUnit(){ const den=choice([2,3,4,5,6,8]); const html=sp('分成')+sp(den)+opx('等份')+sp('取')+sp(1)+opx('份')+' = '+unk(); const ans='1/'+den; return {display:html, ans, opts:pickOpts(ans,['1/'+String(den+1),'1/'+String(Math.max(2,den-1)),'2/'+String(den)])}; }
-  function genFracPart(){ const den=choice([2,3,4,5,6,8]); const num=randInt(1,den-1); const html=sp('分成')+sp(den)+opx('等份')+sp('取')+sp(num)+opx('份')+' = '+unk(); const ans=num+'/'+den; const others=[(num+1)+'/'+den, Math.max(1,num-1)+'/'+den, '1/'+den]; return {display:html, ans, opts:pickOpts(ans,others)}; }
+  function genFracUnit(){
+    const den=choice([2,3,4,5,6,8]);
+    const html=sp('分成')+sp(den)+opx('等份')+sp('取')+sp(1)+opx('份')+' = '+unk();
+    const ans='1/'+den;
+    const cand=['1/'+String(den+1), den===2?'2/3':'1/'+String(den-1), '2/'+String(den), '3/'+String(den), '2/'+String(den+1), '1/'+String(Math.max(2,den-2))];
+    const set=new Set(); cand.forEach(o=>{ if(o!==ans) set.add(o); });
+    return {display:html, ans, opts:pickOpts(ans,[...set].slice(0,3))};
+  }
+  function genFracPart(){
+    const den=choice([2,3,4,5,6,8]);
+    const num=randInt(1,den-1);
+    const html=sp('分成')+sp(den)+opx('等份')+sp('取')+sp(num)+opx('份')+' = '+unk();
+    const ans=num+'/'+den;
+    const cand=[
+      (num+1)+'/'+den, num+'/'+(den+1), Math.max(1,num-1)+'/'+den,
+      '1/'+den, (num+2<=den? (num+2)+'/'+den : '1/'+(den+1)), '2/'+String(den+1)
+    ];
+    const set=new Set(); cand.forEach(o=>{ if(o!==ans) set.add(o); });
+    return {display:html, ans, opts:pickOpts(ans,[...set].slice(0,3))};
+  }
   function genFracAdd(){
     const den=choice([2,3,4,5,6,8]); const a=randInt(1,den-1), b=randInt(1,den-1);
     const isSub=Math.random()<0.5 && a>=b; let ans,op;
     if(isSub){ ans=(a-b)+'/'+den; op='−'; } else { ans=(a+b)+'/'+den; op='+'; }
     const html=sp(a+'/'+den)+opx(op)+sp(b+'/'+den)+eqq()+unk();
-    const others=[(a+b)+'/'+den,(a-b<0?0:a-b)+'/'+den,(isSub?a+b:a-b)+'/'+den];
-    return {display:html, ans, opts:pickOpts(ans,others.filter(o=>o!==ans&&o.indexOf('-')<0))};
+    // 干扰项：保证互异且不与答案重复（同分母加可能出假分数/0，保留为合理干扰）
+    const cand=[];
+    for(let k=1;k<=4;k++){ const n=(a+b)+k; if(n<=den) cand.push(n+'/'+den); }
+    for(let k=1;k<=4;k++){ const n=(a-b)+k; if(n>=0 && n<=den) cand.push(n+'/'+den); }
+    cand.push('1/'+den, '0/'+den);
+    const set=new Set(); cand.forEach(o=>{ if(o!==ans) set.add(o); });
+    if(set.size<3){ set.add((a+b+1)+'/'+den); if(set.size<3) set.add((Math.max(1,a-b+2))+'/'+den); }
+    return {display:html, ans, opts:pickOpts(ans,[...set].slice(0,3))};
   }
   function genDecAdd(){
     const useSub=Math.random()<0.5; let a=fmt(randInt(1,99)/10), b=fmt(randInt(1,99)/10), ans,op;
@@ -1041,10 +1065,22 @@
     const den1=choice([2,3,4,5,6]), den2=choice([2,3,4,5,6]); const n1=randInt(1,den1-1), n2=randInt(1,den2-1);
     const isDiv=Math.random()<0.5; let num,den,op;
     if(isDiv){ num=n1*den2; den=den1*n2; op='÷'; } else { num=n1*n2; den=den1*den2; op='×'; }
-    const g=gcd(Math.abs(num),den); const ans=(num/g)+'/'+(den/g);
+    const g=gcd(Math.abs(num),den); const a1=num/g, d1=den/g; const ans=a1+'/'+d1;
     const html=sp(n1+'/'+den1)+opx(op)+sp(n2+'/'+den2)+eqq()+unk();
-    const others=[num+'/'+den, (num+1)+'/'+den, n1+'/'+den1];
-    return {display:html, ans, opts:pickOpts(ans,others.filter(o=>o!==ans))};
+    // 干扰项：全部基于约分后的答案变体，排除与答案数值相等的未约分原分数（如 6/20 ≡ 3/10）
+    const cand=[
+      (a1+1)+'/'+d1,
+      Math.max(1,a1-1)+'/'+d1,
+      a1+'/'+(d1+1),
+      (a1===1? '2/'+d1 : '1/'+d1),
+      '1/'+String(d1+1),
+      (a1+2)+'/'+d1
+    ];
+    const set=new Set(); cand.forEach(o=>{ if(o!==ans) set.add(o); });
+    // 数值去重：避免干扰项之间出现等价分数（如 15/15 与 16/16 都等于 1）
+    const seen=new Set(); const uniq=[];
+    for(const o of set){ const [pp,qq]=o.split('/').map(Number); const k=qq? pp/qq : NaN; if(!seen.has(k)){ seen.add(k); uniq.push(o); } if(uniq.length>=3) break; }
+    return {display:html, ans, opts:pickOpts(ans,uniq)};
   }
   function genEqFill(){
     const op=choice(['+','−','×']); let x,b,c,ans,html;
@@ -1085,7 +1121,7 @@
     else { a=randInt(1,98); b=randInt(1,99-a); ans=a+b; op='+'; }   // a<=98 保证 99-a>=1，严格 a+b <= 99，不出现三位 100
     if(op==='−' && a>=10 && a<100 && (a%10)<b){   // 两位−一位 退位 → 破十
       const ones=a%10;
-      hint='💡 破十：'+a+' = '+(a-ones)+' + '+ones+'，先算 10 − '+b+' = '+(10-b)+'，再算 '+(a-ones)+(10-b)+' = '+ans;
+      hint='💡 破十：'+a+' = '+(a-ones)+' + '+ones+'，先算 10 − '+b+' = '+(10-b)+'，再算 '+(a-10)+' + '+(10-b)+' = '+ans;
     }
     return {type:'num',a,b,op,ans,hint};
   }
@@ -1209,10 +1245,12 @@
     saveStats(); refreshStats(); saveState();
   }
 
+  function roundTotal(){ return replayMode ? replaySize : roundSize; }   // 重练轮用错题数，正常轮用设置题数
+
   function advance(){
     if(roundActive){
       roundIndex++;
-      if(roundIndex>=roundSize){ endRound(); return; }
+      if(roundIndex>=roundTotal()){ endRound(); return; }
     }
     const q=nextQ(); if(q===null){ endRound(); return; }
     current=q; render(); saveState();
@@ -1223,8 +1261,9 @@
       if(firstAttempt){ stats.total++; firstAttempt=false; stats.cur=0; saveStats(); refreshStats(); }
       recordRound(false);
       roundIndex++;
-      if(roundIndex>=roundSize){ endRound(); return; }
+      if(roundIndex>=roundTotal()){ endRound(); return; }
     }else{
+      if(firstAttempt){ stats.total++; firstAttempt=false; stats.cur=0; saveStats(); refreshStats(); }   // 与闯关一致：跳过也计入总答题数
       freeDone++; recordRound(false);
       if(freeDone>=roundSize){ roundCorrect=freeCorrect; saveStats(); refreshStats(); saveState(); endRound(); return; }
     }
@@ -1242,7 +1281,7 @@
   function startReplay(){           // 只练错题：用本轮错题组一轮
     const wrongs=roundLog.filter(r=>r.struggled && r.q).map(r=>({...r.q}));
     if(wrongs.length===0) return;
-    replayMode=true; replayQueue=wrongs.slice(); roundSize=wrongs.length;
+    replayMode=true; replayQueue=wrongs.slice(); replaySize=wrongs.length;
     roundActive=true; roundIndex=0; roundCorrect=0; roundLog=[];
     const q=replayQueue.shift(); current=q||genQuestion();
     render(); saveState();
@@ -1253,9 +1292,10 @@
   }
   function updateProgress(){
     if(roundActive){
-      const pct=Math.round((roundIndex+1)/roundSize*100);
+      const total=roundTotal();
+      const pct=Math.round((roundIndex+1)/total*100);
       progFill.style.width=pct+'%';
-      progEl.textContent='第 '+(roundIndex+1)+' / '+roundSize+' 题 · 已对 '+roundCorrect;
+      progEl.textContent='第 '+(roundIndex+1)+' / '+total+' 题 · 已对 '+roundCorrect;
     }else{
       const pct=Math.round(freeDone/roundSize*100);
       progFill.style.width=pct+'%';
