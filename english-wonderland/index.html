@@ -590,7 +590,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <li>📊 <strong>统计看板</strong>：掌握进度、连续打卡、本周新学一目了然。</li>
     </ul>
     <p class="tip">💡 建议每天 5–10 分钟，先翻卡再闯关，坚持就有惊喜！</p>
-    <a class="upd-entry" href="../updates/">📜 查看更新历程</a>
+    <a class="upd-entry" href="updates/">📜 查看更新历程</a>
   </div>
 </div>
 <div class="about-modal" id="avatarModal" onclick="if(event.target===this)closeAvatarModal()">
@@ -6652,7 +6652,11 @@ function setShopTab(t){
   document.getElementById('shopTitle').textContent=t==='shop'?'🛍️ 装扮商城':'🎁 宠物盲盒';
   if(t==='box') loadBox();
 }
-function openBox(){ setShopTab('box'); }
+function openBox(){
+  document.getElementById('shopModal').style.display='flex';  // 先打开弹窗
+  renderShop();
+  setShopTab('box');
+}
 async function loadBox(){
   if(!auth) return;
   const res=await api('/api/box?token='+encodeURIComponent(auth.token));
