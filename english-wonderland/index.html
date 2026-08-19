@@ -130,8 +130,6 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .game-drag-zone.drag-over{outline:3px dashed #11998e;background:#e8f8f3;}
 /* ===== 句式关：横线填空(不显示答案词) ===== */
 .blank{display:inline-block;min-width:92px;height:1.05em;border-bottom:3px solid #11998e;vertical-align:baseline;margin:0 2px;}
-/* ===== 上传头像解锁态 ===== */
-.avatar-upload.locked{opacity:.6;cursor:not-allowed;}
 .word-example{font-size:17px;color:#636e72;font-style:italic;text-align:center;line-height:1.35;}
 .word-example-zh{font-size:15px;color:#90a4ae;text-align:center;margin-top:3px;line-height:1.3;}
 .tap-hint{font-size:12px;color:#b2bec3;}
@@ -257,7 +255,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
   .avatar-presets{grid-template-columns:repeat(4,38px);gap:6px;}
   .avatar-opt{width:38px;height:38px;font-size:18px;border-radius:10px;}
   .avatar-preview{width:72px;height:72px;font-size:36px;}
-  .avatar-upload{padding:9px 12px;font-size:12px;}
+  .avatar-upload-note{font-size:11px;}
 }
 /* ===== 统计看板 📊 ===== */
 .dash-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
@@ -320,9 +318,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .avatar-row{display:flex;align-items:center;justify-content:center;gap:14px;}
 .avatar-preview{width:84px;height:84px;border-radius:50%;background:#f0f4f3;border:3px dashed #c5d8d2;display:flex;align-items:center;justify-content:center;font-size:46px;cursor:pointer;overflow:hidden;color:#666;flex:none;}
 .avatar-preview img{width:100%;height:100%;object-fit:cover;}
-.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:2px;background:#0c8f7d;color:#fff;border:none;border-radius:14px;padding:12px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
-.avatar-upload:hover{background:#0a7d6e;}
-.avatar-upload small{font-size:11px;font-weight:400;opacity:.9;}
+.avatar-upload-note{font-size:12px;color:#999;text-align:center;padding:4px 0 0;}
 .avatar-presets{display:grid;grid-template-columns:repeat(4,44px);gap:8px;justify-content:center;margin-top:10px;}
 .avatar-opt{width:44px;height:44px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
 .avatar-opt.sel{border-color:#0c8f7d;background:#e6f6f2;}
@@ -548,11 +544,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div class="login-sub">登录后和小朋友一起学习、看排名 🏆</div>
     <div class="avatar-pick">
       <div class="avatar-row">
-        <div class="avatar-preview" id="avatarPreview" onclick="openAvatarFile()"></div>
-        <button type="button" class="avatar-upload" onclick="openAvatarFile()">📷 上传照片<small>自己拍 / 照片</small></button>
+        <div class="avatar-preview" id="avatarPreview"></div>
+        <div class="avatar-upload-note">👆 选一个喜欢的头像</div>
       </div>
       <div class="avatar-presets" id="avatarPresets"></div>
-      <input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="onAvatarFile(this)"/>
     </div>
     <div class="login-field">
       <label for="loginName">👤 昵称</label>
@@ -575,8 +570,6 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 </div>
 <div class="header">
     <div class="top-right">
-      <div class="star-pill">⭐ <span id="starCount">0</span> 可用积分</div>
-      <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20:00</span></div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <button class="shop-top-btn" id="boxTopBtn" onclick="openBox()" style="display:none">🎁 盲盒</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
@@ -606,11 +599,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <h2 class="my-title">👤 我的中心 <span class="my-out-top" onclick="logout()">退出</span></h2>
     <div class="my-sec">
       <div class="my-top">
-        <div class="avatar-preview" id="avatarPreview2" onclick="openAvatarFile()"></div>
+        <div class="avatar-preview" id="avatarPreview2"></div>
         <div class="my-info">
           <div class="my-name" id="myCenterName"></div>
           <div class="my-badges"><span class="tbadge" id="myShopTitle"></span><span id="myStreakText"></span></div>
-          <button type="button" class="avatar-upload" onclick="openAvatarFile()">📷 上传照片<small>自己拍 / 照片</small></button>
+          <div class="avatar-upload-note">👆 点击下方头像可更换</div>
         </div>
       </div>
       <div class="avatar-presets" id="avatarPresets2"></div>
@@ -6548,25 +6541,6 @@ const SHOP_ITEMS=[
 const FRAME_ORDER=['frame-teal','frame-silver','frame-pink','frame-orange','frame-gold','frame-rainbow','frame-star','frame-fire','frame-dia','frame-crown'];
 const TITLE_ORDER=['title-0','title-1','title-4','title-5','title-2','title-6','title-3','title-7'];
 function ownedItems(){ return (auth&&auth.me&&auth.me.items)||[]; }
-/* 是否集齐了商城里全部头像(用于解锁"上传自己的照片") */
-function allAvatarsOwned(){
-  const o=ownedItems();
-  const need=SHOP_ITEMS.filter(i=>i.type==='avatar');
-  return need.length>0 && need.every(i=>o.includes(i.id));
-}
-const UPLOAD_LABEL='📷 上传照片<small>自己拍 / 照片</small>';
-/* 根据解锁状态更新所有"上传照片"按钮的显示 */
-function refreshUploadLock(){
-  const locked=!allAvatarsOwned();
-  document.querySelectorAll('.avatar-upload').forEach(b=>{
-    b.innerHTML = locked ? '🔒 集齐头像解锁' : UPLOAD_LABEL;
-    b.classList.toggle('locked', locked);
-  });
-  const hint=document.getElementById('avatarMsg');
-  if(hint && document.getElementById('avatarModal').style.display==='flex'){
-    hint.textContent = locked ? '🔒 上传专属照片需先在商城集齐全部 '+SHOP_ITEMS.filter(i=>i.type==='avatar').length+' 个头像' : '';
-  }
-}
 function myFrame(){ const o=ownedItems(); return FRAME_ORDER.filter(f=>o.includes(f)).pop()||''; }
 function frameOf(items){ try{const a=JSON.parse(items||'[]');return FRAME_ORDER.filter(f=>a.includes(f)).pop()||'';}catch(e){return '';} }
 function myTitle(){ const o=ownedItems(); const t=TITLE_ORDER.filter(x=>o.includes(x)).pop(); if(!t) return ''; const it=SHOP_ITEMS.find(i=>i.id===t); return it?it.name:''; }
@@ -6639,7 +6613,7 @@ async function buyItem(id){
   const it=SHOP_ITEMS.find(x=>x.id===id);
   const res=await api('/api/shop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,item_id:id})});
   if(!res.ok){showToast(res.data.error||'兑换失败','err');return;}
-  await loadMe(); renderShop(); updateAuthUI(); refreshUploadLock();
+  await loadMe(); renderShop(); updateAuthUI();
   const st=document.getElementById('myShopTitle'); if(st) st.textContent=myTitle()?('🏅 称号：'+myTitle()):'';
   const ap=document.getElementById('avatarPresets2');
   if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
@@ -6802,30 +6776,6 @@ function refreshAvatarPreview(){
     else el.innerHTML='<img src="'+avatarSel+'" alt="" decoding="async"/>';
   });
 }
-function openAvatarFile(){
-  if(!allAvatarsOwned()){
-    showToast('🔒 需先在商城集齐全部头像,才能上传专属照片','err');
-    return;
-  }
-  const f=document.getElementById('avatarFile');if(f)f.value='';f.click();
-}
-function onAvatarFile(input){
-  const f=input.files&&input.files[0];
-  if(!f||!f.type.match(/^image\//)) return;
-  const img=new Image();
-  const url=URL.createObjectURL(f);
-  img.onload=()=>{
-    const c=document.createElement('canvas');c.width=c.height=96;
-    const ctx=c.getContext('2d');
-    const s=Math.min(img.width,img.height);
-    ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,96,96);
-    avatarSel=c.toDataURL('image/jpeg',0.7);
-    URL.revokeObjectURL(url);
-    refreshAvatarPreview();
-  };
-  img.onerror=()=>URL.revokeObjectURL(url);
-  img.src=url;
-}
 function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
   const shop=document.getElementById('shopTopBtn');
@@ -6845,7 +6795,6 @@ function updateAuthUI(){
     if(box)box.style.display='none';
   }
   updateUsagePill();
-  refreshUploadLock();
 }
 function openLogin(){
   avatarSel=(auth&&auth.user&&auth.user.avatar)||'e:🐭';
@@ -6896,7 +6845,6 @@ async function openAvatarModal(){
   await loadMe();
   loadBox();          // 宠物图鉴数据
   renderMyPets();
-  refreshUploadLock();
   const me=auth.me||{};
   const nm=document.getElementById('myCenterName'); if(nm) nm.textContent=auth.user.name||'';
   const ic=document.getElementById('myInviteCode'), iq=document.getElementById('myInviteQuota');
