@@ -2969,12 +2969,60 @@ const WORD_META = {    "alligator": {src:'add', giggle:false, diff:3, syl:4, len
 };
 /* 取单词元数据; 返回 {freq,book,unit,age,...} 或空对象 */
 function meta(en){ return WORD_META[en] || {}; }
-/* 词性中文标签: WORD_META.pos → 徽章文本 */
-const POS_LABEL={n:'n. 名词',v:'v. 动词',adj:'adj. 形容词',a:'adj. 形容词',num:'num. 数词',int:'int. 感叹词',pron:'pron. 代词'};
+/* 词性中文标签: WORD_META.pos → 徽章文本（多重词性用 / 分隔，如 'v/n'） */
+const POS_LABEL={n:'n. 名词',v:'v. 动词',adj:'adj. 形容词',a:'adj. 形容词',num:'num. 数词',int:'int. 感叹词',pron:'pron. 代词',prep:'prep. 介词',conj:'conj. 连词',adv:'adv. 副词',art:'art. 冠词',det:'det. 限定词'};
+/* 一词多性：WORD_META.pos 单标签之外的补充（牛津 txt 同词多释义推导，2026-08-19 火哥确认） */
+const MULTI_POS={
+  cook:'v/n',      // 厨师(n) / 烹饪(v)
+  watch:'n/v',     // 手表(n) / 观看(v)
+  water:'n/v',     // 水(n) / 浇水(v)
+  fly:'v/n',       // 飞(v) / 苍蝇(n)
+  drink:'v/n',     // 喝(v) / 饮料(n)
+  brush:'n/v',     // 刷子(n) / 刷(v)
+  face:'n/v',      // 脸(n) / 面向(v)
+  light:'n/adj',   // 灯(n) / 轻的、亮的(adj)
+  smoke:'n/v',     // 烟(n) / 吸烟(v)
+  swing:'n/v',     // 秋千(n) / 摆动(v)
+  walk:'v/n',      // 走(v) / 散步(n)
+  sleep:'v/n',     // 睡(v) / 睡眠(n)
+  fish:'n/v',      // 鱼(n) / 钓鱼(v)
+  square:'n/adj',  // 正方形(n) / 方的(adj)
+  match:'n/v',     // 比赛、火柴(n) / 相配(v)
+  bowl:'n/v',      // 碗(n) / 玩保龄球(v)
+  show:'v/n',      // 展示(v) / 表演(n)
+  present:'n/adj', // 礼物(n) / 出席的(adj)
+  right:'n/adj/adv',// 右边(n) / 对的(adj) / 向右(adv)
+  well:'adv/adj',  // 好(adv) / 健康的(adj)
+  first:'num/adv', // 第一(num) / 首先(adv)
+  last:'adj/adv',  // 最后的(adj) / 最后(adv)
+  back:'n/adv',    // 背(n) / 向后(adv)
+  star:'n/v',      // 星星(n) / 主演(v)
+  stay:'v/n',      // 停留(v) / 逗留(n)
+  take:'v',        // 拿(v)
+  visit:'v/n'      // 参观(v) / 参观(n)
+};
 function posBadge(word){
-  const m=meta(word), p=m&&m.pos;
-  if(!p||!POS_LABEL[p]) return '';
-  return '<span class="pos-badge">'+POS_LABEL[p]+'</span>';
+  const m=meta(word);
+  let p=m&&m.pos;
+  if(MULTI_POS[word]) p=MULTI_POS[word];   // 多词性覆盖
+  if(!p) return '';
+  const parts=String(p).split('/').map(x=>POS_LABEL[x]).filter(Boolean);
+  if(!parts.length) return '';
+  return '<span class="pos-badge">'+parts.join(' / ')+'</span>';
+}
+/* 场景表情：WORD_META.scene → emoji（属性表情，用于卡片角标） */
+const SCENE_EMOJI={
+  '问候':'👋','动物':'🐾','水果':'🍎','蔬菜':'🥕','颜色':'🎨','形状':'🔷','自然':'🌿',
+  '数字':'🔢','身体':'🖐️','家庭':'👨‍👩‍👧','衣服':'👕','日常物品':'🧸','交通工具':'🚗',
+  '动作':'🏃','形容词':'😊','地点':'🏠','节日':'🎉','职业':'👩‍🏫','乐器':'🎵','运动':'⚽',
+  '昆虫':'🐛','时间':'⏰','食物':'🍚','童话':'🧚','感受描述':'💭','天气自然':'🌦️','衣物':'🧣',
+  '食物饮品':'🥤','学校教室':'🏫','植物':'🌱','节日活动':'🏮','代词·指示疑问':'❓','科目':'📖',
+  '时间季节':'🍂'
+};
+function sceneEmoji(word){
+  const m=meta(word), sc=m&&m.scene;
+  if(!sc||!SCENE_EMOJI[sc]) return '';
+  return '<span class="pos-badge" style="background:#ffb74d">'+SCENE_EMOJI[sc]+'</span>';
 }
 /* 翻卡：预加载当前窗口（当前卡前 PRELOAD_BEFORE 张 + 后 PRELOAD_AFTER 张，对称滑动窗口） */
 function preloadCardArt(){
@@ -5007,38 +5055,85 @@ const REGION = {
 };
 function regionOf(w){ const k=(Array.isArray(w)?w[0]:w).toLowerCase(); return REGION[k]||'both'; }
 /* tier：核心词(core)=上海课标要求；拓展词(ext)=教材不要求。
-   初标（启发式，后续可调）：上海功能词分类(sh-*)整体 + 基础主题分类 = core；其余 = ext。
-   若需逐词微调，可在下方追加 CORE_WORDS=Set 覆盖分类默认。 */
-/* 核心/拓展判定(决定卡片「拓」角标 + 「核心/拓展」筛选):
-   以 WORD_META[word].freq 为准(core=沪教版课标核心词 / ext=拓展·超纲·童话词)。
-   数据来源: U:/儿童英语学习乐园/WORD_META.draft.js (2026-08-13, 命中 854/1041 词)。
-   未覆盖词(功能词 sh-* / 英式变体 / 零星主题词)回退: sh-* 与已知英式变体算拓展,其余按分类默认。
-   WORD_META 未接年级标签到 UI(按用户意见先不放),数据已内嵌备用。 */
-const CORE_CATS = new Set([
-  'sh-subjects','sh-school','sh-greet','sh-pron-pers','sh-pron-poss','sh-pron-other',
-  'sh-article','sh-prep','sh-conj','sh-modal','sh-adv',
-  'colors','numbers','body','family','food','fruits','vegetables',
-  'objects','clothes','nature','verbs','adjectives','time','animals',
-  'transport','places','plants','sports','shapes'
+   判定依据（2026-08-19 更新，火哥拍板）：
+   ★ 上海小学唯一标准 = 「牛津上海版小学英语词汇表（2024版手动整理）含氢刻.txt」955 个归一化展示形
+     + 140 个功能词（img:fw-* 前缀，牛津 txt 不含但强制归小学）。
+   ★ github 词表只是本仓库收集的一批词（"大哥"），不是课标标准，不再作为判定依据。
+   命中方式：单词经 normKey 归一化（小写/去 the/a/an/弯引号/符号/统一分隔符）后命中 OXFORD_STD → core；
+   或该词在 CATS 中配图为 img:fw-*（功能词）→ core；其余 = ext。 */
+// 牛津2024 955 归一化标准词（生成自 _oxford_norm_keys.json，勿手改）
+const OXFORD_STD = new Set([
+  "about","activity","adult","aeroplane","afraid","afternoon","again","ago","all","all-the-way","along","also","always","angry","another","ant","apple","apples","april","arm",
+  "around","arrive（at）","art","art-museum","ask","at-last","at-moon","at-weekends","august","aunt","australia","aviary","awake","away","back","bag","bakery","ball","balloon","banana",
+  "bananas","bank","bar-of","basket","bathroom","battery","bean","bear","beautiful","beborn","become","bed","bedroom","bedtime","bee","beef","before","begin","behind","beijing-opera",
+  "bell","bench","beside","best","best-wishes","better","between","bicycle","bin","bird","biscuit","bite","bitter","blind","blouse","blow","blue","blunt","boat","body",
+  "boil","bone","book","bookshelf","both","bottle","bottle-of","bought","bow","bowl","bowl-of","boy","branch","bravely","bread","break","break-down","bright","bring","brother",
+  "brush","brush-my-teeth","bug","build","building","built","burn","bus","bus-driver","busy","butterfly","button","by","cabbage","cake","campfire","candle","canteen","cap","car",
+  "car-museum","card","careful","carefully","carrot","cartoon","castle","cat","cat-food","catch","caterpillar","cave","centre","change","chat","cherry","chick","chicken","china","chinese",
+  "chinese-chess","chocolate","christmas","cinema","circle","city","class","classmate","classroom","clean","clever","climb","clock","cloud","cloudy","club","cocoon","coffee","cola","cold",
+  "colour","colourful","come","comfortable","computer","computer-lab","cook","cool","corn","corner","cough","country","cousin","cow","crayon","crisp","crocodile","cross","crossing","crow",
+  "crunchy","culture","cupboard","cushion","cut","cute","dance","dangerous","december","deer","degree","dentist","desk","did","die-down","different","dinner","dish","dive","doctor",
+  "dog","dog-food","doll","dolphin","doorbell","dot","double-ninth-cake","double-ninth-festival","down","doze","dragon-boat-festival","dragon-boat-race","draw","dream","dress","drill","drink","driveaway","driver","drop",
+  "drum","dry","duck","duckling","dumpling","during","dwarf","e-mail","each-other","ear","east","easter","eat","egg","eight","either","eleven","emperor","english","enjoy",
+  "enjoy-oneself","enough","entrance","ever","every","everyone","everything","exercise","exit","eye","face","fair","fairy-tale","fall","fall-asleep","fall-down","fall-onto","famous","fancy-dress-party","far-away",
+  "farm","farmer","fast","fat","father","favourite","february","feed","festival","fever","fifteen","fifteenth","fifth","film","finally","find","find-out","finger","finish","fire",
+  "fire-engine","fire-station","firecracker","firefighter","firework","fireworks","first","fish","fisherman","five","floor","flower","fly","fly-away","fog","foggy","follow","foot（feet）","forest","forever",
+  "fountain","four","fourteen","fourth","friday","friend","frog","from","from-then-on","fruit","full","fun","funny","furniture","garden","gently","get","get-off","get-up","giant",
+  "gift","girl","give","glass","glass-of","glasses","glue","go-down","go-on-an-outing","go-shopping","go-swimming","go-trick-or-treating","goat","gold","grandchild","grandfather","grandmother","grandpa","grape","grass",
+  "green","grew","grey","grow","guess","guest","gym","had","hair","half-past-seven","hall","halloween","halt-time","hamburger","hand","happen","happily","happy","hard","hat",
+  "have-a-bath","have-a-clod","have-a-dinner","have-a-good-time","have-a-holiday","have-a-look","have-a-nap","have-a-rest","have-breakfast","have-lunch","have-nothing-on","hay","head","healthy","heard","heavily","heavy","helicopter","help","hen",
+  "her","hers","hide","high","hill","his","history","history-museum","hole","holiday","home","homework","hop","hope","hospital","hot","hotel","hug","human","hungry",
+  "hunt","hunter","hurt","ice-cream","ice-skate","idea","important","in-front-of","in-the-future","in-the-middle-of","insect-museum","interesting","interview","into","invitation","it","jack-o-lantern","jacket","january","jeans",
+  "jelly","job","join","journey","juice","july","jump","june","keep-silent","keepaway","key","kill","kind","kingdom","kitchen","kite","knee","knife","ladybird","lamp",
+  "lamp-post","lane","large","last-night","late","later","lawn","lay-egg","learnt","leave","leaves","left","leg","lemon","lesson","library","lifeguard","light","like","line",
+  "lion","listen","litter","litter-red-riding-hood","little","live","living-room","loaf-of-bread","lonely","lorry","lost","lost-property-office","lot-of","loud","loudly","louvremuseum","love","luckily","lunch","lunch-break",
+  "magic","magnet","make","make-phone-calls","man","many","map","march","mask","match","maths","may","maybe","me","mean","meat","medicine","meet","meeting","member",
+  "mess","mid-autumn-festival","milk","mine","minute","mirror","miss","model-plane","mole","mona-lisa","monday","money","monkey","monster","mooncake","more","morning","moth","mother","motorbike",
+  "mountain","mouse（mice）","mouth","move","mr","mrs","museum","music","must","nail","near","need","nest","net","never","new","new-year-s-eve","next","next-to","nine",
+  "nod","noise","noisy","noodle","noodles","north","nose","notat-all","notebook","nothing","notice","november","number","nurse","october","office","often","on","on-foot","once",
+  "one","onto","orange","oranges","other","ours","outside","owl","packet-of","paint","painting","paints","pair-of-gloves","pair-of-shoes","pair-of-socks","panda","paris","park","park-keeper","parrot",
+  "part","party","path","pavement","pe","peach","peaches","pear","pebble","pen","pencil","pencil-case","people","perform","piano","pick","picnic","picture","pie","pig",
+  "pilot","pineapple","pink","piper","pizza","plant","play","play-a-trick","play-badminton","play-basketball","play-chess","play-football","play-table-tennis","play-volleyball","playground","pleasure","plum","pocket","police-officer","police-station",
+  "pop-group","pork","post-office","postcard","poster","postman","potato","pour","present","prince","princess","pullout","pumpkin","puppy","purse","put","put-on","put-up","puzzle","puzzled",
+  "quarter-past-seven","quarter-to-eight","quick","quickly","quiet","quietly","rabbit","railway-museum","rain","raindrop","rainy","rat-tat","raw","read","really","receive","rectangle","red","red-envelope","relative",
+  "remember","report","restaurant","rice","rice-dumpling","riddle","ride","right","ring","rise","rise-up","river","road","robot","roots","rough","rubber","rubbish","ruler","run",
+  "run-away","sad","safe","safely","salt","salty","same","sand","sat","saturday","save","saw","scarf","school","school-bag","science-museum","sea","seat","second","secret",
+  "section","see-a-film","sell","send","september","seven","seven-oclock","shadow","shake","share","shark","sharp","sheep","shelf","shine","ship","shirt","shop","shop-assistant","short",
+  "shorts","shoulder","shout","show","showaround","shy","sick","sign","silk","silkworm","sing","sister","sit","six","sixteen","sixth","skate","skateboard","sketchbook","ski",
+  "skip","skirt","sky","sleep","slide","slowly","smart","smile","smoke","smoking","smooth","snake","snow","snowy","so","sofa","soft","soft-drink","softly","some",
+  "something","sometimes","sound","soup","sour","south","spider","sport","spring","spring-festival","square","star","start","stay","stepmother","stick-to","stone","stone-age","storm","stormy",
+  "strawberry","street","strong","strongly","student","study","subject","summer","sunday","sunny","sunshine","supermarket","sure","surprise","surprised","swan","sweater","sweet","swim","swimming",
+  "swimming-goggles","swimming-pool","swimsuit","swing","t-shirt","take","take-off","talk","tall","tape","taxi","tea","teacher","team","teapot","tear","telephone","television（tv）","tell","temperature",
+  "ten","thanksgiving","theirs","themselves","then","thick","thin","thing","think","third","thirsty","thirteen","thousand","three","three-gorges","through","throw","throwaway","thursday","ticket",
+  "ticket-office","tidy","tidy-up","tiger","time","timetable","tired","toast","together","toilet","tomato","tomorrow","tonight","too","tooth","toothache","toothless","tortoise","town","toy-story",
+  "toy-train","traditional","traffic-light（s）","train","travel","traveller","triangle","trip","trunk","try","try-on","tuesday","turkey","turn","turn-off","twelve","twice","two","typhoon","ugly",
+  "uncle","underground","underground-station","unhappy","unhealthy","useful","usually","vegetable","very","village","vine","violin","visit","wait","wake-up","walk","wall","want","warm","warm-up",
+  "was","wash","wash-my-face","wasp","watch","watch-tv","water","watermelon","way","wear","weather","wednesday","week","weekend","welcome","well","were","west","wet","while",
+  "whose","why","wild-goose（geese）","wind-bell","window","windy","wing","wolf","wood","word","worker","workshop","world","worm","worry","write","write-an-e-mail","writer","yangtze-river","year",
+  "yellow","yesterday","yours","yum","zebra-crossing","zip","zoo","（be）afraid-of","（be）far-from","（be）full-of","（be）good-at","（be）happy-with","（be）made-of","（the）internet","（the）sun",
 ]);
-/* 单词级 tier：上海小学 = 核心(core)。包括两类：
-   ① 功能词：图片为 fw-* 前缀的词（科目/问候/代词/冠词/介词/连词/情态/副词），对应「上海小学英语词汇·带标签.md」142 词；
-   ② 内容词：age∈{5-6,6-7,7-8}（github 上海小学全集 864）。
-   其余(初高中/无标签) = 拓展(ext)。 */
-// 上海小学补充核心词：来自「上海小学英语词汇·带标签.md」142 词（科目/问候/代词/冠词/介词/连词/情态/副词/橡皮）。
-// 其中 141 个功能词图片为 img:fw-*；rubber 是 eraser 的英式变体(图片 img:eraser)，一并归核心。
+/* 归一化：小写 + 去 the/a/an + 弯引号→直引号 + 's→-s + 去符号 + 统一分隔符（与 _build_class.js 一致） */
+function normKey(s){
+  s=(s||'').toLowerCase().trim();
+  s=s.replace(/^the\s+/,'').replace(/^a\s+/,'').replace(/^an\s+/,'');
+  s=s.replace(/[\u2019\u2018]/g,"'");
+  s=s.replace(/'s/g,'-s').replace(/'/g,'');
+  s=s.replace(/[.,!?;:()\/\u2013\u2014&]/g,'');
+  s=s.replace(/\s+/g,'-');
+  s=s.replace(/-+/g,'-').replace(/^-|-$/g,'');
+  return s;
+}
+// 功能词集合（img:fw-* 前缀）：140 个，牛津 txt 不含但强制归上海小学
 const SH_WORDS = new Set();
 for (const _cat of CATS) for (const _w of (_cat.words || [])) {
   if (Array.isArray(_w) && typeof _w[2] === 'string' && _w[2].indexOf('img:fw-') === 0) SH_WORDS.add(_w[0]);
 }
-SH_WORDS.add('rubber'); // .md 上海小学(橡皮, eraser 英式变体)，非 fw- 图片，单独补入
+SH_WORDS.add('rubber'); // 橡皮：牛津 txt 在列（已含于 OXFORD_STD），英式变体 eraser 复用图，双保险
 function tierOfWord(catId, word){
   if(!word) return tierOfCat(catId);
-  if(SH_WORDS.has(word)) return 'core';               // 上海小学补充词(.md 142)
-  const m = meta(word);
-  const a = m && m.age;
-  if(a==='5-6'||a==='6-7'||a==='7-8') return 'core';   // 上海小学内容词 → 核心
-  return 'ext';                                          // 非小学(初高中/无标签) → 拓展
+  if(SH_WORDS.has(word)) return 'core';            // 功能词（fw-*，牛津 txt 无但强制归小学）
+  if(OXFORD_STD.has(normKey(word))) return 'core'; // 牛津2024 归一化命中 → 上海小学核心词
+  return 'ext';                                      // 未命中牛津标准 → 拓展
 }
 function tierOfCat(catId){
   const c = CATS.find(x=>x.id===catId);
@@ -5538,7 +5633,7 @@ function renderCard(){
         '<div class="card-face card-front">'+
           '<div class="card-art">'+svg+tierBadge+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
+            '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+sceneEmoji(word)+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word,currentAlt)+
             '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
           '</div>'+
@@ -5547,7 +5642,7 @@ function renderCard(){
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
             '<div class="word-zh">'+zh+(rg!=='both'?'<span class="region-pill sm '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
-            '<div class="word-en" style="font-size:26px">'+word+(currentAlt?' / '+currentAlt:'')+'</div>'+posBadge(word)+
+            '<div class="word-en" style="font-size:26px">'+word+(currentAlt?' / '+currentAlt:'')+'</div>'+sceneEmoji(word)+posBadge(word)+
             phonHTML(word,currentAlt)+
             (example?'<div class="word-example">💬 '+example.split('|')[0]+'</div>'+(example.split('|')[1]?'<div class="word-example-zh">'+example.split('|')[1]+'</div>':'')+'':'')+
             '<button class="speak-btn" id="speakExBtn" onclick="event.stopPropagation();speakExample()">🔊 听例句</button>'+
@@ -5624,6 +5719,10 @@ function markKnow(){
   if(!cardList.length) return;
   const item=cardList[cardIdx];
   const key=wordKey(item.cat.id,item.w[0]);
+  /* 卡片页学习也计入"学过N遍"（与游戏 seen 同计数器，看板顽固词据此统计） */
+  if(!review[key]) review[key]={due:0,seen:0,streak:0};
+  review[key].seen++;
+  saveObj(LS_REVIEW,review);
   const lv=getLevel(item.cat.id,item.w[0]);
   if(lv<3){engProgress[key]=lv+1;saveObj(LS_EN,engProgress);refreshStars();if(lv===0)recordLearned(key);}
   queueReport();
@@ -5634,6 +5733,10 @@ function markReview(){
   if(!cardList.length) return;
   const item=cardList[cardIdx];
   const key=wordKey(item.cat.id,item.w[0]);
+  /* 卡片页"再看看"也计入学过次数 */
+  if(!review[key]) review[key]={due:0,seen:0,streak:0};
+  review[key].seen++;
+  saveObj(LS_REVIEW,review);
   if(getLevel(item.cat.id,item.w[0])>0){engProgress[key]=Math.max(0,getLevel(item.cat.id,item.w[0])-1);saveObj(LS_EN,engProgress)}
   queueReport();
   nextCard();renderCatChips();
