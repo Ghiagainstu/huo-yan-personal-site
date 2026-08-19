@@ -55,9 +55,9 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 }
 .chip.active{border-color:#11998e;background:#11998e;color:#fff;}
 .chip .cnt{font-size:11px;opacity:.75;margin-left:4px;}
-.filter-row{display:flex;gap:8px;margin-bottom:14px;justify-content:space-between;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;justify-content:space-between;align-items:stretch;flex-wrap:wrap;}
 .filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{flex:1 1 0;min-width:0;padding:9px 4px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.filter-chip{flex:1 1 0;min-width:76px;padding:9px 4px;border-radius:10px;border:none;background:#eceff1;font-size:14px;font-weight:bold;color:#666;cursor:pointer;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
 .filter-chip.active{background:#2575fc;color:#fff;}
 .filter-sep{flex:0 0 auto;width:1px;align-self:stretch;background:#dfe3e8;margin:2px 4px;}
 .filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
@@ -443,6 +443,42 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .shop-group-name{font-size:14px;font-weight:bold;color:#555;margin-bottom:6px;}
 .shop-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:9px 12px;margin:6px 0;}
 .shop-item.owned{background:#f0faf7;border-color:#b8dcd4;}
+/* ===== 盲盒 ===== */
+.shop-tabs{display:flex;gap:8px;margin:4px 0 10px;background:#f2f4f3;border-radius:12px;padding:4px;}
+.shop-tab{flex:1;border:none;background:transparent;border-radius:9px;padding:8px;font-size:14px;font-weight:bold;color:#777;cursor:pointer;}
+.shop-tab.active{background:#fff;color:#0c8f7d;box-shadow:0 2px 6px rgba(0,0,0,.08);}
+.box-top{display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between;background:#fbf7ee;border:1px solid #f0e2c0;border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+.box-stat{font-size:13px;color:#7a6a3a;}
+.box-stat b{color:#b8860b;}
+.box-msg{min-height:18px;font-size:13px;text-align:center;color:#0c8f7d;margin:4px 0;}
+.box-hint{font-size:11px;color:#999;text-align:center;margin-bottom:10px;}
+.box-grid-name{font-size:13px;font-weight:bold;color:#555;margin:12px 0 8px;}
+.box-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.box-cell{position:relative;border:2px solid #eee;border-radius:12px;padding:8px 4px;text-align:center;background:#fff;cursor:pointer;transition:all .15s;}
+.box-cell .box-ic{font-size:34px;line-height:1.2;display:block;}
+.box-cell .box-nm{font-size:10px;color:#666;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.box-cell .box-rr{font-size:9px;color:#fff;border-radius:6px;padding:1px 5px;display:inline-block;margin-top:2px;}
+.box-cell.locked{background:#f7f7f7;border-style:dashed;opacity:.55;}
+.box-cell.showing{border-color:#ffb74d;box-shadow:0 0 0 2px #ffe0b2;}
+.box-pool{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.box-pool-item{font-size:11px;color:#555;background:#fafafa;border-radius:8px;padding:5px 8px;display:flex;justify-content:space-between;}
+.box-pool-item b{color:#b8860b;}
+.box-celebrate{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;animation:boxFade .25s;}
+@keyframes boxFade{from{opacity:0}to{opacity:1}}
+.box-celebrate-box{background:#fff;border-radius:20px;padding:26px 22px;text-align:center;max-width:320px;width:88%;animation:boxPop .4s cubic-bezier(.2,1.4,.4,1);}
+@keyframes boxPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.box-celebrate .box-big{font-size:72px;line-height:1.1;display:block;}
+.box-celebrate .box-tt{font-size:18px;font-weight:bold;margin:10px 0 4px;color:#333;}
+.box-celebrate .box-st{font-size:13px;color:#888;margin-bottom:14px;}
+.box-pet-img{width:56px;height:56px;object-fit:contain;display:block;margin:0 auto;}
+.box-pet-fb{font-size:34px;display:block;line-height:1.2;}
+.box-big{width:96px;height:96px;object-fit:contain;display:inline-block;margin:0 auto;}
+.box-celebrate .box-big{width:110px;height:110px;}
+.rank-pet-mini{width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-left:4px;}
+.pet-corner{position:relative;display:inline-block;}
+.pet-corner img.pet-corner-img{width:30px;height:30px;object-fit:contain;position:absolute;right:-8px;bottom:-6px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.18);}
+.box-pet-img-mini{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-left:4px;}
+.box-celebrate .box-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 .shop-item-name{font-size:14px;font-weight:bold;color:#333;}
 .shop-item-price{font-size:13px;color:#b8860b;font-weight:bold;}
 .shop-item.owned .shop-item-price{color:#0a6e5f;}
@@ -542,6 +578,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <div class="star-pill">⭐ <span id="starCount">0</span> 可用积分</div>
       <div class="star-pill" id="usagePill" style="display:none" title="今日剩余学习时长">⏱ 剩余 <span id="usageRemain">20:00</span></div>
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
+      <button class="shop-top-btn" id="boxTopBtn" onclick="openBox()" style="display:none">🎁 盲盒</button>
       <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
       <button class="about-btn about-ico" onclick="showAbout()" title="关于" aria-label="关于">ℹ️</button>
@@ -586,6 +623,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <button class="my-gobtn" onclick="openShop()">🛍️ 去商城逛逛</button>
     </div>
     <div class="my-sec">
+      <div class="my-sec-l">🎁 我的宠物 <button class="my-gobtn" style="float:right" onclick="closeAvatarModal();openBox()">🎁 盲盒</button></div>
+      <div class="box-grid" id="myPetGrid" style="margin-top:8px"></div>
+      <div class="box-hint" style="text-align:left;margin-top:6px">点击宠物设为展示 · 词汇榜头像旁可见</div>
+    </div>
+    <div class="my-sec">
       <div class="my-sec-l">邀请小伙伴</div>
       <div class="invite-row">📨 我的邀请码：<b id="myInviteCode">—</b><button class="invite-copy" onclick="copyInvite()">复制</button></div>
       <div class="invite-row">邀请名额：<b id="myInviteQuota">—</b></div>
@@ -597,9 +639,29 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <div class="about-modal" id="shopModal" onclick="if(event.target===this)closeShop()">
   <div class="about-box">
     <button class="about-close" onclick="closeShop()" aria-label="关闭">✕</button>
-    <h2>🛍️ 装扮商城</h2>
-    <div class="shop-balance">可用积分：<b id="shopPoints">—</b></div>
-    <div id="shopList"></div>
+    <h2 id="shopTitle">🛍️ 装扮商城</h2>
+    <div class="shop-tabs">
+      <button class="shop-tab active" data-st="shop" onclick="setShopTab('shop')">🛍️ 装扮</button>
+      <button class="shop-tab" data-st="box" onclick="setShopTab('box')">🎁 盲盒</button>
+    </div>
+    <div id="shopPanel">
+      <div class="shop-balance">可用积分：<b id="shopPoints">—</b></div>
+      <div id="shopList"></div>
+    </div>
+    <div id="boxPanel" style="display:none">
+      <div class="box-top">
+        <div class="box-stat">🎟️ 抽奖机会 <b id="boxTickets">—</b></div>
+        <div class="box-stat">📅 今日 <b id="boxToday">0/1</b></div>
+        <div class="box-stat">⭐ 盲盒入账 <b id="boxPoints">—</b></div>
+      </div>
+      <button class="game-btn green" id="boxDrawBtn" onclick="boxDraw()" style="width:100%;font-size:18px;padding:14px;margin:10px 0">🎁 抽盲盒（每日 1 次）</button>
+      <div class="box-msg" id="boxMsg"></div>
+      <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 无保底 · 重复自动折积分</div>
+      <div class="box-grid-name">我的宠物</div>
+      <div class="box-grid" id="boxGrid"></div>
+      <div class="box-grid-name">奖池与概率</div>
+      <div class="box-pool" id="boxPool"></div>
+    </div>
   </div>
 </div>
 <div class="about-modal" id="lockModal" onclick="if(event.target===this)hideLock()">
@@ -666,7 +728,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <button class="filter-chip" data-rg="us" onclick="setRegion('us')">🇺🇸 美式</button>
         <button class="filter-chip" data-rg="uk" onclick="setRegion('uk')">🇬🇧 英式</button>
         <span class="filter-sep"></span>
-        <button class="filter-chip active" data-tier="all" onclick="setTier('all')">📗 核心+拓展</button>
+        <button class="filter-chip active" data-tier="all" onclick="setTier('all')">📗 全部</button>
         <button class="filter-chip" data-tier="core" onclick="setTier('core')">📘 核心</button>
         <button class="filter-chip" data-tier="ext" onclick="setTier('ext')">📙 拓展</button>
     </div>
@@ -6110,7 +6172,7 @@ function renderGameIntro(){
   ];
   const wrongCount=wrongLog().filter(k=>{const f=findByKey(k);return f&&getLevel(f.cat.id,f.w[0])<3;}).length;
   let html='<div class="game-scene" style="text-align:center">'+
-    '<div style="font-size:80px">🚀</div>'+
+    '<img src="images/avatars/dino.webp" alt="火火" style="width:88px;height:88px;object-fit:contain;border-radius:22px;background:#f2f7f2;box-shadow:0 6px 18px rgba(0,0,0,.08);display:inline-block" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=&quot;font-size:80px&quot;>🎮</div>\')"/>'+
     '<div class="game-h1">闯关游戏</div>'+
     '<div class="game-h2">每天新词上限 <b>'+usedNew+'/'+DAILY_NEW_CAP+'</b>(剩 '+leftNew+' 个) · 到期复习不限</div>'+
     '<div class="game-h2">已掌握 <b>'+total+'</b> / '+totalWords()+'</div>'+
@@ -6217,7 +6279,7 @@ function renderDashboard(){
     const sd=auth.me.score_detail||{};
     html+='<div class="dash-card dash-score-card">'+
       '<div class="dash-score-total">⭐ '+auth.me.score+' 分</div>'+
-      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分 · 游戏 ×1：'+(sd.game||0)+' 分</div>'+
+      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分 · 游戏 ×1：'+(sd.game||0)+' 分'+(sd.box?(' · 盲盒：'+(sd.box||0)+' 分'):'')+'</div>'+
       '<div class="dash-score-note">多学词、每天打卡、邀请朋友、闯关游戏，都能攒积分</div>'+
     '</div>';
   }
@@ -6583,6 +6645,116 @@ async function buyItem(id){
   if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
   showToast('✅ 兑换成功：'+(it?it.name:id),'ok');
 }
+/* ================= 盲盒系统（v5 终稿：9 款火火装扮 + 积分两档） ================= */
+const PET_META=[
+  {slug:'pet-nailong',name:'奶龙风',rarity:'common'},
+  {slug:'pet-pixel',name:'像素风',rarity:'common'},
+  {slug:'pet-mengke',name:'奇妙萌可',rarity:'common'},
+  {slug:'pet-orca',name:'虎鲸',rarity:'common'},
+  {slug:'pet-mini',name:'迷你特工队',rarity:'common'},
+  {slug:'pet-piggy',name:'小猪佩奇',rarity:'rare'},
+  {slug:'pet-xuan',name:'炫卡斗士',rarity:'rare'},
+  {slug:'pet-lego',name:'乐高',rarity:'vrare'},
+  {slug:'pet-gold',name:'金色传说',rarity:'legend'}
+];
+const PET_RARITY={common:{t:'普通',c:'#4CAF50'},rare:{t:'稀有',c:'#2196F3'},vrare:{t:'很稀有',c:'#9C27B0'},legend:{t:'传说',c:'#FFB300'}};
+const LS_DISP_PET='kids_disp_pet';
+function dispPet(){ return localStorage.getItem(LS_DISP_PET)||''; }
+function setDispPet(slug){
+  localStorage.setItem(LS_DISP_PET,slug);
+  renderBoxGrid(); renderMyPets(); if(rankType) renderRank();
+  showToast('✅ 已设为展示宠物','ok');
+}
+function petImg(slug){ return 'images/'+slug+'.webp'; }
+function petIconHtml(slug,cls){
+  return '<img class="'+(cls||'box-pet-img')+'" src="'+petImg(slug)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<span class=&quot;box-pet-fb&quot;>🐉</span>\')"/>';
+}
+let shopTab='shop';
+function setShopTab(t){
+  shopTab=t;
+  document.querySelectorAll('.shop-tab').forEach(b=>b.classList.toggle('active',b.dataset.st===t));
+  document.getElementById('shopPanel').style.display=t==='shop'?'':'none';
+  document.getElementById('boxPanel').style.display=t==='box'?'':'none';
+  document.getElementById('shopTitle').textContent=t==='shop'?'🛍️ 装扮商城':'🎁 宠物盲盒';
+  if(t==='box') loadBox();
+}
+function openBox(){ setShopTab('box'); }
+async function loadBox(){
+  if(!auth) return;
+  const res=await api('/api/box?token='+encodeURIComponent(auth.token));
+  if(!res.ok) return;
+  auth.box=res.data; saveAuth(auth);
+  const t=document.getElementById('boxTickets'),td=document.getElementById('boxToday'),bp=document.getElementById('boxPoints');
+  if(t) t.textContent=res.data.tickets!=null?res.data.tickets:'—';
+  if(td) td.textContent=(res.data.drewToday?'1/1':'0/1');
+  if(bp) bp.textContent=(res.data.box_points!=null?res.data.box_points:0)+' 分';
+  renderBoxGrid(); renderBoxPool(); renderMyPets();
+}
+function renderBoxGrid(){
+  const g=document.getElementById('boxGrid'); if(!g) return;
+  const owned=(auth&&auth.box&&auth.box.owned)||[];
+  const show=dispPet();
+  g.innerHTML=PET_META.map(p=>{
+    const has=owned.includes(p.slug);
+    const rr=PET_RARITY[p.rarity];
+    return '<div class="box-cell'+(has?'':' locked')+(show===p.slug?' showing':'')+'" onclick="setDispPet(\''+p.slug+'\')">'+
+      (has?petIconHtml(p.slug,'box-pet-img'):'<span class="box-ic">❓</span>')+
+      '<span class="box-nm">'+p.name+'</span>'+
+      '<span class="box-rr" style="background:'+rr.c+'">'+rr.t+'</span>'+
+      '</div>';
+  }).join('');
+}
+function renderBoxPool(){
+  const g=document.getElementById('boxPool'); if(!g) return;
+  const pool=(auth&&auth.box&&auth.box.pool)||[];
+  if(!pool.length) return;
+  g.innerHTML=pool.map(p=>{
+    const rr=PET_RARITY[p.rarity]||{t:'积分',c:'#e0a800'};
+    return '<div class="box-pool-item"><span>'+p.name+'</span><b>'+(p.rarity?rr.t:p.name)+' · '+(p.weight||0)+'%</b></div>';
+  }).join('');
+}
+async function boxDraw(){
+  if(!auth){showToast('先登录才能抽盲盒哦','err');return;}
+  const btn=document.getElementById('boxDrawBtn');
+  if(btn) btn.disabled=true;
+  const msg=document.getElementById('boxMsg'); if(msg) msg.textContent='';
+  const res=await api('/api/box/draw',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token})});
+  if(btn) btn.disabled=false;
+  if(!res.ok){ if(msg) msg.textContent=res.data.error||'抽取失败'; showToast(res.data.error||'抽取失败','err'); return; }
+  await loadBox(); await loadMe(); updateAuthUI(); renderShop();
+  boxCelebrate(res.data.result);
+}
+function boxCelebrate(result){
+  let ic,tt,st;
+  if(result.kind==='points'){ ic='💰'; tt=result.name; st='积分已入账，可以去商城用啦'; }
+  else {
+    const rr=PET_RARITY[result.rarity]||{t:'',c:'#888'};
+    ic=petIconHtml(result.slug,'box-big');
+    tt=result.name+(result.kind==='dupe'?'（已拥有）':' 到手啦！');
+    st=result.kind==='dupe'?('重复装扮 → 已折算 ⭐'+result.points+' 积分'):('稀有度：'+rr.t);
+  }
+  const el=document.createElement('div');
+  el.className='box-celebrate';
+  el.innerHTML='<div class="box-celebrate-box">'+ic+'<div class="box-tt">'+tt+'</div><div class="box-st">'+st+'</div>'+
+    '<div class="box-btns"><button class="game-btn green" onclick="this.closest(\'.box-celebrate\').remove();openBox()">🎁 再去抽</button>'+
+    '<button class="game-btn ghost" onclick="this.closest(\'.box-celebrate\').remove()">收下啦</button></div></div>';
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{ if(e.target===el) el.remove(); });
+}
+function renderMyPets(){
+  const grid=document.getElementById('myPetGrid'); if(!grid) return;
+  const owned=(auth&&auth.box&&auth.box.owned)||[];
+  const show=dispPet();
+  grid.innerHTML=PET_META.map(p=>{
+    const has=owned.includes(p.slug);
+    const rr=PET_RARITY[p.rarity];
+    return '<div class="box-cell'+(has?'':' locked')+(show===p.slug?' showing':'')+'" onclick="setDispPet(\''+p.slug+'\')">'+
+      (has?petIconHtml(p.slug,'box-pet-img'):'<span class="box-ic">❓</span>')+
+      '<span class="box-nm">'+p.name+'</span>'+
+      '<span class="box-rr" style="background:'+rr.c+'">'+rr.t+'</span>'+
+      '</div>';
+  }).join('');
+}
 function renderAvatarPresets(root,showLocked){
   if(!root) return;
   root.innerHTML='';
@@ -6657,16 +6829,20 @@ function onAvatarFile(input){
 function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
   const shop=document.getElementById('shopTopBtn');
+  const box=document.getElementById('boxTopBtn');
   if(auth&&auth.user){
     pill.style.display='flex';
     document.getElementById('upAvatar').innerHTML=avatarHTML(auth.user.avatar,'up-avatar',myFrame());
     document.getElementById('userName').textContent=auth.user.name;
     if(btn)btn.style.display='none';
     if(shop)shop.style.display='';
+    if(box)box.style.display='';
+    loadBox();   // 刷新盲盒状态（机会/今日/宠物）
   } else {
     pill.style.display='none';
     if(btn)btn.style.display='';
     if(shop)shop.style.display='none';
+    if(box)box.style.display='none';
   }
   updateUsagePill();
   refreshUploadLock();
@@ -6718,6 +6894,8 @@ async function openAvatarModal(){
   // 先立即弹出弹层（头像图已瘦身，几乎瞬时），再异步补全"我的中心"数据，消除点击后 1-2 秒无响应
   document.getElementById('avatarModal').style.display='flex';
   await loadMe();
+  loadBox();          // 宠物图鉴数据
+  renderMyPets();
   refreshUploadLock();
   const me=auth.me||{};
   const nm=document.getElementById('myCenterName'); if(nm) nm.textContent=auth.user.name||'';
@@ -6733,7 +6911,7 @@ async function openAvatarModal(){
   const sd=document.getElementById('myScoreDetail');
   if(sd){
     const d=me.score_detail||{};
-    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 分 ×1';
+    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 分 ×1'+(d.box?(' · 盲盒 '+(d.box||0)+' 分'):'');
   }
 }
 function copyInvite(){
@@ -6812,12 +6990,23 @@ async function renderRank(){
     list.forEach((it,i)=>{
       const mine=auth&&it.name===auth.user.name;
       const rtitle=titleFromItems(it.items);
-      let rv='⭐'+it.stars;
+      let rv=it.stars+' 词';               // 本周/今日榜：只显示新增掌握词数，不显示积分
       if(rankType==='total') rv=it.mastered+' 词';
       else if(rankType==='score') rv=it.score+' 分';
+      // 宠物徽章：我的行优先本地展示宠物；他人行取最高稀有度宠物（优先级 legend>vrare>rare>common）
+      const rankRr={legend:0,vrare:1,rare:2,common:3};
+      let petSlug='';
+      const pets=it.pets||[];
+      if(mine && dispPet() && PET_META.find(p=>p.slug===dispPet())) petSlug=dispPet();
+      else if(pets.length){
+        let best=null;
+        PET_META.forEach(p=>{ if(pets.includes(p.slug)&&(!best||rankRr[p.rarity]<rankRr[best.rarity])) best=p; });
+        if(best) petSlug=best.slug;
+      }
+      const petBadge=petSlug?'<img class="rank-pet-mini" src="'+petImg(petSlug)+'" alt="" title="宠物" onerror="this.style.display=\'none\'"/>':'';
       html+='<div class="rank-item'+(mine?' mine':'')+'">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
-        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar',frameOf(it.items)):'🐭')+'</span>'+
+        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar',frameOf(it.items)):'🐭')+petBadge+'</span>'+
         '<span class="rank-name">'+esc(it.name)+(rtitle?'<span class="rank-title">🏅'+esc(rtitle)+'</span>':'')+'</span>'+
         '<span class="rank-val">'+rv+'</span>'+
         '</div>';

@@ -39,15 +39,17 @@ const SHOP = {
   'title-7':       { type: 'title', name: '词汇之王',   price: 800 }
 };
 
-// 动态积分：掌握词×2 + 累计签到天×5 + 成功邀请×10 + 游戏星×1
-// 注意：必须与 /api/me 的 score 口径完全一致（含 game_stars），否则前端显示的可用积分虚高，购买时误报"积分不够"
+// 动态积分：掌握词×2 + 累计签到天×5 + 成功邀请×10 + 游戏星×1 + 盲盒入账
+// 注意：必须与 /api/me 的 score 口径完全一致（含 game_stars + box_points），否则前端显示的可用积分虚高，购买时误报"积分不够"
 async function dynamicScore(db, userId) {
   const mastered = (await db.prepare('SELECT COUNT(*) AS n FROM progress WHERE user_id=? AND level>=3').bind(userId).first()).n;
   const days = (await db.prepare('SELECT COUNT(DISTINCT date) AS n FROM checkin WHERE user_id=?').bind(userId).first()).n;
   const inv = (await db.prepare('SELECT invite_used, game_stars FROM users WHERE id=?').bind(userId).first());
   const invitesUsed = inv ? (inv.invite_used || 0) : 0;
   const gameStars = inv ? (inv.game_stars || 0) : 0;
-  return (mastered || 0) * 2 + (days || 0) * 5 + invitesUsed * 10 + gameStars * 1;
+  const bp = (await db.prepare('SELECT count FROM rate_limit WHERE kind=? AND key=? AND window=?').bind('box_points', String(userId), 'all').first());
+  const boxPoints = bp ? bp.count : 0;
+  return (mastered || 0) * 2 + (days || 0) * 5 + invitesUsed * 10 + gameStars * 1 + boxPoints * 1;
 }
 
 function parseItems(s) {
