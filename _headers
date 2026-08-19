@@ -26,3 +26,8 @@
 # 导致音频引用停留在被污染的空缓存版本、朗读回退到浏览器 TTS。
 /poetry-garden/*
   Cache-Control: no-store, no-cache, must-revalidate
+
+# english-wonderland 单文件应用（JS 内联在 index.html），同样必须 no-store；
+# images/audio/assets 的 immutable 规则靠最长前缀匹配仍生效。
+/english-wonderland/*
+  Cache-Control: no-store, no-cache, must-revalidate

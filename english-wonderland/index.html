@@ -114,6 +114,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .game-modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
 .game-mode-btn{border:none;border-radius:14px;padding:12px 18px;font-size:16px;font-weight:bold;background:#fff;color:#11998e;box-shadow:0 4px 12px rgba(0,0,0,.10);cursor:pointer;transition:transform .15s,background .15s,color .15s;}
 .game-mode-btn:hover{transform:translateY(-2px);background:#11998e;color:#fff;}
+.game-mode-btn.active{background:#11998e;color:#fff;transform:translateY(-2px);box-shadow:0 4px 14px rgba(17,153,142,.35);}
 .game-wrong-bar{margin-top:14px;text-align:center;animation:pop .4s;}
 /* ===== 拼写输入关 ===== */
 .game-input{border:2px solid #dfe6e9;border-radius:12px;padding:12px 14px;font-size:18px;width:200px;max-width:60vw;text-align:center;outline:none;transition:border-color .15s;}
@@ -4383,12 +4384,13 @@ let gameCurrent = null;
 let gameSessionStars = 0;
 let gameTimerInt = null;
 let gameMode = 'all';   // 'all' | 'listen' | 'see' | 'drag' | 'sentence' —— 开始前由选择界面设定
+let selMode = 'all';    // 玩法选择界面当前选中的模式（点「开始游戏」才生效）
 const GAME_MS = 14*60*1000;
 const GAME_PER_SESSION = 10;
 const GAME_NEXT_DELAY = 1800;   // 答对后停留时长(ms)：放慢让小朋友看清鼓励动画
 let gameCurActFn = null;   // 当前关函数引用，用于「再试一次」重跑同一关
 /* ===== 每日新词上限(学习量防沉迷) ===== */
-const DAILY_NEW_CAP = 8;   // 每天最多引入的新词数;复习词不限
+const DAILY_NEW_CAP = 10;  // 每天最多引入的新词数;复习词不限
 const LS_WRONG = 'kids_wrong_log';
 function dailyNewKey(){return 'kids_daily_new_'+cnToday();}
 function getDailyNew(){ try{const d=JSON.parse(localStorage.getItem(dailyNewKey())||'null'); if(d&&d.date===cnToday()) return d.count||0;}catch(e){} return 0; }
@@ -6085,6 +6087,7 @@ function soundWrong(){gWrong()}
 function renderGameIntro(){
   gSetPhase('准备开始');
   gRefreshTop();
+  selMode='all';                      // 每次进入默认选中「全部随机」
   const total=masteredCount();
   const usedNew=getDailyNew();
   const leftNew=Math.max(0, DAILY_NEW_CAP-usedNew);
@@ -6105,14 +6108,14 @@ function renderGameIntro(){
   let html='<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🚀</div>'+
     '<div class="game-h1">闯关游戏</div>'+
-    '<div class="game-h2">听音选图 · 看图选词 · 拖拽配对 · 句式关</div>'+
     '<div class="game-h2">每天新词上限 <b>'+usedNew+'/'+DAILY_NEW_CAP+'</b>(剩 '+leftNew+' 个) · 到期复习不限</div>'+
     '<div class="game-h2">已掌握 <b>'+total+'</b> / '+totalWords()+'</div>'+
-    '<div class="game-h2">基础玩法 👇</div>'+
+    '<div class="game-h2">基础玩法（点选后按开始）👇</div>'+
     '<div class="game-modes">';
-  baseModes.forEach(m=>{ html+='<button class="game-mode-btn" onclick="startGameWithMode(\''+m.k+'\')">'+m.ic+' '+m.t+'</button>'; });
+  baseModes.forEach(m=>{ html+='<button class="game-mode-btn'+(m.k===selMode?' active':'')+'" data-k="'+m.k+'" onclick="selectGameMode(\''+m.k+'\')">'+m.ic+' '+m.t+'</button>'; });
   html+='</div>'+
-    '<div class="game-h2" style="margin-top:16px">挑战玩法 👇</div>'+
+    '<div style="margin-top:18px"><button class="game-btn green" style="font-size:18px;padding:14px 36px" onclick="startGameWithMode(selMode)">▶️ 开始游戏</button></div>'+
+    '<div class="game-h2" style="margin-top:18px">挑战玩法（点击直接开始）👇</div>'+
     '<div class="game-modes">';
   chalModes.forEach(m=>{
     let dis='';
@@ -6121,6 +6124,12 @@ function renderGameIntro(){
   });
   html+='</div></div>';
   document.getElementById('gameStage').innerHTML=html;
+}
+function selectGameMode(k){
+  selMode=k;
+  document.querySelectorAll('#gameStage .game-mode-btn[data-k]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.k===k);
+  });
 }
 function startGameWithMode(mode){ gameMode=mode; gameStart(); }
 function shuffleArr(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
