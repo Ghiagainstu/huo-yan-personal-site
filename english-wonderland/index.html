@@ -5619,8 +5619,8 @@ function phonHTML(word,alt){
   const up=PHON[ukWord]||p;
   const uk=up?up[0]:'',us=p?p[1]:'';
   let h='<div class="phon-row">';
-  if(uk) h+='<button class="phon-pill uk" onclick="event.stopPropagation();playAccent(\'uk\',this)"><span class="flag">🇬🇧</span><span class="ipa">'+uk+'</span></button>';
-  if(us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(\'us\',this)"><span class="flag">🇺🇸</span><span class="ipa">'+us+'</span></button>';
+  if(uk) h+='<button class="phon-pill uk" onclick="event.stopPropagation();playAccent(\'uk\',this)"><span class="flag">🔊 🇬🇧</span><span class="ipa">'+uk+'</span></button>';
+  if(us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(\'us\',this)"><span class="flag">🔊 🇺🇸</span><span class="ipa">'+us+'</span></button>';
   if(!uk&&!us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(\'us\',this)"><span class="flag">🔊</span><span class="ipa">发音</span></button>';
   h+='</div>';
   return h;
@@ -6652,7 +6652,7 @@ const PET_META=[
   {slug:'pet-mengke',name:'奇妙萌可',rarity:'common'},
   {slug:'pet-orca',name:'虎鲸',rarity:'common'},
   {slug:'pet-mini',name:'迷你特工队',rarity:'common'},
-  {slug:'pet-piggy',name:'小猪佩奇',rarity:'rare'},
+  {slug:'pet-piggy',name:'库洛米',rarity:'rare'},
   {slug:'pet-xuan',name:'炫卡斗士',rarity:'rare'},
   {slug:'pet-lego',name:'乐高',rarity:'vrare'},
   {slug:'pet-gold',name:'金色传说',rarity:'legend'}

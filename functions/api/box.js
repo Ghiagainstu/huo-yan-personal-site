@@ -10,7 +10,7 @@ const POOL = [
   { slug: 'pet-mengke',  name: '奇妙萌可风',    rarity: 'common',  weight: 10 },
   { slug: 'pet-orca',    name: '虎鲸风',      rarity: 'common',  weight: 10 },
   { slug: 'pet-mini',    name: '迷你特工队风',  rarity: 'common',  weight: 10 },
-  { slug: 'pet-piggy',   name: '小猪佩奇风',    rarity: 'rare',    weight: 4.5 },
+  { slug: 'pet-piggy',   name: '库洛米风',     rarity: 'rare',    weight: 4.5 },
   { slug: 'pet-xuan',    name: '炫卡斗士风',    rarity: 'rare',    weight: 4.5 },
   { slug: 'pet-lego',    name: '乐高风',      rarity: 'vrare',   weight: 2 },
   { slug: 'pet-gold',    name: '金色传说风',    rarity: 'legend',  weight: 1 },

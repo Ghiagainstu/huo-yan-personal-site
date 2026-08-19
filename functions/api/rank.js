@@ -14,6 +14,13 @@ export async function onRequestGet(ctx) {
   const type = url.searchParams.get('type') || 'total';
   const me = await getUserByToken(db, token);
   let rows = [];
+  // 幂等建表：box_owned 可能尚未被 box.js 创建（用户未打开过盲盒），否则 FROM box_owned 抛错 → 整条榜单 SQL 失败
+  await db.exec(`CREATE TABLE IF NOT EXISTS box_owned(
+    user_id INTEGER NOT NULL,
+    slug TEXT NOT NULL,
+    rarity TEXT NOT NULL DEFAULT 'common',
+    PRIMARY KEY (user_id, slug)
+  );`).catch(() => {});
 
   if (type === 'week') {
     rows = (await db.prepare(
