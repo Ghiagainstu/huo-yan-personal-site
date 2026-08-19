@@ -1,6 +1,7 @@
 // 盲盒系统：学习成果换抽奖机会（不花积分），服务端随机，每日 1 次，无保底，重复折算积分
 // GET  /api/box?token=...                    → { tickets, drewToday, owned:[slugs], box_points }
 // POST /api/box/draw  {token}                → { ok, result:{kind:'pet'|'points'|'dupe', slug?, points?, rarity?, name?}, tickets, box_points }
+// POST /api/box/seed  {admin, name}          → 管理接口：给指定昵称 +N 次盲盒资格（N 默认 10，admin=852121）
 import { json, getUserByToken, cnDate } from './_lib.js';
 
 // 奖池：9 款火火装扮（v5 终稿）+ 2 积分档；weight 为概率（总和 100）
@@ -39,7 +40,7 @@ async function ensureTables(db) {
   );`);
 }
 
-// rate_limit 辅助：box_points 累计盲盒入账积分（window='all'）；box_used 累计已用机会（window='all'）
+// rate_limit 辅助：box_points 累计盲盒入账积分（window='all'）；box_used 累计已用机会（window='all'）；box_bonus 管理员赠送机会（window='all'）
 async function counterGet(db, kind, key) {
   const r = await db.prepare('SELECT count FROM rate_limit WHERE kind=? AND key=? AND window=?').bind(kind, String(key), 'all').first();
   return r ? r.count : 0;
@@ -48,6 +49,12 @@ async function counterAdd(db, kind, key, n) {
   const c = await counterGet(db, kind, key);
   await db.prepare('INSERT INTO rate_limit(kind,key,window,count) VALUES(?,?,?,?) ON CONFLICT(kind,key,window) DO UPDATE SET count=count+?')
     .bind(kind, String(key), 'all', c + n, n).run();
+}
+// 可用机会 = 学习成果折算 + 管理员赠送 - 已用
+async function ticketsAvail(db, mastered, gameStars, userId) {
+  const used = await counterGet(db, 'box_used', userId);
+  const bonus = await counterGet(db, 'box_bonus', userId);
+  return Math.max(0, ticketsOf(mastered, gameStars) + bonus - used);
 }
 
 export async function onRequestGet(ctx) {
@@ -61,10 +68,12 @@ export async function onRequestGet(ctx) {
   const usr = await db.prepare('SELECT game_stars FROM users WHERE id=?').bind(u.id).first();
   const owned = (await db.prepare('SELECT slug FROM box_owned WHERE user_id=?').bind(u.id).all()).results.map(r => r.slug);
   const used = await counterGet(db, 'box_used', u.id);
+  const bonus = await counterGet(db, 'box_bonus', u.id);
   const boxPoints = await counterGet(db, 'box_points', u.id);
+  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus - used;
   const drewToday = (await db.prepare('SELECT 1 AS x FROM box_draws WHERE user_id=? AND date=?').bind(u.id, cnDate({})).first()) ? true : false;
   return json({
-    tickets: Math.max(0, ticketsOf(mastered, usr ? usr.game_stars : 0) - used),
+    tickets: Math.max(0, tickets),
     drewToday,
     owned,
     box_points: boxPoints,
@@ -75,6 +84,21 @@ export async function onRequestGet(ctx) {
 export async function onRequestPost(ctx) {
   const db = ctx.env.DB;
   const body = await ctx.request.json().catch(() => ({}));
+
+  // 管理接口：给指定昵称赠送盲盒资格（admin=852121 内测码，仅后台/测试用）
+  if (body.action === 'seed') {
+    if (body.admin !== '852121') return json({ error: '无权限' }, 403);
+    const name = String(body.name || '').trim();
+    const n = Math.max(1, Math.min(100, Number(body.n) || 10));
+    if (!name) return json({ error: '缺少昵称' }, 400);
+    const tgt = await db.prepare('SELECT id, name FROM users WHERE name=?').bind(name).first();
+    if (!tgt) return json({ error: '用户不存在' }, 404);
+    await ensureTables(db);
+    await counterAdd(db, 'box_bonus', tgt.id, n);
+    const bonus = await counterGet(db, 'box_bonus', tgt.id);
+    return json({ ok: true, user: tgt.name, added: n, total_bonus: bonus });
+  }
+
   const u = await getUserByToken(db, body.token);
   if (!u) return json({ error: '未登录' }, 401);
   await ensureTables(db);
@@ -86,7 +110,8 @@ export async function onRequestPost(ctx) {
   const mastered = (await db.prepare('SELECT COUNT(*) AS n FROM progress WHERE user_id=? AND level>=3').bind(u.id).first()).n;
   const usr = await db.prepare('SELECT game_stars FROM users WHERE id=?').bind(u.id).first();
   const used = await counterGet(db, 'box_used', u.id);
-  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) - used;
+  const bonus = await counterGet(db, 'box_bonus', u.id);
+  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus - used;
   if (tickets <= 0) return json({ error: '还没有抽奖机会，先学 10 个新词或闯关 20 题吧' }, 400);
 
   // 服务端加权随机

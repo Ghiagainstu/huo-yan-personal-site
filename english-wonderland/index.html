@@ -2999,7 +2999,11 @@ const MULTI_POS={
   star:'n/v',      // 星星(n) / 主演(v)
   stay:'v/n',      // 停留(v) / 逗留(n)
   take:'v',        // 拿(v)
-  visit:'v/n'      // 参观(v) / 参观(n)
+  visit:'v/n',     // 参观(v) / 参观(n)
+  thank:'v',       // 感谢(v)——牛津教材中 thank 作动词用
+  welcome:'v/int', // 欢迎(v) / 欢迎(int)
+  hey:'int',       // 嗨(int)
+  hooray:'int'     // 好啊(int)
 };
 function posBadge(word){
   const m=meta(word);
@@ -5633,7 +5637,7 @@ function renderCard(){
         '<div class="card-face card-front">'+
           '<div class="card-art">'+svg+tierBadge+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+sceneEmoji(word)+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
+            '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word,currentAlt)+
             '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
           '</div>'+
@@ -5642,7 +5646,7 @@ function renderCard(){
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
             '<div class="word-zh">'+zh+(rg!=='both'?'<span class="region-pill sm '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
-            '<div class="word-en" style="font-size:26px">'+word+(currentAlt?' / '+currentAlt:'')+'</div>'+sceneEmoji(word)+posBadge(word)+
+            '<div class="word-en" style="font-size:26px">'+word+(currentAlt?' / '+currentAlt:'')+'</div>'+posBadge(word)+
             phonHTML(word,currentAlt)+
             (example?'<div class="word-example">💬 '+example.split('|')[0]+'</div>'+(example.split('|')[1]?'<div class="word-example-zh">'+example.split('|')[1]+'</div>':'')+'':'')+
             '<button class="speak-btn" id="speakExBtn" onclick="event.stopPropagation();speakExample()">🔊 听例句</button>'+
@@ -6583,14 +6587,14 @@ async function initUsage(){
 
 const FREE_AVATARS=['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷'];
 const LOCKED_AVATARS=[
-  {id:'avatar-koala',emoji:'🐨',name:'考拉',price:30},
-  {id:'avatar-octopus',emoji:'🐙',name:'章鱼',price:30},
-  {id:'avatar-whale',emoji:'🐳',name:'鲸鱼',price:30},
-  {id:'avatar-owl',emoji:'🦉',name:'猫头鹰',price:30},
-  {id:'avatar-butterfly',emoji:'🦋',name:'蝴蝶',price:30},
-  {id:'avatar-bee',emoji:'🐝',name:'蜜蜂',price:30},
-  {id:'avatar-bear',emoji:'🐻',name:'小熊',price:30},
-  {id:'avatar-panda',emoji:'🐼',name:'熊猫',price:30},
+  {id:'avatar-koala',img:'images/avatars/avatar-koala.webp',name:'考拉',price:30},
+  {id:'avatar-octopus',img:'images/avatars/avatar-octopus.webp',name:'章鱼',price:30},
+  {id:'avatar-whale',img:'images/avatars/avatar-whale.webp',name:'鲸鱼',price:30},
+  {id:'avatar-owl',img:'images/avatars/avatar-owl.webp',name:'猫头鹰',price:30},
+  {id:'avatar-butterfly',img:'images/avatars/avatar-butterfly.webp',name:'蝴蝶',price:30},
+  {id:'avatar-bee',img:'images/avatars/avatar-bee.webp',name:'蜜蜂',price:30},
+  {id:'avatar-bear',img:'images/avatars/avatar-bear.webp',name:'小熊',price:30},
+  {id:'avatar-panda',img:'images/avatars/avatar-panda.webp',name:'熊猫',price:30},
   {id:'avatar-pixel-dragon',img:'images/avatars/pixel-dragon.webp',name:'像素小绿龙',price:100},
   {id:'avatar-capybara',img:'images/avatars/capybara.webp',name:'卡皮巴拉',price:100},
   {id:'avatar-dino',img:'images/avatars/dino.webp',name:'恐龙宝宝',price:100},
