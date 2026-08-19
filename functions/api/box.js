@@ -26,18 +26,19 @@ function ticketsOf(mastered, gameStars) {
 }
 
 async function ensureTables(db) {
-  await db.exec(`CREATE TABLE IF NOT EXISTS box_owned(
+  // 用 prepare().run() 而非 db.exec()（Pages Functions 的 D1 对 exec 支持不稳，曾致 1101）
+  await db.prepare(`CREATE TABLE IF NOT EXISTS box_owned(
     user_id INTEGER NOT NULL,
     slug TEXT NOT NULL,
     rarity TEXT NOT NULL DEFAULT 'common',
     PRIMARY KEY (user_id, slug)
-  );`);
-  await db.exec(`CREATE TABLE IF NOT EXISTS box_draws(
+  )`).run().catch(() => {});
+  await db.prepare(`CREATE TABLE IF NOT EXISTS box_draws(
     user_id INTEGER NOT NULL,
     date TEXT NOT NULL,
     result TEXT NOT NULL,
     PRIMARY KEY (user_id, date)
-  );`);
+  )`).run().catch(() => {});
 }
 
 // rate_limit 辅助：box_points 累计盲盒入账积分（window='all'）；box_used 累计已用机会（window='all'）；box_bonus 管理员赠送机会（window='all'）

@@ -8,14 +8,15 @@ function scoreOf(mastered, days, invites, gameStars, boxPoints) {
 }
 
 // 幂等建表：box_owned 可能尚未被 box.js 创建（用户未打开过盲盒），先确保存在，避免子查询报错
+// 用 prepare().run() 而非 db.exec()（Pages Functions 的 D1 对 exec 支持不稳）
 async function ensureBoxTable(db) {
   try {
-    await db.exec(`CREATE TABLE IF NOT EXISTS box_owned(
+    await db.prepare(`CREATE TABLE IF NOT EXISTS box_owned(
       user_id INTEGER NOT NULL,
       slug TEXT NOT NULL,
       rarity TEXT NOT NULL DEFAULT 'common',
       PRIMARY KEY (user_id, slug)
-    );`);
+    )`).run();
   } catch (e) {
     // 建表失败不致命：pets 单独查询时也会 try/catch
   }
