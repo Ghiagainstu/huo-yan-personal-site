@@ -523,7 +523,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .box-pet-fb{font-size:34px;display:block;line-height:1.2;}
 .box-big{width:96px;height:96px;object-fit:contain;display:inline-block;margin:0 auto;}
 .box-celebrate .box-big{width:110px;height:110px;}
-.rank-pet-mini{width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-left:4px;}
+.rank-pet-mini{width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-left:6px;}
 .pet-corner{position:relative;display:inline-block;}
 .pet-corner img.pet-corner-img{width:30px;height:30px;object-fit:contain;position:absolute;right:-8px;bottom:-6px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.18);}
 .box-pet-img-mini{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-left:4px;}
@@ -5795,6 +5795,33 @@ function orderWords(catId, words){
     return compareWords(catId, ea, catId, eb);
   });
 }
+/* 分类内在教学顺序：有自然顺序的分类按此顺序排（数字按数值、身体从上到下、家庭从核心到次要、时间按月→周→时段→季节、颜色按彩虹、形状由简到繁）。
+   不在表中的词自动落到该分类尾部，按 简单→难→核心→拓展→A-Z。 */
+const CAT_WORD_ORDER = {
+  numbers: ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty','twenty-one','twenty-five','thirty','thirty-three','forty','forty-two','fifty','sixty','seventy','eighty','ninety','hundred','thousand','first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth','fifteenth','twentieth','twenty-first','thirtieth','half','quarter','minus','number','millimeter'],
+  body: ['head','face','hair','eyebrow','eye','ear','nose','mouth','tooth','teeth','tongue','chin','cheek','neck','shoulder','arm','elbow','wrist','hand','finger','back','tummy','leg','knee','ankle','foot','heel','toe','body','bone','eye-exercises'],
+  family: ['father','mother','dad','mum','parents','brother','sister','son','daughter','baby','child','children','grandparents','grandpa','grandma','uncle','aunt','cousin','husband','wife','family','boy','girl','man','woman','people','lady','friend','classmate','member','mr'],
+  time: ['january','february','march','april','may','june','july','august','september','october','november','december','monday','tuesday','wednesday','thursday','friday','saturday','sunday','morning','noon','afternoon','evening','night','spring','summer','autumn','winter','today','tomorrow','yesterday','day','week','month','year','hour','minute','season','time','weekend'],
+  colors: ['red','orange','yellow','green','blue','purple','pink','black','white','brown','grey','gold','silver','navy','mint','colour'],
+  shapes: ['circle','square','triangle','rectangle','diamond','heart','star','sphere','cube','cuboid','cylinder','cone','pyramid','trapezoid','parallelogram']
+};
+function orderWithinCat(catId, items){
+  const ord = CAT_WORD_ORDER[catId];
+  if(!ord) return items.slice().sort((a,b)=>compareWords(catId, a.w[0], catId, b.w[0]));
+  const pos = {}; ord.forEach((w,i)=>{ pos[w.toLowerCase()] = i; });
+  return items.slice().sort((a,b)=>{
+    const ka=a.w[0].toLowerCase(), kb=b.w[0].toLowerCase();
+    const pa=(ka in pos), pb=(kb in pos);
+    if(pa && pb) return pos[ka]-pos[kb];
+    if(pa) return -1;
+    if(pb) return 1;
+    return compareWords(catId, a.w[0], catId, b.w[0]);
+  });
+}
+function minAgeRankOfItems(items){
+  let mn=5; for(const it of items){ const a=ageRankOf(it.w[0]); if(a<mn) mn=a; }
+  return mn;
+}
 /* 反义/近义词对 → 用于"正反义、近义相邻"归组(同分类内) */
 const PAIR_GROUPS = [];
 { const seen = new Set();
@@ -5811,8 +5838,10 @@ function buildList(){
     if(!curSearch && curCat!=='all' && c.id!==curCat) return false;
     return true;
   });
-  const items=[];
+  /* 按分类分组（保留各分类过滤逻辑） */
+  const groups=[];
   cats.forEach(c=>{
+    const items=[];
     c.words.forEach(w=>{
       const lv=getLevel(c.id,w[0]);
       if(curFilter==='todo' && lv>=3) return;
@@ -5822,10 +5851,19 @@ function buildList(){
       if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
       items.push({cat:c,w:w});
     });
+    if(items.length) groups.push({cat:c, items});
   });
-  /* 全局排序：① 简单→难(age) ② 核心→拓展 ③ A-Z（跨分类统一梯度，不再按分类分块） */
-  items.sort((a,b)=>compareWords(a.cat.id, a.w[0], b.cat.id, b.w[0]));
-  cardList=items;
+  /* 分类块排序：① 核心分类在前、拓展在后 ② 分类内最简词 age 小者在前（跨分类简单→难） ③ 维持原分类序 */
+  groups.sort((g1,g2)=>{
+    const r=(tierOfCat(g1.cat.id)==='core'?0:1)-(tierOfCat(g2.cat.id)==='core'?0:1);
+    if(r!==0) return r;
+    const a1=minAgeRankOfItems(g1.items), a2=minAgeRankOfItems(g2.items);
+    if(a1!==a2) return a1-a2;
+    return SORTED_CATS().indexOf(g1.cat)-SORTED_CATS().indexOf(g2.cat);
+  });
+  /* 分类内：有内在顺序（数字/身体/家庭/时间/颜色/形状）按教学序；否则 简单→难→核心→拓展→A-Z */
+  cardList=[];
+  groups.forEach(g=>{ cardList.push(...orderWithinCat(g.cat.id, g.items)); });
   /* 相邻归组（全局）：变体紧跟基词 + 正反义/近义词同现 */
   if(!curShuffle && !curSearch){
     const enKey = it => (Array.isArray(it.w)?it.w[0]:it.w);
@@ -7109,6 +7147,7 @@ function dispPet(){ return localStorage.getItem(LS_DISP_PET)||''; }
 function setDispPet(slug){
   localStorage.setItem(LS_DISP_PET,slug);
   renderBoxGrid(); renderMyPets(); if(rankType) renderRank();
+  renderPetCorner();
   showToast('✅ 已设为展示宠物','ok');
 }
 function petImg(slug){ return 'images/'+slug+'.webp'; }
@@ -7146,6 +7185,7 @@ async function loadBox(){
     btn.classList.toggle('box-btn-dis',dis);
   }
   renderBoxGrid(); renderBoxPool(); renderMyPets(); renderBoxDraws();
+  renderPetCorner();   // 头像角标（宠物数据就绪后）
 }
 /* 中国时间格式：8月20日 09:35；旧记录无时间戳则显示日期 */
 function fmtCnTime(t,date){
@@ -7279,13 +7319,23 @@ function refreshAvatarPreview(){
     else el.innerHTML='<img src="'+avatarSel+'" alt="" decoding="async"/>';
   });
 }
+function renderPetCorner(){
+  const el=document.getElementById('upAvatar'); if(!el) return;
+  if(!auth||!auth.user){ return; }
+  const av=avatarHTML(auth.user.avatar,'up-avatar',myFrame());
+  const slug=dispPet();
+  const has=slug&&auth.box&&auth.box.owned&&auth.box.owned.indexOf(slug)>=0;
+  el.innerHTML=has
+    ?'<span class="pet-corner">'+av+'<img class="pet-corner-img" src="'+petImg(slug)+'" alt="宠物" title="我的宠物" onerror="this.style.display=\'none\'"/></span>'
+    :av;
+}
 function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
   const shop=document.getElementById('shopTopBtn');
   const box=document.getElementById('boxTopBtn');
   if(auth&&auth.user){
     pill.style.display='flex';
-    document.getElementById('upAvatar').innerHTML=avatarHTML(auth.user.avatar,'up-avatar',myFrame());
+    renderPetCorner();
     document.getElementById('userName').textContent=auth.user.name;
     if(btn)btn.style.display='none';
     if(shop)shop.style.display='';
