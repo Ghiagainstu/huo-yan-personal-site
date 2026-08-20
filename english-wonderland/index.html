@@ -405,6 +405,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .shop-top-btn:active{transform:scale(.94);}
 .user-pill .up-arr{font-size:11px;color:rgba(255,255,255,.85);cursor:pointer;}
 .user-pill .up-name{cursor:pointer;}
+.user-pill .up-pet{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.92);align-items:center;justify-content:center;overflow:hidden;cursor:pointer;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.user-pill .up-pet img{width:100%;height:100%;object-fit:contain;}
 /* 我的中心弹窗 */
 .my-box{max-width:400px;}
 .my-sec{padding:12px 0;border-bottom:1px dashed #e0e0e0;}
@@ -526,8 +528,6 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .box-big{width:96px;height:96px;object-fit:contain;display:inline-block;margin:0 auto;}
 .box-celebrate .box-big{width:110px;height:110px;}
 .rank-pet-mini{width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-left:6px;}
-.pet-corner{position:relative;display:inline-block;}
-.pet-corner img.pet-corner-img{width:30px;height:30px;object-fit:contain;position:absolute;right:-8px;bottom:-6px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.18);}
 .box-pet-img-mini{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-left:4px;}
 .box-celebrate .box-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 .shop-item-name{font-size:14px;font-weight:bold;color:#333;}
@@ -627,7 +627,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div class="top-right">
       <button class="shop-top-btn" id="shopTopBtn" onclick="openShop()" style="display:none">🛍️ 商城</button>
       <button class="shop-top-btn" id="boxTopBtn" onclick="openBox()" style="display:none">🎁 盲盒</button>
-      <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
+      <div class="user-pill" id="userPill"><span class="up-avatar" id="upAvatar" onclick="openAvatarModal()"></span><span class="up-name" id="userName" onclick="openAvatarModal()"></span><span class="up-pet" id="upPet" onclick="openBox()" style="display:none" title="我的宠物（点击去盲盒）"></span><span class="up-arr" onclick="openAvatarModal()">▾</span></div>
       <button class="about-btn" id="loginBtn" onclick="openLogin()">👤 登录</button>
       <button class="about-btn about-ico" onclick="showAbout()" title="关于" aria-label="关于">ℹ️</button>
     </div>
@@ -7328,15 +7328,21 @@ function refreshAvatarPreview(){
     else el.innerHTML='<img src="'+avatarSel+'" alt="" decoding="async"/>';
   });
 }
+/* 顶部宠物：独立显示在名字旁（与头像分开，互不干扰） */
 function renderPetCorner(){
-  const el=document.getElementById('upAvatar'); if(!el) return;
-  if(!auth||!auth.user){ return; }
-  const av=avatarHTML(auth.user.avatar,'up-avatar',myFrame());
+  const av=document.getElementById('upAvatar'), pet=document.getElementById('upPet');
+  if(!av||!auth||!auth.user){ return; }
+  av.innerHTML=avatarHTML(auth.user.avatar,'up-avatar',myFrame());   // 头像保持干净
+  if(!pet) return;
   const slug=dispPet();
   const has=slug&&auth.box&&auth.box.owned&&auth.box.owned.indexOf(slug)>=0;
-  el.innerHTML=has
-    ?'<span class="pet-corner">'+av+'<img class="pet-corner-img" src="'+petImg(slug)+'" alt="宠物" title="我的宠物" onerror="this.style.display=\'none\'"/></span>'
-    :av;
+  if(has){
+    pet.style.display='inline-flex';
+    pet.innerHTML='<img src="'+petImg(slug)+'" alt="" onerror="this.style.display=\'none\'"/>';
+  } else {
+    pet.style.display='none';
+    pet.innerHTML='';
+  }
 }
 function updateAuthUI(){
   const pill=document.getElementById('userPill'), btn=document.getElementById('loginBtn');
