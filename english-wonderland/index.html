@@ -5779,15 +5779,18 @@ const ORDER_BY_CAT = {
   transport: [ORDER_GROUPS.transport],
   festivals: [ORDER_SEQ.festivals, ORDER_GROUPS.festivalsItems, ORDER_GROUPS.festivalsActions]
 };
-/* 难度轴：WORD_META.age 学段 → 简单→难（无 age 标签的放最后） */
+/* 难度轴①：核心/拓展（freq/tier）——拓展永远排在核心后面（用户确认，2026-08-20） */
+/* 难度轴②：WORD_META.diff 难度档 1(简单)→2→3(难)，全量覆盖 1167/1167 词，优于 age（缺 65 词）；缺失兜底 3 */
+function diffOf(word){ const d = meta(word).diff; return (d===1||d===2||d===3) ? d : 3; }
+/* 学段参考轴（不参与排序，保留备用）：age 5-6 → 6-7 → 7-8 → 12-18 → 15-18 → 无标签 */
 const AGE_RANK = { '5-6': 0, '6-7': 1, '7-8': 2, '12-18': 3, '15-18': 4 };
 function ageRankOf(word){ const a = meta(word).age; return (a in AGE_RANK) ? AGE_RANK[a] : 5; }
-/* 词条比较器：① 简单→难(age) ② 核心→拓展(tier) ③ 英文 A-Z 兜底 */
+/* 词条比较器：① 核心→拓展 ② 简单→难(diff) ③ 英文 A-Z 兜底 */
 function compareWords(catIdA, ea, catIdB, eb){
-  const ar = ageRankOf(ea) - ageRankOf(eb);
-  if (ar !== 0) return ar;
   const tr = (tierOfWord(catIdA, ea)==='core'?0:1) - (tierOfWord(catIdB, eb)==='core'?0:1);
   if (tr !== 0) return tr;
+  const dr = diffOf(ea) - diffOf(eb);
+  if (dr !== 0) return dr;
   const la = ea.toLowerCase(), lb = eb.toLowerCase();
   return la < lb ? -1 : la > lb ? 1 : 0;
 }
@@ -5821,8 +5824,8 @@ function orderWithinCat(catId, items){
     return compareWords(catId, a.w[0], catId, b.w[0]);
   });
 }
-function minAgeRankOfItems(items){
-  let mn=5; for(const it of items){ const a=ageRankOf(it.w[0]); if(a<mn) mn=a; }
+function minDiffRankOfItems(items){
+  let mn=3; for(const it of items){ const d=diffOf(it.w[0]); if(d<mn) mn=d; }
   return mn;
 }
 /* 反义/近义词对 → 用于"正反义、近义相邻"归组(同分类内) */
@@ -5860,7 +5863,7 @@ function buildList(){
   groups.sort((g1,g2)=>{
     const r=(tierOfCat(g1.cat.id)==='core'?0:1)-(tierOfCat(g2.cat.id)==='core'?0:1);
     if(r!==0) return r;
-    const a1=minAgeRankOfItems(g1.items), a2=minAgeRankOfItems(g2.items);
+    const a1=minDiffRankOfItems(g1.items), a2=minDiffRankOfItems(g2.items);
     if(a1!==a2) return a1-a2;
     return SORTED_CATS().indexOf(g1.cat)-SORTED_CATS().indexOf(g2.cat);
   });
