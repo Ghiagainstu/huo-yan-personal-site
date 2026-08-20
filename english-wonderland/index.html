@@ -346,6 +346,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .invite-box{margin-top:12px;padding:10px 12px;background:#f0faf7;border:1px solid #b8dcd4;border-radius:12px;text-align:left;}
 .invite-row{font-size:14px;color:#333;margin:3px 0;}
 .invite-row b{color:#0a6e5f;font-size:16px;}
+.invite-reward{margin-top:8px;background:linear-gradient(135deg,#fff8e1,#ffecb3);border:1px solid #ffd54f;border-radius:10px;padding:8px 10px;font-size:12px;color:#7a5c00;line-height:1.6;}
+.invite-reward b{color:#b8860b;}
 .invite-tip{font-size:12px;color:#7ba89d;margin-top:6px;line-height:1.5;}
 .invite-copy{margin-left:6px;background:#0c8f7d;color:#fff;border:none;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer;}
 /* ★ 装扮商城 */
@@ -683,6 +685,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <div class="my-sec-l">邀请小伙伴</div>
       <div class="invite-row">📨 我的邀请码：<b id="myInviteCode">—</b><button class="invite-copy" onclick="copyInvite()">复制</button></div>
       <div class="invite-row">邀请名额：<b id="myInviteQuota">—</b></div>
+      <div class="invite-reward">🎁 邀请奖励：好友用你的邀请码注册成功，<b>你们俩各得 10 积分 + 1 次盲盒机会</b>！</div>
       <div class="invite-tip">初始 3 个名额，每登录一天 +1，最多 20 个。把邀请码给朋友，对方注册成功会消耗 1 个名额。</div>
     </div>
     <div class="my-out" onclick="logout()">退出登录</div>
@@ -6782,7 +6785,7 @@ function renderDashboard(){
     const sd=auth.me.score_detail||{};
     html+='<div class="dash-card dash-score-card">'+
       '<div class="dash-score-total">⭐ '+auth.me.score+' 分</div>'+
-      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分 · 游戏 ×1：'+(sd.game||0)+' 分'+(sd.box?(' · 盲盒：'+(sd.box||0)+' 分'):'')+'</div>'+
+      '<div class="dash-score-detail">已掌握词 ×2：'+sd.words+' 分 · 签到天 ×5：'+sd.days+' 分 · 邀请 ×10：'+sd.invites+' 分'+(sd.invite_reward?(' · 被邀请 ×10：'+(sd.invite_reward||0)+' 分'):'')+' · 游戏 ×1：'+(sd.game||0)+' 分'+(sd.box?(' · 盲盒：'+(sd.box||0)+' 分'):'')+'</div>'+
       '<div class="dash-score-note">多学词、每天打卡、邀请朋友、闯关游戏，都能攒积分</div>'+
     '</div>';
   }
@@ -7145,6 +7148,12 @@ const PET_RARITY={common:{t:'普通',c:'#4CAF50'},rare:{t:'稀有',c:'#2196F3'},
 const LS_DISP_PET='kids_disp_pet';
 function dispPet(){ return localStorage.getItem(LS_DISP_PET)||''; }
 function setDispPet(slug){
+  const owned=(auth&&auth.box&&auth.box.owned)||[];
+  if(!slug || owned.indexOf(slug)<0){
+    const p=PET_META.find(x=>x.slug===slug);
+    showToast(p?('还没拥有「'+p.name+'」，去抽盲盒试试运气吧'):'宠物数据未加载','err');
+    return;
+  }
   localStorage.setItem(LS_DISP_PET,slug);
   renderBoxGrid(); renderMyPets(); if(rankType) renderRank();
   renderPetCorner();
@@ -7412,7 +7421,7 @@ async function openAvatarModal(){
   const sd=document.getElementById('myScoreDetail');
   if(sd){
     const d=me.score_detail||{};
-    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10 · 游戏 '+(d.game||0)+' 分 ×1'+(d.box?(' · 盲盒 '+(d.box||0)+' 分'):'');
+    sd.textContent='已掌握 '+(me.mastered||0)+' 词 ×2 · 签到 '+(d.days||0)+' 天 ×5 · 邀请 '+(d.invites||0)+' 人 ×10'+(d.invite_reward?(' · 被邀请奖励 '+(d.invite_reward||0)+' 分'):'')+' · 游戏 '+(d.game||0)+' 分 ×1'+(d.box?(' · 盲盒 '+(d.box||0)+' 分'):'');
   }
 }
 function copyInvite(){
@@ -7556,7 +7565,7 @@ async function renderRank(){
       const rankRr={legend:0,vrare:1,rare:2,common:3};
       let petSlug='';
       const pets=it.pets||[];
-      if(mine && dispPet() && PET_META.find(p=>p.slug===dispPet())) petSlug=dispPet();
+      if(mine && dispPet() && PET_META.find(p=>p.slug===dispPet()) && pets.indexOf(dispPet())>=0) petSlug=dispPet();
       else if(pets.length){
         let best=null;
         PET_META.forEach(p=>{ if(pets.includes(p.slug)&&(!best||rankRr[p.rarity]<rankRr[best.rarity])) best=p; });

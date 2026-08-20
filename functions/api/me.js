@@ -24,16 +24,20 @@ export async function onRequestGet(ctx) {
   // 盲盒入账积分（rate_limit box_points 累计）
   const boxP = (await db.prepare('SELECT count FROM rate_limit WHERE kind=? AND key=? AND window=?').bind('box_points', String(u.id), 'all').first());
   const boxPoints = boxP ? boxP.count : 0;
+  // 被邀请奖励（rate_limit invite_reward 累计，+1 次 = +10 积分）
+  const invR = (await db.prepare('SELECT count FROM rate_limit WHERE kind=? AND key=? AND window=?').bind('invite_reward', String(u.id), 'all').first());
+  const inviteRewards = invR ? invR.count : 0;
 
-  // 积分：掌握词×2 + 累计签到天×5 + 成功邀请×10 + 游戏星×1 + 盲盒入账；可用 = 动态积分 - 已消费
+  // 积分：掌握词×2 + 累计签到天×5 + 成功邀请×10 + 被邀请奖励×10 + 游戏星×1 + 盲盒入账；可用 = 动态积分 - 已消费
   const invitesUsed = inv ? (inv.invite_used || 0) : 0;
   const gameStars = inv ? (inv.game_stars || 0) : 0;
   const scoreWords = mastered * 2;
   const scoreDays = (days || 0) * 5;
   const scoreInvites = invitesUsed * 10;
+  const scoreInviteRew = inviteRewards * 10;
   const scoreGame = gameStars * 1;
   const scoreBox = boxPoints * 1;
-  const score = scoreWords + scoreDays + scoreInvites + scoreGame + scoreBox;
+  const score = scoreWords + scoreDays + scoreInvites + scoreInviteRew + scoreGame + scoreBox;
   const spent = inv ? (inv.points_spent || 0) : 0;
   const available = Math.max(0, score - spent);
   let items = [];
@@ -43,14 +47,15 @@ export async function onRequestGet(ctx) {
   const better = await db.prepare(
     'SELECT COUNT(*) AS n FROM (SELECT user_id FROM progress WHERE level>=3 GROUP BY user_id HAVING COUNT(*) > ?)'
   ).bind(mastered).first();
-  // 我的积分榜名次（含盲盒入账）
+  // 我的积分榜名次（含盲盒入账 + 被邀请奖励）
   const betterScore = await db.prepare(
     `SELECT COUNT(*) AS n FROM (SELECT u.id,
        (SELECT COUNT(*) FROM progress p WHERE p.user_id=u.id AND p.level>=3)*2
        + (SELECT COUNT(DISTINCT date) FROM checkin c WHERE c.user_id=u.id)*5
        + u.invite_used*10
        + u.game_stars
-       + COALESCE((SELECT count FROM rate_limit r WHERE r.kind='box_points' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS sc FROM users u) WHERE sc > ?`
+       + COALESCE((SELECT count FROM rate_limit r WHERE r.kind='box_points' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0)
+       + COALESCE((SELECT count FROM rate_limit r WHERE r.kind='invite_reward' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0)*10 AS sc FROM users u) WHERE sc > ?`
   ).bind(score).first();
 
   return json({
@@ -62,7 +67,7 @@ export async function onRequestGet(ctx) {
     myRankTotal: better.n + 1,
     myRankScore: betterScore.n + 1,
     score,
-    score_detail: { words: scoreWords, days: scoreDays, invites: scoreInvites, game: scoreGame, box: scoreBox },
+    score_detail: { words: scoreWords, days: scoreDays, invites: scoreInvites, invite_reward: scoreInviteRew, game: scoreGame, box: scoreBox },
     points_available: available,
     items,
     game_stars: gameStars,

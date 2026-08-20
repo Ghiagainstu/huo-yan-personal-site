@@ -2,9 +2,9 @@
 // GET /api/rank?type=total|score|week|day&token=...
 import { json, getUserByToken } from './_lib.js';
 
-// 积分 = 已掌握词数×2 + 累计签到天数×5 + 成功邀请×10 + 累计游戏星×1 + 盲盒入账×1
-function scoreOf(mastered, days, invites, gameStars, boxPoints) {
-  return (mastered || 0) * 2 + (days || 0) * 5 + (invites || 0) * 10 + (gameStars || 0) * 1 + (boxPoints || 0) * 1;
+// 积分 = 已掌握词数×2 + 累计签到天数×5 + 成功邀请×10 + 被邀请奖励×10 + 累计游戏星×1 + 盲盒入账×1
+function scoreOf(mastered, days, invites, gameStars, boxPoints, inviteRew) {
+  return (mastered || 0) * 2 + (days || 0) * 5 + (invites || 0) * 10 + (inviteRew || 0) * 10 + (gameStars || 0) * 1 + (boxPoints || 0) * 1;
 }
 
 // 幂等建表：box_owned 可能尚未被 box.js 创建（用户未打开过盲盒），先确保存在，避免子查询报错
@@ -60,13 +60,14 @@ export async function onRequestGet(ctx) {
       `SELECT u.id, u.name, u.avatar, u.items, u.invite_used AS invites, u.game_stars AS game_stars,
               (SELECT COUNT(*) FROM progress p WHERE p.user_id = u.id AND p.level >= 3) AS mastered,
               (SELECT COUNT(DISTINCT date) FROM checkin c WHERE c.user_id = u.id) AS days,
-              COALESCE((SELECT count FROM rate_limit r WHERE r.kind='box_points' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS box_points
+              COALESCE((SELECT count FROM rate_limit r WHERE r.kind='box_points' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS box_points,
+              COALESCE((SELECT count FROM rate_limit r WHERE r.kind='invite_reward' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS invite_reward
        FROM users u`
     ).all();
     rows = rows.results.map(r => ({
       id: r.id, name: r.name, avatar: r.avatar, items: r.items || '[]',
       mastered: r.mastered || 0, days: r.days || 0, invites: r.invites || 0, game_stars: r.game_stars || 0,
-      score: scoreOf(r.mastered, r.days, r.invites, r.game_stars, r.box_points)
+      score: scoreOf(r.mastered, r.days, r.invites, r.game_stars, r.box_points, r.invite_reward)
     }));
     if (type === 'score') rows.sort((a, b) => b.score - a.score || a.id - b.id);
     else rows.sort((a, b) => b.mastered - a.mastered || a.id - b.id);

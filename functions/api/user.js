@@ -10,7 +10,8 @@ async function statsOf(db, u) {
   const invites = inv ? (inv.invite_used || 0) : 0;
   const gameStars = inv ? (inv.game_stars || 0) : 0;
   const boxPoints = (await db.prepare("SELECT count FROM rate_limit WHERE kind='box_points' AND key=? AND window='all'").bind(String(u.id)).first())?.count || 0;
-  const score = mastered * 2 + days * 5 + invites * 10 + gameStars * 1 + boxPoints;
+  const inviteRew = (await db.prepare("SELECT count FROM rate_limit WHERE kind='invite_reward' AND key=? AND window='all'").bind(String(u.id)).first())?.count || 0;
+  const score = mastered * 2 + days * 5 + invites * 10 + inviteRew * 10 + gameStars * 1 + boxPoints;
   let items = [];
   try { const a = JSON.parse(inv && inv.items || '[]'); if (Array.isArray(a)) items = a; } catch (e) {}
   // 宠物（含稀有度）
@@ -49,13 +50,14 @@ export async function onRequestGet(ctx) {
       (SELECT COUNT(*) FROM progress p WHERE p.user_id=u.id AND p.level>=3) AS mastered,
       (SELECT COUNT(DISTINCT date) FROM checkin c WHERE c.user_id=u.id) AS days,
       u.invite_used, u.game_stars,
-      COALESCE((SELECT count FROM rate_limit r WHERE r.kind='box_points' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS box_points
+      COALESCE((SELECT count FROM rate_limit r WHERE r.kind='box_points' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS box_points,
+      COALESCE((SELECT count FROM rate_limit r WHERE r.kind='invite_reward' AND r.key=CAST(u.id AS TEXT) AND r.window='all'),0) AS invite_reward
      FROM users u`
   ).all()).results;
   const scored = all.map(r => ({
     id: r.id,
     mastered: r.mastered || 0,
-    score: (r.mastered || 0) * 2 + (r.days || 0) * 5 + (r.invite_used || 0) * 10 + (r.game_stars || 0) + (r.box_points || 0)
+    score: (r.mastered || 0) * 2 + (r.days || 0) * 5 + (r.invite_used || 0) * 10 + (r.invite_reward || 0) * 10 + (r.game_stars || 0) + (r.box_points || 0)
   }));
   const total = all.length;
   const rankTotal = scored.filter(x => x.mastered > st.mastered).length + 1;

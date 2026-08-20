@@ -99,9 +99,17 @@ export async function onRequestPost(ctx) {
     const myCode = await genInviteCode(db);
     await db.prepare('INSERT INTO users(name, pin_hash, avatar, invite_code) VALUES(?, ?, ?, ?)').bind(nm, hash, avatarVal, myCode).run();
     await bump(db, 'reg_ip', ip, winHour());   // 成功注册后计数
-    // 消耗邀请人 1 个名额
+    // 消耗邀请人 1 个名额 + 邀请双方奖励（各 +10 积分 + 各 +1 次盲盒机会）
     if (inviter) {
       await db.prepare('UPDATE users SET invite_used = invite_used + 1 WHERE id = ?').bind(inviter.id).run();
+      const nu = await db.prepare('SELECT id FROM users WHERE name = ?').bind(nm).first();
+      if (nu) {
+        // 邀请人：invite_used*10 已在积分公式自动入账；再补 1 次盲盒机会
+        await bump(db, 'box_bonus', String(inviter.id), 'all');
+        // 被邀请人：invite_reward +1（积分公式折算 +10）+ 1 次盲盒机会
+        await bump(db, 'invite_reward', String(nu.id), 'all');
+        await bump(db, 'box_bonus', String(nu.id), 'all');
+      }
     }
   } else if (action === 'login') {
     const w15 = win15();
