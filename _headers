@@ -31,3 +31,8 @@
 # images/audio/assets 的 immutable 规则靠最长前缀匹配仍生效。
 /english-wonderland/*
   Cache-Control: no-store, no-cache, must-revalidate
+
+# month-menu 单文件应用（JS 内联），必须 no-store，否则浏览器启发式缓存旧页，
+# 修复（如截图 base64 撑爆 localStorage）到不了用户。
+/month-menu/*
+  Cache-Control: no-store, no-cache, must-revalidate

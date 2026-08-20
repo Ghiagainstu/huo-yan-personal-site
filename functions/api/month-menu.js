@@ -6,31 +6,36 @@
 import { json, getUserByToken } from './_lib.js';
 
 // 从旧版「按用户分库」(user_id,date) 迁移到「共享单份」(date) 主键。
-// 幂等：仅当表仍是旧结构（含 user_id 列）时执行一次；用事务保证原子性，避免中途丢数据。
+// 幂等：仅当表仍是旧结构（含 user_id 列）时执行一次。
+// ⚠️ 不能用 db.exec() 跑多语句 DDL：Pages Functions D1 对 exec 支持不稳，会抛 1101（见 debbec0）。
+//    逐条 prepare().run()，开头先清理可能的残留 month_menu_new，自愈半迁移状态。
 async function migrateIfNeeded(db) {
   const cols = await db.prepare("PRAGMA table_info(month_menu)").all();
   const hasUserId = (cols.results || []).some(c => c.name === 'user_id');
   if (!hasUserId) return; // 已是新结构，跳过
 
+  await db.prepare('DROP TABLE IF EXISTS month_menu_new').run();
+  await db.prepare(
+    `CREATE TABLE month_menu_new (
+       date       TEXT    NOT NULL PRIMARY KEY,
+       amount     REAL    DEFAULT 0,
+       note       TEXT    DEFAULT '',
+       screenshot TEXT,
+       updated_at INTEGER
+     )`
+  ).run();
   // 同一 date 可能有多位用户的行，按 updated_at 取最新一条合并为单份。
-  await db.exec(`
-    CREATE TABLE month_menu_new (
-      date       TEXT    NOT NULL PRIMARY KEY,
-      amount     REAL    DEFAULT 0,
-      note       TEXT    DEFAULT '',
-      screenshot TEXT,
-      updated_at INTEGER
-    );
-    INSERT INTO month_menu_new (date, amount, note, screenshot, updated_at)
-      SELECT m1.date,
-        (SELECT amount     FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
-        (SELECT note       FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
-        (SELECT screenshot FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
-        (SELECT updated_at FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1)
-      FROM (SELECT DISTINCT date FROM month_menu) m1;
-    DROP TABLE month_menu;
-    ALTER TABLE month_menu_new RENAME TO month_menu;
-  `);
+  await db.prepare(
+    `INSERT INTO month_menu_new (date, amount, note, screenshot, updated_at)
+       SELECT m1.date,
+         (SELECT amount     FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
+         (SELECT note       FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
+         (SELECT screenshot FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1),
+         (SELECT updated_at FROM month_menu m2 WHERE m2.date = m1.date ORDER BY updated_at DESC, rowid DESC LIMIT 1)
+       FROM (SELECT DISTINCT date FROM month_menu) m1`
+  ).run();
+  await db.prepare('DROP TABLE month_menu').run();
+  await db.prepare('ALTER TABLE month_menu_new RENAME TO month_menu').run();
 }
 
 // 建表（幂等）—— 共享单份结构：主键仅 date
