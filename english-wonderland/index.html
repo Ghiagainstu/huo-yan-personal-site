@@ -199,6 +199,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .game-stage{display:flex;flex-direction:column;align-items:center;}
 .game-scene{background:#fff;border-radius:24px;box-shadow:0 8px 22px rgba(80,80,140,.18);padding:24px 20px;width:100%;min-height:420px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;}
 .game-h1{font-size:24px;color:#5a5a8a;margin-top:2px;}
+.game-top-avatar{width:88px;height:88px;border-radius:22px;background:#f2f7f2;box-shadow:0 6px 18px rgba(0,0,0,.08);display:inline-flex;align-items:center;justify-content:center;font-size:52px;overflow:hidden;line-height:1;}
+.game-top-avatar img{width:100%;height:100%;object-fit:contain;}
 .game-h2{font-size:15px;color:#9a9ac0;font-weight:normal;}
 .gameart{width:130px;height:130px;display:flex;align-items:center;justify-content:center;border-radius:24px;overflow:hidden;flex-shrink:0;}
 .gameart.emoji{font-size:96px;line-height:1;background:#f4f6ff;}
@@ -6271,8 +6273,12 @@ function renderGameIntro(){
     {k:'wrongbook',ic:'📕',t:'错题本专项'}
   ];
   const wrongCount=wrongLog().filter(k=>{const f=findByKey(k);return f&&getLevel(f.cat.id,f.w[0])<3;}).length;
+  const myAv=(auth&&auth.user&&auth.user.avatar)||'';
+  const avHtml=myAv
+    ? avatarHTML(myAv,'game-top-avatar')
+    : '<img src="images/avatars/dino.webp" alt="火火" style="width:88px;height:88px;object-fit:contain;border-radius:22px;background:#f2f7f2;box-shadow:0 6px 18px rgba(0,0,0,.08);display:inline-block" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=&quot;font-size:80px&quot;>🎮</div>\')"/>';
   let html='<div class="game-scene" style="text-align:center">'+
-    '<img src="images/avatars/dino.webp" alt="火火" style="width:88px;height:88px;object-fit:contain;border-radius:22px;background:#f2f7f2;box-shadow:0 6px 18px rgba(0,0,0,.08);display:inline-block" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=&quot;font-size:80px&quot;>🎮</div>\')"/>'+
+    avHtml+
     '<div class="game-h1">闯关游戏</div>'+
     '<div class="game-h2">每天新词上限 <b>'+usedNew+'/'+DAILY_NEW_CAP+'</b>(剩 '+leftNew+' 个) · 到期复习不限</div>'+
     '<div class="game-h2">已掌握 <b>'+total+'</b> / '+totalWords()+'</div>'+
@@ -6803,7 +6809,7 @@ async function boxDraw(){
   const btn=document.getElementById('boxDrawBtn');
   if(btn) btn.disabled=true;
   const msg=document.getElementById('boxMsg'); if(msg) msg.textContent='';
-  const res=await api('/api/box/draw',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token})});
+  const res=await api('/api/box',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token})});
   if(btn) btn.disabled=false;
   if(!res.ok){ if(msg) msg.textContent=res.data.error||'抽取失败'; showToast(res.data.error||'抽取失败','err'); return; }
   await loadBox(); await loadMe(); updateAuthUI(); renderShop();
