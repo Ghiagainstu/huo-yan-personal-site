@@ -72,11 +72,20 @@ async function counterAdd(db, kind, key, n) {
   await db.prepare('INSERT INTO rate_limit(kind,key,window,count) VALUES(?,?,?,?) ON CONFLICT(kind,key,window) DO UPDATE SET count=count+?')
     .bind(kind, String(key), 'all', c + n, n).run();
 }
-// 可用机会 = 学习成果折算 + 管理员赠送 - 已用
+// 可用机会 = 学习成果折算 + 管理员赠送(永久) + 邀请奖励(24小时有效) - 已用
 async function ticketsAvail(db, mastered, gameStars, userId) {
   const used = await counterGet(db, 'box_used', userId);
   const bonus = await counterGet(db, 'box_bonus', userId);
-  return Math.max(0, ticketsOf(mastered, gameStars) + bonus - used);
+  const inv = await inviteBonusActive(db, userId);
+  return Math.max(0, ticketsOf(mastered, gameStars) + bonus + inv - used);
+}
+// 邀请奖励的盲盒机会：24 小时有效，过期自动归位（rate_limit window 存过期时间戳，只累计未过期的）
+async function inviteBonusActive(db, userId) {
+  try {
+    const r = await db.prepare("SELECT COALESCE(SUM(count),0) AS n FROM rate_limit WHERE kind='box_bonus_invite' AND key=? AND window>=?")
+      .bind(String(userId), new Date().toISOString()).first();
+    return r ? r.n : 0;
+  } catch (e) { return 0; }
 }
 
 export async function onRequestGet(ctx) {
@@ -91,8 +100,9 @@ export async function onRequestGet(ctx) {
   const owned = (await db.prepare('SELECT slug FROM box_owned WHERE user_id=?').bind(u.id).all()).results.map(r => r.slug);
   const used = await counterGet(db, 'box_used', u.id);
   const bonus = await counterGet(db, 'box_bonus', u.id);
+  const invBonus = await inviteBonusActive(db, u.id);
   const boxPoints = await counterGet(db, 'box_points', u.id);
-  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus - used;
+  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus + invBonus - used;
   const today = cnDate({});
   const todayCount = (await db.prepare('SELECT COUNT(*) AS n FROM box_draws WHERE user_id=? AND date=?').bind(u.id, today).first()).n || 0;
   const draws = (await db.prepare('SELECT date, result FROM box_draws WHERE user_id=? ORDER BY id DESC LIMIT 10').bind(u.id).all()).results.map(r => {
@@ -168,7 +178,8 @@ export async function onRequestPost(ctx) {
   const usr = await db.prepare('SELECT game_stars FROM users WHERE id=?').bind(u.id).first();
   const used = await counterGet(db, 'box_used', u.id);
   const bonus = await counterGet(db, 'box_bonus', u.id);
-  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus - used;
+  const invBonus = await inviteBonusActive(db, u.id);
+  const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus + invBonus - used;
   if (tickets <= 0) return json({ error: '还没有抽奖机会，先学 10 个新词或闯关 20 题吧' }, 400);
 
   // 服务端加权随机

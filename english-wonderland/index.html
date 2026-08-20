@@ -809,10 +809,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 <!-- ================= 排行榜 ================= -->
 <div class="module" id="modRank">
     <div class="rank-top">
+      <button class="filter-chip" data-r="day" onclick="setRankType('day')">☀️ 今日</button>
+      <button class="filter-chip" data-r="week" onclick="setRankType('week')">📅 本周</button>
       <button class="filter-chip active" data-r="total" onclick="setRankType('total')">🏆 词汇榜</button>
       <button class="filter-chip" data-r="score" onclick="setRankType('score')">⭐ 积分榜</button>
-      <button class="filter-chip" data-r="week" onclick="setRankType('week')">📅 本周</button>
-      <button class="filter-chip" data-r="day" onclick="setRankType('day')">☀️ 今日</button>
     </div>
     <div id="rankArea"></div>
 </div>
@@ -7450,16 +7450,16 @@ async function openUserProfile(name){
 }
 function renderUserProfile(box, u){
   const items=u.items||[];
-  const avatars=SHOP_ITEMS.filter(i=>i.type==='avatar'&&items.includes(i.id));
+  // 头像用 LOCKED_AVATARS（含 img 真实图；SHOP_ITEMS 只有 id/名称/价格，没有图）
+  const avatars=LOCKED_AVATARS.filter(a=>items.includes(a.id));
   const frames=FRAME_ORDER.filter(f=>items.includes(f));
   const titles=TITLE_ORDER.filter(t=>items.includes(t)).map(t=>{const it=SHOP_ITEMS.find(i=>i.id===t);return it?it.name:'';}).filter(Boolean);
   const myAv=u.avatar?avatarHTML(u.avatar,'user-avatar-lg'):'<span class="user-avatar-lg">🐭</span>';
   const frameCls=frameOf(u.items);
   const avHTML=myAv.replace('user-avatar-lg','user-avatar-lg'+(frameCls?' '+frameCls:''));
-  // 已拥有的头像缩略
-  const avRow=avatars.length?avatars.map(a=>a.img
-    ?'<span class="user-av" title="'+esc(a.name)+'"><img src="'+a.img+'" alt=""/></span>'
-    :'<span class="user-av" title="'+esc(a.name)+'">'+(a.emoji||'🐻')+'</span>').join('')
+  // 已拥有的头像缩略（全部是 AI 出图）
+  const avRow=avatars.length
+    ?avatars.map(a=>'<span class="user-av" title="'+esc(a.name)+'">'+(a.img?'<img src="'+a.img+'" alt=""/>':'<span>'+esc(a.emoji||a.name)+'</span>')+'</span>').join('')
     :'<span class="user-empty">还没有头像，去商城看看吧</span>';
   const titleHTML=titles.length?'<span class="user-title-badge">🏅'+esc(titles[titles.length-1])+'</span>':'';
   // 宠物

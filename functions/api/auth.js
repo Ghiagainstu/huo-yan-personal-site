@@ -99,16 +99,17 @@ export async function onRequestPost(ctx) {
     const myCode = await genInviteCode(db);
     await db.prepare('INSERT INTO users(name, pin_hash, avatar, invite_code) VALUES(?, ?, ?, ?)').bind(nm, hash, avatarVal, myCode).run();
     await bump(db, 'reg_ip', ip, winHour());   // 成功注册后计数
-    // 消耗邀请人 1 个名额 + 邀请双方奖励（各 +10 积分 + 各 +1 次盲盒机会）
+    // 消耗邀请人 1 个名额 + 邀请双方奖励（各 +10 积分 + 各 +1 次盲盒机会，机会 24 小时有效过期归位）
     if (inviter) {
       await db.prepare('UPDATE users SET invite_used = invite_used + 1 WHERE id = ?').bind(inviter.id).run();
       const nu = await db.prepare('SELECT id FROM users WHERE name = ?').bind(nm).first();
       if (nu) {
-        // 邀请人：invite_used*10 已在积分公式自动入账；再补 1 次盲盒机会
-        await bump(db, 'box_bonus', String(inviter.id), 'all');
-        // 被邀请人：invite_reward +1（积分公式折算 +10）+ 1 次盲盒机会
+        // 盲盒机会：box_bonus_invite + window=过期时间戳（24h 后 box.js 不再累计，自动归位）
+        const exp = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+        await bump(db, 'box_bonus_invite', String(inviter.id), exp);
+        // 被邀请人：invite_reward +1（积分公式折算 +10）+ 1 次盲盒机会（同样 24h 有效）
         await bump(db, 'invite_reward', String(nu.id), 'all');
-        await bump(db, 'box_bonus', String(nu.id), 'all');
+        await bump(db, 'box_bonus_invite', String(nu.id), exp);
       }
     }
   } else if (action === 'login') {
