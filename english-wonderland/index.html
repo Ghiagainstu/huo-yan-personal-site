@@ -5616,12 +5616,14 @@ function singularOf(w){
   if(w.endsWith('s') && !w.endsWith('ss') && w.length>3) return w.slice(0,-1);
   return w;
 }
+const ELEM_AGES = new Set(['5-6','6-7','7-8']);    // 方案B：WORD_META 学段 5-8 = 小学（突破牛津txt字面，按教学实际）
 function tierOfWord(catId, word){
   if(!word) return tierOfCat(catId);
   if(SH_WORDS.has(word)) return 'core';            // 功能词（fw-*，牛津 txt 无但强制归小学）
   if(OXFORD_STD.has(normKey(word))) return 'core'; // 牛津2024 归一化命中 → 上海小学核心词
   const sg = singularOf(word);
   if(sg !== word && OXFORD_STD.has(normKey(sg))) return 'core'; // 复数→单数兜底（firecrackers→firecracker）
+  if(ELEM_AGES.has(meta(word).age)) return 'core'; // 方案B：学段 5-6/6-7/7-8 视为小学
   return 'ext';                                      // 未命中牛津标准 → 拓展
 }
 function tierOfCat(catId){
