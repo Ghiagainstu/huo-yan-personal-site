@@ -299,7 +299,9 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .rank-top{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 8px;}
 .rank-hint{text-align:center;font-size:13px;color:#777;margin:10px 0 6px;}
 .rank-list{max-width:520px;margin:0 auto;padding:0 10px 20px;}
-.rank-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:10px 14px;margin:8px 0;}
+.rank-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:10px 14px;margin:8px 0;cursor:pointer;transition:all .15s;}
+.rank-item:hover{box-shadow:0 3px 10px rgba(0,0,0,.08);transform:translateY(-1px);}
+.rank-item:active{transform:scale(.99);}
 .rank-item.mine{background:#fff8e1;border-color:#ffb74d;box-shadow:0 0 0 1px #ffb74d;}
 .rank-no{width:34px;text-align:center;font-size:20px;font-weight:bold;color:#888;}
 .rank-name{flex:1;font-size:16px;font-weight:bold;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -445,9 +447,19 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .shop-tabs{display:flex;gap:8px;margin:4px 0 10px;background:#f2f4f3;border-radius:12px;padding:4px;}
 .shop-tab{flex:1;border:none;background:transparent;border-radius:9px;padding:8px;font-size:14px;font-weight:bold;color:#777;cursor:pointer;}
 .shop-tab.active{background:#fff;color:#0c8f7d;box-shadow:0 2px 6px rgba(0,0,0,.08);}
-.box-top{display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between;background:linear-gradient(135deg,#fdf6e3,#fbf0d4);border:1px solid #f0e2c0;border-radius:12px;padding:10px 12px;margin-bottom:8px;}
-.box-stat{font-size:13px;color:#7a6a3a;}
-.box-stat b{color:#b8860b;}
+.box-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.box-statc{background:#fff;border-radius:14px;padding:10px 4px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);border:1px solid #eee;}
+.box-statc .box-stat-ic{font-size:18px;display:block;}
+.box-statc b{display:block;font-size:19px;color:#333;margin-top:2px;}
+.box-statc i{font-style:normal;font-size:10px;color:#999;}
+.box-statc.st-ticket b{color:#b8860b;}
+.box-statc.st-today b{color:#0c8f7d;}
+.box-statc.st-points b{color:#7e57c2;}
+.box-draw-btn{width:100%;font-size:17px;padding:13px;margin:4px 0 2px;background:linear-gradient(135deg,#ffb74d,#ff8a3d);color:#fff;border:none;border-radius:16px;font-weight:bold;cursor:pointer;box-shadow:0 4px 14px rgba(255,138,61,.35);transition:all .2s;display:block;text-align:center;}
+.box-draw-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(255,138,61,.45);}
+.box-draw-btn:active{transform:scale(.97);}
+.box-draw-btn.box-btn-dis{background:linear-gradient(135deg,#cfd8dc,#b0bec5);box-shadow:none;cursor:not-allowed;opacity:.7;}
+.box-draw-btn.box-btn-dis:hover{transform:none;box-shadow:none;}
 .box-msg{min-height:18px;font-size:13px;text-align:center;color:#0c8f7d;margin:4px 0;}
 .box-hint{font-size:11px;color:#999;text-align:center;margin-bottom:10px;}
 .box-grid-name{font-size:13px;font-weight:bold;color:#555;margin:14px 0 8px;padding-left:8px;border-left:4px solid #ffb74d;line-height:1.2;}
@@ -473,6 +485,33 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .box-draw-name{flex:1;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .box-draw-date{color:#bbb;font-size:11px;flex-shrink:0;}
 .box-draw-rr{color:#fff;font-size:10px;border-radius:6px;padding:1px 6px;flex-shrink:0;}
+/* ===== 用户主页 ===== */
+.user-box{max-width:380px;}
+.user-loading{text-align:center;padding:40px 10px;color:#888;font-size:14px;}
+.user-head{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0c8f7d,#16b8a3 55%,#ffd98a);border-radius:16px;padding:16px;color:#fff;margin-bottom:12px;}
+.user-avatar-lg{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.92);display:inline-flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.18);}
+.user-avatar-lg img{width:100%;height:100%;object-fit:cover;}
+.user-head-info{min-width:0;}
+.user-name{font-size:18px;font-weight:bold;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.user-title-badge{font-size:11px;background:rgba(255,255,255,.25);border-radius:20px;padding:2px 8px;font-weight:600;}
+.user-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.user-tag{font-size:11px;background:rgba(255,255,255,.22);border-radius:20px;padding:2px 8px;}
+.user-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.user-stat{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:10px 6px;text-align:center;}
+.user-stat b{display:block;font-size:18px;color:#0c8f7d;}
+.user-stat i{font-style:normal;font-size:11px;color:#999;}
+.user-sec{background:#fff;border:1px solid #f0e2c0;border-radius:12px;padding:10px 12px;margin-bottom:12px;}
+.user-sec-t{font-size:13px;font-weight:bold;color:#555;margin-bottom:8px;padding-left:8px;border-left:4px solid #ffb74d;line-height:1.2;}
+.user-pets{display:flex;gap:8px;flex-wrap:wrap;}
+.user-pet{position:relative;display:inline-block;}
+.user-pet img{width:52px;height:52px;object-fit:contain;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:3px;}
+.user-pet i{position:absolute;left:50%;transform:translateX(-50%);bottom:-7px;font-style:normal;color:#fff;font-size:9px;border-radius:6px;padding:1px 5px;white-space:nowrap;}
+.user-avatars{display:flex;gap:8px;flex-wrap:wrap;}
+.user-av{width:38px;height:38px;border-radius:50%;background:#f2f7f2;border:1px solid #e0e0e0;display:inline-flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;}
+.user-av img{width:100%;height:100%;object-fit:cover;}
+.user-item-row{display:flex;gap:8px;margin-top:8px;}
+.user-item{font-size:11px;color:#666;background:#f6f8f7;border:1px solid #e0e0e0;border-radius:20px;padding:3px 10px;}
+.user-empty{font-size:12px;color:#bbb;}
 .box-celebrate{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;animation:boxFade .25s;}
 @keyframes boxFade{from{opacity:0}to{opacity:1}}
 .box-celebrate-box{background:#fff;border-radius:20px;padding:26px 22px;text-align:center;max-width:320px;width:88%;animation:boxPop .4s cubic-bezier(.2,1.4,.4,1);}
@@ -593,6 +632,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <h1>🎓 儿童英语学习乐园</h1>
     <div class="sub">英语单词 · 🎮 闯关游戏 · 🏆 排行榜</div>
 </div>
+<div class="about-modal" id="userModal" onclick="if(event.target===this)closeUserModal()">
+  <div class="about-box user-box">
+    <button class="about-close" onclick="closeUserModal()" aria-label="关闭">✕</button>
+    <div id="userProfile"></div>
+  </div>
+</div>
 <div class="about-modal" id="aboutModal" onclick="if(event.target===this)closeAbout()">
   <div class="about-box">
     <button class="about-close" onclick="closeAbout()" aria-label="关闭">✕</button>
@@ -656,12 +701,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <div id="shopList"></div>
     </div>
     <div id="boxPanel" style="display:none">
-      <div class="box-top">
-        <div class="box-stat">🎟️ 抽奖机会 <b id="boxTickets">—</b></div>
-        <div class="box-stat">📅 今日 <b id="boxToday">0/2</b></div>
-        <div class="box-stat">⭐ 盲盒入账 <b id="boxPoints">—</b></div>
+      <div class="box-stats">
+        <div class="box-statc st-ticket"><span class="box-stat-ic">🎟️</span><b id="boxTickets">—</b><i>抽奖机会</i></div>
+        <div class="box-statc st-today"><span class="box-stat-ic">📅</span><b id="boxToday">0/2</b><i>今日已抽</i></div>
+        <div class="box-statc st-points"><span class="box-stat-ic">⭐</span><b id="boxPoints">—</b><i>盲盒入账</i></div>
       </div>
-      <button class="game-btn green" id="boxDrawBtn" onclick="boxDraw()" style="width:100%;font-size:18px;padding:14px;margin:10px 0">🎁 抽盲盒（今日 0/2）</button>
+      <button class="game-btn box-draw-btn" id="boxDrawBtn" onclick="boxDraw()">🎁 抽盲盒（今日 0/2）</button>
       <div class="box-msg" id="boxMsg"></div>
       <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 每日最多 2 次 · 重复自动折积分</div>
       <div class="box-grid-name">🎯 奖池与概率</div>
@@ -6782,12 +6827,23 @@ async function loadBox(){
   if(!res.ok) return;
   auth.box=res.data; saveAuth(auth);
   const t=document.getElementById('boxTickets'),td=document.getElementById('boxToday'),bp=document.getElementById('boxPoints'),btn=document.getElementById('boxDrawBtn');
-  if(t) t.textContent=res.data.tickets!=null?res.data.tickets:'—';
   const tc=res.data.todayCount!=null?res.data.todayCount:0;
+  if(t) t.textContent=res.data.tickets!=null?res.data.tickets:'—';
   if(td) td.textContent=tc+'/2';
-  if(btn) btn.textContent='🎁 抽盲盒（今日 '+tc+'/2）';
   if(bp) bp.textContent=(res.data.box_points!=null?res.data.box_points:0)+' 分';
+  if(btn){
+    btn.textContent='🎁 抽盲盒（今日 '+tc+'/2）';
+    const dis=(res.data.tickets==null||res.data.tickets<=0)||tc>=2;
+    btn.disabled=dis;
+    btn.classList.toggle('box-btn-dis',dis);
+  }
   renderBoxGrid(); renderBoxPool(); renderMyPets(); renderBoxDraws();
+}
+/* 中国时间格式：8月20日 09:35；旧记录无时间戳则显示日期 */
+function fmtCnTime(t,date){
+  if(!t){ return (date||'').slice(5).replace('-','月')+(date?'日':''); }
+  const d=new Date(t), p=n=>String(n).padStart(2,'0');
+  return (d.getMonth()+1)+'月'+d.getDate()+'日 '+p(d.getHours())+':'+p(d.getMinutes());
 }
 function renderBoxDraws(){
   const g=document.getElementById('boxDraws'); if(!g) return;
@@ -6797,7 +6853,7 @@ function renderBoxDraws(){
     const rr=d.rarity?PET_RARITY[d.rarity]:{t:'积分',c:'#E0A800'};
     const ic=d.kind==='points'?'💰':petIconHtml(d.slug,'box-draw-img');
     const nm=d.kind==='dupe'?(d.name+'（重复→'+d.points+'分）'):d.name;
-    return '<div class="box-draw-item"><span class="box-draw-ic">'+ic+'</span><span class="box-draw-name">'+esc(nm)+'</span><span class="box-draw-date">'+d.date.slice(5)+'</span><span class="box-draw-rr" style="background:'+rr.c+'">'+rr.t+'</span></div>';
+    return '<div class="box-draw-item"><span class="box-draw-ic">'+ic+'</span><span class="box-draw-name">'+esc(nm)+'</span><span class="box-draw-date">'+fmtCnTime(d.t,d.date)+'</span><span class="box-draw-rr" style="background:'+rr.c+'">'+rr.t+'</span></div>';
   }).join('');
 }
 function renderBoxGrid(){
@@ -7013,6 +7069,64 @@ function copyInvite(){
   if(b){const t=b.textContent;b.textContent='✅ 已复制';setTimeout(()=>b.textContent=t,1500);}
 }
 function closeAvatarModal(){document.getElementById('avatarModal').style.display='none';}
+/* ============ 用户主页（点击排行榜用户打开） ============ */
+function closeUserModal(){document.getElementById('userModal').style.display='none';}
+async function openUserProfile(name){
+  const modal=document.getElementById('userModal');
+  const box=document.getElementById('userProfile');
+  modal.style.display='flex';
+  box.innerHTML='<div class="user-loading">加载中…</div>';
+  const qs='name='+encodeURIComponent(name)+(auth?'&token='+encodeURIComponent(auth.token):'');
+  const res=await api('/api/user?'+qs);
+  if(!res.ok){ box.innerHTML='<div class="user-loading">'+(res.data.error||'加载失败')+'</div>'; return; }
+  renderUserProfile(box, res.data.user);
+}
+function renderUserProfile(box, u){
+  const items=u.items||[];
+  const avatars=SHOP_ITEMS.filter(i=>i.type==='avatar'&&items.includes(i.id));
+  const frames=FRAME_ORDER.filter(f=>items.includes(f));
+  const titles=TITLE_ORDER.filter(t=>items.includes(t)).map(t=>{const it=SHOP_ITEMS.find(i=>i.id===t);return it?it.name:'';}).filter(Boolean);
+  const myAv=u.avatar?avatarHTML(u.avatar,'user-avatar-lg'):'<span class="user-avatar-lg">🐭</span>';
+  const frameCls=frameOf(u.items);
+  const avHTML=myAv.replace('user-avatar-lg','user-avatar-lg'+(frameCls?' '+frameCls:''));
+  // 已拥有的头像缩略
+  const avRow=avatars.length?avatars.map(a=>a.img
+    ?'<span class="user-av" title="'+esc(a.name)+'"><img src="'+a.img+'" alt=""/></span>'
+    :'<span class="user-av" title="'+esc(a.name)+'">'+(a.emoji||'🐻')+'</span>').join('')
+    :'<span class="user-empty">还没有头像，去商城看看吧</span>';
+  const titleHTML=titles.length?'<span class="user-title-badge">🏅'+esc(titles[titles.length-1])+'</span>':'';
+  // 宠物
+  const pets=u.pets||[];
+  const petHTML=pets.length
+    ?'<div class="user-pets">'+pets.map(p=>{
+        const rr=PET_RARITY[p.rarity]||{t:'',c:'#888'};
+        return '<span class="user-pet" title="'+esc(p.name||p.slug)+'"><img src="'+petImg(p.slug)+'" alt="" onerror="this.style.display=\'none\'"/><i style="background:'+rr.c+'">'+rr.t+'</i></span>';
+      }).join('')+'</div>'
+    :'<span class="user-empty">还没有宠物，抽盲盒有机会获得哦</span>';
+  // 装扮（边框/称号）
+  const frameHTML=frames.length?'<span class="user-item">🖼️ 边框 ×'+frames.length+'</span>':'';
+  const title2=titles.length?'<span class="user-item">🏅 称号 ×'+titles.length+'</span>':'';
+  box.innerHTML=
+    '<div class="user-head">'+avHTML+
+      '<div class="user-head-info"><div class="user-name">'+esc(u.name)+titleHTML+'</div>'+
+      '<div class="user-tags">'+(u.streak>0?'<span class="user-tag">🔥 连续 '+u.streak+' 天</span>':'')+
+      '<span class="user-tag">🏆 词汇榜第 '+u.rank_total+' 名</span>'+
+      '<span class="user-tag">⭐ 积分榜第 '+u.rank_score+' 名</span></div></div>'+
+    '</div>'+
+    '<div class="user-stats">'+
+      '<div class="user-stat"><b>'+u.mastered+'</b><i>已掌握词</i></div>'+
+      '<div class="user-stat"><b>'+u.days+'</b><i>累计签到天</i></div>'+
+      '<div class="user-stat"><b>'+u.score+'</b><i>总积分</i></div>'+
+      '<div class="user-stat"><b>'+u.game_stars+'</b><i>游戏得分</i></div>'+
+      '<div class="user-stat"><b>'+u.box_points+'</b><i>盲盒入账</i></div>'+
+      '<div class="user-stat"><b>'+(avatars.length+pets.length+frames.length+titles.length)+'</b><i>收藏品</i></div>'+
+    '</div>'+
+    '<div class="user-sec"><div class="user-sec-t">🐾 我的宠物</div>'+petHTML+'</div>'+
+    '<div class="user-sec"><div class="user-sec-t">🎨 我的装扮</div>'+
+      '<div class="user-avatars">'+avRow+'</div>'+
+      (frameHTML||title2?'<div class="user-item-row">'+frameHTML+title2+'</div>':'')+
+    '</div>';
+}
 async function saveAvatar(){
   const msg=document.getElementById('avatarMsg');
   if(!auth) return;
@@ -7091,10 +7205,10 @@ async function renderRank(){
         if(best) petSlug=best.slug;
       }
       const petBadge=petSlug?'<img class="rank-pet-mini" src="'+petImg(petSlug)+'" alt="" title="宠物" onerror="this.style.display=\'none\'"/>':'';
-      html+='<div class="rank-item'+(mine?' mine':'')+'">'+
+      html+='<div class="rank-item'+(mine?' mine':'')+'" data-n="'+esc(it.name)+'" onclick="openUserProfile(this.dataset.n)">'+
         '<span class="rank-no">'+(medals[i]||(i+1))+'</span>'+
-        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar',frameOf(it.items)):'🐭')+petBadge+'</span>'+
-        '<span class="rank-name">'+esc(it.name)+(rtitle?'<span class="rank-title">🏅'+esc(rtitle)+'</span>':'')+'</span>'+
+        '<span class="rank-avatar">'+(it.avatar?avatarHTML(it.avatar,'rank-avatar',frameOf(it.items)):'🐭')+'</span>'+
+        '<span class="rank-name">'+esc(it.name)+(rtitle?'<span class="rank-title">🏅'+esc(rtitle)+'</span>':'')+petBadge+'</span>'+
         '<span class="rank-val">'+rv+'</span>'+
         '</div>';
     });

@@ -2,6 +2,7 @@
 // GET  /api/box?token=...                    → { tickets, drewToday, owned:[slugs], box_points }
 // POST /api/box/draw  {token}                → { ok, result:{kind:'pet'|'points'|'dupe', slug?, points?, rarity?, name?}, tickets, box_points }
 // POST /api/box/seed  {admin, name}          → 管理接口：给指定昵称 +N 次盲盒资格（N 默认 10，admin=852121）
+// POST /api/box/reset_today {admin, name}    → 管理接口：回滚指定用户今日所有抽奖（删当日 draw/宠物/积分/已用次数，admin=852121）
 import { json, getUserByToken, cnDate } from './_lib.js';
 
 // 奖池：9 款火火装扮（v5 终稿）+ 2 积分档；weight 为概率（总和 100）
@@ -94,11 +95,11 @@ export async function onRequestGet(ctx) {
   const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus - used;
   const today = cnDate({});
   const todayCount = (await db.prepare('SELECT COUNT(*) AS n FROM box_draws WHERE user_id=? AND date=?').bind(u.id, today).first()).n || 0;
-  const draws = (await db.prepare('SELECT date, result FROM box_draws WHERE user_id=? ORDER BY id DESC LIMIT 8').bind(u.id).all()).results.map(r => {
-    const o = { date: r.date, kind: 'pet' };
+  const draws = (await db.prepare('SELECT date, result FROM box_draws WHERE user_id=? ORDER BY id DESC LIMIT 10').bind(u.id).all()).results.map(r => {
+    const o = { date: r.date, kind: 'pet', t: 0 };
     try {
       const x = JSON.parse(r.result);
-      o.kind = x.kind || 'pet'; o.slug = x.slug || ''; o.rarity = x.rarity || ''; o.name = x.name || ''; o.points = x.points || 0;
+      o.kind = x.kind || 'pet'; o.slug = x.slug || ''; o.rarity = x.rarity || ''; o.name = x.name || ''; o.points = x.points || 0; o.t = x.t || 0;
     } catch (e) {}
     return o;
   });
@@ -129,6 +130,30 @@ export async function onRequestPost(ctx) {
     await counterAdd(db, 'box_bonus', tgt.id, n);
     const bonus = await counterGet(db, 'box_bonus', tgt.id);
     return json({ ok: true, user: tgt.name, added: n, total_bonus: bonus });
+  }
+
+  // 管理接口：回滚指定用户今日抽奖（删当日 draw 记录 + 当日抽中的宠物 + 积分入账 + 已用次数，admin=852121）
+  if (body.action === 'reset_today') {
+    if (body.admin !== '852121') return json({ error: '无权限' }, 403);
+    const name = String(body.name || '').trim();
+    if (!name) return json({ error: '缺少昵称' }, 400);
+    const tgt = await db.prepare('SELECT id, name FROM users WHERE name=?').bind(name).first();
+    if (!tgt) return json({ error: '用户不存在' }, 404);
+    await ensureTables(db);
+    const today = cnDate({});
+    const rows = (await db.prepare('SELECT result FROM box_draws WHERE user_id=? AND date=?').bind(tgt.id, today).all()).results;
+    for (const r of rows) {
+      try {
+        const x = JSON.parse(r.result);
+        if (x.slug) await db.prepare('DELETE FROM box_owned WHERE user_id=? AND slug=?').bind(tgt.id, x.slug).run();
+        if (x.points) await counterAdd(db, 'box_points', tgt.id, -(x.points || 0));
+      } catch (e) {}
+    }
+    await db.prepare('DELETE FROM box_draws WHERE user_id=? AND date=?').bind(tgt.id, today).run();
+    if (rows.length) await counterAdd(db, 'box_used', tgt.id, -rows.length);
+    const used = await counterGet(db, 'box_used', tgt.id);
+    const boxPoints = await counterGet(db, 'box_points', tgt.id);
+    return json({ ok: true, user: tgt.name, rollback: rows.length, box_used: Math.max(0, used), box_points: boxPoints });
   }
 
   const u = await getUserByToken(db, body.token);
@@ -165,7 +190,7 @@ export async function onRequestPost(ctx) {
     await db.prepare('INSERT INTO box_owned(user_id, slug, rarity) VALUES(?,?,?)').bind(u.id, pick.slug, pick.rarity).run();
     result = { kind: 'pet', slug: pick.slug, rarity: pick.rarity, name: pick.name };
   }
-  await db.prepare('INSERT INTO box_draws(user_id, date, result) VALUES(?,?,?)').bind(u.id, today, JSON.stringify(result)).run();
+  await db.prepare('INSERT INTO box_draws(user_id, date, result) VALUES(?,?,?)').bind(u.id, today, JSON.stringify({ ...result, t: Date.now() })).run();
   await counterAdd(db, 'box_used', u.id, 1);
   const boxPoints = await counterGet(db, 'box_points', u.id);
   return json({ ok: true, result, tickets: tickets - 1, box_points: boxPoints });
