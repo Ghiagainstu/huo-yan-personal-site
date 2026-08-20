@@ -122,13 +122,14 @@ function isShanghai(d){
 
 // ---------- DATA: online words ----------
 const DATA = [];
-const ELEM_AGES = new Set(['5-6','6-7','7-8']);   // 方案B：学段 5-8 = 小学（与 app tierOfWord 一致）
+// 用户核对批注小学词（2026-08-20，来源 _vocab_comments.json "小学"字样；github age 标签被污染不作小学依据）
+const USER_ELEM = new Set(Object.keys(COMMENTS).filter(w => (COMMENTS[w] || '').includes('小学')));
 for(const info of deployed.values()){
-  // 上海小学 = 牛津2024命中 或 功能词(img:fw-*) 或 学段5-8（方案B，按教学实际）
+  // 上海小学 = 牛津2024命中 或 功能词(img:fw-*) 或 用户批注"小学"（人工确认）
   const sh = isShanghai(info) || info.functional;
   const wm = WORD_META[info.en];
-  const elemAge = !sh && !!(wm && ELEM_AGES.has(wm.age));
-  const isCore = sh || elemAge;
+  const userElem = !sh && USER_ELEM.has(info.en);
+  const isCore = sh || userElem;
   const hasImg = !!(info.img && HAVE_IMG.has(info.img));
   // 难度：用 WORD_META.diff（1简单/2中等/3难，全量覆盖），与 app 排序逻辑一致；缺失兜底为 3(难)
   const diff = (wm && (wm.diff===1||wm.diff===2||wm.diff===3)) ? wm.diff : 3;
@@ -138,7 +139,7 @@ for(const info of deployed.values()){
     tier='core';
     if(info.functional) reason='上海小学 · 功能词（归入小学）';
     else if(sh) reason='上海小学 · 牛津2024内容词';
-    else reason='上海小学 · 学段'+(wm&&wm.age)+'（方案B）';
+    else reason='上海小学 · 用户批注（人工核对）';
   } else { tier='ext'; reason='拓展 · 难度「'+diffLabel+'」'; }
   DATA.push({ w:info.en, zh:info.zh, tier, reason, img: hasImg?info.img:'', cat: info.catName, functional: info.functional, diff, comment: COMMENTS[info.en] || '' });
 }
@@ -265,12 +266,12 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 </header>
 
 <div class="note">
-  <b>上海小学词汇 = 命中牛津2024标准 或 功能词 或 学段5-8（方案B）</b><br>
-  规则①：把牛津 txt 词条归一化（去冠词 a/an、去 a pair of / a X of 量词、去括号、简单复数转单数、短语取中心词）后，与线上已部署词的<b>英文</b>或<b>图片 slug</b>匹配；命中即判为「上海小学（牛津2024内容词）」。<b>功能词（fw-）属小学语法词，归入上海小学</b>。规则②（<b>方案B</b>，与 app tierOfWord 一致）：<code>WORD_META.age</code> 学段 <b>5-6 / 6-7 / 7-8</b> 的线上词（即使不在牛津 txt，如 zero/twenty/purple/white/horse/elephant 等基础词）也判为上海小学；卡片 reason 标注「学段X（方案B）」。匹配为启发式，短语/量词类可能存在少量偏差，请以下方卡片逐词核对。<br>
-  <b>逐词核对方法</b>：点「上海小学(牛津)」看全部上海小学标准词（牛津+功能词+学段5-8）；点「功能词」单独筛选小学语法词；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>${gapN}</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
+  <b>上海小学词汇 = 命中牛津2024标准 或 功能词 或 用户批注"小学"</b><br>
+  规则①：把牛津 txt 词条归一化（去冠词 a/an、去 a pair of / a X of 量词、去括号、简单复数转单数、短语取中心词）后，与线上已部署词的<b>英文</b>或<b>图片 slug</b>匹配；命中即判为「上海小学（牛津2024内容词）」。<b>功能词（fw-）属小学语法词，归入上海小学</b>。规则②（<b>用户人工批注</b>，与 app tierOfWord 一致）：你在逐词核对中标注「小学」字样的词（来自 <code>_vocab_comments.json</code>）强制归入上海小学，卡片 reason 标注「用户批注（人工核对）」。<b>github 词表的 age 学段标签已被污染，不再作为小学判定依据</b>；匹配为启发式，短语/量词类可能存在少量偏差，请以下方卡片逐词核对。<br>
+  <b>逐词核对方法</b>：点「上海小学」看全部上海小学标准词（牛津+功能词+用户批注）；点「功能词」单独筛选小学语法词；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>${gapN}</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
   <b>单词顺序 & 难度（已与 app 同步）</b><br>
-  列表顺序：上海小学（牛津＋功能词＋学段5-8）全部在前 → 拓展词 → 各自内部按<b>难度 diff</b>（1 简单 → 2 中等 → 3 难）→ A-Z 兜底；标准缺口恒在最后。难度标签来自 <code>WORD_META.diff</code>（全量覆盖 1167/1167，缺失兜底为「难」），<b>学段 age 仅用于方案B判级、不参与难度排序</b>。点上方「难度·简单 / 中等 / 难」可分别核对各档词的分类与配图。<br>
-  <b>统计</b>：线上已部署词 <b>${totalN}</b> ｜ 上海小学 <b>${shN}</b>（牛津内容词＋功能词＋学段5-8，其中功能词 <b>${funcN}</b>）｜ 拓展 <b>${extN}</b> ｜ 带图 <b>${imgN}</b> ｜ 图缺失 <b>${noimgN}</b> ｜ 标准缺口 <b>${gapN}</b>。<br>
+  列表顺序：上海小学（牛津＋功能词＋用户批注）全部在前 → 拓展词 → 各自内部按<b>难度 diff</b>（1 简单 → 2 中等 → 3 难）→ A-Z 兜底；标准缺口恒在最后。难度标签来自 <code>WORD_META.diff</code>（全量覆盖 1167/1167，缺失兜底为「难」），<b>age 学段已不参与分类（仅参考）</b>。点上方「难度·简单 / 中等 / 难」可分别核对各档词的分类与配图。<br>
+  <b>统计</b>：线上已部署词 <b>${totalN}</b> ｜ 上海小学 <b>${shN}</b>（牛津内容词＋功能词＋用户批注，其中功能词 <b>${funcN}</b>）｜ 拓展 <b>${extN}</b> ｜ 带图 <b>${imgN}</b> ｜ 图缺失 <b>${noimgN}</b> ｜ 标准缺口 <b>${gapN}</b>。<br>
   <b>⚠️ 标准缺口去重说明</b>：缺口判定已加入「线上 HAVE_IMG 查重」——牛津标准词若线上已有对应图片（如带 <b>the</b> 的 the Spring Festival / the Mid-autumn Festival、带弯引号的 New Year's Eve / jack-o'-lantern、大小写差异的 high / left 等），按归一化（去 the/a/an + 弯引号→直引号 + 's→-s + 去符号）命中后不再计为缺口，已剔除 <b>${GAP_SKIPPED.length}</b> 条假缺口。这类词线上其实已有图，仅需按标准词形补词卡即可，无需重出图。<br>
   <b>逐词评价</b>：点每张卡下方的「✎ 写评价」按钮，该卡<b>就地展开一个文本框</b>（不再弹窗），可写「图要重出 / 标签要改 / 归错类」等意见，<b>自动存浏览器本地（刷新不丢）</b>；上方「⬇️ 导出评价」下载 JSON 发我，或存为 <code>_vocab_comments.json</code> 让我重生成时嵌入；「⬆️ 导入评价」重新载入。列表一次性渲染全部卡片（图片均 <code>loading="lazy"</code> 懒加载，仅滚动到视口才解码，不占内存），可直接浏览 / 搜索全部词图。
 </div>

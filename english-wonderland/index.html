@@ -5596,6 +5596,35 @@ for (const _cat of CATS) for (const _w of (_cat.words || [])) {
   if (Array.isArray(_w) && typeof _w[2] === 'string' && _w[2].indexOf('img:fw-') === 0) SH_WORDS.add(_w[0]);
 }
 SH_WORDS.add('rubber'); // 橡皮：牛津 txt 在列（已含于 OXFORD_STD），英式变体 eraser 复用图，双保险
+// 用户核对批注小学词（2026-08-20 人工确认，来源 vocab-classification.html 批注“小学”字样；github age 标签被污染不作小学依据）
+const USER_ELEM = new Set([
+  'bad', 'bat', 'beach', 'big', 'black', 'box', 'brown', 'chair',
+  'child', 'coat', 'crab', 'cry', 'cup', 'dark', 'day', 'door',
+  'fork', 'fox', 'fries', 'go', 'good', 'gray', 'hear', 'heart',
+  'hour', 'jam', 'jet', 'kick', 'king', 'laugh', 'leaf', 'learn',
+  'long', 'month', 'neck', 'ninth', 'noon', 'old', 'pants', 'pea',
+  'point', 'pull', 'push', 'queen', 'rat', 'rock', 'round', 'see',
+  'skiing', 'slow', 'small', 'snail', 'soil', 'son', 'spoon', 'stand',
+  'stream', 'tenth', 'tie', 'toad', 'toe', 'touch', 'toy', 'tree',
+  'wind', 'young', 'airport', 'autumn', 'baby', 'bike', 'birthday', 'blackboard',
+  'camel', 'candy', 'chili', 'close', 'cookie', 'dessert', 'diamond', 'dirty',
+  'donkey', 'donut', 'dragon', 'eagle', 'easy', 'eggplant', 'eighteen', 'eighty',
+  'elephant', 'empty', 'family', 'fifty', 'fish meat', 'forty', 'fridge', 'grandma',
+  'greeting', 'have', 'hippo', 'honey', 'horse', 'hot dog', 'hundred', 'ice',
+  'insect', 'island', 'kitten', 'lightning', 'marker', 'mushroom', 'New Year', 'ocean',
+  'onion', 'open', 'papaya', 'paper', 'parents', 'peacock', 'penguin', 'pepper',
+  'phone', 'pillow', 'plate', 'purple', 'rainbow', 'rhino', 'rocket', 'rooster',
+  'rose', 'salad', 'sandwich', 'school bus', 'scientist', 'scissors', 'season', 'seesaw',
+  'seventh', 'silver', 'singer', 'sixty', 'skating', 'slippers', 'sneakers', 'snowman',
+  'soccer', 'starfish', 'store', 'table', 'thirty', 'thunder', 'today', 'tofu',
+  'tongue', 'toothbrush', 'tummy', 'turtle', 'twenty', 'whale', 'white', 'winter',
+  'yogurt', 'zebra', 'zero', 'alligator', 'astronaut', 'blackberry', 'blue whale', 'blueberry',
+  'broccoli', 'cauliflower', 'chicken meat', 'chimpanzee', 'coconut', 'cucumber', 'difficult', 'dinosaur',
+  'dragonfly', 'firefly', 'giraffe', 'gorilla', 'grandparents', 'housefly', 'jellyfish', 'kangaroo',
+  'ladybug', 'mosquito', 'Mother's Day', 'National Day', 'New Year's Eve', 'nineteen', 'ninety', 'phone call',
+  'police', 'sausage', 'seventeen', 'seventy', 'Spring Festival', 'sunflower', 'sweet potato', 'table tennis',
+  'Teachers' Day', 'toothpaste', 'umbrella', 'xylophone'
+]);
 const PLURAL_ONLY = new Set(['glasses','jeans','trousers','scissors','shorts','clothes','pants','tights','pyjamas']);
 function singularOf(w){
   if(PLURAL_ONLY.has(w)) return w;
@@ -5604,14 +5633,13 @@ function singularOf(w){
   if(w.endsWith('s') && !w.endsWith('ss') && w.length>3) return w.slice(0,-1);
   return w;
 }
-const ELEM_AGES = new Set(['5-6','6-7','7-8']);    // 方案B：WORD_META 学段 5-8 = 小学（突破牛津txt字面，按教学实际）
 function tierOfWord(catId, word){
   if(!word) return tierOfCat(catId);
   if(SH_WORDS.has(word)) return 'core';            // 功能词（fw-*，牛津 txt 无但强制归小学）
+  if(USER_ELEM.has(word)) return 'core';           // 用户核对批注小学词（人工确认，最高优先级）
   if(OXFORD_STD.has(normKey(word))) return 'core'; // 牛津2024 归一化命中 → 上海小学核心词
   const sg = singularOf(word);
   if(sg !== word && OXFORD_STD.has(normKey(sg))) return 'core'; // 复数→单数兜底（firecrackers→firecracker）
-  if(ELEM_AGES.has(meta(word).age)) return 'core'; // 方案B：学段 5-6/6-7/7-8 视为小学
   return 'ext';                                      // 未命中牛津标准 → 拓展
 }
 function tierOfCat(catId){
