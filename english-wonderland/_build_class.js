@@ -125,22 +125,21 @@ const DATA = [];
 for(const info of deployed.values()){
   // 上海小学 = 牛津2024命中 或 功能词(img:fw-*)。牛津 txt 不含基础功能词(a/above/after 等)，
   // 但功能词本就是小学内容，故功能词一律归上海小学。
-  const sh = isShanghai(info) || info.functional;
+  const sh = isShanghai(info);   // 上海小学 = 牛津2024内容词（不含功能词）
   const hasImg = !!(info.img && HAVE_IMG.has(info.img));
   const wm = WORD_META[info.en];
   // 难度：用 WORD_META.diff（1简单/2中等/3难，全量覆盖），与 app 排序逻辑一致；缺失兜底为 3(难)
   const diff = (wm && (wm.diff===1||wm.diff===2||wm.diff===3)) ? wm.diff : 3;
   const diffLabel = diff===1?'简单':diff===2?'中等':'难';
-  let reason;
-  if(sh){
-    reason = info.functional ? '上海小学 · 功能词（功能词归类）' : '上海小学 · 内容词（牛津2024命中）';
-  } else {
-    reason = '拓展 · 难度「'+diffLabel+'」';
-  }
-  DATA.push({ w:info.en, zh:info.zh, tier: sh?'core':'ext', reason, img: hasImg?info.img:'', cat: info.catName, functional: info.functional, diff, comment: COMMENTS[info.en] || '' });
+  let tier, reason;
+  if(sh){ tier='core'; reason='上海小学 · 牛津2024内容词'; }
+  else if(info.functional){ tier='func'; reason='功能词（小学语法词，单列不计入上海小学）'; }
+  else { tier='ext'; reason='拓展 · 难度「'+diffLabel+'」'; }
+  DATA.push({ w:info.en, zh:info.zh, tier, reason, img: hasImg?info.img:'', cat: info.catName, functional: info.functional, diff, comment: COMMENTS[info.en] || '' });
 }
-// 排序：① 核心→拓展 在前 ② 难度 diff 1简单→3难 ③ A-Z 兜底（与 app compareWords 一致）
-DATA.sort((a,b)=> (a.tier===b.tier?0:(a.tier==='core'?-1:1)) || (a.diff-b.diff) || a.w.localeCompare(b.w));
+// 排序：① 上海小学(牛津)→功能词→拓展 ② 难度 diff 1简单→3难 ③ A-Z（与 app 一致；标准缺口恒在最后）
+const TIER_ORDER = { core:0, func:1, ext:2, gap:3 };
+DATA.sort((a,b)=> (TIER_ORDER[a.tier]-TIER_ORDER[b.tier]) || (a.diff-b.diff) || a.w.localeCompare(b.w));
 
 // ---------- GAPS: Oxford standard words with NO deployed card ----------
 function dkOf(d){ const s=new Set(); for(const x of [d.en.toLowerCase(), d.img?d.img.toLowerCase():'']){ s.add(x); s.add(x.replace(/[\s_-]+/g,'')); s.add(singular(x)); s.add(singular(x.replace(/[\s_-]+/g,''))); } return s; }
@@ -175,10 +174,9 @@ GAPS.sort((a,b)=> a.w.localeCompare(b.w));
 
 // ---------- stats ----------
 const totalN = DATA.length;
-const coreN = DATA.filter(d=>d.tier==='core').length;                          // 上海小学合计（含功能词）
-const coreContentN = DATA.filter(d=>d.tier==='core' && !d.functional).length;  // 牛津内容词（不含功能词）
-const extN = totalN - coreN;
-const funcN = DATA.filter(d=>d.functional).length;                            // 功能词（已计入 core）
+const shN = DATA.filter(d=>d.tier==='core').length;        // 上海小学 = 牛津2024内容词（不含功能词）
+const funcN = DATA.filter(d=>d.tier==='func').length;      // 功能词（单列一组，不计入上海小学）
+const extN = DATA.filter(d=>d.tier==='ext').length;        // 拓展
 const imgN = DATA.filter(d=>d.img).length;
 const noimgN = totalN - imgN;
 const gapN = GAPS.length;
@@ -186,7 +184,7 @@ const gapN = GAPS.length;
 const simpleN = DATA.filter(d=>d.diff===1).length;
 const midN = DATA.filter(d=>d.diff===2).length;
 const hardN = DATA.filter(d=>d.diff===3).length;
-console.log('deployed(unique)', totalN, 'coreContent(牛津内容词)', coreContentN, 'func', funcN, 'core合计', coreN, 'ext', extN, 'img', imgN, 'noimg', noimgN, 'gaps(清洗后)', gapN, 'gap假缺口剔除(HAVE_IMG命中)', GAP_SKIPPED.length);
+console.log('deployed(unique)', totalN, '上海小学(牛津)', shN, 'func', funcN, 'ext', extN, 'img', imgN, 'noimg', noimgN, 'gaps(清洗后)', gapN, 'gap假缺口剔除(HAVE_IMG命中)', GAP_SKIPPED.length);
 console.log('剔除明细:', GAP_SKIPPED.map(s=>s.w+'('+s.orig+')').join(' | '));
 
 // ---------- HTML ----------
@@ -195,7 +193,7 @@ const html = `<!doctype html>
 <html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>英语学园 · 线上词图逐词核对（牛津上海版 2024 标准）</title>
 <style>
-:root{--gold:#C8A04B;--ink:#1d1d1f;--gray:#86868b;--line:#e5e5ea;--green:#34C759;--red:#FF3B30;--blue:#FF9F0A;--purple:#AF52DE;--bg:#fafafa;}
+:root{--gold:#C8A04B;--ink:#1d1d1f;--gray:#86868b;--line:#e5e5ea;--green:#34C759;--red:#FF3B30;--blue:#FF9F0A;--purple:#AF52DE;--orange:#FF9500;--bg:#fafafa;}
 *{box-sizing:border-box;}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;}
 .container{max-width:1280px;margin:0 auto;padding:28px 20px 80px;}
@@ -208,7 +206,7 @@ header p{color:var(--gray);margin:0 0 14px;font-size:14px;line-height:1.7;}
 .chip{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 15px;min-width:108px;}
 .chip b{display:block;font-size:21px;font-weight:700;}
 .chip span{font-size:11px;color:var(--gray);}
-.chip.core b{color:var(--green);}.chip.ext b{color:var(--red);}.chip.gap b{color:var(--blue);}.chip.total b{color:var(--gold);}.chip.diff b{color:var(--purple);}
+.chip.core b{color:var(--green);}.chip.ext b{color:var(--red);}.chip.gap b{color:var(--blue);}.chip.total b{color:var(--gold);}.chip.diff b{color:var(--purple);}.chip.func b{color:var(--orange);}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .filters button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 13px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s;}
 .filters button.active{background:var(--gold);color:#fff;border-color:var(--gold);}
@@ -265,20 +263,20 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 
 <div class="note">
   <b>上海小学词汇 = 命中牛津2024标准（启发式匹配）</b><br>
-  规则：把 txt 词条归一化（去冠词 a/an、去 a pair of / a X of 量词、去括号、简单复数转单数、短语取中心词）后，与 github 已部署词的<b>英文</b>或<b>图片 slug</b>匹配；命中即判为「上海小学」。匹配为启发式，短语/量词类可能存在少量偏差，请以下方卡片逐词核对。<br>
-  <b>逐词核对方法</b>：点「上海小学(合计)」看全部小学词；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>${gapN}</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应；功能词点「功能词」。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
+  规则：把牛津 txt 词条归一化（去冠词 a/an、去 a pair of / a X of 量词、去括号、简单复数转单数、短语取中心词）后，与线上已部署词的<b>英文</b>或<b>图片 slug</b>匹配；命中即判为「上海小学（＝牛津上海版 2024 标准词）」。<b>功能词（fw-）属小学语法词，单列一组、不计入上海小学</b>。匹配为启发式，短语/量词类可能存在少量偏差，请以下方卡片逐词核对。<br>
+  <b>逐词核对方法</b>：点「上海小学(牛津)」看全部上海小学(牛津)标准词；点「功能词」看小学语法词（单列，不计入上海小学）；点「标准缺口」看牛津要求但 app 还没有词卡的词（共 <b>${gapN}</b> 个，重点补卡对象）；点「仅看图缺失」发现词图不对应。每张卡绿/红点表示图片状态（灰=无词卡缺口）。<br>
   <b>单词顺序 & 难度（已与 app 同步）</b><br>
-  列表顺序：核心词（上海小学）全部在前 → 拓展词全部在后 → 各自内部按<b>难度 diff</b>（1 简单 → 2 中等 → 3 难）→ A-Z 兜底。难度标签来自 <code>WORD_META.diff</code>（全量覆盖 1167/1167，缺失兜底为「难」），<b>已弃用学段 age 标签</b>。点上方「难度·简单 / 中等 / 难」可分别核对各档词的分类与配图。<br>
-  <b>统计</b>：线上已部署词 <b>${totalN}</b> ｜ 上海小学合计 <b>${coreN}</b>（牛津内容词 <b>${coreContentN}</b> ＋ 功能词 <b>${funcN}</b>）｜ 拓展 <b>${extN}</b> ｜ 带图 <b>${imgN}</b> ｜ 图缺失 <b>${noimgN}</b> ｜ 标准缺口 <b>${gapN}</b>。<br>
+  列表顺序：上海小学(牛津)全部在前 → 功能词 → 拓展词 → 各自内部按<b>难度 diff</b>（1 简单 → 2 中等 → 3 难）→ A-Z 兜底；标准缺口恒在最后。难度标签来自 <code>WORD_META.diff</code>（全量覆盖 1167/1167，缺失兜底为「难」），<b>已弃用学段 age 标签</b>。点上方「难度·简单 / 中等 / 难」可分别核对各档词的分类与配图。<br>
+  <b>统计</b>：线上已部署词 <b>${totalN}</b> ｜ 上海小学(牛津) <b>${shN}</b> ｜ 功能词 <b>${funcN}</b> ｜ 拓展 <b>${extN}</b> ｜ 带图 <b>${imgN}</b> ｜ 图缺失 <b>${noimgN}</b> ｜ 标准缺口 <b>${gapN}</b>。<br>
   <b>⚠️ 标准缺口去重说明</b>：缺口判定已加入「线上 HAVE_IMG 查重」——牛津标准词若线上已有对应图片（如带 <b>the</b> 的 the Spring Festival / the Mid-autumn Festival、带弯引号的 New Year's Eve / jack-o'-lantern、大小写差异的 high / left 等），按归一化（去 the/a/an + 弯引号→直引号 + 's→-s + 去符号）命中后不再计为缺口，已剔除 <b>${GAP_SKIPPED.length}</b> 条假缺口。这类词线上其实已有图，仅需按标准词形补词卡即可，无需重出图。<br>
   <b>逐词评价</b>：点每张卡下方的「✎ 写评价」按钮，该卡<b>就地展开一个文本框</b>（不再弹窗），可写「图要重出 / 标签要改 / 归错类」等意见，<b>自动存浏览器本地（刷新不丢）</b>；上方「⬇️ 导出评价」下载 JSON 发我，或存为 <code>_vocab_comments.json</code> 让我重生成时嵌入；「⬆️ 导入评价」重新载入。列表默认只渲染 80 张，点「加载更多」继续翻看，避免一次载入全部卡片卡顿。
 </div>
 
 <div class="stats">
   <div class="chip total"><b>${totalN}</b><span>线上已部署词</span></div>
-  <div class="chip core"><b>${coreContentN}</b><span>牛津内容词</span></div>
+  <div class="chip core"><b>${shN}</b><span>上海小学(牛津)</span></div>
+  <div class="chip func"><b>${funcN}</b><span>功能词</span></div>
   <div class="chip ext"><b>${extN}</b><span>拓展</span></div>
-  <div class="chip core"><b>${funcN}</b><span>功能词</span></div>
   <div class="chip diff"><b>${simpleN}</b><span>难度·简单</span></div>
   <div class="chip diff"><b>${midN}</b><span>难度·中等</span></div>
   <div class="chip diff"><b>${hardN}</b><span>难度·难</span></div>
@@ -289,10 +287,9 @@ footer{margin-top:50px;color:var(--gray);font-size:12px;text-align:center;}
 
 <div class="filters">
   <button data-f="all" class="active">全部 <b>${ALL.length}</b></button>
-  <button data-f="core">上海小学(合计) <b>${coreN}</b></button>
-  <button data-f="oxcontent">牛津内容词 <b>${coreContentN}</b></button>
-  <button data-f="ext">拓展 <b>${extN}</b></button>
+  <button data-f="core">上海小学(牛津) <b>${shN}</b></button>
   <button data-f="func">功能词 <b>${funcN}</b></button>
+  <button data-f="ext">拓展 <b>${extN}</b></button>
   <button data-f="d1">难度·简单 <b>${simpleN}</b></button>
   <button data-f="d2">难度·中等 <b>${midN}</b></button>
   <button data-f="d3">难度·难 <b>${hardN}</b></button>
@@ -358,9 +355,8 @@ function replaceCmt(w){
 function matches(d){
   if(filter === 'all') return true;
   if(filter === 'core') return d.tier === 'core';
-  if(filter === 'oxcontent') return d.tier === 'core' && !d.functional;
+  if(filter === 'func') return d.tier === 'func';
   if(filter === 'ext') return d.tier === 'ext';
-  if(filter === 'func') return !!d.functional;
   if(filter === 'd1') return d.tier !== 'gap' && d.diff === 1;
   if(filter === 'd2') return d.tier !== 'gap' && d.diff === 2;
   if(filter === 'd3') return d.tier !== 'gap' && d.diff === 3;
@@ -377,8 +373,8 @@ function makeCard(d){
       ? '<div class="thumb"><img src="images/' + d.img + '.webp" loading="lazy" onerror="imgFail(this)"></div>'
       : '<div class="thumb"><div class="noimg">暂无图<br>(HAVE_IMG 无此 slug)</div></div>');
   var dot = d.img ? '<span class="dot ok" title="图片存在"></span>' : (d.tier === 'gap' ? '' : '<span class="dot miss" title="图片缺失"></span>');
-  var tierBadge = d.tier === 'core' ? '<span class="badge core">📘 上海小学</span>' : d.tier === 'ext' ? '<span class="badge ext">📙 拓展</span>' : '<span class="badge gap">⚠️ 标准缺口</span>';
-  var funcBadge = d.functional ? '<span class="badge func">功能词</span>' : '';
+  var tierBadge = d.tier === 'core' ? '<span class="badge core">📘 上海小学</span>' : d.tier === 'func' ? '<span class="badge func">🔤 功能词</span>' : d.tier === 'ext' ? '<span class="badge ext">📙 拓展</span>' : '<span class="badge gap">⚠️ 标准缺口</span>';
+  var funcBadge = '';
   var diffBadge = d.tier === 'gap' ? '' : '<span class="badge diff">难度·' + (d.diff===1?'简单':d.diff===2?'中等':'难') + '</span>';
   var cmt = '<div class="card-cmt" data-w="' + d.w + '">' + cmtInner(d.w) + '</div>';
   var origLine = d.orig ? '<div class="orig">原始词形: ' + esc(d.orig) + '</div>' : '';
