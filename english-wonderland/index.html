@@ -445,22 +445,34 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .shop-tabs{display:flex;gap:8px;margin:4px 0 10px;background:#f2f4f3;border-radius:12px;padding:4px;}
 .shop-tab{flex:1;border:none;background:transparent;border-radius:9px;padding:8px;font-size:14px;font-weight:bold;color:#777;cursor:pointer;}
 .shop-tab.active{background:#fff;color:#0c8f7d;box-shadow:0 2px 6px rgba(0,0,0,.08);}
-.box-top{display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between;background:#fbf7ee;border:1px solid #f0e2c0;border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+.box-top{display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between;background:linear-gradient(135deg,#fdf6e3,#fbf0d4);border:1px solid #f0e2c0;border-radius:12px;padding:10px 12px;margin-bottom:8px;}
 .box-stat{font-size:13px;color:#7a6a3a;}
 .box-stat b{color:#b8860b;}
 .box-msg{min-height:18px;font-size:13px;text-align:center;color:#0c8f7d;margin:4px 0;}
 .box-hint{font-size:11px;color:#999;text-align:center;margin-bottom:10px;}
-.box-grid-name{font-size:13px;font-weight:bold;color:#555;margin:12px 0 8px;}
+.box-grid-name{font-size:13px;font-weight:bold;color:#555;margin:14px 0 8px;padding-left:8px;border-left:4px solid #ffb74d;line-height:1.2;}
 .box-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .box-cell{position:relative;border:2px solid #eee;border-radius:12px;padding:8px 4px;text-align:center;background:#fff;cursor:pointer;transition:all .15s;}
+.box-cell:active{transform:scale(.96);}
 .box-cell .box-ic{font-size:34px;line-height:1.2;display:block;}
 .box-cell .box-nm{font-size:10px;color:#666;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .box-cell .box-rr{font-size:9px;color:#fff;border-radius:6px;padding:1px 5px;display:inline-block;margin-top:2px;}
 .box-cell.locked{background:#f7f7f7;border-style:dashed;opacity:.55;}
 .box-cell.showing{border-color:#ffb74d;box-shadow:0 0 0 2px #ffe0b2;}
 .box-pool{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.box-pool-item{font-size:11px;color:#555;background:#fafafa;border-radius:8px;padding:5px 8px;display:flex;justify-content:space-between;}
-.box-pool-item b{color:#b8860b;}
+.box-pool-item{font-size:11px;color:#555;background:#fff;border:1px solid #f0e2c0;border-radius:10px;padding:5px 8px;display:flex;align-items:center;gap:6px;}
+.box-pool-ic{width:30px;display:flex;justify-content:center;flex-shrink:0;}
+.box-pool-img{width:28px;height:28px;object-fit:contain;}
+.box-pool-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.box-pool-rr{color:#fff;font-size:9px;border-radius:6px;padding:1px 5px;flex-shrink:0;}
+.box-pool-w{color:#fff;font-size:10px;border-radius:8px;padding:2px 6px;flex-shrink:0;}
+.box-draws-empty{font-size:12px;color:#bbb;text-align:center;padding:12px 0;}
+.box-draw-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #f0e2c0;border-radius:10px;padding:6px 10px;margin:5px 0;font-size:12px;}
+.box-draw-ic{width:30px;display:flex;justify-content:center;flex-shrink:0;}
+.box-draw-img{width:28px;height:28px;object-fit:contain;}
+.box-draw-name{flex:1;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.box-draw-date{color:#bbb;font-size:11px;flex-shrink:0;}
+.box-draw-rr{color:#fff;font-size:10px;border-radius:6px;padding:1px 6px;flex-shrink:0;}
 .box-celebrate{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;animation:boxFade .25s;}
 @keyframes boxFade{from{opacity:0}to{opacity:1}}
 .box-celebrate-box{background:#fff;border-radius:20px;padding:26px 22px;text-align:center;max-width:320px;width:88%;animation:boxPop .4s cubic-bezier(.2,1.4,.4,1);}
@@ -646,16 +658,18 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     <div id="boxPanel" style="display:none">
       <div class="box-top">
         <div class="box-stat">🎟️ 抽奖机会 <b id="boxTickets">—</b></div>
-        <div class="box-stat">📅 今日 <b id="boxToday">0/1</b></div>
+        <div class="box-stat">📅 今日 <b id="boxToday">0/2</b></div>
         <div class="box-stat">⭐ 盲盒入账 <b id="boxPoints">—</b></div>
       </div>
-      <button class="game-btn green" id="boxDrawBtn" onclick="boxDraw()" style="width:100%;font-size:18px;padding:14px;margin:10px 0">🎁 抽盲盒（每日 1 次）</button>
+      <button class="game-btn green" id="boxDrawBtn" onclick="boxDraw()" style="width:100%;font-size:18px;padding:14px;margin:10px 0">🎁 抽盲盒（今日 0/2）</button>
       <div class="box-msg" id="boxMsg"></div>
-      <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 无保底 · 重复自动折积分</div>
-      <div class="box-grid-name">我的宠物</div>
-      <div class="box-grid" id="boxGrid"></div>
-      <div class="box-grid-name">奖池与概率</div>
+      <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 每日最多 2 次 · 重复自动折积分</div>
+      <div class="box-grid-name">🎯 奖池与概率</div>
       <div class="box-pool" id="boxPool"></div>
+      <div class="box-grid-name">🐾 我的宠物</div>
+      <div class="box-grid" id="boxGrid"></div>
+      <div class="box-grid-name">📜 抽奖记录</div>
+      <div id="boxDraws"></div>
     </div>
   </div>
 </div>
@@ -5409,26 +5423,23 @@ const ORDER_BY_CAT = {
   transport: [ORDER_GROUPS.transport],
   festivals: [ORDER_SEQ.festivals, ORDER_GROUPS.festivalsItems, ORDER_GROUPS.festivalsActions]
 };
+/* 难度轴：WORD_META.age 学段 → 简单→难（无 age 标签的放最后） */
+const AGE_RANK = { '5-6': 0, '6-7': 1, '7-8': 2, '12-18': 3, '15-18': 4 };
+function ageRankOf(word){ const a = meta(word).age; return (a in AGE_RANK) ? AGE_RANK[a] : 5; }
+/* 词条比较器：① 简单→难(age) ② 核心→拓展(tier) ③ 英文 A-Z 兜底 */
+function compareWords(catIdA, ea, catIdB, eb){
+  const ar = ageRankOf(ea) - ageRankOf(eb);
+  if (ar !== 0) return ar;
+  const tr = (tierOfWord(catIdA, ea)==='core'?0:1) - (tierOfWord(catIdB, eb)==='core'?0:1);
+  if (tr !== 0) return tr;
+  const la = ea.toLowerCase(), lb = eb.toLowerCase();
+  return la < lb ? -1 : la > lb ? 1 : 0;
+}
 function orderWords(catId, words){
-  let rules = ORDER_BY_CAT[catId];
-  if(!rules) rules = [];
-  const pos = {};
-  rules.forEach((grp, gi)=> grp.forEach((en, i)=>{ if(!(en in pos)) pos[en] = {g:gi, i:i}; }));
   const enOf = w => Array.isArray(w) ? w[0] : w;
   return words.slice().sort((a,b)=>{
     const ea = enOf(a), eb = enOf(b);
-    /* ① 核心词排前、拓展词排后(同分类内) */
-    const ta = tierOfWord(catId, ea), tb = tierOfWord(catId, eb);
-    const tr = (t=> t==='core'?0:1)(ta) - (t=> t==='core'?0:1)(tb);
-    if(tr!==0) return tr;
-    /* ② 分类自定义顺序优先 */
-    const pa = pos[ea], pb = pos[eb];
-    if(pa && pb){ if(pa.g!==pb.g) return pa.g-pb.g; return pa.i-pb.i; }
-    if(pa && !pb) return -1;
-    if(!pa && pb) return 1;
-    /* ③ 英文升序兜底 */
-    const la = ea.toLowerCase(), lb = eb.toLowerCase();
-    return la<lb ? -1 : la>lb ? 1 : 0;
+    return compareWords(catId, ea, catId, eb);
   });
 }
 /* 反义/近义词对 → 用于"正反义、近义相邻"归组(同分类内) */
@@ -5443,49 +5454,31 @@ const PAIR_GROUPS = [];
 }
 function buildList(){
   cardList=[];
-  // 分类优先级: 核心分类整体排前、拓展分类整体排后
   const cats = SORTED_CATS().filter(c=>{
     if(!curSearch && curCat!=='all' && c.id!==curCat) return false;
     return true;
   });
-  const tierOfCatRank = c => (tierOfCat(c.id)==='core'?0:1);
-  cats.sort((a,b)=>{
-    const r = tierOfCatRank(a)-tierOfCatRank(b);
-    if(r!==0) return r;
-    return SORTED_CATS().indexOf(a)-SORTED_CATS().indexOf(b); // 维持认知梯度
-  });
+  const items=[];
   cats.forEach(c=>{
-    orderWords(c.id, c.words).forEach(w=>{
+    c.words.forEach(w=>{
       const lv=getLevel(c.id,w[0]);
       if(curFilter==='todo' && lv>=3) return;
       if(curFilter==='done' && lv<3) return;
       if(curSearch){ const en=w[0].toLowerCase(), zh=w[1]; if(en.indexOf(curSearch)===-1 && zh.indexOf(curSearch)===-1) return; }
       if(curRegion!=='all'){ const r=regionOf(w); if(r!=='both' && r!==curRegion) return; }
       if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
-      cardList.push({cat:c,w:w});
+      items.push({cat:c,w:w});
     });
   });
-  /* 分类边界已固定(核心分类在前、拓展在后)。下面在每个分类【内部】做相邻归组:
-     - US/英式变体紧跟基词, 且 US 在前(若两者都在)
-     - 正反义/近义词同组相邻(同分类内) */
+  /* 全局排序：① 简单→难(age) ② 核心→拓展 ③ A-Z（跨分类统一梯度，不再按分类分块） */
+  items.sort((a,b)=>compareWords(a.cat.id, a.w[0], b.cat.id, b.w[0]));
+  cardList=items;
+  /* 相邻归组（全局）：变体紧跟基词 + 正反义/近义词同现 */
   if(!curShuffle && !curSearch){
     const enKey = it => (Array.isArray(it.w)?it.w[0]:it.w);
     const regOf = it => regionOf(enKey(it));
-    const out = [];
-    let i = 0;
-    while(i < cardList.length){
-      const catId = cardList[i].cat.id;
-      // 收集同分类连续片段
-      let j = i; while(j < cardList.length && cardList[j].cat.id===catId) j++;
-      let seg = cardList.slice(i, j);
-      // ① 变体归并: 把 EXTRA 变体移到其基准词之后; 同一基准的 US 在前
-      seg = clusterVariants(seg, enKey, regOf);
-      // ② 正反义/近义相邻(同分类内)
-      seg = clusterPairs(seg, enKey);
-      out.push(...seg);
-      i = j;
-    }
-    cardList = out;
+    cardList = clusterVariants(cardList, enKey, regOf);
+    cardList = clusterPairs(cardList, enKey);
   }
   if(curShuffle && !curSearch) cardList=shuffleArr(cardList);
   if(cardIdx>=cardList.length) cardIdx=Math.max(0,cardList.length-1);
@@ -5789,20 +5782,32 @@ function gameBuildQueue(){
   const now=Date.now();
   const budget=Math.max(0, DAILY_NEW_CAP - getDailyNew());  // 今日剩余新词额度
   const all=[]; let newUsed=0;
+  const early=[];   // 已见未到期 → 兜底「提前复习」
+  const master=[];  // 已掌握 → 最后兜底「自由复习」
   CATS.forEach(c=>c.words.forEach(w=>{
     if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
     const key=wordKey(c.id,w[0]);
     const lv=getLevel(c.id,w[0]);
-    if(lv>=3) return;
     const r=review[key];
+    if(lv>=3){ master.push({cat:c,w,key,lv,isNew:false}); return; }
     const isNew=(lv===0 && !r);
     const isDue=(r && r.due && r.due<=now);
     if(isNew){
       if(newUsed>=budget) return;   // 今日新词已达上限,本轮只放复习词
       newUsed++;
+      all.push({cat:c,w,key,lv,isNew});
+    } else if(isDue){
+      all.push({cat:c,w,key,lv,isNew});
+    } else if(r){
+      early.push({cat:c,w,key,lv,isNew});
     }
-    if(isNew||isDue) all.push({cat:c,w,key,lv,isNew});
   }));
+  /* 兜底防死局：今日新词额度用完且无到期复习时，先「提前复习」已见未到期词，
+     再不行复习已掌握词——只要词库非空就一定有得练（不消耗每日新词额度） */
+  if(!all.length){
+    if(early.length) all.push(...early.slice(0,GAME_PER_SESSION));
+    else if(master.length) all.push(...master.slice(0,GAME_PER_SESSION));
+  }
   all.sort((a,b)=>(a.isNew?-1:1)-(b.isNew?-1:1));
   return all.slice(0,GAME_PER_SESSION);
 }
@@ -5932,11 +5937,12 @@ function gameRenderEmpty(){
   document.getElementById('gameStage').innerHTML =
     '<div class="game-scene" style="text-align:center">'+
     '<div style="font-size:80px">🎉</div>'+
-    '<div class="game-h1">今天没词啦</div>'+
-    '<div class="game-h2">所有词都已掌握,或复习都做完了</div>'+
-    '<button class="game-btn green" onclick="gameStart()">🔄 再刷一次</button>'+
+    '<div class="game-h1">暂时没有可练的词</div>'+
+    '<div class="game-h2">换个玩法或明天再来，学过的词随时可以复习</div>'+
+    '<button class="game-btn green" onclick="gameFreshStart()">🔄 再刷一次（复习）</button>'+
     '</div>';
 }
+function gameFreshStart(){ gameClearSave(); gameStart(); }
 /* 听音选图 */
 function gameActListen(){
   gameCurActFn=gameActListen;
@@ -6775,11 +6781,24 @@ async function loadBox(){
   const res=await api('/api/box?token='+encodeURIComponent(auth.token));
   if(!res.ok) return;
   auth.box=res.data; saveAuth(auth);
-  const t=document.getElementById('boxTickets'),td=document.getElementById('boxToday'),bp=document.getElementById('boxPoints');
+  const t=document.getElementById('boxTickets'),td=document.getElementById('boxToday'),bp=document.getElementById('boxPoints'),btn=document.getElementById('boxDrawBtn');
   if(t) t.textContent=res.data.tickets!=null?res.data.tickets:'—';
-  if(td) td.textContent=(res.data.drewToday?'1/1':'0/1');
+  const tc=res.data.todayCount!=null?res.data.todayCount:0;
+  if(td) td.textContent=tc+'/2';
+  if(btn) btn.textContent='🎁 抽盲盒（今日 '+tc+'/2）';
   if(bp) bp.textContent=(res.data.box_points!=null?res.data.box_points:0)+' 分';
-  renderBoxGrid(); renderBoxPool(); renderMyPets();
+  renderBoxGrid(); renderBoxPool(); renderMyPets(); renderBoxDraws();
+}
+function renderBoxDraws(){
+  const g=document.getElementById('boxDraws'); if(!g) return;
+  const draws=(auth&&auth.box&&auth.box.draws)||[];
+  if(!draws.length){ g.innerHTML='<div class="box-draws-empty">还没有抽奖记录，快来试试手气～</div>'; return; }
+  g.innerHTML=draws.map(d=>{
+    const rr=d.rarity?PET_RARITY[d.rarity]:{t:'积分',c:'#E0A800'};
+    const ic=d.kind==='points'?'💰':petIconHtml(d.slug,'box-draw-img');
+    const nm=d.kind==='dupe'?(d.name+'（重复→'+d.points+'分）'):d.name;
+    return '<div class="box-draw-item"><span class="box-draw-ic">'+ic+'</span><span class="box-draw-name">'+esc(nm)+'</span><span class="box-draw-date">'+d.date.slice(5)+'</span><span class="box-draw-rr" style="background:'+rr.c+'">'+rr.t+'</span></div>';
+  }).join('');
 }
 function renderBoxGrid(){
   const g=document.getElementById('boxGrid'); if(!g) return;
@@ -6800,8 +6819,11 @@ function renderBoxPool(){
   const pool=(auth&&auth.box&&auth.box.pool)||[];
   if(!pool.length) return;
   g.innerHTML=pool.map(p=>{
-    const rr=PET_RARITY[p.rarity]||{t:'积分',c:'#e0a800'};
-    return '<div class="box-pool-item"><span>'+p.name+'</span><b>'+(p.rarity?rr.t:p.name)+' · '+(p.weight||0)+'%</b></div>';
+    if(p.kind==='points'){
+      return '<div class="box-pool-item"><span class="box-pool-ic">💰</span><span class="box-pool-name">'+p.name+'</span><b class="box-pool-w" style="background:#E0A800">'+(p.weight||0)+'%</b></div>';
+    }
+    const rr=PET_RARITY[p.rarity]||{t:'',c:'#888'};
+    return '<div class="box-pool-item"><span class="box-pool-ic">'+petIconHtml(p.slug,'box-pool-img')+'</span><span class="box-pool-name">'+p.name+'</span><span class="box-pool-rr" style="background:'+rr.c+'">'+rr.t+'</span><b class="box-pool-w" style="background:'+rr.c+'">'+(p.weight||0)+'%</b></div>';
   }).join('');
 }
 async function boxDraw(){

@@ -33,13 +33,33 @@ async function ensureTables(db) {
     rarity TEXT NOT NULL DEFAULT 'common',
     PRIMARY KEY (user_id, slug)
   )`).run().catch(() => {});
+  // box_draws：旧版主键 (user_id,date) 只允许每日 1 次；v2 迁移为自增 id，支持每日多次 + 抽奖记录。
+  // 检测旧结构（无 id 列）→ 改名重建并保留历史数据；表不存在则直接建新结构。
+  try {
+    const info = await db.prepare('PRAGMA table_info(box_draws)').all();
+    const cols = (info.results || []).map(r => r.name);
+    if (cols.length && !cols.includes('id')) {
+      await db.prepare('ALTER TABLE box_draws RENAME TO box_draws_old').run();
+      await db.prepare(`CREATE TABLE box_draws(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        result TEXT NOT NULL
+      )`).run();
+      await db.prepare('INSERT INTO box_draws(user_id, date, result) SELECT user_id, date, result FROM box_draws_old').run();
+      await db.prepare('DROP TABLE box_draws_old').run();
+    }
+  } catch (e) {}
   await db.prepare(`CREATE TABLE IF NOT EXISTS box_draws(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     date TEXT NOT NULL,
-    result TEXT NOT NULL,
-    PRIMARY KEY (user_id, date)
+    result TEXT NOT NULL
   )`).run().catch(() => {});
 }
+
+// 每日抽取上限（用户 2026-08-20 确认：1 → 2 次）
+const DAILY_DRAW_LIMIT = 2;
 
 // rate_limit 辅助：box_points 累计盲盒入账积分（window='all'）；box_used 累计已用机会（window='all'）；box_bonus 管理员赠送机会（window='all'）
 async function counterGet(db, kind, key) {
@@ -72,12 +92,23 @@ export async function onRequestGet(ctx) {
   const bonus = await counterGet(db, 'box_bonus', u.id);
   const boxPoints = await counterGet(db, 'box_points', u.id);
   const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus - used;
-  const drewToday = (await db.prepare('SELECT 1 AS x FROM box_draws WHERE user_id=? AND date=?').bind(u.id, cnDate({})).first()) ? true : false;
+  const today = cnDate({});
+  const todayCount = (await db.prepare('SELECT COUNT(*) AS n FROM box_draws WHERE user_id=? AND date=?').bind(u.id, today).first()).n || 0;
+  const draws = (await db.prepare('SELECT date, result FROM box_draws WHERE user_id=? ORDER BY id DESC LIMIT 8').bind(u.id).all()).results.map(r => {
+    const o = { date: r.date, kind: 'pet' };
+    try {
+      const x = JSON.parse(r.result);
+      o.kind = x.kind || 'pet'; o.slug = x.slug || ''; o.rarity = x.rarity || ''; o.name = x.name || ''; o.points = x.points || 0;
+    } catch (e) {}
+    return o;
+  });
   return json({
     tickets: Math.max(0, tickets),
-    drewToday,
+    todayCount,
+    drewToday: todayCount >= DAILY_DRAW_LIMIT,
     owned,
     box_points: boxPoints,
+    draws,
     pool: POOL.map(p => ({ slug: p.slug, name: p.name, rarity: p.rarity || '', kind: p.kind || 'pet', weight: p.weight }))
   });
 }
@@ -105,8 +136,8 @@ export async function onRequestPost(ctx) {
   await ensureTables(db);
 
   const today = cnDate(body);
-  const drew = await db.prepare('SELECT 1 AS x FROM box_draws WHERE user_id=? AND date=?').bind(u.id, today).first();
-  if (drew) return json({ error: '今天已经抽过啦，明天再来' }, 400);
+  const todayCount = (await db.prepare('SELECT COUNT(*) AS n FROM box_draws WHERE user_id=? AND date=?').bind(u.id, today).first()).n || 0;
+  if (todayCount >= DAILY_DRAW_LIMIT) return json({ error: '今天已经抽过 ' + DAILY_DRAW_LIMIT + ' 次啦，明天再来' }, 400);
 
   const mastered = (await db.prepare('SELECT COUNT(*) AS n FROM progress WHERE user_id=? AND level>=3').bind(u.id).first()).n;
   const usr = await db.prepare('SELECT game_stars FROM users WHERE id=?').bind(u.id).first();
