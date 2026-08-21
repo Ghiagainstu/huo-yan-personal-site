@@ -464,11 +464,16 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .box-draw-btn:active{transform:scale(.97);}
 .box-draw-btn.box-btn-dis{background:linear-gradient(135deg,#cfd8dc,#b0bec5);box-shadow:none;cursor:not-allowed;opacity:.7;}
 .box-draw-btn.box-btn-dis:hover{transform:none;box-shadow:none;}
-/* 抽盲盒进行中：金色旋转光边（轻量方案A） */
-.box-draw-btn.drawing{position:relative;animation:boxBtnPulse 1.2s ease-in-out infinite;}
-.box-draw-btn.drawing::before{content:'';position:absolute;inset:-4px;border-radius:20px;border:3px solid transparent;border-top-color:#FFD54F;border-right-color:#FFB300;border-bottom-color:#FF8A3D;border-left-color:#FFD54F;animation:boxSpin 1s linear infinite;pointer-events:none;}
+/* 抽盲盒：宠物转盘悬念动画 */
+.box-spin{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;animation:boxFade .25s;}
+.box-spin-frame{width:190px;height:190px;border-radius:26px;background:linear-gradient(160deg,#fff8e1,#ffe0b2);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 12px 44px rgba(0,0,0,.35);}
+.box-spin-frame::before{content:'';position:absolute;inset:-6px;border-radius:32px;border:4px solid transparent;border-top-color:#FFD54F;border-right-color:#FFB300;border-bottom-color:#FF8A3D;border-left-color:#FFD54F;animation:boxSpin .9s linear infinite;}
+.box-spin-slot{width:150px;height:150px;display:flex;align-items:center;justify-content:center;}
+.box-spin-slot img{width:100%;height:100%;object-fit:contain;animation:boxSlotPop .12s ease-out;}
+.box-spin-ic{font-size:90px;line-height:1;}
+.box-spin-tt{color:#fff;font-size:16px;font-weight:bold;margin-top:20px;letter-spacing:3px;animation:boxFade .3s;}
 @keyframes boxSpin{to{transform:rotate(360deg);}}
-@keyframes boxBtnPulse{0%,100%{box-shadow:0 4px 14px rgba(255,138,61,.35);}50%{box-shadow:0 4px 20px rgba(255,213,79,.75);}}
+@keyframes boxSlotPop{0%{transform:scale(.82);}100%{transform:scale(1);}}
 .box-msg{min-height:18px;font-size:13px;text-align:center;color:#0c8f7d;margin:4px 0;}
 .box-hint{font-size:11px;color:#999;text-align:center;margin-bottom:10px;}
 .box-grid-name{font-size:13px;font-weight:bold;color:#555;margin:14px 0 8px;padding-left:8px;border-left:4px solid #ffb74d;line-height:1.2;}
@@ -7381,37 +7386,57 @@ function renderBoxPool(){
 async function boxDraw(){
   if(!auth){showToast('先登录才能抽盲盒哦','err');return;}
   const btn=document.getElementById('boxDrawBtn');
-  const btnOrig=btn?btn.innerHTML:'';
-  if(btn){ btn.disabled=true; btn.classList.add('drawing'); btn.textContent='🎁 开盒中…'; }
+  if(btn) btn.disabled=true;
   const msg=document.getElementById('boxMsg'); if(msg) msg.textContent='';
   const res=await api('/api/box',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token})});
   if(!res.ok){
-    if(btn){ btn.disabled=false; btn.classList.remove('drawing'); btn.innerHTML=btnOrig; }
+    if(btn) btn.disabled=false;
     if(msg) msg.textContent=res.data.error||'抽取失败';
     showToast(res.data.error||'抽取失败','err'); return;
   }
-  // 结果先行：立刻弹结果，数据并行后台刷新（消除等待感）
+  // 宠物转盘动画（悬念几秒）→ 定格结果；数据并行后台刷新
   boxCelebrate(res.data.result);
   await Promise.all([loadBox(), loadMe()]);
   updateAuthUI(); renderShop();
-  if(btn) btn.classList.remove('drawing');
 }
+/* 抽盲盒：宠物转盘悬念动画 → 定格结果展示 */
 function boxCelebrate(result){
-  let ic,tt,st;
-  if(result.kind==='points'){ ic='💰'; tt=result.name; st='积分已入账，可以去商城用啦'; }
-  else {
-    const rr=PET_RARITY[result.rarity]||{t:'',c:'#888'};
-    ic=petIconHtml(result.slug,'box-big');
-    tt=result.name+(result.kind==='dupe'?'（已拥有）':' 到手啦！');
-    st=result.kind==='dupe'?('重复装扮 → 已折算 ⭐'+result.points+' 积分'):('稀有度：'+rr.t);
+  const ov=document.createElement('div');
+  ov.className='box-spin';
+  ov.innerHTML='<div class="box-spin-frame"><div class="box-spin-slot" id="spinSlot"></div></div>'+
+    '<div class="box-spin-tt">开盒中…</div>';
+  document.body.appendChild(ov);
+  const slot=ov.querySelector('#spinSlot');
+  const pool=PET_META.map(p=>p.slug);
+  let idx=0;
+  const put=s=>{ slot.innerHTML=s==='points'?'<span class="box-spin-ic">💰</span>':petIconHtml(s,'box-spin-img'); };
+  // 第一段：快速轮转（约 22 帧 × 55ms ≈ 1.2s）
+  function fast(){
+    put(pool[idx%pool.length]); idx++;
+    if(idx<22){ setTimeout(fast,55); } else slow(160);
   }
-  const el=document.createElement('div');
-  el.className='box-celebrate';
-  el.innerHTML='<div class="box-celebrate-box">'+ic+'<div class="box-tt">'+tt+'</div><div class="box-st">'+st+'</div>'+
-    '<div class="box-btns"><button class="game-btn green" onclick="this.closest(\'.box-celebrate\').remove();openBox()">🎁 再去抽</button>'+
-    '<button class="game-btn ghost" onclick="this.closest(\'.box-celebrate\').remove()">收下啦</button></div></div>';
-  document.body.appendChild(el);
-  el.addEventListener('click',e=>{ if(e.target===el) el.remove(); });
+  // 第二段：逐步减速（160ms 起每次 +45ms，约 7 帧 ≈ 2s），营造悬念
+  function slow(speed){
+    put(pool[idx%pool.length]); idx++;
+    if(speed<=430){ setTimeout(()=>slow(speed+45),speed); } else finish();
+  }
+  // 定格：切换为结果视图（金色边框停转、弹入结果卡）
+  function finish(){
+    ov.className='box-celebrate';
+    let ic,tt,st;
+    if(result.kind==='points'){ ic='💰'; tt=result.name; st='积分已入账，可以去商城用啦'; }
+    else {
+      const rr=PET_RARITY[result.rarity]||{t:'',c:'#888'};
+      ic=petIconHtml(result.slug,'box-big');
+      tt=result.name+(result.kind==='dupe'?'（已拥有）':' 到手啦！');
+      st=result.kind==='dupe'?('重复装扮 → 已折算 ⭐'+result.points+' 积分'):('稀有度：'+rr.t);
+    }
+    ov.innerHTML='<div class="box-celebrate-box">'+ic+'<div class="box-tt">'+tt+'</div><div class="box-st">'+st+'</div>'+
+      '<div class="box-btns"><button class="game-btn green" onclick="this.closest(\'.box-celebrate\').remove();openBox()">🎁 再去抽</button>'+
+      '<button class="game-btn ghost" onclick="this.closest(\'.box-celebrate\').remove()">收下啦</button></div></div>';
+    ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  }
+  setTimeout(fast,80);
 }
 function renderMyPets(){
   const grid=document.getElementById('myPetGrid'); if(!grid) return;
