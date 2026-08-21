@@ -464,6 +464,11 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .box-draw-btn:active{transform:scale(.97);}
 .box-draw-btn.box-btn-dis{background:linear-gradient(135deg,#cfd8dc,#b0bec5);box-shadow:none;cursor:not-allowed;opacity:.7;}
 .box-draw-btn.box-btn-dis:hover{transform:none;box-shadow:none;}
+/* 抽盲盒进行中：金色旋转光边（轻量方案A） */
+.box-draw-btn.drawing{position:relative;animation:boxBtnPulse 1.2s ease-in-out infinite;}
+.box-draw-btn.drawing::before{content:'';position:absolute;inset:-4px;border-radius:20px;border:3px solid transparent;border-top-color:#FFD54F;border-right-color:#FFB300;border-bottom-color:#FF8A3D;border-left-color:#FFD54F;animation:boxSpin 1s linear infinite;pointer-events:none;}
+@keyframes boxSpin{to{transform:rotate(360deg);}}
+@keyframes boxBtnPulse{0%,100%{box-shadow:0 4px 14px rgba(255,138,61,.35);}50%{box-shadow:0 4px 20px rgba(255,213,79,.75);}}
 .box-msg{min-height:18px;font-size:13px;text-align:center;color:#0c8f7d;margin:4px 0;}
 .box-hint{font-size:11px;color:#999;text-align:center;margin-bottom:10px;}
 .box-grid-name{font-size:13px;font-weight:bold;color:#555;margin:14px 0 8px;padding-left:8px;border-left:4px solid #ffb74d;line-height:1.2;}
@@ -712,10 +717,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       <button class="game-btn box-draw-btn" id="boxDrawBtn" onclick="boxDraw()">🎁 抽盲盒（今日 0/2）</button>
       <div class="box-msg" id="boxMsg"></div>
       <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 每日最多 2 次 · 重复自动折积分</div>
-      <div class="box-grid-name">🎯 奖池与概率</div>
-      <div class="box-pool" id="boxPool"></div>
       <div class="box-grid-name">🐾 我的宠物</div>
       <div class="box-grid" id="boxGrid"></div>
+      <div class="box-grid-name">🎯 奖池与概率</div>
+      <div class="box-pool" id="boxPool"></div>
       <div class="box-grid-name">📜 抽奖记录</div>
       <div id="boxDraws"></div>
     </div>
@@ -7376,13 +7381,20 @@ function renderBoxPool(){
 async function boxDraw(){
   if(!auth){showToast('先登录才能抽盲盒哦','err');return;}
   const btn=document.getElementById('boxDrawBtn');
-  if(btn) btn.disabled=true;
+  const btnOrig=btn?btn.innerHTML:'';
+  if(btn){ btn.disabled=true; btn.classList.add('drawing'); btn.textContent='🎁 开盒中…'; }
   const msg=document.getElementById('boxMsg'); if(msg) msg.textContent='';
   const res=await api('/api/box',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token})});
-  if(btn) btn.disabled=false;
-  if(!res.ok){ if(msg) msg.textContent=res.data.error||'抽取失败'; showToast(res.data.error||'抽取失败','err'); return; }
-  await loadBox(); await loadMe(); updateAuthUI(); renderShop();
+  if(!res.ok){
+    if(btn){ btn.disabled=false; btn.classList.remove('drawing'); btn.innerHTML=btnOrig; }
+    if(msg) msg.textContent=res.data.error||'抽取失败';
+    showToast(res.data.error||'抽取失败','err'); return;
+  }
+  // 结果先行：立刻弹结果，数据并行后台刷新（消除等待感）
   boxCelebrate(res.data.result);
+  await Promise.all([loadBox(), loadMe()]);
+  updateAuthUI(); renderShop();
+  if(btn) btn.classList.remove('drawing');
 }
 function boxCelebrate(result){
   let ic,tt,st;
