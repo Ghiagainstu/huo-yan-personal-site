@@ -282,9 +282,10 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
   <div class="modal-box">
     <div class="mb-head"><h4>登录 / 注册（昵称 + 4位PIN）</h4></div>
     <div class="mb-body">
-      <div style="font-size:.78rem;color:var(--text-light);margin-bottom:8px">用于云端同步买菜记账，多设备共享。新昵称即注册。</div>
+      <div style="font-size:.78rem;color:var(--text-light);margin-bottom:8px">用于云端同步买菜记账，多设备共享。已存在的昵称直接登录；新昵称将自动注册。</div>
       <div style="display:flex;gap:8px;margin-bottom:8px"><input id="authName" placeholder="昵称" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.85rem"></div>
       <div style="display:flex;gap:8px;margin-bottom:8px"><input id="authPin" type="password" inputmode="numeric" maxlength="4" placeholder="4位PIN" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.85rem"></div>
+      <div style="display:flex;gap:8px;margin-bottom:8px"><input id="authInvite" value="20260812" placeholder="邀请码" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.85rem"></div>
       <div id="authErr" style="font-size:.76rem;color:#c0392b;min-height:18px"></div>
     </div>
     <div class="mb-foot">
@@ -809,15 +810,24 @@ function refreshAuthUI(){
   if(state.token&&state.user){ info.innerHTML=`已登录：<span class="user">${state.user.name}</span>`; lb.style.display=''; ab.style.display='none'; }
   else{ info.textContent='未登录 · 数据仅存本机'; lb.style.display='none'; ab.style.display=''; }
 }
-function openAuth(){ document.getElementById('authErr').textContent=''; document.getElementById('authName').value=''; document.getElementById('authPin').value=''; document.getElementById('authModal').classList.add('show'); }
+function openAuth(){ document.getElementById('authErr').textContent=''; document.getElementById('authName').value=''; document.getElementById('authPin').value=''; document.getElementById('authInvite').value='20260812'; document.getElementById('authModal').classList.add('show'); }
 function closeAuth(){ document.getElementById('authModal').classList.remove('show'); }
 async function doAuth(){
   const name=document.getElementById('authName').value.trim(); const pin=document.getElementById('authPin').value.trim();
+  const invite=(document.getElementById('authInvite').value.trim())||'20260812';
   if(!name||!/^\d{4}$/.test(pin)){ document.getElementById('authErr').textContent='请输入昵称和4位数字PIN'; return; }
   try{
-    const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',name,pin})});
-    const j=await r.json();
-    if(j.error){ document.getElementById('authErr').textContent=j.error; return; }
+    // 先试登录
+    let r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',name,pin})});
+    let j=await r.json();
+    if(j.error){
+      // 登录失败（昵称不存在或 PIN 错）→ 尝试自动注册，兑现「新昵称即注册」
+      if(j.error==='昵称或 PIN 不对'){
+        r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'register',name,pin,invite})});
+        j=await r.json();
+      }
+      if(j.error){ document.getElementById('authErr').textContent=j.error; return; }
+    }
     state.token=j.token; state.user=j.user;
     localStorage.setItem('mm_token',j.token); localStorage.setItem('mm_user',JSON.stringify(j.user));
     closeAuth(); refreshAuthUI(); setSync('已同步'); await loadMonth();
