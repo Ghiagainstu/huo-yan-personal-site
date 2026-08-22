@@ -1697,9 +1697,9 @@
     {id:'g2',label:'二年级',   N:8,  box:[2,4], givens:26},
     {id:'g3',label:'三年级',   N:9,  box:[3,3], givens:38},
     {id:'g4',label:'四年级',   N:12, box:[3,4], givens:68, time:1500},
-    {id:'g5',label:'五年级',   N:16, box:[4,4], givens:110, time:1000}
+    {id:'g5',label:'五年级',   N:14, box:[2,7], givens:84, time:1000}
   ];
-  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===8)return [2,4]; if(N===12)return [3,4]; if(N===16)return [4,4]; return [3,3]; }
+  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===8)return [2,4]; if(N===12)return [3,4]; if(N===14)return [2,7]; return [3,3]; }
   function sdLabel(v){ return v<=9 ? String(v) : String.fromCharCode(55+v); }   // 10->A ... 16->G
   function sdRange(a,b){ const o=[]; for(let i=a;i<b;i++)o.push(i); return o; }
   function sdShuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1877,7 +1877,7 @@
     const board=$('sudokuBoard'); board.innerHTML='';
     const frag=document.createDocumentFragment();   // 256 格一次性挂载，避免逐格 append 反复触发布局
     board.style.gridTemplateColumns='repeat('+sd.N+',minmax(0,1fr))';
-    board.style.setProperty('--sf', sd.N<=6?'2.2rem':sd.N<=9?'1.7rem':sd.N<=12?'1.15rem':'0.92rem');
+    board.style.setProperty('--sf', sd.N<=6?'2.2rem':sd.N<=9?'1.7rem':sd.N<=12?'1.15rem':sd.N<=14?'1.0rem':'0.9rem');
     board.style.setProperty('--nc', Math.ceil(Math.sqrt(sd.N)));
     const conflicts=sdConflictSet();
     const sr = sdSelected>=0 ? Math.floor(sdSelected/sd.N) : -1;
