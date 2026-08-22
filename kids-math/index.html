@@ -70,9 +70,9 @@
   .ctrl-btn.swap{background:#5aa9e6;}
   .ctrl-btn:active{transform:scale(.95);}
 
-  /* 年级一级 Tab */
-  .grades{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:680px; margin:0 auto 8px;}
-  .grade-btn{border:none; border-radius:14px; padding:9px 18px; font-weight:800; font-size:1rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
+  /* 年级一级 Tab：与 #calcArea/.cats 同宽（620px），按钮 flex 铺满整行 → 左右边缘与下方选项卡片对齐 */
+  .grades{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; width:100%; max-width:620px; margin:0 auto 8px;}
+  .grade-btn{border:none; border-radius:14px; padding:9px 18px; font-weight:800; font-size:1rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s; flex:1 1 auto; white-space:nowrap;}
   .grade-btn.active{background:linear-gradient(135deg,#ff8c42,#ff6b6b); color:#fff; box-shadow:0 4px 12px rgba(255,107,107,.4);}
   .grades.locked .grade-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
   /* 统一内容列宽：固定 max-width，避免随题目长短收缩抖动（修复「点年级后下方卡片宽自动变」） */
