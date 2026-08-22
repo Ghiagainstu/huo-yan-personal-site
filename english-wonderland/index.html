@@ -146,7 +146,9 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .phon-pill.uk:active{background:#5b8def;color:#fff;}
 .phon-pill.us{border-color:#ef6b6b;}
 .phon-pill.us:active{background:#ef6b6b;color:#fff;}
-.phon-pill.speaking{animation:pulse .8s infinite;}
+.phon-pill.speaking{border-color:#ffb74d;background:#fff8e1;} /* 播放中：按钮本体不跳动，仅喇叭 emoji 动画 */
+.phon-pill.speaking .flag{display:inline-block;animation:flagPulse .55s ease-in-out infinite;}
+@keyframes flagPulse{0%,100%{transform:scale(1)}40%{transform:scale(1.3)}}
 .accent-row{display:flex;gap:10px;justify-content:center;width:100%;}
 .accent-btn{flex:1;border:none;border-radius:24px;padding:10px;font-size:15px;font-weight:bold;color:#fff;cursor:pointer;transition:transform .15s;}
 .accent-btn.uk{background:#5b8def;}
@@ -1013,7 +1015,7 @@ const PHON={
   'snake':['/ˈsneɪk/','/ˈsneɪk/','https://api.dictionaryapi.dev/media/pronunciations/en/snake-us.mp3','audio/wt-us-14d2264d.mp3'],
   'turtle':['/ˈtɜːtəl/','/ˈtɜːrtəl/','','audio/wt-us-1c39ee50.mp3'],
   'horse':['/hɔːs/','/hɔːrs/','audio/wt-uk-0e713aa9.mp3','audio/wt-us-e9a75bf1.mp3'],
-  'sheep':['/ʃiːp/','/ʃip/','https://api.dictionaryapi.dev/media/pronunciations/en/sheep-uk.mp3','audio/wt-us-6eafeb41.mp3'],
+  'sheep':['/ʃiːp/','/ʃiːp/','https://api.dictionaryapi.dev/media/pronunciations/en/sheep-uk.mp3','audio/wt-us-6eafeb41.mp3'],
   'chicken':['/ˈtʃɪkɪn/','/ˈtʃɪkɪn/','https://api.dictionaryapi.dev/media/pronunciations/en/chicken-uk.mp3','audio/wt-us-b1aba7f7.mp3'],
   'mouse':['/maʊs/','/maʊs/','audio/wt-uk-6a3a0e1d.mp3','audio/wt-us-c75fbb4e.mp3'],
   'ant':['/ænt/','/ænt/','','https://api.dictionaryapi.dev/media/pronunciations/en/ant-us.mp3'],
@@ -3409,11 +3411,11 @@ function preloadCardArt(){
     if(art && art.slice(0,4)==='img:') preloadImg(art.slice(4));
   }
 }
-/* 发音预加载：把当前卡 + 下一张卡的英/美真人音提前拉到边缘缓存，
-   点击时几乎零延迟，根治跨境实时拉取导致的"反应慢" */
+/* 发音预加载：把当前卡 + 后 3 张卡的英/美真人音提前拉到 SW/HTTP 缓存，
+   点击时几乎零延迟，根治跨境实时拉取导致的"反应慢"（2026-08-22 扩范围 + fetch 强化） */
 function preloadAudioAhead(){
   if(!cardList.length) return;
-  for(let k=0;k<=1;k++){
+  for(let k=0;k<=3;k++){
     const idx=(cardIdx+k)%cardList.length;
     const item=cardList[idx];
     const w=item.w[0];
@@ -3426,7 +3428,12 @@ function preloadAudioAhead(){
   }
 }
 function preloadAudio(url){
-  try{ const a=new Audio(); a.preload='auto'; a.src=url; }catch(e){}
+  try{
+    /* 双触发：本地 audio/ 走 fetch 强制下载入 SW 缓存（audio 已 immutable，二次访问 0 RTT）；
+       同时 Audio 元素 preload 解析元数据。外部 CDN URL 仅 Audio preload（缓存策略不可控）。 */
+    if(url && url.indexOf('audio/')===0) fetch(url).catch(function(){});
+    const a=new Audio(); a.preload='auto'; a.src=url;
+  }catch(e){}
 }
 /* 游戏：预加载后续题目的题图 */
 function preloadGameAhead(){
@@ -3579,11 +3586,9 @@ const CATS = [
     ['geese','鹅(复数)','img:geese'],
     ['hissing','发出嘶嘶声','img:hissing'],
     ['mice','老鼠（复数）','img:mice'],
-    ['nest','鸟巢','img:nest'],
     ['pet','宠物；宝贝','img:pet'],
     ['shell','贝壳；果壳','img:shell'],
     ['tadpole','蝌蚪','img:tadpole'],
-    ['wing','翅膀','img:wing'],
     ['yak','牦牛','img:yak']]} ,
 {id:'fantasy', zh:'童话幻想', en:'Fantasy', tint:['#EDE7F6','#D1C4E9'], tpls:['I see {a} {w}.', 'The {w} is magic!', 'Look at the {w}.'], words:[
     ['chinese dragon','中国龙','img:chinese-dragon'],
@@ -3841,6 +3846,7 @@ const CATS = [
     ['cheek','脸颊','img:cheek'],
     ['neck','脖子','img:neck'],
     ['shoulder','肩膀','img:shoulder'],
+    ['wing','翅膀','img:wing'],
     ['arm','手臂','img:arm'],
     ['elbow','手肘', 'img:elbow'],
     ['wrist','手腕', 'img:wrist'],
@@ -3936,6 +3942,7 @@ const CATS = [
     ['fog','雾', 'img:fog'],
     ['foggy','有雾的', 'img:foggy'],
     ['forest','森林','img:forest'],
+    ['nest','鸟巢','img:nest'],
     ['frost','霜','img:frost'],
     ['hail','冰雹','img:hail'],
     ['hill','山丘','img:hill'],
@@ -5615,6 +5622,8 @@ for (const _cat of CATS) for (const _w of (_cat.words || [])) {
   if (Array.isArray(_w) && typeof _w[2] === 'string' && _w[2].indexOf('img:fw-') === 0) SH_WORDS.add(_w[0]);
 }
 SH_WORDS.add('rubber'); // 橡皮：牛津 txt 在列（已含于 OXFORD_STD），英式变体 eraser 复用图，双保险
+/* 强制拓展词：一词多义，词形命中课标词但本词条语义不同（skate 鳐 ≠ skate 滑冰） */
+const FORCE_EXT = new Set(['skate']);
 // 用户核对批注小学词（2026-08-20 人工确认，来源 vocab-classification.html 批注“小学”字样；github age 标签被污染不作小学依据）
 const USER_ELEM = new Set([
   'bad', 'bat', 'beach', 'big', 'black', 'box', 'brown', 'chair',
@@ -5654,6 +5663,7 @@ function singularOf(w){
 }
 function tierOfWord(catId, word){
   if(!word) return tierOfCat(catId);
+  if(FORCE_EXT.has(word)) return 'ext';            // 强制拓展（一词多义：skate=鳐 非滑冰，优先于课标命中）
   if(SH_WORDS.has(word)) return 'core';            // 功能词（fw-*，牛津 txt 无但强制归小学）
   if(USER_ELEM.has(word)) return 'core';           // 用户核对批注小学词（人工确认，最高优先级）
   if(OXFORD_STD.has(normKey(word))) return 'core'; // 牛津2024 归一化命中 → 上海小学核心词
@@ -5938,7 +5948,7 @@ function orderWords(catId, words){
    不在表中的词自动落到该分类尾部，按 简单→难→核心→拓展→A-Z。 */
 const CAT_WORD_ORDER = {
   numbers: ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety','hundred','thousand','first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth','fifteenth','twentieth','twenty-first','thirtieth','half','quarter','minus','number','millimeter'],
-  body: ['head','face','hair','eyebrow','eye','ear','nose','mouth','tooth','teeth','tongue','chin','cheek','neck','shoulder','arm','elbow','wrist','hand','finger','back','tummy','leg','knee','ankle','foot','heel','toe','body','bone','eye-exercises'],
+  body: ['head','face','hair','eyebrow','eye','ear','nose','mouth','tooth','teeth','tongue','chin','cheek','neck','shoulder','wing','arm','elbow','wrist','hand','finger','back','tummy','leg','knee','ankle','foot','heel','toe','body','bone','eye-exercises'],
   family: ['father','mother','dad','mum','parents','brother','sister','son','daughter','baby','child','children','grandparents','grandpa','grandma','uncle','aunt','cousin','husband','wife','family','boy','girl','man','woman','people','lady','friend','classmate','member','mr'],
   time: ['january','february','march','april','may','june','july','august','september','october','november','december','monday','tuesday','wednesday','thursday','friday','saturday','sunday','morning','noon','afternoon','evening','night','spring','summer','autumn','winter','today','tomorrow','yesterday','day','week','month','year','hour','minute','season','time','weekend'],
   colors: ['red','orange','yellow','green','blue','purple','pink','black','white','brown','grey','gold','silver','navy','mint','colour'],
