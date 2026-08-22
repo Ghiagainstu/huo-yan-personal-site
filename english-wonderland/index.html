@@ -3403,19 +3403,37 @@ function sceneEmoji(word){
   if(!sc||!SCENE_EMOJI[sc]) return '';
   return '<span class="pos-badge" style="background:#ffb74d">'+SCENE_EMOJI[sc]+'</span>';
 }
-/* 列表级预热：切换分类/筛选/搜索后立即把新列表的图拉进 HTTP 缓存
-   （区别于翻卡滑动窗口与空闲渐进；单类≈60张×25KB≈1.5MB 可接受，
-     根治海外冷连接下切换分类首图 1-3s 空白延迟。2026-08-22） */
+/* 当前卡图高优先级预载：<link rel=preload as=image fetchpriority=high> 插队到浏览器请求队列最前，
+   解决切类/翻卡后 SVG <image>（低优先级）被大批预热请求挤到队尾、首图等 3s 的排队问题（2026-08-22） */
+let _plink=null;
+function preloadHigh(slug){
+  try{
+    if(!slug || !HAVE_IMG.has(slug)) return;
+    if(!_plink){ _plink=document.createElement('link'); _plink.rel='preload'; _plink.as='image'; document.head.appendChild(_plink); }
+    const href=IMG_BASE+slug+'.webp';
+    if(_plink.href!==href) _plink.href=href;
+    if('fetchPriority' in _plink) _plink.fetchPriority='high';
+  }catch(e){}
+}
+/* 列表级预热：切换分类/筛选/搜索后把新列表的图拉进 HTTP 缓存。
+   关键：必须错峰小批量（6张/150ms），否则一次性 60 并发会把当前卡首图挤到请求队列队尾（同优先级 FIFO），
+   首图反而更慢。首图由 preloadHigh 单独高优插队（2026-08-22） */
 function prewarmCardListImages(){
-  setTimeout(function(){
-    if(!cardList || !cardList.length) return;
-    var cap = (curCat==='all' || curSearch) ? 30 : cardList.length;
-    var n=0;
-    for(var i=0;i<cardList.length && n<cap;i++){
+  const slugs=[];
+  if(cardList && cardList.length){
+    var cap=(curCat==='all'||curSearch)?30:cardList.length;
+    for(var i=0;i<cardList.length && slugs.length<cap;i++){
       var art=cardList[i].w[2];
-      if(art && art.slice(0,4)==='img:'){ preloadImg(art.slice(4)); n++; }
+      if(art && art.slice(0,4)==='img:') slugs.push(art.slice(4));
     }
-  },0);
+  }
+  if(!slugs.length) return;
+  var k=0;
+  (function next(){
+    var end=Math.min(k+6,slugs.length);
+    for(;k<end;k++) preloadImg(slugs[k]);
+    if(k<slugs.length) setTimeout(next,150);
+  })();
 }
 /* 翻卡：预加载当前窗口（当前卡前 PRELOAD_BEFORE 张 + 后 PRELOAD_AFTER 张，对称滑动窗口） */
 function preloadCardArt(){
@@ -7174,6 +7192,8 @@ function renderCard(){
   const word=item.w[0],zh=item.w[1];
   currentWord=word;
   currentAlt = (item.w[3] && item.w[3]!==word) ? item.w[3] : '';
+  /* 当前卡图高优插队（preload fetchpriority=high），消除切类首图排队等待 */
+  { const _a=item.w[2]; if(_a && _a.slice(0,4)==='img:') preloadHigh(_a.slice(4)); }
   const pair = bramPair(word); // [英式, 美式]
   const ukW = pair ? pair[0] : (currentAlt||word);
   const usW = pair ? pair[1] : word;
