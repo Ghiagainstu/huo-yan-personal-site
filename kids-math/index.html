@@ -78,9 +78,9 @@
   /* 统一内容列宽：固定 max-width，避免随题目长短收缩抖动（修复「点年级后下方卡片宽自动变」） */
   #calcArea, #sudokuArea{width:100%; max-width:620px; margin:0 auto;}
 
-  /* 设置折叠面板（⚙️ 齿轮在右上角，默认收起） */
+  /* 设置已改为独立弹窗 #settingsModal（点右上角齿轮打开） */
   .setup{display:flex; flex-direction:column; gap:8px; align-items:center; max-width:600px; margin:0 auto;}
-  .setup-panel{display:flex; flex-direction:column; gap:10px; align-items:center; background:rgba(255,140,66,.08); border-radius:16px; padding:12px 14px; width:100%; max-width:600px;}
+  .set-note{font-size:.8rem; color:#a0a6b0; margin:12px 0 2px;}
   .setup-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;}
 
   /* 控制条分层：设置行 / 操作行 */
@@ -155,7 +155,6 @@
   .parent-btn{position:fixed; right:12px; bottom:12px; border:none; background:rgba(255,255,255,.7); color:#9a9aa5; font-size:.72rem; padding:7px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.08); cursor:pointer;}
   /* 关于入口（顶部右侧，与模式切换同组） */
   .about-btn{border:none; background:rgba(255,255,255,.7); color:#9a9aa5; font-size:.72rem; padding:7px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.08); cursor:pointer; white-space:nowrap;}
-  .about-btn.open{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff;}
   .about-btn.settings{font-size:1.05rem; padding:5px 11px; line-height:1;}
   /* 顶部右侧：模式切换 + 关于（固定右上角；手机端在媒体查询里改为 static 居中于标题下方） */
   .topright{position:fixed; top:12px; right:12px; z-index:40; display:flex; align-items:center; gap:8px;}
@@ -260,7 +259,6 @@
     .controls{gap:10px;}
     .grades{gap:8px; margin:8px auto 24px;}
     .grade-btn{padding:13px 22px; font-size:1.15rem; border-radius:14px;}
-    .setup-panel{padding:10px;}
     .setup-row,.action-row{gap:8px;}
     .mini-btn{padding:10px 14px; font-size:1.1rem;}
     .controls .main-row .ctrl-btn{height:48px;}
@@ -332,7 +330,6 @@
     .cat-grid{grid-template-columns:repeat(3,1fr); gap:10px;}
     .cat-card{height:49px; font-size:1.02rem;}
     .controls{max-width:800px;}
-    .setup-panel{max-width:800px; padding:14px 16px;}
     .controls .main-row .ctrl-btn{height:49px;}
     .ctrl-btn.start.big{font-size:1.25rem; padding:0 30px;}
     .board{max-width:720px; padding:20px 20px 24px; border-radius:28px;}
@@ -384,19 +381,6 @@
       <button class="ctrl-btn start big" id="startRound">🏁 开始闯关</button>
       <button class="ctrl-btn swap" id="swap">🔄 换一题</button>
     </div>
-    <div class="setup-panel" id="setupPanel" style="display:none">
-      <div class="setup-row">
-        <span class="lbl">题数</span>
-        <button class="size-btn" data-size="5">5</button>
-        <button class="size-btn active" data-size="10">10</button>
-        <button class="size-btn" data-size="20">20</button>
-        <span class="lbl">方式</span>
-        <button class="mode2-btn active" data-mode2="choice">选择</button>
-        <button class="mode2-btn" data-mode2="fill">填空</button>
-        <button class="mini-btn" id="soundBtn" title="音效开关">🔊</button>
-        <button class="mini-btn" id="adaptBtn" title="难度自适应">🤖</button>
-      </div>
-    </div>
   </div>
 
   <div class="prog-wrap"><div class="prog-bar"><i id="progFill"></i></div></div>
@@ -434,6 +418,7 @@
         <button class="mini-btn" id="sudokuHint" title="提示一个正确格">💡</button>
         <button class="mini-btn" id="sudokuNew" title="换一题">🔄</button>
         <button class="mini-btn" id="sudokuCheck" title="检查答案">✅</button>
+        <button class="mini-btn" id="sudokuLives" title="3 错挑战：开启后每局 3 颗心，填错扣 1 心，扣完本局失败">❤️ 挑战</button>
         <button class="mini-btn" id="sudokuSound" title="音效开关">🔊</button>
       </div>
     </div>
@@ -494,6 +479,36 @@
       <div id="wbList" style="max-height:280px;overflow:auto;text-align:left;"></div>
       <button class="reset" id="resetWrong" style="margin-top:14px;">清除错题本</button>
       <div><button class="ghost" id="closeWrongBook">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- ⚙️ 设置弹窗（独立 modal，不再内嵌在题目上方展开） -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-card" style="max-width:380px;">
+      <div class="modal-head">
+        <h2>⚙️ 设置</h2>
+        <button class="modal-x" id="closeSettings" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:left;">
+        <div class="setup-row" style="justify-content:flex-start; margin:6px 0;">
+          <span class="lbl">题数</span>
+          <button class="size-btn" data-size="5">5</button>
+          <button class="size-btn active" data-size="10">10</button>
+          <button class="size-btn" data-size="20">20</button>
+        </div>
+        <div class="setup-row" style="justify-content:flex-start; margin:6px 0;">
+          <span class="lbl">方式</span>
+          <button class="mode2-btn active" data-mode2="choice">选择</button>
+          <button class="mode2-btn" data-mode2="fill">填空</button>
+        </div>
+        <div class="setup-row" style="justify-content:flex-start; margin:6px 0;">
+          <span class="lbl">音效</span>
+          <button class="mini-btn" id="soundBtn" title="音效开关">🔊</button>
+          <span class="lbl" style="margin-left:14px;">自适应</span>
+          <button class="mini-btn" id="adaptBtn" title="难度自适应：按正确率自动升降难度">🤖</button>
+        </div>
+        <p class="set-note">设置自动保存在本机，刷新后保持不变。</p>
+      </div>
     </div>
   </div>
 
@@ -1767,6 +1782,45 @@
     }
     return {puzzle,solution:sol};
   }
+  /* --- 数独计时 + 最佳纪录 + 3 错挑战 --- */
+  let sdTimerInt=null, sdStartTs=0, sdElapsed=0;
+  let sdDone=false, sdDead=false;          // sdDone=已完成 sdDead=挑战失败
+  let sdLivesMode=false, sdLives=3;        // 3 错挑战开关与剩余心
+  const sdWrongCells=new Set();            // 挑战模式下填错的格（标红）
+  function sdFmt(s){ const m=Math.floor(s/60), ss=s%60; return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss; }
+  function sdBestMap(){ try{ return JSON.parse(localStorage.getItem('kidsmath_sudoku_best_v1'))||{}; }catch(e){ return {}; } }
+  function sdAlive(){ return !sdDone && !sdDead; }
+  function sdUpdateProgress(){
+    if(!sd.N) return;
+    const total=sd.N*sd.N, filled=sd.puzzle.flat().filter(x=>x!==0).length;
+    const best=sdBestMap()[sdLevelId];
+    let t='已填 '+filled+' / '+total+' · ⏱️ '+sdFmt(sdElapsed)+' · 🏆 '+(best?sdFmt(best):'--:--');
+    if(sdLivesMode) t+=' · '+'❤️'.repeat(Math.max(0,sdLives))+'🖤'.repeat(Math.max(0,3-sdLives));
+    $('sudokuProgress').textContent=t;
+  }
+  function sdStopTimer(){ if(sdTimerInt){ clearInterval(sdTimerInt); sdTimerInt=null; } }
+  function sdStartTimer(){
+    sdStopTimer(); sdStartTs=Date.now(); sdElapsed=0;
+    sdTimerInt=setInterval(()=>{ if(sdAlive()){ sdElapsed=Math.floor((Date.now()-sdStartTs)/1000); sdUpdateProgress(); } },500);
+  }
+  function sdAllCorrect(){ for(let r=0;r<sd.N;r++) for(let c=0;c<sd.N;c++){ if(sd.puzzle[r][c]!==sd.solution[r][c]) return false; } return true; }
+  function sdFinish(){
+    if(sdDone) return;
+    sdDone=true; sdStopTimer();
+    const sec=sdElapsed, best=sdBestMap(), prev=best[sdLevelId];
+    let isNew=false;
+    if(!prev || sec<prev){ best[sdLevelId]=sec; isNew=true; try{ localStorage.setItem('kidsmath_sudoku_best_v1', JSON.stringify(best)); }catch(e){} }
+    const fb=$('sudokuFeedback');
+    fb.textContent='🎉 全对！用时 '+sdFmt(sec)+(isNew?' 🏆 新纪录！':'（最佳 '+sdFmt(prev)+'）');
+    fb.className='feedback good';
+    playFanfare(); sdConfetti(); sdUpdateProgress();
+  }
+  function sdDie(){
+    sdDead=true; sdStopTimer();
+    const fb=$('sudokuFeedback');
+    fb.textContent='💔 3 错挑战失败！点 🔄 换一题再来'; fb.className='feedback try';
+    playWrong(); sdUpdateProgress();
+  }
   function sdNew(){
     const L=SUDOKU_LEVELS.find(x=>x.id===sdLevelId)||SUDOKU_LEVELS[0];
     const {puzzle,solution}=sdMake(L.N,L.box[0],L.box[1],L.givens,L.time||1200);
@@ -1774,9 +1828,11 @@
          puzzle:sdClone(puzzle), solution:sdClone(solution),
          given:puzzle.map(r=>r.map(v=>v!==0)), notes:puzzle.map(r=>r.map(()=>[])), level:L };
     sdSelected=-1; sdNoteMode=false;
+    sdDone=false; sdDead=false; sdLives=3; sdWrongCells.clear();
     $('sudokuFillMode').classList.add('active'); $('sudokuNoteMode').classList.remove('active');
     $('sudokuFeedback').textContent=''; $('sudokuFeedback').className='feedback';
     renderSudoku();
+    sdStartTimer();
   }
   function sdConflictSet(){
     const set=new Set();
@@ -1810,6 +1866,7 @@
         cell.className='sudoku-cell'; cell.type='button';
         if(sd.given[r][c]) cell.classList.add('given');
         if(conflicts.has(idx)) cell.classList.add('conflict');
+        if(sdWrongCells.has(idx)) cell.classList.add('wrong');
         if(sdSelected===idx) cell.classList.add('sel');
         else if(sdSelected>=0 && (r===sr||c===sc||sameBox(r,c))) cell.classList.add('peer');
         if((c+1)%sd.boxC===0 && c+1<sd.N) cell.classList.add('br');
@@ -1826,8 +1883,7 @@
       }
     }
     renderSudokuPad();
-    const total=sd.N*sd.N, filled=sd.puzzle.flat().filter(x=>x!==0).length;
-    $('sudokuProgress').textContent='已填 '+filled+' / '+total;
+    sdUpdateProgress();
     $('sudokuDiff').textContent='难度：'+sd.level.label+' · '+sd.N+'×'+sd.N+'（'+sd.given.flat().filter(Boolean).length+' 个提示）';
   }
   function renderSudokuPad(){
@@ -1839,7 +1895,7 @@
     });
   }
   function sdInput(n){
-    if(sdSelected<0) return;
+    if(sdSelected<0 || !sdAlive()) return;
     const r=Math.floor(sdSelected/sd.N), c=sdSelected%sd.N;
     if(sd.given[r][c]) return;
     if(sdNoteMode){
@@ -1849,27 +1905,43 @@
     } else {
       sd.puzzle[r][c] = (sd.puzzle[r][c]===n) ? 0 : n;
       sd.notes[r][c]=[];
+      const v=sd.puzzle[r][c];
+      if(v && v!==sd.solution[r][c]){
+        // 填错：标红该格；挑战模式再扣 1 心（扣完本局失败）
+        sdWrongCells.add(sdSelected);
+        if(sdLivesMode){
+          sdLives--;
+          if(sdLives<=0){ renderSudoku(); sdDie(); return; }
+          playWrong();
+        } else { playWrong(); }
+      } else {
+        sdWrongCells.delete(sdSelected);
+      }
     }
     renderSudoku();
+    if(!sdNoteMode && sdAllCorrect()) sdFinish();
   }
   function sdErase(){
-    if(sdSelected<0) return;
+    if(sdSelected<0 || !sdAlive()) return;
     const r=Math.floor(sdSelected/sd.N), c=sdSelected%sd.N;
     if(sd.given[r][c]) return;
-    sd.puzzle[r][c]=0; sd.notes[r][c]=[];
+    sd.puzzle[r][c]=0; sd.notes[r][c]=[]; sdWrongCells.delete(sdSelected);
     renderSudoku();
   }
   function sdHint(){
+    if(!sdAlive()) return;
     const blanks=[];
     for(let r=0;r<sd.N;r++) for(let c=0;c<sd.N;c++){ if(sd.puzzle[r][c]!==sd.solution[r][c]) blanks.push([r,c]); }
     if(!blanks.length) return;
     const [r,c]=sdShuffle(blanks)[0];
-    sd.puzzle[r][c]=sd.solution[r][c]; sd.given[r][c]=true; sd.notes[r][c]=[];
+    sd.puzzle[r][c]=sd.solution[r][c]; sd.given[r][c]=true; sd.notes[r][c]=[]; sdWrongCells.delete(r*sd.N+c);
     if(sdSelected===r*sd.N+c) sdSelected=-1;
     playCorrect();
     renderSudoku();
+    if(sdAllCorrect()) sdFinish();
   }
   function sdCheck(){
+    if(!sdAlive()) return;
     const fb=$('sudokuFeedback');
     let filled=true, correct=true;
     for(let r=0;r<sd.N;r++) for(let c=0;c<sd.N;c++){
@@ -1877,18 +1949,14 @@
       else if(sd.puzzle[r][c]!==sd.solution[r][c]) correct=false;
     }
     if(!filled){ fb.textContent='还有空格没填哦～'; fb.className='feedback try'; return; }
-    if(correct){
-      fb.textContent='🎉 全部正确，太棒了！'; fb.className='feedback good';
-      playFanfare(); sdConfetti();
-    } else {
-      fb.textContent='有填错的地方，红底格检查一下～'; fb.className='feedback try';
-      renderSudoku();
-      const board=$('sudokuBoard');
-      [...board.children].forEach((cell,idx)=>{
-        const r=Math.floor(idx/sd.N), c=idx%sd.N;
-        if(sd.puzzle[r][c]!==0 && sd.puzzle[r][c]!==sd.solution[r][c]) cell.classList.add('wrong');
-      });
-    }
+    if(correct){ sdFinish(); return; }
+    fb.textContent='有填错的地方，红底格检查一下～'; fb.className='feedback try';
+    renderSudoku();
+    const board=$('sudokuBoard');
+    [...board.children].forEach((cell,idx)=>{
+      const r=Math.floor(idx/sd.N), c=idx%sd.N;
+      if(sd.puzzle[r][c]!==0 && sd.puzzle[r][c]!==sd.solution[r][c]) cell.classList.add('wrong');
+    });
   }
   function sdConfetti(){
     const colors=['#ff8c42','#4ecdc4','#2ecc71','#f4c430','#a78bfa','#ff6b6b'];
@@ -1916,12 +1984,22 @@
   /* 启动 */
   buildKeypad(); renderSubcats(); updateSoundBtn();
   document.querySelectorAll('.ms-opt').forEach(b=> b.addEventListener('click',()=>setAppMode(b.dataset.app)));
-  $('openSettings').addEventListener('click',()=>{ const p=$('setupPanel'); const open=p.style.display==='none'; p.style.display=open?'':'none'; $('openSettings').classList.toggle('open',open); });
+  $('openSettings').addEventListener('click',()=>$('settingsModal').classList.add('show'));
+  $('closeSettings').addEventListener('click',()=>$('settingsModal').classList.remove('show'));
   $('sudokuHint').addEventListener('click',sdHint);
   $('sudokuNew').addEventListener('click',sdNew);
   $('sudokuCheck').addEventListener('click',sdCheck);
   $('sudokuErase').addEventListener('click',sdErase);
   $('sudokuSound').addEventListener('click',()=>setSound(!soundOn));
+  // ❤️ 3 错挑战：开关持久化，切换后重开一局
+  try{ sdLivesMode = localStorage.getItem('kidsmath_sudoku_lives_v1')==='1'; }catch(e){}
+  $('sudokuLives').classList.toggle('active', sdLivesMode);
+  $('sudokuLives').addEventListener('click',()=>{
+    sdLivesMode=!sdLivesMode;
+    try{ localStorage.setItem('kidsmath_sudoku_lives_v1', sdLivesMode?'1':'0'); }catch(e){}
+    $('sudokuLives').classList.toggle('active', sdLivesMode);
+    sdNew();
+  });
   $('sudokuFillMode').addEventListener('click',()=>{ sdNoteMode=false; $('sudokuFillMode').classList.add('active'); $('sudokuNoteMode').classList.remove('active'); });
   $('sudokuNoteMode').addEventListener('click',()=>{ sdNoteMode=true; $('sudokuFillMode').classList.remove('active'); $('sudokuNoteMode').classList.add('active'); });
   document.querySelectorAll('.size-btn').forEach(x=>x.classList.toggle('active', parseInt(x.dataset.size,10)===roundSize));
