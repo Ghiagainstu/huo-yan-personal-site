@@ -1708,11 +1708,13 @@
   function sdGenFull(N, br, bc){
     const g=Array.from({length:N},()=>new Array(N).fill(0));
     const diag=Math.min(N/br, N/bc);
-    for(let i=0;i<diag;i++){
-      const r0=i*br, c0=i*bc;
-      const nums=sdShuffle(sdRange(1,N+1));
-      let k=0;
-      for(let r=r0;r<r0+br;r++) for(let c=c0;c<c0+bc;c++) g[r][c]=nums[k++];
+    function seedDiag(){
+      for(let i=0;i<diag;i++){
+        const r0=i*br, c0=i*bc;
+        const nums=sdShuffle(sdRange(1,N+1));
+        let k=0;
+        for(let r=r0;r<r0+br;r++) for(let c=c0;c<c0+bc;c++) g[r][c]=nums[k++];
+      }
     }
     function can(r,c,v){
       for(let i=0;i<N;i++){ if(g[r][i]===v||g[i][c]===v) return false; }
@@ -1731,7 +1733,10 @@
       }
       return true;
     }
-    fill();
+    // 对角宫各自随机排列可能互相矛盾（4×4 约 60% 组合无解）：
+    // fill() 失败必须整体清零重播，绝不能把残盘当答案输出（否则出现无解题）
+    let guard=0;
+    do{ for(const row of g) row.fill(0); seedDiag(); }while(!fill() && ++guard<300);
     return g;
   }
   function sdCands(g,r,c,N,br,bc){
