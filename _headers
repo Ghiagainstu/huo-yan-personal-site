@@ -1,3 +1,12 @@
+# ============================================================
+# 火哥的个人站 · Cache-Control 策略
+# ⚠️ 关键教训（2026-08-22）：HTML 的 no-store 规则绝不能用 /* 通配，
+# 否则会与 images/audio 的长缓存规则合并生效（实测响应头同时出现
+# "max-age=31536000..., no-store" → no-store 在场 → 静态资源从不缓存，
+# 每次播放/加载全量走海外下载）。HTML 规则必须用 *.html 精确匹配。
+# ============================================================
+
+# english-wonderland 静态资源：长缓存（immutable，改图后升文件名版本号破缓存）
 /english-wonderland/images/*
   Cache-Control: public, max-age=31536000, stale-while-revalidate=86400
 
@@ -16,23 +25,25 @@
 /assets/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
+# poetry-garden 静态资源
 /poetry-garden/images/*
   Cache-Control: public, max-age=31536000, immutable
 
+# poetry-garden 音频刻意 must-revalidate（升文件名版本号破缓存，勿改长缓存）
 /poetry-garden/audio/*
   Cache-Control: public, max-age=0, must-revalidate
 
-# HTML 文档必须每次重新校验，否则浏览器会启发式缓存旧 index.html，
-# 导致音频引用停留在被污染的空缓存版本、朗读回退到浏览器 TTS。
-/poetry-garden/*
+# ---------- HTML 文档：必须 no-store（避免浏览器启发式缓存旧页） ----------
+# 只匹配 .html 文件，绝不匹配 images/audio/assets 子路径（前缀合并污染坑）
+
+/poetry-garden/*.html
   Cache-Control: no-store, no-cache, must-revalidate
 
-# english-wonderland 单文件应用（JS 内联在 index.html），同样必须 no-store；
-# images/audio/assets 的 immutable 规则靠最长前缀匹配仍生效。
-/english-wonderland/*
+/english-wonderland/*.html
   Cache-Control: no-store, no-cache, must-revalidate
 
-# month-menu 单文件应用（JS 内联），必须 no-store，否则浏览器启发式缓存旧页，
-# 修复（如截图 base64 撑爆 localStorage）到不了用户。
-/month-menu/*
+/month-menu/*.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/index.html
   Cache-Control: no-store, no-cache, must-revalidate
