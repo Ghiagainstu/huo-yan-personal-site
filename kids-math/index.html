@@ -72,10 +72,8 @@
   .grade-btn.active{background:linear-gradient(135deg,#ff8c42,#ff6b6b); color:#fff; box-shadow:0 4px 12px rgba(255,107,107,.4);}
   .grades.locked .grade-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
 
-  /* 设置折叠面板（⚙️，默认收起） */
+  /* 设置折叠面板（⚙️ 齿轮在右上角，默认收起） */
   .setup{display:flex; flex-direction:column; gap:8px; align-items:center; max-width:600px; margin:0 auto;}
-  .setup-toggle{border:2px solid #eee; background:#fff; color:#777; box-shadow:0 2px 6px rgba(0,0,0,.08);}
-  .setup-toggle.open{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff; border-color:transparent;}
   .setup-panel{display:flex; flex-direction:column; gap:10px; align-items:center; background:rgba(255,140,66,.08); border-radius:16px; padding:12px 14px; width:100%; max-width:600px;}
   .setup-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;}
 
@@ -85,7 +83,7 @@
   .action-row{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:2px;}
   /* 控制行：设置 / 开始闯关 / 换一题 同一行，按钮等宽等高 */
   .controls .main-row{display:flex; gap:10px; flex-wrap:nowrap; justify-content:center; align-items:stretch; width:100%; max-width:600px; margin:0 auto;}
-  .controls .main-row .ctrl-btn, .controls .main-row .setup-toggle{flex:1 1 0; min-width:0; justify-content:center; height:var(--card-h);}
+  .controls .main-row .ctrl-btn{flex:1 1 0; min-width:0; justify-content:center; height:var(--card-h);}
   .controls .main-row .ctrl-btn.start{flex:1.6 1 0;}
   .lbl{font-size:.9rem; color:#888; font-weight:700;}
   .mini-btn{border:none; border-radius:12px; padding:8px 11px; font-size:1.1rem; background:#fff; color:#888; box-shadow:var(--shadow); cursor:pointer; transition:.15s;}
@@ -151,6 +149,8 @@
   .parent-btn{position:fixed; right:12px; bottom:12px; border:none; background:rgba(255,255,255,.7); color:#9a9aa5; font-size:.72rem; padding:7px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.08); cursor:pointer;}
   /* 关于入口（顶部右侧，与模式切换同组） */
   .about-btn{border:none; background:rgba(255,255,255,.7); color:#9a9aa5; font-size:.72rem; padding:7px 12px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.08); cursor:pointer; white-space:nowrap;}
+  .about-btn.open{background:linear-gradient(135deg,var(--orange),var(--gold)); color:#fff;}
+  .about-btn.settings{font-size:1.05rem; padding:5px 11px; line-height:1;}
   /* 顶部右侧：模式切换 + 关于（固定右上角；手机端在媒体查询里改为 static 居中于标题下方） */
   .topright{position:fixed; top:12px; right:12px; z-index:40; display:flex; align-items:center; gap:8px;}
 
@@ -257,7 +257,7 @@
     .setup-panel{padding:10px;}
     .setup-row,.action-row{gap:8px;}
     .mini-btn{padding:10px 14px; font-size:1.1rem;}
-    .controls .main-row .ctrl-btn, .controls .main-row .setup-toggle{height:48px;}
+    .controls .main-row .ctrl-btn{height:48px;}
     .ctrl-btn.start.big{font-size:1.25rem; padding:0 26px;}
     .board{padding:26px 16px 30px; border-radius:24px;}
     .equation{font-size:2.8rem; gap:10px;}
@@ -269,9 +269,8 @@
     .keypad{max-width:340px;}
     .kp{height:78px; font-size:2.1rem;}
     .parent-btn{font-size:.66rem; padding:5px 8px;}
-    .topright{position:static; margin:4px auto 18px; justify-content:center;}
-    /* 手机上「关于」独立悬浮右上角，让口算/数独切换组真正居中 */
-    .about-btn{position:fixed; top:20px; right:12px;}
+    .topright{position:static; margin:4px auto 18px; justify-content:center; flex-wrap:wrap;}
+    /* 手机上「关于 / ⚙️设置」与口算/数独切换组一起居中排列 */
     .mode-switch .ms-opt{padding:5px 14px; font-size:.86rem; line-height:1;}
   }
   /* 护眼锁 */
@@ -326,7 +325,7 @@
     .cat-card{height:49px; font-size:1.02rem;}
     .controls{max-width:800px;}
     .setup-panel{max-width:800px; padding:14px 16px;}
-    .controls .main-row .ctrl-btn, .controls .main-row .setup-toggle{height:49px;}
+    .controls .main-row .ctrl-btn{height:49px;}
     .ctrl-btn.start.big{font-size:1.25rem; padding:0 30px;}
     .board{max-width:720px; padding:20px 20px 24px; border-radius:28px;}
     .equation{font-size:2.6rem; gap:8px;}
@@ -362,6 +361,7 @@
       <button class="ms-opt active" data-app="calc">🧮 口算</button>
       <button class="ms-opt" data-app="sudoku">🧩 数独</button>
     </div>
+    <button class="about-btn settings" id="openSettings" title="设置（题数 / 方式 / 音效 / 自适应）">⚙️</button>
     <button class="about-btn" id="openAbout">关于</button>
   </div>
 
@@ -373,7 +373,6 @@
 
   <div class="controls">
     <div class="action-row main-row">
-      <button class="mini-btn setup-toggle" id="setupToggle" title="设置（题数 / 方式 / 音效 / 自适应）">⚙️ 设置</button>
       <button class="ctrl-btn start big" id="startRound">🏁 开始闯关</button>
       <button class="ctrl-btn swap" id="swap">🔄 换一题</button>
     </div>
@@ -1877,7 +1876,7 @@
   /* 启动 */
   buildKeypad(); renderSubcats(); updateSoundBtn();
   document.querySelectorAll('.ms-opt').forEach(b=> b.addEventListener('click',()=>setAppMode(b.dataset.app)));
-  $('setupToggle').addEventListener('click',()=>{ const p=$('setupPanel'); const open=p.style.display==='none'; p.style.display=open?'':'none'; $('setupToggle').classList.toggle('open',open); });
+  $('openSettings').addEventListener('click',()=>{ const p=$('setupPanel'); const open=p.style.display==='none'; p.style.display=open?'':'none'; $('openSettings').classList.toggle('open',open); });
   $('sudokuHint').addEventListener('click',sdHint);
   $('sudokuNew').addEventListener('click',sdNew);
   $('sudokuCheck').addEventListener('click',sdCheck);
