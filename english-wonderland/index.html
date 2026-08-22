@@ -3403,6 +3403,20 @@ function sceneEmoji(word){
   if(!sc||!SCENE_EMOJI[sc]) return '';
   return '<span class="pos-badge" style="background:#ffb74d">'+SCENE_EMOJI[sc]+'</span>';
 }
+/* 列表级预热：切换分类/筛选/搜索后立即把新列表的图拉进 HTTP 缓存
+   （区别于翻卡滑动窗口与空闲渐进；单类≈60张×25KB≈1.5MB 可接受，
+     根治海外冷连接下切换分类首图 1-3s 空白延迟。2026-08-22） */
+function prewarmCardListImages(){
+  setTimeout(function(){
+    if(!cardList || !cardList.length) return;
+    var cap = (curCat==='all' || curSearch) ? 30 : cardList.length;
+    var n=0;
+    for(var i=0;i<cardList.length && n<cap;i++){
+      var art=cardList[i].w[2];
+      if(art && art.slice(0,4)==='img:'){ preloadImg(art.slice(4)); n++; }
+    }
+  },0);
+}
 /* 翻卡：预加载当前窗口（当前卡前 PRELOAD_BEFORE 张 + 后 PRELOAD_AFTER 张，对称滑动窗口） */
 function preloadCardArt(){
   if(!cardList.length) return;
@@ -7054,6 +7068,7 @@ function buildList(){
   }
   if(curShuffle && !curSearch) cardList=shuffleArr(cardList);
   if(cardIdx>=cardList.length) cardIdx=Math.max(0,cardList.length-1);
+  prewarmCardListImages();
 }
 /* 把正反义/近义词对在同分类内相邻(对已存在的双方才归并, 否则不动) */
 function clusterPairs(seg, enKey){
