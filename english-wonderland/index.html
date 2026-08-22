@@ -96,7 +96,8 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column;}
 .card-back{transform:rotateY(180deg);}
 .card-art{flex:0 0 56%;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;}
-.card-art svg{width:100%;height:100%;display:block;}
+.card-art svg{width:100%;height:100%;display:block;animation:cardFadeIn .35s ease;}
+@keyframes cardFadeIn{from{opacity:0}to{opacity:1}}
 /* 拓展词角标: 固定在图片区右上角,与单词行的英/美式 pill 完全不重叠 */
 .tier-badge{position:absolute;top:6px;right:8px;z-index:3;background:rgba(229,57,53,0.12);color:#E53935;font-size:12px;font-weight:700;line-height:1;padding:2px 6px;border-radius:6px;box-shadow:none;pointer-events:none;}
 .card-face.card-back .card-art{flex-basis:40%;}
@@ -2172,11 +2173,35 @@ const PRELOAD_AFTER  = 5;     // 翻卡：当前卡往后预载 5 张（覆盖�
 const PRELOAD_IDLE_MAX = 20;  // 空闲渐进上限（张），单张≈67KB，20 张≈1.3MB，防全量拉爆
 const PRELOAD_GAME_AHEAD = 3; // 游戏：预加载接下来 3 题的题图（干扰项随机无法预判）
 const preloadedImg = new Set();
-function preloadImg(slug){
-  if(!slug || preloadedImg.has(slug) || !HAVE_IMG.has(slug)) return;
+const IMG_READY = new Set();  // slug 已确认加载完成（onload），可安全渲染实图；否则用字母占位
+/* 统一图片加载器：挂 onload 驱动 IMG_READY → 当前卡若在用该图则重绘（占位→实图淡入） */
+function loader(slug, high){
+  if(!slug || preloadedImg.has(slug)) return;
   preloadedImg.add(slug);
   const im = new Image();
+  if('fetchPriority' in im) im.fetchPriority = high ? 'high' : 'low';
+  im.onload = function(){ IMG_READY.add(slug); if(currentCardSlug()===slug){ renderCard(); } };
   im.src = IMG_BASE + slug + '.webp';
+}
+function preloadImg(slug){
+  if(!slug || !HAVE_IMG.has(slug)) return;
+  loader(slug, false);
+}
+/* 当前卡图高优先级预载：<link rel=preload fetchpriority=high> 高优下载（插队到浏览器请求队列最前），
+   同时 Image 挂 onload 驱动占位→实图替换。解决切类/翻卡首图被大批预热请求挤到队尾的排队问题（2026-08-22） */
+let _plink=null;
+function preloadHigh(slug){
+  if(!slug || !HAVE_IMG.has(slug)) return;
+  if(!_plink){ _plink=document.createElement('link'); _plink.rel='preload'; _plink.as='image'; document.head.appendChild(_plink); }
+  const href=IMG_BASE+slug+'.webp';
+  if(_plink.href!==href) _plink.href=href;
+  if('fetchPriority' in _plink) _plink.fetchPriority='high';
+  loader(slug, true);
+}
+function currentCardSlug(){
+  if(!cardList || !cardList.length) return '';
+  const a=cardList[cardIdx].w[2];
+  return (a && a.slice(0,4)==='img:') ? a.slice(4) : '';
 }
 /* ===== 单词元数据(核心/拓展 + 沪教版分册单元, 来源 WORD_META.draft.js 2026-08-13) ===== */
 const WORD_META = {    "alligator": {src:'add', giggle:false, diff:3, syl:4, len:9, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'动物', concrete:'concrete'},
@@ -3402,18 +3427,6 @@ function sceneEmoji(word){
   const m=meta(word), sc=m&&m.scene;
   if(!sc||!SCENE_EMOJI[sc]) return '';
   return '<span class="pos-badge" style="background:#ffb74d">'+SCENE_EMOJI[sc]+'</span>';
-}
-/* 当前卡图高优先级预载：<link rel=preload as=image fetchpriority=high> 插队到浏览器请求队列最前，
-   解决切类/翻卡后 SVG <image>（低优先级）被大批预热请求挤到队尾、首图等 3s 的排队问题（2026-08-22） */
-let _plink=null;
-function preloadHigh(slug){
-  try{
-    if(!slug || !HAVE_IMG.has(slug)) return;
-    if(!_plink){ _plink=document.createElement('link'); _plink.rel='preload'; _plink.as='image'; document.head.appendChild(_plink); }
-    const href=IMG_BASE+slug+'.webp';
-    if(_plink.href!==href) _plink.href=href;
-    if('fetchPriority' in _plink) _plink.fetchPriority='high';
-  }catch(e){}
 }
 /* 列表级预热：切换分类/筛选/搜索后把新列表的图拉进 HTTP 缓存。
    关键：必须错峰小批量（6张/150ms），否则一次性 60 并发会把当前卡首图挤到请求队列队尾（同优先级 FIFO），
@@ -7152,9 +7165,9 @@ function wordArtSVG(item){
     center='<circle cx="200" cy="130" r="76" fill="#ffffff" stroke="#64B5F6" stroke-width="6"/>'+
            '<text x="200" y="'+(art.length>2?152:162)+'" text-anchor="middle" font-size="'+(art.length>2?56:84)+'" font-weight="bold" fill="#1E88E5">'+art+'</text>';
   } else if(art.slice(0,4)==='img:'){
-    /* 本地 AI 插画 (images/ 目录) */
+    /* 本地 AI 插画 (images/ 目录)：图未加载完成先用字母占位（IMG_READY），避免切换分类后"空白几秒" */
     const _slug=art.slice(4);
-    if(HAVE_IMG.has(_slug)){
+    if(HAVE_IMG.has(_slug) && IMG_READY.has(_slug)){
       center='<image href="'+IMG_BASE+_slug+'.webp" x="60" y="40" width="280" height="180" preserveAspectRatio="xMidYMid meet"/>';
     } else {
       const _l=item.w[0].charAt(0).toUpperCase();
@@ -7349,7 +7362,7 @@ function gameArt(item){
   }
   if(art.slice(0,4)==='img:'){
     const _slug=art.slice(4);
-    if(HAVE_IMG.has(_slug)){
+    if(HAVE_IMG.has(_slug) && IMG_READY.has(_slug)){
       return '<div class="gameart img"><img src="'+IMG_BASE+_slug+'.webp" alt=""></div>';
     }
     const _l=item.w[0].charAt(0).toUpperCase();
@@ -8632,6 +8645,7 @@ async function doAuth(action){
   msg.textContent='';
   closeLogin();
   updateAuthUI();
+  await syncFromCloud();   // 先拉云端合并（取 max），再上行覆盖 → 两端一致
   syncAllProgress();
   loadMe();
   initUsage();
@@ -8791,6 +8805,23 @@ async function syncAllProgress(){
   if(!list.length) return;
   await api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,progress:list,date:cnToday()})});
 }
+/* 拉取云端进度并取 max 合并到本地（多设备同步：逐词进度只增不减，max 合并安全，
+   避免后学设备把云端高等级覆盖降级。2026-08-22） */
+async function syncFromCloud(){
+  if(!auth) return;
+  try{
+    const res=await api('/api/progress?token='+encodeURIComponent(auth.token));
+    if(!res.ok || !Array.isArray(res.data.list)) return;
+    let changed=false;
+    res.data.list.forEach(function(p){
+      if(!p || !p.cat || !p.word) return;
+      const key=p.cat+':'+p.word;
+      const cur=engProgress[key]||0;
+      if(p.level>cur){ engProgress[key]=p.level; changed=true; }
+    });
+    if(changed){ saveObj(LS_EN,engProgress); renderCard(); renderCatChips(); }
+  }catch(e){}
+}
 function setRankType(t){
   rankType=t;
   document.querySelectorAll('#modRank .filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.r===t));
@@ -8883,7 +8914,7 @@ document.addEventListener('visibilitychange',function(){
 document.addEventListener('DOMContentLoaded',function(){
   migrateProgress();
   auth=loadAuth(); updateAuthUI();
-  if(auth){closeLogin(); loadMe(); syncAllProgress(); initUsage();}  // ★ 已登录：直接关掉登录层，刷新不再弹登录界面（仅用户主动 logout 才回登录层）
+  if(auth){closeLogin(); syncFromCloud().then(function(){ syncAllProgress(); loadMe(); initUsage(); });}  // ★ 已登录：先拉云端合并再上行，多设备进度一致
   else { openLogin(); }
   refreshTopPoints();
   restorePos();
