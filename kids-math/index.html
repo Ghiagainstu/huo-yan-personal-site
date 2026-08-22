@@ -1697,7 +1697,7 @@
     {id:'g2',label:'二年级',   N:8,  box:[2,4], givens:26},
     {id:'g3',label:'三年级',   N:9,  box:[3,3], givens:38},
     {id:'g4',label:'四年级',   N:12, box:[3,4], givens:68, time:1500},
-    {id:'g5',label:'五年级',   N:16, box:[4,4], givens:110, time:2500}
+    {id:'g5',label:'五年级',   N:16, box:[4,4], givens:110, time:1000}
   ];
   function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===8)return [2,4]; if(N===12)return [3,4]; if(N===16)return [4,4]; return [3,3]; }
   function sdLabel(v){ return v<=9 ? String(v) : String.fromCharCode(55+v); }   // 10->A ... 16->G
@@ -1743,7 +1743,7 @@
   // 行/列/宫占用用 bitmask（bit1..bitN，N≤16 恰好 32 位内），零临时数组分配——
   // 16×16 挖洞期要跑数百次校验，旧版每次分配大量候选数组导致 GC/CPU 狂奔（手机上出题卡 5s+）
   function sdCountSolutions(grid,N,br,bc,limit){
-    const g=grid.map(r=>r.slice()); let cnt=0;
+    const g=grid.map(r=>r.slice()); let cnt=0, nodes=0;
     const FULL=(1<<(N+1))-2;                       // bit1..bitN 全 1
     const BC=N/bc;                                 // 每行宫数
     const rowU=new Array(N).fill(0), colU=new Array(N).fill(0), boxU=new Array(N).fill(0);
@@ -1754,6 +1754,7 @@
     function popc(x){ let n=0; while(x){ x&=x-1; n++; } return n; }
     function solve(){
       if(cnt>=limit) return;
+      if(++nodes>60000){ cnt=limit; return; }      // 保险丝：搜索过深视为非唯一、放弃该洞（少挖一格无害，单次校验耗时封顶）
       let best=-1,bestM=0,bestN=99;
       for(let r=0;r<N;r++){
         for(let c=0;c<N;c++){
@@ -1834,7 +1835,16 @@
     fb.textContent='💔 3 错挑战失败！点 🔄 换一题再来'; fb.className='feedback try';
     playWrong(); sdUpdateProgress();
   }
+  let sdPending=false;
   function sdNew(){
+    if(sdPending) return;
+    sdPending=true;
+    // 先让浏览器绘制「出题中」提示，再同步生成——16×16 生成期主线程阻塞，无提示会像假死卡住
+    const fb=$('sudokuFeedback');
+    fb.textContent='⏳ 出题中…'; fb.className='feedback';
+    setTimeout(()=>{ try{ sdNewRun(); } finally{ sdPending=false; } },30);
+  }
+  function sdNewRun(){
     const L=SUDOKU_LEVELS.find(x=>x.id===sdLevelId)||SUDOKU_LEVELS[0];
     const {puzzle,solution}=sdMake(L.N,L.box[0],L.box[1],L.givens,L.time||1200);
     sd={ N:L.N, boxR:L.box[0], boxC:L.box[1],
@@ -1865,6 +1875,7 @@
   }
   function renderSudoku(){
     const board=$('sudokuBoard'); board.innerHTML='';
+    const frag=document.createDocumentFragment();   // 256 格一次性挂载，避免逐格 append 反复触发布局
     board.style.gridTemplateColumns='repeat('+sd.N+',minmax(0,1fr))';
     board.style.setProperty('--sf', sd.N<=6?'2.2rem':sd.N<=9?'1.7rem':sd.N<=12?'1.15rem':'0.92rem');
     board.style.setProperty('--nc', Math.ceil(Math.sqrt(sd.N)));
@@ -1892,9 +1903,10 @@
           }
         }
         cell.addEventListener('click',()=>{ if(sd.given[r][c]) return; sdSelected=idx; renderSudoku(); });
-        board.appendChild(cell);
+        frag.appendChild(cell);
       }
     }
+    board.appendChild(frag);
     renderSudokuPad();
     sdUpdateProgress();
     $('sudokuDiff').textContent='难度：'+sd.level.label+' · '+sd.N+'×'+sd.N+'（'+sd.given.flat().filter(Boolean).length+' 个提示）';
