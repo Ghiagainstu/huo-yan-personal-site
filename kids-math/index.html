@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="火哥数学">
 <link rel="icon" href="assets/favicon-kids-math-20260810101908.png">
 <title>🧮 幼儿口算</title>
 <style>
@@ -21,7 +25,7 @@
     color:var(--ink);
     background:linear-gradient(160deg,var(--bg1),var(--bg2));
     min-height:100vh; display:flex; flex-direction:column; align-items:center;
-    padding:22px 16px; user-select:none;
+    padding:calc(22px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); user-select:none;
   }
   h1{font-size:1.85rem; margin:4px 0 8px; letter-spacing:2px; text-align:center; text-shadow:0 2px 5px rgba(0,0,0,.08);}
 
@@ -71,6 +75,8 @@
   .grade-btn{border:none; border-radius:14px; padding:9px 18px; font-weight:800; font-size:1rem; background:#fff; color:#666; box-shadow:0 2px 8px rgba(0,0,0,.10); cursor:pointer; transition:.18s;}
   .grade-btn.active{background:linear-gradient(135deg,#ff8c42,#ff6b6b); color:#fff; box-shadow:0 4px 12px rgba(255,107,107,.4);}
   .grades.locked .grade-btn{opacity:.4; filter:grayscale(.5); pointer-events:none;}
+  /* 统一内容列宽：固定 max-width，避免随题目长短收缩抖动（修复「点年级后下方卡片宽自动变」） */
+  #calcArea, #sudokuArea{width:100%; max-width:620px; margin:0 auto;}
 
   /* 设置折叠面板（⚙️ 齿轮在右上角，默认收起） */
   .setup{display:flex; flex-direction:column; gap:8px; align-items:center; max-width:600px; margin:0 auto;}
@@ -100,7 +106,7 @@
   /* 题目卡 */
   .board{
     width:100%; max-width:560px; background:var(--card); border-radius:28px;
-    box-shadow:var(--shadow); padding:20px 22px 26px; text-align:center;
+    box-shadow:var(--shadow); padding:20px 22px 26px; text-align:center; margin:0 auto;
   }
   .equation{
     display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px;
@@ -242,7 +248,7 @@
 
   /* 手机适配（仅影响 ≤480px，平板/桌面不变） */
   @media (max-width:480px){
-    body{padding:16px 10px;}
+    body{padding:calc(16px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));}
     h1{font-size:1.5rem; margin:14px 0 44px;}
     .cats{gap:16px;}
     .cat-grid{grid-template-columns:repeat(3,1fr); gap:9px;}
@@ -313,8 +319,10 @@
 
   /* 平板适配（iPad 竖屏 768 / 横屏 1024，覆盖 481–1024） */
   @media (min-width:481px) and (max-width:1024px){
-    body{padding:20px 16px;}
+    body{padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
     #calcArea, #sudokuArea{width:100%; max-width:800px;}
+    /* iPad 等平板：顶部控件改为标题下方居中流式排列，避免固定角标遮挡主标题 */
+    .topright{position:static; margin:6px auto 16px; justify-content:center; flex-wrap:wrap;}
     h1{font-size:1.9rem;}
     .mode-switch .ms-opt{padding:11px 22px; font-size:1.1rem; border-radius:18px;}
     .grades{max-width:800px; gap:10px;}
@@ -1897,6 +1905,8 @@
     appMode=m;
     $('calcArea').style.display = m==='calc' ? '' : 'none';
     $('sudokuArea').style.display = m==='sudoku' ? '' : 'none';
+    // 数独模式隐藏口算年级条（数独用独立的难度条 #sudokuLevels，避免两者重合/重复）
+    if($('grades')) $('grades').style.display = m==='calc' ? '' : 'none';
     document.querySelectorAll('.ms-opt').forEach(b=> b.classList.toggle('active', b.dataset.app===m));
     if($('pageTitle')) $('pageTitle').textContent = m==='sudoku' ? '🧩 数独' : '🧮 小学数学口算';
     if(m==='sudoku'){ if(!sd.N) sdNew(); else renderSudoku(); }
