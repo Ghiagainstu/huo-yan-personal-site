@@ -720,7 +720,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <div class="box-statc st-today"><span class="box-stat-ic">📅</span><b id="boxToday">0/2</b><i>今日已抽</i></div>
         <div class="box-statc st-points"><span class="box-stat-ic">⭐</span><b id="boxPoints">—</b><i>盲盒入账</i></div>
       </div>
-      <button class="game-btn box-draw-btn" id="boxDrawBtn" onclick="boxDraw()">🎁 抽盲盒（今日 0/2）</button>
+      <button class="game-btn box-draw-btn" id="boxDrawBtn" onclick="boxDraw()">🎁 点击抽盲盒</button>
       <div class="box-msg" id="boxMsg"></div>
       <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 每日最多 2 次 · 重复自动折积分</div>
       <div class="box-grid-name">🐾 我的宠物</div>
@@ -7311,7 +7311,7 @@ async function loadBox(){
   if(td) td.textContent=tc+'/2';
   if(bp) bp.textContent=(res.data.box_points!=null?res.data.box_points:0)+' 分';
   if(btn){
-    btn.textContent='🎁 抽盲盒（今日 '+tc+'/2）';
+    btn.textContent='🎁 点击抽盲盒';
     const dis=(res.data.tickets==null||res.data.tickets<=0)||tc>=2;
     btn.disabled=dis;
     btn.classList.toggle('box-btn-dis',dis);
