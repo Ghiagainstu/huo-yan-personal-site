@@ -405,8 +405,7 @@
   <div id="sudokuArea" style="display:none">
     <div class="controls">
       <div class="setup-row" id="sudokuLevels" style="margin:2px auto 4px;">
-        <span class="lbl">难度</span>
-        <button class="mini-btn slv" data-lv="k">🧒 幼儿园</button>
+        <button class="mini-btn slv" data-lv="k">幼儿园</button>
         <button class="mini-btn slv" data-lv="g1">一年级</button>
         <button class="mini-btn slv" data-lv="g2">二年级</button>
         <button class="mini-btn slv" data-lv="g3">三年级</button>
@@ -419,7 +418,6 @@
         <button class="mini-btn" id="sudokuNew" title="换一题">🔄</button>
         <button class="mini-btn" id="sudokuCheck" title="检查答案">✅</button>
         <button class="mini-btn" id="sudokuLives" title="3 错挑战：开启后每局 3 颗心，填错扣 1 心，扣完本局失败">❤️ 挑战</button>
-        <button class="mini-btn" id="sudokuSound" title="音效开关">🔊</button>
       </div>
     </div>
     <div class="progress" id="sudokuProgress">已填 0 / 0</div>
@@ -771,7 +769,7 @@
   function playCorrect(){ if(!soundOn) return; tone(880,0,0.12,'sine',0.2); tone(1318,0.10,0.16,'sine',0.18); }
   function playWrong(){ if(!soundOn) return; tone(233,0,0.18,'square',0.14); tone(175,0.10,0.22,'sawtooth',0.12); }
   function playFanfare(){ if(!soundOn) return; const n=[523,659,784,1047]; n.forEach((f,i)=>tone(f,i*0.13,0.18,'triangle',0.2)); tone(1047,n.length*0.13,0.42,'triangle',0.2); }
-  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊':'🔇'; const s=$('sudokuSound'); if(s) s.textContent=soundOn?'🔊':'🔇'; }
+  function updateSoundBtn(){ const b=$('soundBtn'); if(b) b.textContent=soundOn?'🔊':'🔇'; }   // 全局唯一音效开关（设置弹窗内），口算/数独共用
   function setSound(on){ soundOn=on; try{ localStorage.setItem(SOUND_STORE,on?'1':'0'); }catch(e){} updateSoundBtn(); }
 
   function updateAdaptBtn(){ const b=$('adaptBtn'); if(b){ b.textContent='🤖'; b.classList.toggle('active', adaptMode); } }
@@ -1694,12 +1692,12 @@
   /* ===================== 数独模式 ===================== */
   // 数独难度（独立难度条，与口算年级解耦）。box=[行宫,列宫]，须满足 box[0]*box[1]=N 且 N 能被两者整除
   const SUDOKU_LEVELS=[
-    {id:'k', label:'🧒 幼儿园', N:4,  box:[2,2], givens:12},
-    {id:'g1',label:'一年级',   N:6,  box:[2,3], givens:26},
-    {id:'g2',label:'二年级',   N:6,  box:[2,3], givens:16},
-    {id:'g3',label:'三年级',   N:9,  box:[3,3], givens:45},
-    {id:'g4',label:'四年级',   N:12, box:[3,4], givens:80, time:1500},
-    {id:'g5',label:'五年级',   N:16, box:[4,4], givens:130, time:2500}
+    {id:'k', label:'幼儿园', N:4,  box:[2,2], givens:10},
+    {id:'g1',label:'一年级',   N:6,  box:[2,3], givens:22},
+    {id:'g2',label:'二年级',   N:6,  box:[2,3], givens:14},
+    {id:'g3',label:'三年级',   N:9,  box:[3,3], givens:38},
+    {id:'g4',label:'四年级',   N:12, box:[3,4], givens:68, time:1500},
+    {id:'g5',label:'五年级',   N:16, box:[4,4], givens:110, time:2500}
   ];
   function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===12)return [3,4]; if(N===16)return [4,4]; return [3,3]; }
   function sdLabel(v){ return v<=9 ? String(v) : String.fromCharCode(55+v); }   // 10->A ... 16->G
@@ -1990,7 +1988,6 @@
   $('sudokuNew').addEventListener('click',sdNew);
   $('sudokuCheck').addEventListener('click',sdCheck);
   $('sudokuErase').addEventListener('click',sdErase);
-  $('sudokuSound').addEventListener('click',()=>setSound(!soundOn));
   // ❤️ 3 错挑战：开关持久化，切换后重开一局
   try{ sdLivesMode = localStorage.getItem('kidsmath_sudoku_lives_v1')==='1'; }catch(e){}
   $('sudokuLives').classList.toggle('active', sdLivesMode);
