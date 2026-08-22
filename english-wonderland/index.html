@@ -1481,7 +1481,7 @@ const PHON={
   'dessert':['/dɪˈzɜːt/','/dɪˈzɜːrt/','',''],
   'dinosaur':['/ˈdaɪnəsɔː/','/ˈdaɪnəsɔːr/','',''],
   'diving':['/ˈdaɪvɪŋ/','/ˈdaɪvɪŋ/','',''],
-  'donkey':['/ˈdɒŋki/','/ˈdɔːŋki/','',''],
+  'donkey':['/ˈdɒŋki/','/ˈdɔːŋki/','audio/donkey-uk.mp3','audio/donkey-us.mp3'],
   'dragon':['/ˈdræɡən/','/ˈdræɡən/','',''],
   'dragon fruit':['/ˈdræɡən fruːt/','/ˈdræɡən fruːt/','',''],
   'e-bike':['/ˈiː baɪk/','/ˈiː baɪk/','',''],
@@ -7377,7 +7377,14 @@ async function boxDraw(){
     const res=await api('/api/box',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token})});
     if(!res.ok){ throw new Error(res.data.error||'抽取失败'); }
     ctrl.resolve(res.data.result); // 结果送达 → 动画定格展示
-    await Promise.all([loadBox(), loadMe()]);
+    /* P2（2026-08-22）：draw 响应已带全量 box 状态 → 跳过 loadBox/loadMe 两次海外往返 */
+    if(res.data && res.data.owned){
+      auth.box = Object.assign({}, auth.box||{}, res.data);
+      saveAuth(auth);
+      renderBoxGrid(); renderBoxPool(); renderMyPets(); renderBoxDraws(); renderPetCorner();
+    } else {
+      await Promise.all([loadBox(), loadMe()]);
+    }
     updateAuthUI(); renderShop();
   }catch(err){
     ctrl.cancel();

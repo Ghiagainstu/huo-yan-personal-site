@@ -204,5 +204,19 @@ export async function onRequestPost(ctx) {
   await db.prepare('INSERT INTO box_draws(user_id, date, result) VALUES(?,?,?)').bind(u.id, today, JSON.stringify({ ...result, t: Date.now() })).run();
   await counterAdd(db, 'box_used', u.id, 1);
   const boxPoints = await counterGet(db, 'box_points', u.id);
-  return json({ ok: true, result, tickets: tickets - 1, box_points: boxPoints });
+  /* P2（2026-08-22）：draw 响应直接返回与 GET 一致的全量状态，
+     前端抽完后免去 loadBox/loadMe 两次海外往返（乐观 UI 后唯一剩余延迟点） */
+  const draws = (await db.prepare('SELECT date, result FROM box_draws WHERE user_id=? ORDER BY id DESC LIMIT 10').bind(u.id).all()).results.map(r => {
+    try { return { date: r.date, ...JSON.parse(r.result) }; } catch (e) { return { date: r.date }; }
+  });
+  const newToday = todayCount + 1;
+  return json({
+    ok: true, result,
+    tickets: Math.max(0, tickets - 1),
+    todayCount: newToday,
+    drewToday: newToday >= DAILY_DRAW_LIMIT,
+    owned: ownedRows.map(r => r.slug),
+    box_points: boxPoints,
+    draws
+  });
 }
