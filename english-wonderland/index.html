@@ -3742,7 +3742,6 @@ const CATS = [
     ['blue','蓝色','#2196F3'],
     ['brown','棕色','#795548'],
     ['gold','金色','img:gold'],
-    ['gray','灰色','#9E9E9E','grey'],
     ['green','绿色','#4CAF50'],
     ['mint','薄荷绿','#98FB98'],
     ['navy','深蓝色','#000080'],
@@ -4425,7 +4424,6 @@ const CATS = [
     ['place','地方；住所；席位','img:place'],
     ['station','车站；电台；基地','img:station'],
     ['temple','庙宇；圣堂；寺院','img:temple'],
-    ['theatre','剧场','img:theatre'],
     ['tower','塔；高楼','img:tower'],
     ['way','路；路程','img:way']]} ,
 {id:'festivals', zh:'节日活动', en:'Festivals & Activities', tint:['#FCE4EC','#F8BBD0'], tpls:['I celebrate {w}.','{w} is fun!','We eat {w}.','Happy {w}!','I like {w}.'], words:[
@@ -4936,7 +4934,12 @@ function migrateProgress(){
     if(changed) saveObj(LS_EN,pr);
   }catch(e){}
 }
-function getLevel(catId,w){return engProgress[wordKey(catId,w)]||0}
+function getLevel(catId,w){
+  const k=wordKey(catId,w);
+  const _p=bramPair(w);
+  if(_p){ const k2=wordKey(catId,_p[1]); const a=engProgress[k]||0, b=engProgress[k2]||0; return a>b?a:b; } // 英美合并卡：兼容两拼写的旧进度
+  return engProgress[k]||0;
+}
 function findByKey(key){
   for(const c of CATS){
     for(const w of c.words){ if(wordKey(c.id,w[0])===key) return {cat:c, w:w}; }
@@ -5415,20 +5418,25 @@ function totalWords(){return CATS.reduce((s,c)=>s+c.words.length,0)}
 function masteredCount(){let n=0;for(const k in engProgress) if(engProgress[k]>=3) n++;return n}
 function catMastered(cat){return cat.words.filter(w=>getLevel(cat.id,w[0])>=3).length}
 /* ===== 美式(us)/英式(uk)地区标记 =====
-   未列出的词默认 'both'（英美通用）。成对词共用图片。
-   REGION 记录「与另一方写法/叫法不同」的词；下方 EXTRA_WORDS 把缺失的一方补进词库。 */
+   未列出的词默认 'both'（英美通用）。
+   2026-08-22 起英美变体由上方 BRAM 表合并为一张卡（英式在前/英音，美式在后/美音），
+   命中 BRAM 的词 regionOf 返回 both；REGION 仅兜底无配对词。 */
 const REGION = {
   // 美式特有（英式用别的词）
   apartment:'us', pants:'us', truck:'us', fries:'us', cookie:'us', candy:'us',
   eggplant:'us', zucchini:'us', sneakers:'us', eraser:'us', subway:'us', gray:'both', soccer:'us',
   // 英式特有
   autumn:'uk',
-  // 下方 EXTRA_WORDS 补进来的对应词
+  // BRAM 成对词（以下标记仅兜底，实际由 bramPair 命中后视为 both）
   flat:'uk', trousers:'uk', lorry:'uk', chips:'uk', biscuit:'uk', sweets:'uk',
   aubergine:'uk', courgette:'uk', trainers:'uk', rubber:'uk', underground:'uk',
   fall:'us', football:'uk'
 };
-function regionOf(w){ const k=(Array.isArray(w)?w[0]:w).toLowerCase(); return REGION[k]||'both'; }
+function regionOf(w){
+  const k=(Array.isArray(w)?w[0]:w).toLowerCase();
+  if(bramPair(k)) return 'both'; // 英美合并卡：卡片内同时含英式/美式，任何视图都显示
+  return REGION[k]||'both';
+}
 /* tier：核心词(core)=上海课标要求；拓展词(ext)=教材不要求。
    判定依据（2026-08-19 更新，火哥拍板）：
    ★ 上海小学唯一标准 = 「牛津上海版小学英语词汇表（2024版手动整理）含氢刻.txt」955 个归一化展示形
@@ -5659,40 +5667,23 @@ function tierOfCat(catId){
   for(const w of c.words){ if(tierOfWord(catId, w[0])==='core') return 'core'; }
   return 'ext';
 }
-/* 把缺失的英式/美式对应词补进词库，与已有词共用图片 */
-const EXTRA_WORDS = [
-  ['flat','公寓','img:apartment','places'],
-  ['trousers','裤子','img:pants','clothes'],
-  ['lorry','卡车','img:truck','transport'],
-  ['chips','薯条','img:fries','food'],
-  ['biscuit','饼干','img:cookie','food'],
-  ['sweets','糖果','img:candy','food'],
-  ['aubergine','茄子','img:eggplant','vegetables'],
-  ['courgette','西葫芦','img:zucchini','vegetables'],
-  ['trainers','运动鞋','img:sneakers','clothes'],
-  ['rubber','橡皮','img:eraser','objects'],
-  ['underground','地铁','img:underground'],
-  ['fall','秋天','img:autumn','time'],
-  ['football','足球','img:soccer','sports']
-];
-/* 每个美式/英式对应词紧跟在它的"基词"后面,保证「通用」视图里成对相邻显示 */
-const EXTRA_BASE={
-  flat:'apartment',trousers:'pants',lorry:'truck',chips:'fries',biscuit:'cookie',
-  sweets:'candy',aubergine:'eggplant',courgette:'zucchini',trainers:'sneakers',
-  rubber:'eraser',underground:'subway',fall:'autumn',football:'soccer'
+/* 英美变体合并表（2026-08-22 火哥定案）：键=美式拼写，值=英式拼写。
+   命中的词条渲染为一张卡：英式拼写在前（英式发音），美式拼写在后（美式发音），共用一张图；
+   不再为变体生成独立词条/独立卡片。 */
+const BRAM = {
+  apartment:'flat', pants:'trousers', truck:'lorry', fries:'chips', cookie:'biscuit',
+  candy:'sweets', eggplant:'aubergine', zucchini:'courgette', sneakers:'trainers',
+  eraser:'rubber', subway:'underground', fall:'autumn', soccer:'football',
+  gray:'grey', theater:'theatre', favorite:'favourite'
 };
-EXTRA_WORDS.forEach(([en,zh,art,catId])=>{
-  const c=CATS.find(x=>x.id===catId);
-  if(c && !c.words.some(w=>w[0]===en)){
-    const w=[en,zh,art];
-    c.words.push(w);
-    const base=EXTRA_BASE[en];
-    if(base){
-      const bi=c.words.findIndex(x=>x[0]===base);
-      if(bi>=0){ c.words.splice(c.words.length-1,1); c.words.splice(bi+1,0,w); }
-    }
-  }
-});
+const BRAM_REV = {};
+Object.keys(BRAM).forEach(k=>{ BRAM_REV[BRAM[k]] = k; });
+function bramPair(word){ // 返回 [英式, 美式]，非英美变体返回 null
+  const w = String(word||'').toLowerCase();
+  if(BRAM[w]) return [BRAM[w], w];
+  if(BRAM_REV[w]) return [w, BRAM_REV[w]];
+  return null;
+}
 /* 分类展示顺序：按儿童认知梯度（具体到抽象）。未列出的分类排在最后,保持可回退。 */
 const CAT_ORDER = [
   'animals','colors','numbers','body','fruits','vegetables','food','clothes','family',
@@ -5953,18 +5944,30 @@ const CAT_WORD_ORDER = {
   colors: ['red','orange','yellow','green','blue','purple','pink','black','white','brown','grey','gold','silver','navy','mint','colour'],
   shapes: ['circle','square','triangle','rectangle','diamond','heart','star','sphere','cube','cuboid','cylinder','cone','pyramid','trapezoid','parallelogram']
 };
+/* 分类内排序（2026-08-22 火哥定案）：核心词段在前、拓展词段在后；
+   各段内部优先 ①CAT_WORD_ORDER 教学序 ②ORDER_BY_CAT 认知分组 ③compareWords 兜底 */
 function orderWithinCat(catId, items){
-  const ord = CAT_WORD_ORDER[catId];
-  if(!ord) return items.slice().sort((a,b)=>compareWords(catId, a.w[0], catId, b.w[0]));
-  const pos = {}; ord.forEach((w,i)=>{ pos[w.toLowerCase()] = i; });
-  return items.slice().sort((a,b)=>{
+  const ordPos = (function(){ const ord=CAT_WORD_ORDER[catId]; if(!ord) return null; const p={}; ord.forEach((w,i)=>{ p[w.toLowerCase()]=i; }); return p; })();
+  const gPos = (function(){ const g=ORDER_BY_CAT[catId]; if(!g) return null; const p={}; let seq=0;
+    (function walk(arr){ arr.forEach(item=>{ if(Array.isArray(item)) walk(item); else p[String(item).toLowerCase()]=seq++; }); })(g);
+    return p; })();
+  const sorter = (a,b)=>{
     const ka=a.w[0].toLowerCase(), kb=b.w[0].toLowerCase();
-    const pa=(ka in pos), pb=(kb in pos);
-    if(pa && pb) return pos[ka]-pos[kb];
-    if(pa) return -1;
-    if(pb) return 1;
+    if(ordPos){
+      const pa=(ka in ordPos), pb=(kb in ordPos);
+      if(pa&&pb) return ordPos[ka]-ordPos[kb];
+      if(pa) return -1; if(pb) return 1;
+    }
+    if(gPos){
+      const pa=(ka in gPos), pb=(kb in gPos);
+      if(pa&&pb) return gPos[ka]-gPos[kb];
+      if(pa) return -1; if(pb) return 1;
+    }
     return compareWords(catId, a.w[0], catId, b.w[0]);
-  });
+  };
+  const core=[], ext=[];
+  items.forEach(it=>{ if(tierOfWord(catId, it.w[0])==='core') core.push(it); else ext.push(it); });
+  return [...core.sort(sorter), ...ext.sort(sorter)];
 }
 function minDiffRankOfItems(items){
   let mn=3; for(const it of items){ const d=diffOf(it.w[0]); if(d<mn) mn=d; }
@@ -6001,54 +6004,21 @@ function buildList(){
     });
     if(items.length) groups.push({cat:c, items});
   });
-  /* 分类块排序：① 核心分类在前、拓展在后 ② 分类内最简词 age 小者在前（跨分类简单→难） ③ 维持原分类序 */
+  /* 分类块排序（2026-08-22 火哥定案）：固定按 CAT_ORDER 认知梯度（动物→颜色→数字→…→学校科目），
+     不再受 核心/难度 影响，顺序稳定可预期 */
   groups.sort((g1,g2)=>{
-    const r=(tierOfCat(g1.cat.id)==='core'?0:1)-(tierOfCat(g2.cat.id)==='core'?0:1);
-    if(r!==0) return r;
-    const a1=minDiffRankOfItems(g1.items), a2=minDiffRankOfItems(g2.items);
-    if(a1!==a2) return a1-a2;
     return SORTED_CATS().indexOf(g1.cat)-SORTED_CATS().indexOf(g2.cat);
   });
   /* 分类内：有内在顺序（数字/身体/家庭/时间/颜色/形状）按教学序；否则 简单→难→核心→拓展→A-Z */
   cardList=[];
   groups.forEach(g=>{ cardList.push(...orderWithinCat(g.cat.id, g.items)); });
-  /* 相邻归组（全局）：变体紧跟基词 + 正反义/近义词同现 */
+  /* 相邻归组（全局）：正反义/近义词同现（英美变体已合并进单卡，无需 clusterVariants） */
   if(!curShuffle && !curSearch){
     const enKey = it => (Array.isArray(it.w)?it.w[0]:it.w);
-    const regOf = it => regionOf(enKey(it));
-    cardList = clusterVariants(cardList, enKey, regOf);
     cardList = clusterPairs(cardList, enKey);
   }
   if(curShuffle && !curSearch) cardList=shuffleArr(cardList);
   if(cardIdx>=cardList.length) cardIdx=Math.max(0,cardList.length-1);
-}
-/* 把 EXTRA_WORDS 变体插到基准词后; 同一基准 US 在前 */
-function clusterVariants(seg, enKey, regOf){
-  const idxByEn = {}; seg.forEach((it,k)=>{ const key=enKey(it).toLowerCase(); if(!(key in idxByEn)) idxByEn[key]=k; });
-  // 某词是否"依附于本段内基词"的变体(若是,则跳过,等基词处理时一并插入,避免重复/错位)
-  const isVariantOfPresent = en => {
-    for(const [ven] of EXTRA_WORDS){ if(ven.toLowerCase()===en){ const base=EXTRA_BASE[ven]; return !!base && (base in idxByEn); } }
-    return false;
-  };
-  const out = [];
-  for(let k=0;k<seg.length;k++){
-    const it = seg[k]; const key = enKey(it).toLowerCase();
-    if(isVariantOfPresent(key)) continue; // 变体: 等基词处理时插入(不在自身位置输出)
-    out.push(it);
-    const baseEn = key;
-    // 找依附于该基词的变体(基词存在时才插; US 在前)
-    const variants = [];
-    EXTRA_WORDS.forEach(([ven])=>{
-      const base = EXTRA_BASE[ven];
-      if(base===baseEn){
-        const vk = idxByEn[ven.toLowerCase()];
-        if(vk!=null) variants.push(seg[vk]);
-      }
-    });
-    variants.sort((a,b)=>{ const ra=regOf(a), rb=regOf(b); return (ra==='us'?0:1)-(rb==='us'?0:1); });
-    variants.forEach(v=> out.push(v));
-  }
-  return out;
 }
 /* 把正反义/近义词对在同分类内相邻(对已存在的双方才归并, 否则不动) */
 function clusterPairs(seg, enKey){
@@ -6154,8 +6124,12 @@ function renderCard(){
   const word=item.w[0],zh=item.w[1];
   currentWord=word;
   currentAlt = (item.w[3] && item.w[3]!==word) ? item.w[3] : '';
+  const pair = bramPair(word); // [英式, 美式]
+  const ukW = pair ? pair[0] : (currentAlt||word);
+  const usW = pair ? pair[1] : word;
+  const dispEn = pair ? (ukW+' / '+usW) : (word+(currentAlt?' / '+currentAlt:''));
   const lv=getLevel(item.cat.id,word);
-  const rg=regionOf(item.w);
+  const rg = pair ? 'both' : regionOf(item.w);
   currentExample=makeExample(item.cat,item.w);
   const example=currentExample;
   const svg=wordArtSVG(item);
@@ -6171,7 +6145,7 @@ function renderCard(){
         '<div class="card-face card-front">'+
           '<div class="card-art">'+svg+tierBadge+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-en-wrap"><span class="word-en">'+word+(currentAlt?' / '+currentAlt:'')+'</span>'+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
+            '<div class="word-en-wrap"><span class="word-en">'+dispEn+'</span>'+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word,currentAlt)+
             '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
           '</div>'+
@@ -6180,7 +6154,7 @@ function renderCard(){
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
             '<div class="word-zh">'+zh+(rg!=='both'?'<span class="region-pill sm '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
-            '<div class="word-en" style="font-size:26px">'+word+(currentAlt?' / '+currentAlt:'')+'</div>'+posBadge(word)+
+            '<div class="word-en" style="font-size:26px">'+dispEn+'</div>'+posBadge(word)+
             phonHTML(word,currentAlt)+
             (example?'<div class="word-example">💬 '+example.split('|')[0]+'</div>'+(example.split('|')[1]?'<div class="word-example-zh">'+example.split('|')[1]+'</div>':'')+'':'')+
             '<button class="speak-btn" id="speakExBtn" onclick="event.stopPropagation();speakExample()">🔊 听例句</button>'+
@@ -6214,8 +6188,11 @@ function speakExample(){if(!cardList.length) return;const item=cardList[cardIdx]
    改用 onplaying 事件确认已开始播放，避免慢网络下 TTS 抢先导致生硬。 */
 function playAccent(accent,btn){
   if(!currentWord) return;
-  const w = accent==='uk' ? (currentAlt||currentWord) : currentWord;
-  const p=PHON[w]||[];
+  const _pair = bramPair(currentWord);
+  const ukWord = _pair ? _pair[0] : (currentAlt||currentWord);
+  const usWord = _pair ? _pair[1] : currentWord;
+  const w = accent==='uk' ? ukWord : usWord;
+  const p=PHON[w]||PHON[currentWord]||[];
   const ipa=accent==='uk'?p[0]:p[1];
   const url=accent==='uk'?p[2]:p[3];
   const lang=accent==='uk'?'en-GB':'en-US';
@@ -6240,10 +6217,11 @@ function playAccent(accent,btn){
   }
 }
 function phonHTML(word,alt){
-  const p=PHON[word];
-  const ukWord = alt||word;
-  const up=PHON[ukWord]||p;
-  const uk=up?up[0]:'',us=p?p[1]:'';
+  const _pair = bramPair(word);
+  const ukWord = _pair ? _pair[0] : (alt||word);
+  const usWord = _pair ? _pair[1] : word;
+  const up=PHON[ukWord]||PHON[word]||[], usp=PHON[usWord]||PHON[word]||[];
+  const uk=up[0]||'', us=usp[1]||'';
   let h='<div class="phon-row">';
   if(uk) h+='<button class="phon-pill uk" onclick="event.stopPropagation();playAccent(\'uk\',this)"><span class="flag">🔊 🇬🇧</span><span class="ipa">'+uk+'</span></button>';
   if(us) h+='<button class="phon-pill us" onclick="event.stopPropagation();playAccent(\'us\',this)"><span class="flag">🔊 🇺🇸</span><span class="ipa">'+us+'</span></button>';
