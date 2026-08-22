@@ -1739,31 +1739,41 @@
     do{ for(const row of g) row.fill(0); seedDiag(); }while(!fill() && ++guard<300);
     return g;
   }
-  function sdCands(g,r,c,N,br,bc){
-    const used=new Array(N+1).fill(false);
-    for(let i=0;i<N;i++){ if(g[r][i])used[g[r][i]]=true; if(g[i][c])used[g[i][c]]=true; }
-    const R=Math.floor(r/br)*br, C=Math.floor(c/bc)*bc;
-    for(let i=0;i<br;i++) for(let j=0;j<bc;j++){ const v=g[R+i][C+j]; if(v)used[v]=true; }
-    const out=[];
-    for(let v=1;v<=N;v++) if(!used[v]) out.push(v);
-    return out;
-  }
-  // 高效唯一解计数（MRV + 候选剪枝），用于挖空校验；limit=2 足够判断唯一
+  // 高效唯一解计数（位运算 MRV），用于挖空校验；limit=2 足够判断唯一。
+  // 行/列/宫占用用 bitmask（bit1..bitN，N≤16 恰好 32 位内），零临时数组分配——
+  // 16×16 挖洞期要跑数百次校验，旧版每次分配大量候选数组导致 GC/CPU 狂奔（手机上出题卡 5s+）
   function sdCountSolutions(grid,N,br,bc,limit){
     const g=grid.map(r=>r.slice()); let cnt=0;
+    const FULL=(1<<(N+1))-2;                       // bit1..bitN 全 1
+    const BC=N/bc;                                 // 每行宫数
+    const rowU=new Array(N).fill(0), colU=new Array(N).fill(0), boxU=new Array(N).fill(0);
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const v=g[r][c];
+      if(v){ const b=1<<v; rowU[r]|=b; colU[c]|=b; boxU[Math.floor(r/br)*BC+Math.floor(c/bc)]|=b; }
+    }
+    function popc(x){ let n=0; while(x){ x&=x-1; n++; } return n; }
     function solve(){
       if(cnt>=limit) return;
-      let best=-1,bestC=null,bestN=99;
-      for(let r=0;r<N;r++) for(let c=0;c<N;c++){
-        if(g[r][c]===0){
-          const cand=sdCands(g,r,c,N,br,bc);
-          if(cand.length===0) return;
-          if(cand.length<bestN){ bestN=cand.length; best=r*N+c; bestC=cand; if(bestN===1) break; }
+      let best=-1,bestM=0,bestN=99;
+      for(let r=0;r<N;r++){
+        for(let c=0;c<N;c++){
+          if(g[r][c]) continue;
+          const m=FULL&~(rowU[r]|colU[c]|boxU[Math.floor(r/br)*BC+Math.floor(c/bc)]);
+          if(!m) return;                            // 死局：本分支无解
+          const n=popc(m);
+          if(n<bestN){ bestN=n; best=r*N+c; bestM=m; if(n===1){ r=N; break; } }
         }
       }
-      if(best<0){ cnt++; return; }
-      const r=Math.floor(best/N), c=best%N;
-      for(const v of bestC){ g[r][c]=v; solve(); g[r][c]=0; if(cnt>=limit) return; }
+      if(best<0){ cnt++; return; }                  // 无空格=找到完整解
+      const r=Math.floor(best/N), c=best%N, bi=Math.floor(r/br)*BC+Math.floor(c/bc);
+      for(let m=bestM;m;m&=m-1){                    // 从低位到高位枚举候选（与旧版数值升序一致）
+        const v=31-Math.clz32(m&-m);
+        const b=1<<v; g[r][c]=v;
+        rowU[r]|=b; colU[c]|=b; boxU[bi]|=b;
+        solve();
+        rowU[r]&=~b; colU[c]&=~b; boxU[bi]&=~b; g[r][c]=0;
+        if(cnt>=limit) return;
+      }
     }
     solve();
     return cnt;
