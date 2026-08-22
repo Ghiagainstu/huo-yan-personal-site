@@ -101,7 +101,7 @@
   .prog-wrap{width:100%; max-width:560px; margin:0 auto 2px;}
   .prog-bar{width:100%; height:10px; background:#e6e6ee; border-radius:999px; overflow:hidden;}
   .prog-bar i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--green)); border-radius:999px; transition:width .3s ease;}
-  .progress{font-size:1rem; font-weight:700; color:#777; max-width:560px; margin:6px auto 10px; min-height:22px;}
+  .progress{font-size:1rem; font-weight:700; color:#777; max-width:560px; margin:6px auto 10px; min-height:22px; text-align:center;}
 
   /* 题目卡 */
   .board{
@@ -142,7 +142,7 @@
   @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
 
-  .feedback{margin-top:20px; min-height:32px; font-size:1.4rem; font-weight:800;}
+  .feedback{margin-top:20px; min-height:32px; font-size:1.4rem; font-weight:800; text-align:center; padding:0 10px;}
   .feedback.good{color:var(--green);}
   .feedback.try{color:var(--red);}
   .next{
@@ -1692,14 +1692,14 @@
   /* ===================== 数独模式 ===================== */
   // 数独难度（独立难度条，与口算年级解耦）。box=[行宫,列宫]，须满足 box[0]*box[1]=N 且 N 能被两者整除
   const SUDOKU_LEVELS=[
-    {id:'k', label:'幼儿园', N:4,  box:[2,2], givens:10},
+    {id:'k', label:'幼儿园', N:4,  box:[2,2], givens:12},
     {id:'g1',label:'一年级',   N:6,  box:[2,3], givens:22},
-    {id:'g2',label:'二年级',   N:6,  box:[2,3], givens:14},
+    {id:'g2',label:'二年级',   N:8,  box:[2,4], givens:26},
     {id:'g3',label:'三年级',   N:9,  box:[3,3], givens:38},
     {id:'g4',label:'四年级',   N:12, box:[3,4], givens:68, time:1500},
     {id:'g5',label:'五年级',   N:16, box:[4,4], givens:110, time:2500}
   ];
-  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===12)return [3,4]; if(N===16)return [4,4]; return [3,3]; }
+  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===8)return [2,4]; if(N===12)return [3,4]; if(N===16)return [4,4]; return [3,3]; }
   function sdLabel(v){ return v<=9 ? String(v) : String.fromCharCode(55+v); }   // 10->A ... 16->G
   function sdRange(a,b){ const o=[]; for(let i=a;i<b;i++)o.push(i); return o; }
   function sdShuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -1851,7 +1851,7 @@
   function renderSudoku(){
     const board=$('sudokuBoard'); board.innerHTML='';
     board.style.gridTemplateColumns='repeat('+sd.N+',minmax(0,1fr))';
-    board.style.setProperty('--sf', sd.N<=6?'2.2rem':sd.N===9?'1.7rem':sd.N===12?'1.15rem':'0.92rem');
+    board.style.setProperty('--sf', sd.N<=6?'2.2rem':sd.N<=9?'1.7rem':sd.N<=12?'1.15rem':'0.92rem');
     board.style.setProperty('--nc', Math.ceil(Math.sqrt(sd.N)));
     const conflicts=sdConflictSet();
     const sr = sdSelected>=0 ? Math.floor(sdSelected/sd.N) : -1;
@@ -1901,7 +1901,8 @@
       if(i>=0) arr.splice(i,1); else arr.push(n);
       sd.puzzle[r][c]=0;
     } else {
-      sd.puzzle[r][c] = (sd.puzzle[r][c]===n) ? 0 : n;
+      // 幂等填入：重复按同数字不清零（避免双击时「红错→白对」的改判假象），清零请用 ⌫ 擦除
+      sd.puzzle[r][c] = n;
       sd.notes[r][c]=[];
       const v=sd.puzzle[r][c];
       if(v && v!==sd.solution[r][c]){
