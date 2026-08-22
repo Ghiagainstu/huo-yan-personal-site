@@ -295,7 +295,7 @@
 
   /* ===== 数独 ===== */
   .sudoku-board{display:grid; gap:3px; background:#cfd8e3; padding:3px; border-radius:12px; max-width:460px; margin:6px auto 4px; touch-action:manipulation;}
-  .sudoku-cell{position:relative; aspect-ratio:1; border:1px solid #cfd8e3; background:#fff; display:flex; align-items:center; justify-content:center; font-size:clamp(1.1rem,5vw,1.9rem); font-weight:800; color:var(--ink); cursor:pointer; padding:0; font-family:inherit;}
+  .sudoku-cell{position:relative; aspect-ratio:1; border:1px solid #cfd8e3; background:#fff; display:flex; align-items:center; justify-content:center; font-size:var(--sf,1.6rem); font-weight:800; color:var(--ink); cursor:pointer; padding:0; font-family:inherit;}
   .sudoku-cell.given{background:#eef2f7; color:#3a3a44; font-weight:900; cursor:default;}
   .sudoku-cell.peer{background:#eaf2ff;}
   .sudoku-cell.sel{background:#fff3d6; outline:3px solid var(--gold); outline-offset:-3px; z-index:2;}
@@ -303,7 +303,7 @@
   .sudoku-cell.wrong{background:#ffd9d9 !important; color:#c0392b !important;}
   .sudoku-cell.br{border-right:3px solid #2b4a6b;}
   .sudoku-cell.bb{border-bottom:3px solid #2b4a6b;}
-  .sudoku-cell .note{display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); width:100%; height:100%; font-size:.4em; font-weight:600; color:#9aa3ad; line-height:1; padding:3px; text-align:center; align-content:center;}
+  .sudoku-cell .note{display:grid; grid-template-columns:repeat(var(--nc,3),1fr); grid-template-rows:repeat(var(--nc,3),1fr); width:100%; height:100%; font-size:.4em; font-weight:600; color:#9aa3ad; line-height:1; padding:3px; text-align:center; align-content:center;}
   .sudoku-cell .note b{font-weight:700;}
   .sudoku-pad{max-width:460px; margin:6px auto 0;}
   .sudoku-keys{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:4px auto 0;}
@@ -337,7 +337,7 @@
     .kp{height:76px; font-size:2rem;}
     .sudoku-board{max-width:700px;}
     .sudoku-pad{max-width:700px;}
-    .sudoku-cell{font-size:clamp(1.8rem,4.5vw,2.8rem);}
+    .sudoku-cell{font-size:var(--sf,2rem);}
     .sudoku-keys{gap:12px;}
     .sudoku-key{height:66px; font-size:1.8rem;}
     .eye-card{max-width:440px;}
@@ -412,6 +412,15 @@
 
   <div id="sudokuArea" style="display:none">
     <div class="controls">
+      <div class="setup-row" id="sudokuLevels" style="margin:2px auto 4px;">
+        <span class="lbl">难度</span>
+        <button class="mini-btn slv" data-lv="k">🧒 幼儿园</button>
+        <button class="mini-btn slv" data-lv="g1">一年级</button>
+        <button class="mini-btn slv" data-lv="g2">二年级</button>
+        <button class="mini-btn slv" data-lv="g3">三年级</button>
+        <button class="mini-btn slv" data-lv="g4">四年级</button>
+        <button class="mini-btn slv" data-lv="g5">五年级</button>
+      </div>
       <div class="setup-row">
         <span class="lbl" id="sudokuDiff">难度</span>
         <button class="mini-btn" id="sudokuHint" title="提示一个正确格">💡</button>
@@ -655,6 +664,7 @@
   let sd={};                        // 当前数独棋盘状态
   let sdSelected=-1;                // 选中格 index (r*N+c)
   let sdNoteMode=false;             // false=填数 / true=笔记
+  let sdLevelId='g1';               // 数独难度（独立难度条，与口算年级解耦）
   let inputMode='choice';            // 'choice' 选择 | 'fill' 填空
   let subMode='mix';                 // 20以内子开关：mix/carry/ncarry/subB/subNB
   let roundActive=false, roundIndex=0, roundCorrect=0;
@@ -1456,11 +1466,8 @@
         gradeKey=g.id; modIdx=0; catKey=curModule().cats[0];
         roundActive=false; saveState();
         renderGrades(); renderCats();
-        if(appMode==='sudoku'){ sdNew(); }
-        else {
-          if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
-          current=genQuestion(); render();
-        }
+        if(CATS[catKey].sub){ renderSubcats(); } else subcatsEl.classList.remove('show');
+        if(appMode!=='sudoku'){ current=genQuestion(); render(); }
       });
       gradesEl.appendChild(b);
     });
@@ -1662,79 +1669,100 @@
   $('resetTodayBtn').addEventListener('click', resetToday);
 
   /* ===================== 数独模式 ===================== */
+  // 数独难度（独立难度条，与口算年级解耦）。box=[行宫,列宫]，须满足 box[0]*box[1]=N 且 N 能被两者整除
   const SUDOKU_LEVELS=[
-    {id:'g1',label:'一年级',N:4,givens:10},
-    {id:'g2',label:'二年级',N:4,givens:8},
-    {id:'g3',label:'三年级',N:6,givens:22},
-    {id:'g4',label:'四年级',N:9,givens:45},
-    {id:'g5',label:'五年级',N:9,givens:33}
+    {id:'k', label:'🧒 幼儿园', N:4,  box:[2,2], givens:12},
+    {id:'g1',label:'一年级',   N:6,  box:[2,3], givens:26},
+    {id:'g2',label:'二年级',   N:6,  box:[2,3], givens:16},
+    {id:'g3',label:'三年级',   N:9,  box:[3,3], givens:45},
+    {id:'g4',label:'四年级',   N:12, box:[3,4], givens:80, time:1500},
+    {id:'g5',label:'五年级',   N:16, box:[4,4], givens:130, time:2500}
   ];
-  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; return [3,3]; }
+  function sdBoxDims(N){ if(N===4)return [2,2]; if(N===6)return [2,3]; if(N===12)return [3,4]; if(N===16)return [4,4]; return [3,3]; }
+  function sdLabel(v){ return v<=9 ? String(v) : String.fromCharCode(55+v); }   // 10->A ... 16->G
   function sdRange(a,b){ const o=[]; for(let i=a;i<b;i++)o.push(i); return o; }
   function sdShuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
   function sdClone(g){ return g.map(r=>r.slice()); }
-  function sdGenFull(N){
-    const [br,bc]=sdBoxDims(N);
+  // 高效生成完整解：先填对角宫（互不冲突），再回溯填余下 -> N<=16 均秒级
+  function sdGenFull(N, br, bc){
     const g=Array.from({length:N},()=>new Array(N).fill(0));
+    const diag=Math.min(N/br, N/bc);
+    for(let i=0;i<diag;i++){
+      const r0=i*br, c0=i*bc;
+      const nums=sdShuffle(sdRange(1,N+1));
+      let k=0;
+      for(let r=r0;r<r0+br;r++) for(let c=c0;c<c0+bc;c++) g[r][c]=nums[k++];
+    }
     function can(r,c,v){
       for(let i=0;i<N;i++){ if(g[r][i]===v||g[i][c]===v) return false; }
       const R=Math.floor(r/br)*br, C=Math.floor(c/bc)*bc;
       for(let i=0;i<br;i++) for(let j=0;j<bc;j++){ if(g[R+i][C+j]===v) return false; }
       return true;
     }
-    function fill(pos){
-      if(pos===N*N) return true;
-      const r=Math.floor(pos/N), c=pos%N;
-      for(const v of sdShuffle(sdRange(1,N+1))){
-        if(can(r,c,v)){ g[r][c]=v; if(fill(pos+1)) return true; g[r][c]=0; }
-      }
-      return false;
-    }
-    fill(0);
-    return g;
-  }
-  function sdCount(g,N,lim){
-    const [br,bc]=sdBoxDims(N);
-    let cnt=0;
-    function can(r,c,v){
-      for(let i=0;i<N;i++){ if(g[r][i]===v||g[i][c]===v) return false; }
-      const R=Math.floor(r/br)*br, C=Math.floor(c/bc)*bc;
-      for(let i=0;i<br;i++) for(let j=0;j<bc;j++){ if(g[R+i][C+j]===v) return false; }
-      return true;
-    }
-    function solve(){
-      if(cnt>=lim) return;
+    function fill(){
       for(let r=0;r<N;r++) for(let c=0;c<N;c++){
         if(g[r][c]===0){
-          for(const v of sdRange(1,N+1)){
-            if(can(r,c,v)){ g[r][c]=v; solve(); g[r][c]=0; if(cnt>=lim) return; }
+          for(const v of sdShuffle(sdRange(1,N+1))){
+            if(can(r,c,v)){ g[r][c]=v; if(fill()) return true; g[r][c]=0; }
           }
-          return;
+          return false;
         }
       }
-      cnt++;
+      return true;
+    }
+    fill();
+    return g;
+  }
+  function sdCands(g,r,c,N,br,bc){
+    const used=new Array(N+1).fill(false);
+    for(let i=0;i<N;i++){ if(g[r][i])used[g[r][i]]=true; if(g[i][c])used[g[i][c]]=true; }
+    const R=Math.floor(r/br)*br, C=Math.floor(c/bc)*bc;
+    for(let i=0;i<br;i++) for(let j=0;j<bc;j++){ const v=g[R+i][C+j]; if(v)used[v]=true; }
+    const out=[];
+    for(let v=1;v<=N;v++) if(!used[v]) out.push(v);
+    return out;
+  }
+  // 高效唯一解计数（MRV + 候选剪枝），用于挖空校验；limit=2 足够判断唯一
+  function sdCountSolutions(grid,N,br,bc,limit){
+    const g=grid.map(r=>r.slice()); let cnt=0;
+    function solve(){
+      if(cnt>=limit) return;
+      let best=-1,bestC=null,bestN=99;
+      for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+        if(g[r][c]===0){
+          const cand=sdCands(g,r,c,N,br,bc);
+          if(cand.length===0) return;
+          if(cand.length<bestN){ bestN=cand.length; best=r*N+c; bestC=cand; if(bestN===1) break; }
+        }
+      }
+      if(best<0){ cnt++; return; }
+      const r=Math.floor(best/N), c=best%N;
+      for(const v of bestC){ g[r][c]=v; solve(); g[r][c]=0; if(cnt>=limit) return; }
     }
     solve();
     return cnt;
   }
-  function sdMake(N,targetGivens){
-    const sol=sdGenFull(N);
+  // 在完整解上挖空，保持唯一解；timeBudgetMs 超时保护 -> 绝不卡死浏览器
+  function sdMake(N,br,bc,targetGivens,timeBudgetMs){
+    const sol=sdGenFull(N,br,bc);
     const puzzle=sdClone(sol);
     let givens=N*N;
+    const start=Date.now();
     for(const idx of sdShuffle(sdRange(0,N*N))){
       if(givens<=targetGivens) break;
+      if(Date.now()-start>timeBudgetMs) break;
       const r=Math.floor(idx/N), c=idx%N;
       const backup=puzzle[r][c];
       puzzle[r][c]=0;
-      if(sdCount(puzzle,N,2)!==1){ puzzle[r][c]=backup; }
+      if(sdCountSolutions(puzzle,N,br,bc,2)!==1){ puzzle[r][c]=backup; }
       else givens--;
     }
     return {puzzle,solution:sol};
   }
   function sdNew(){
-    const L=SUDOKU_LEVELS.find(x=>x.id===gradeKey)||SUDOKU_LEVELS[0];
-    const {puzzle,solution}=sdMake(L.N,L.givens);
-    sd={ N:L.N, boxR:sdBoxDims(L.N)[0], boxC:sdBoxDims(L.N)[1],
+    const L=SUDOKU_LEVELS.find(x=>x.id===sdLevelId)||SUDOKU_LEVELS[0];
+    const {puzzle,solution}=sdMake(L.N,L.box[0],L.box[1],L.givens,L.time||1200);
+    sd={ N:L.N, boxR:L.box[0], boxC:L.box[1],
          puzzle:sdClone(puzzle), solution:sdClone(solution),
          given:puzzle.map(r=>r.map(v=>v!==0)), notes:puzzle.map(r=>r.map(()=>[])), level:L };
     sdSelected=-1; sdNoteMode=false;
@@ -1760,7 +1788,9 @@
   }
   function renderSudoku(){
     const board=$('sudokuBoard'); board.innerHTML='';
-    board.style.gridTemplateColumns='repeat('+sd.N+',1fr)';
+    board.style.gridTemplateColumns='repeat('+sd.N+',minmax(0,1fr))';
+    board.style.setProperty('--sf', sd.N<=6?'2.2rem':sd.N===9?'1.7rem':sd.N===12?'1.15rem':'0.92rem');
+    board.style.setProperty('--nc', Math.ceil(Math.sqrt(sd.N)));
     const conflicts=sdConflictSet();
     const sr = sdSelected>=0 ? Math.floor(sdSelected/sd.N) : -1;
     const sc = sdSelected>=0 ? sdSelected%sd.N : -1;
@@ -1776,11 +1806,11 @@
         else if(sdSelected>=0 && (r===sr||c===sc||sameBox(r,c))) cell.classList.add('peer');
         if((c+1)%sd.boxC===0 && c+1<sd.N) cell.classList.add('br');
         if((r+1)%sd.boxR===0 && r+1<sd.N) cell.classList.add('bb');
-        if(v){ cell.textContent=v; }
+        if(v){ cell.textContent=sdLabel(v); }
         else {
           const notes=sd.notes[r][c];
           if(notes&&notes.length){
-            cell.innerHTML='<span class="note">'+sdRange(1,sd.N+1).map(n=>notes.includes(n)?('<b>'+n+'</b>'):'&nbsp;').join('')+'</span>';
+            cell.innerHTML='<span class="note">'+sdRange(1,sd.N+1).map(n=>notes.includes(n)?('<b>'+sdLabel(n)+'</b>'):'&nbsp;').join('')+'</span>';
           }
         }
         cell.addEventListener('click',()=>{ if(sd.given[r][c]) return; sdSelected=idx; renderSudoku(); });
@@ -1795,7 +1825,7 @@
   function renderSudokuPad(){
     const pad=$('sudokuKeys'); pad.innerHTML='';
     sdRange(1,sd.N+1).forEach(n=>{
-      const b=document.createElement('button'); b.className='sudoku-key'; b.type='button'; b.textContent=n;
+      const b=document.createElement('button'); b.className='sudoku-key'; b.type='button'; b.textContent=sdLabel(n);
       b.addEventListener('click',()=>sdInput(n));
       pad.appendChild(b);
     });
@@ -1909,6 +1939,15 @@
     else { current = adaptMode ? nextQ() : genQuestion(); }
     render(); saveState();
   }
+  // 数独独立难度条：加载已存难度 + 高亮 + 点击切换（与口算年级解耦）
+  try{ const v=localStorage.getItem('kidsmath_sudoku_level_v1'); if(v && SUDOKU_LEVELS.some(l=>l.id===v)) sdLevelId=v; }catch(e){}
+  document.querySelectorAll('.slv').forEach(b=> b.addEventListener('click',()=>{
+    sdLevelId=b.dataset.lv;
+    try{ localStorage.setItem('kidsmath_sudoku_level_v1', sdLevelId); }catch(e){}
+    document.querySelectorAll('.slv').forEach(x=>x.classList.toggle('active', x.dataset.lv===sdLevelId));
+    sdNew();
+  }));
+  document.querySelectorAll('.slv').forEach(x=>x.classList.toggle('active', x.dataset.lv===sdLevelId));
   setAppMode(appMode);
   refreshStats();
   refreshEyeInfo();
