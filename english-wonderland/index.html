@@ -8479,7 +8479,8 @@ async function boxDraw(){
     boxDrawing=false;
   }
 }
-/* 抽盲盒悬念动画（乐观 UI）：立即开始轮转；结果由 resolve(result) 稍后送达后定格。
+/* 抽盲盒悬念动画（乐观 UI）：立即开始轮转；结果由 resolve(result) 稍后送达后，
+   轮盘继续转动并老虎机式对齐停在奖品图标上，再弹出结果卡（2026-08-23：待命期不停帧）。
    返回 { resolve, cancel } 控制句柄。 */
 function boxCelebrate(){
   const ov=document.createElement('div');
@@ -8495,16 +8496,35 @@ function boxCelebrate(){
   // 第一段：快速轮转（约 22 帧 × 55ms ≈ 1.2s）
   function fast(){
     put(pool[idx%pool.length]); idx++;
-    if(idx<22) later(fast,55); else later(slow,160);
+    if(idx<22) later(fast,55); else later(()=>slow(160),160);
   }
-  // 第二段：逐步减速（160ms 起每次 +45ms，约 7 帧 ≈ 1.5s），营造悬念
+  // 第二段：逐步减速（160ms 起 +45ms/帧，封顶 300ms），营造悬念
   function slow(speed){
     put(pool[idx%pool.length]); idx++;
-    if(speed<=430) later(()=>slow(speed+45),speed);
-    else { if(hasResult) finish(); else later(wait,120); }
+    if(speed<300) later(()=>slow(Math.min(speed+45,300)),speed);
+    else later(cruise,300);
   }
-  // 结果未到：转圈等待（请求失败时由 cancel 结束）
-  function wait(){ if(hasResult) finish(); else later(wait,120); }
+  // 结果未到：匀速慢转待命——画面永不停帧（2026-08-23）；请求失败由 cancel 结束
+  function cruise(){
+    if(hasResult){ startAlign(); return; }
+    put(pool[idx%pool.length]); idx++;
+    later(cruise,300);
+  }
+  // 结果送达：老虎机式对齐——继续轮转并恰好停在奖品图标上再揭晓
+  function startAlign(){
+    const target=result.kind==='points'?'points':result.slug;
+    let steps=0;
+    if(target!=='points'){
+      for(let k=1;k<=pool.length;k++){ if(pool[(idx+k)%pool.length]===target){ steps=k; break; } }
+    }
+    if(!steps) steps=3; // 积分奖不在轮盘池：再转 3 步制造收尾感
+    alignStep(steps);
+  }
+  function alignStep(n){
+    if(n<=0){ put(result.kind==='points'?'points':result.slug); later(finish,320); return; }
+    put(pool[idx%pool.length]); idx++;
+    later(()=>alignStep(n-1), n===1?220:150);
+  }
   // 定格：切换为结果视图（金色边框停转、弹入结果卡）
   function finish(){
     if(stopped) return; stopped=true; clearTimeout(timer);
