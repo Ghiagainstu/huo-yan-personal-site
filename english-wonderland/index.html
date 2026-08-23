@@ -6528,7 +6528,9 @@ function makeExample(cat,w){
   return t.replace('{a}',article(en)).replace('{w}',enDisp);
 }
 function totalWords(){return CATS.reduce((s,c)=>s+c.words.length,0)}
-function masteredCount(){let n=0;for(const k in engProgress) if(engProgress[k]>=3) n++;return n}
+/* 已掌握数（2026-08-23 口径修正）：按当前词表统计（catMastered 走 getLevel，
+   英美变体合并去重、自动排除旧类目/已删词残留键），与分类进度/掌握度分布/云端榜单对齐 */
+function masteredCount(){let n=0;for(const c of CATS) n+=catMastered(c);return n}
 function catMastered(cat){return cat.words.filter(w=>getLevel(cat.id,w[0])>=3).length}
 /* ===== 美式(us)/英式(uk)地区标记 =====
    未列出的词默认 'both'（英美通用）。
@@ -7987,9 +7989,8 @@ function renderDashboard(){
       '<div class="dash-dist-name">'+lvlNames[i]+'</div>'+
     '</div>';
   }
-  /* ---- 古诗 ---- */
-  const poemMem=poemMemorizedCount();
-  const poemTotal=POEM_TOTAL;
+  /* ---- 宠物收集（2026-08-23 替换早期合并版遗留的「已背诵古诗」卡） ---- */
+  const petOwned=(auth&&auth.box&&Array.isArray(auth.box.owned)&&auth.box.owned.length)||((auth&&auth.me&&Array.isArray(auth.me.pets))?auth.me.pets.length:0);
   /* ---- 复习 & 连击 ---- */
   let dueCount=0,seenCount=0,maxStreak=0;
   const nowMs=Date.now();
@@ -8038,7 +8039,7 @@ function renderDashboard(){
   '</div>';
   html+='<div class="dash-mini" style="margin-bottom:14px">'+
     miniCard('⭐',(auth&&auth.me&&auth.me.score!=null?auth.me.score:stars),'累计积分')+
-    miniCard('📜',poemMem+' / '+poemTotal,'已背诵古诗')+
+    miniCard('🐣',petOwned+' / '+PET_META.length,'我的宠物')+
     miniCard('🔥',streak,'连续打卡(天)')+
     miniCard('🌱',todayCount,'今日新学')+
   '</div>';
@@ -8868,14 +8869,18 @@ async function syncFromCloud(){
   try{
     const res=await api('/api/progress?token='+encodeURIComponent(auth.token));
     if(!res.ok || !Array.isArray(res.data.list)) return;
-    let changed=false;
+    let changed=false; const stale=[];
     res.data.list.forEach(function(p){
       if(!p || !p.cat || !p.word) return;
       const key=p.cat+':'+p.word;
+      if(!findByKey(key)){ stale.push({cat:p.cat,word:p.word}); return; } // 词表外残留行：不并入本地，回报服务端清理(2026-08-23)
       const cur=engProgress[key]||0;
       if(p.level>cur){ engProgress[key]=p.level; changed=true; }
     });
     if(changed){ saveObj(LS_EN,engProgress); renderCard(); renderCatChips(); }
+    if(stale.length){ /* 脏行对账：让云端删掉旧类目等残留行（本人数据、单次≤50） */
+      api('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:auth.token,stale:stale,date:cnToday()})});
+    }
   }catch(e){}
 }
 function setRankType(t){

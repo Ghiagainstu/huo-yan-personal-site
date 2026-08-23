@@ -35,6 +35,15 @@ export async function onRequestPost(ctx) {
     }
   }
 
+  // 词表外残留行清理（2026-08-23 对账机制）：前端拉取时发现不在当前词表的行（旧类目/已删词），
+  // 上报回服务端删除；只删本人行、单次上限 50 条
+  const stale = Array.isArray(body.stale) ? body.stale.slice(0, 50) : [];
+  for (const s of stale) {
+    if (!s || typeof s.cat !== 'string' || typeof s.word !== 'string') continue;
+    await db.prepare('DELETE FROM progress WHERE user_id=? AND cat=? AND word=?')
+      .bind(u.id, s.cat.slice(0, 40), s.word.slice(0, 60)).run();
+  }
+
   // 更新今日签到星星（当日新增掌握词数，取累计）
   if (gained > 0) {
     await db.prepare(
