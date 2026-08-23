@@ -3405,9 +3405,45 @@ const MULTI_POS={
   hey:'int',       // 嗨(int)
   hooray:'int'     // 好啊(int)
 };
+/* 功能词词性补充（2026-08-23）：科目/问候/代词/冠词/介词/连词/情态动词/副词等 sh-* 类目
+   原 WORD_META 无 pos 字段致徽章不显示；仅兜底缺失，不覆盖已有标注 */
+const POS_EXTRA={
+  /* 科目/学校 n. */
+  chinese:'n', english:'n', maths:'n', music:'n', art:'n', pe:'n', science:'n', history:'n', geography:'n',
+  student:'n', pupil:'n', class:'n',
+  /* 问候/礼貌用语 */
+  hello:'int', hi:'int', yes:'int', no:'int', please:'int', not:'adv', thanks:'n', sorry:'adj',
+  /* 代词 pron. */
+  i:'pron', me:'pron', you:'pron', he:'pron', she:'pron', it:'pron', we:'pron', they:'pron',
+  him:'pron', her:'pron', us:'pron', them:'pron',
+  my:'pron', your:'pron', his:'pron', its:'pron', our:'pron', their:'pron',
+  mine:'pron', yours:'pron', hers:'pron', theirs:'pron', ours:'pron',
+  this:'pron', that:'pron', these:'pron', those:'pron', what:'pron', who:'pron', which:'pron',
+  /* 疑问副词 adv. */
+  where:'adv', when:'adv', why:'adv', how:'adv',
+  /* 数量限定 adj. */
+  some:'adj', any:'adj', many:'adj', much:'adj', few:'adj', all:'adj', both:'adj', each:'adj', every:'adj', other:'adj', another:'adj',
+  /* 冠词 art. */
+  a:'art', an:'art', the:'art',
+  /* 介词 prep. */
+  in:'prep', on:'prep', under:'prep', behind:'prep', beside:'prep', near:'prep', between:'prep', 'in front of':'prep',
+  above:'prep', below:'prep', with:'prep', for:'prep', at:'prep', to:'prep', from:'prep', by:'prep', about:'prep',
+  into:'prep', out:'prep', off:'prep', over:'prep', through:'prep', up:'prep', down:'prep', around:'prep',
+  before:'prep', after:'prep',
+  /* 连词 conj. */
+  and:'conj', but:'conj', or:'conj', because:'conj', so:'conj', if:'conj', while:'conj', than:'conj',
+  /* be 动词/助动词/情态动词 v. */
+  am:'v', is:'v', are:'v', was:'v', were:'v', do:'v', does:'v', did:'v', has:'v', had:'v',
+  can:'v', must:'v', should:'v', will:'v', would:'v',
+  /* 副词 adv. */
+  now:'adv', then:'adv', soon:'adv', often:'adv', usually:'adv', always:'adv', sometimes:'adv', never:'adv',
+  here:'adv', there:'adv', very:'adv', too:'adv', quite:'adv', really:'adv', also:'adv', again:'adv', just:'adv',
+  slowly:'adv', quickly:'adv', quietly:'adv', loudly:'adv'
+};
 function posBadge(word){
   const m=meta(word);
   let p=m&&m.pos;
+  if(!p && POS_EXTRA[word]) p=POS_EXTRA[word];   // 功能词词性补充兜底
   if(MULTI_POS[word]) p=MULTI_POS[word];   // 多词性覆盖
   if(!p) return '';
   const parts=String(p).split('/').map(x=>POS_LABEL[x]).filter(Boolean);
