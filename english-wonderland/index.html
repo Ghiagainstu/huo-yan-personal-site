@@ -7402,6 +7402,14 @@ function markReview(){
 /* ============================================================
    ★ 游戏 TAB —— 复用 CATS,统一进度
    ============================================================ */
+/* 游戏题图加载失败兜底：换回首字母块。img 直出后浏览器自行缓存/加载，完成即自动显示，
+   不再等 IMG_READY 门控——旧逻辑在图未预热时显示字母块且永不重绘，导致"游戏里是字母不是图" */
+function gameImgFail(img,L){
+  const box=img&&img.parentNode; if(!box) return;
+  box.className='gameart lettertile';
+  box.setAttribute('style','background:#fff;border-color:#ffb74d;color:#ff8f00');
+  box.textContent=L||'?';
+}
 function gameArt(item){
   const art=item.w[2];
   if(art===''){
@@ -7421,8 +7429,8 @@ function gameArt(item){
   }
   if(art.slice(0,4)==='img:'){
     const _slug=art.slice(4);
-    if(HAVE_IMG.has(_slug) && IMG_READY.has(_slug)){
-      return '<div class="gameart img"><img src="'+IMG_BASE+_slug+'.webp" alt=""></div>';
+    if(HAVE_IMG.has(_slug)){
+      return '<div class="gameart img"><img src="'+IMG_BASE+_slug+'.webp" alt="" onerror="gameImgFail(this,\''+item.w[0].charAt(0).toUpperCase()+'\')"></div>';
     }
     const _l=item.w[0].charAt(0).toUpperCase();
     return '<div class="gameart lettertile" style="background:#fff;border-color:#ffb74d;color:#ff8f00">'+_l+'</div>';
@@ -7710,6 +7718,48 @@ function gameActDrag(){
     }
   }
 }
+/* 例句挖空: 忽略大小写整词匹配目标词; 不命中依次试屈折/逆推形态与合成词兜底
+   (walrus→Walruses、toe→toes、wolf→Wolves、muskox→Muskoxen、clap→Clapped、skiing→Ski…) */
+function blankForms(word){
+  const bases=[word];
+  if(word.length>3&&/ing$/.test(word)) bases.push(word.slice(0,-3),word.slice(0,-3)+'e'); // skiing→ski, skating→skate
+  if(word.length>3&&/(ied|ies)$/.test(word)) bases.push(word.slice(0,-3)+'y');            // carried→carry
+  if(word.length>3&&/ed$/.test(word)) bases.push(word.slice(0,-2));                       // needed→need
+  const out=new Set();
+  for(const b of bases){
+    out.add(b);
+    if(b.length<3) continue;
+    if(/[^aeiou]y$/.test(b)){ out.add(b.slice(0,-1)+'ies'); out.add(b.slice(0,-1)+'ied'); out.add(b.slice(0,-1)+'ier'); out.add(b.slice(0,-1)+'iest'); }
+    out.add(b+'s'); out.add(b+'es'); out.add(b+'ed'); out.add(b+'ing');
+    if(/e$/.test(b)){ out.add(b+'d'); out.add(b.slice(0,-1)+'ing'); out.add(b.slice(0,-1)+'ings'); }
+    if(/f$/.test(b)) out.add(b.slice(0,-1)+'ves');          // wolf→wolves
+    if(/fe$/.test(b)) out.add(b.slice(0,-2)+'ves');         // knife→knives
+    if(/[aeou]x$/.test(b)) out.add(b+'en');                 // ox→oxen (muskox→muskoxen)
+    const c=b.charAt(b.length-1);
+    if(/[bcdfglmnprt]/.test(c)){ out.add(b+c+'ed'); out.add(b+c+'ing'); } // clap→clapped/clapping
+    out.add(b+'er'); out.add(b+'est'); out.add(b+'r'); out.add(b+'st');   // green→greener, cute→cutest
+  }
+  return [...out].sort((a,b)=>b.length-a.length); // 先长后短, 防 walrus 截断 Walruses 残留 "es"
+}
+function blankSentence(en, word){
+  const words=word.includes(' ')?word.split(' '):[word]; // 复合词(chicken meat)按子词展开
+  const forms=[];
+  words.forEach(w=>forms.push(...blankForms(w)));
+  forms.sort((a,b)=>b.length-a.length);
+  for(const form of forms){
+    const re=new RegExp('\\b'+form.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
+    if(re.test(en)) return en.replace(re,'<span class="blank"></span>');
+  }
+  /* 最终兜底: 合成词(self→yourself), 仅长词启用防误伤; 常规形态全失败才走这里 */
+  for(const w of words){
+    if(w.length<4) break;
+    const re=new RegExp('\\b[\\w\'-]*'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[\\w\'-]*\\b','i');
+    if(re.test(en)) return en.replace(re,'<span class="blank"></span>');
+  }
+  return en;
+}
+/* TTS 朗读文本: 剥离 HTML 标签, 防止语音引擎把 <b> 等标签当符号读出来 */
+function spokenTxt(en){ return en.replace(/<[^>]+>/g,''); }
 /* 句式 */
 function gameActSentence(){
   gameCurActFn=gameActSentence;
@@ -7718,20 +7768,21 @@ function gameActSentence(){
   const w=cur.w;
   const txt=makeExample(cur.cat,w[0]);
   const enOnly=txt.split('|')[0];   // 只取英文句,中文翻译不显示,逼孩子去"听"
+  const spoken=spokenTxt(enOnly);
   const optWords=gameDistractors(cur.cat,w,3);
   const allOpts=shuffleArr([{cat:cur.cat,w},...optWords]);
   const stage=document.getElementById('gameStage');
   stage.innerHTML =
     '<div class="game-scene">'+
       '<div class="game-h1">补全句子!</div>'+
-      '<div class="game-sentence">'+enOnly.replace(w[0],'<span class="blank"></span>')+'</div>'+
+      '<div class="game-sentence">'+blankSentence(enOnly,w[0])+'</div>'+
       '<div class="game-h2">听一听后,选对的词</div>'+
       '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">'+
         '<div class="game-speak" id="gSpk">🔊</div>'+
       '</div>'+
       '<div class="game-opts" id="gOpts"></div>'+
     '</div>';
-  document.getElementById('gSpk').onclick=()=>speak(enOnly,'en-US',null);
+  document.getElementById('gSpk').onclick=()=>speak(spoken,'en-US',null);
   const box=document.getElementById('gOpts');
   allOpts.forEach(o=>{
     const b=document.createElement('div');
@@ -7740,7 +7791,7 @@ function gameActSentence(){
     b.onclick=()=>{
       if(o.w[0]===w[0]){
         gAnswer(b,true,w[0]);
-        setTimeout(()=>speak(enOnly,'en-US',null),400);
+        setTimeout(()=>speak(spoken,'en-US',null),400);
       } else gAnswer(b,false,w[0]);
     };
     box.appendChild(b);
@@ -7784,8 +7835,8 @@ function gameActTF(){
   const cur=gameCurrent, w=cur.w;
   const isTrue=Math.random()<0.5;
   let sentence;
-  if(isTrue){ sentence=makeExample(cur.cat,w[0]).split('|')[0]; }
-  else { const d=gameDistractors(cur.cat,w,1)[0]||w; sentence=makeExample(d.cat,d.w[0]).split('|')[0]; }
+  if(isTrue){ sentence=spokenTxt(makeExample(cur.cat,w[0]).split('|')[0]); }
+  else { const d=gameDistractors(cur.cat,w,1)[0]||w; sentence=spokenTxt(makeExample(d.cat,d.w[0]).split('|')[0]); }
   const stage=document.getElementById('gameStage');
   stage.innerHTML =
     '<div class="game-scene">'+
