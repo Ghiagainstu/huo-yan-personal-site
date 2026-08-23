@@ -4942,6 +4942,8 @@ let curFilter = 'all';
 let curRegion = localStorage.getItem(LS_REGION) || 'all';   // 🌐 美式(us)/英式(uk)/通用(all) 切换
 const LS_TIER = 'kids_card_tier';
 let curTier = localStorage.getItem(LS_TIER) || 'all';      // 📘 核心(core)/📗核心+拓展(all)/📙拓展(ext) 切换
+const LS_CATLAST = 'kids_cat_lastkey';
+let catLastKey = loadObj(LS_CATLAST)||{};   // 📌 各分类上次停留的词(catId→wordKey)：切类即回到该词(2026-08-23 规则)
 let cardList = [];
 let curSearch = '';   // 🔍 单词搜索关键字(已小写);为空表示不搜索
 let cardIdx = 0;
@@ -6826,7 +6828,25 @@ function renderCatChips(){
   });
   box.innerHTML = html;
 }
-function setCat(id){curCat=id;cardIdx=0;flipped=false;renderCatChips();syncCatSelect();buildList();renderCard()}
+function setCat(id){
+  const keepKey=catLastKey[id];          // 目标分类上次停留的词（无记录则回第一张）
+  curCat=id; flipped=false;
+  renderCatChips();syncCatSelect();
+  buildList();
+  cardIdx=0;
+  if(keepKey){
+    const idx=cardList.findIndex(it=>wordKey(it.cat.id,it.w[0])===keepKey);
+    if(idx>=0) cardIdx=idx;              // 词被当前筛选/搜索过滤掉时自然回 0
+  }
+  renderCard();                          // renderCard 内部会 saveCatLast 刷新记忆
+}
+/* 记录当前视图上次停留的词：槽按视图隔离(all/各分类互不污染)，切回即恢复(2026-08-23 火哥定案规则) */
+function saveCatLast(item){
+  item = item || cardList[cardIdx];
+  if(!item) return;
+  catLastKey[curCat||'all']=wordKey(item.cat.id,item.w[0]);
+  saveObj(LS_CATLAST,catLastKey);
+}
 /* 下拉分类对应的 emoji 图标(无对应图标的分类统一用 🏷️) */
 const CAT_ICON = {
   'animals':'🐾','fantasy':'🐉','fruits':'🍎','vegetables':'🥦','food':'🍔','colors':'🎨','shapes':'🔷',
@@ -7240,6 +7260,7 @@ function renderCard(){
     return;
   }
   const item=cardList[cardIdx];
+  saveCatLast(item);   // 记住该分类当前停留的词，供下次切回时恢复
   const word=item.w[0],zh=item.w[1];
   currentWord=word;
   currentAlt = (item.w[3] && item.w[3]!==word) ? item.w[3] : '';
