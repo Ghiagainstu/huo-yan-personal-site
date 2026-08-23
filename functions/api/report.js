@@ -13,11 +13,16 @@ export async function onRequestPost(ctx) {
   let gained = 0;
 
   if (list.length) {
+    // ★ 2026-08-23 恩恩事故修复：upsert 由「最后写入胜出」改为 max 保护（只升不降）。
+    //   设备 localStorage 为设备级、跨账号共享且可能残缺，低值全量上行曾把云端高掌握覆盖降级；
+    //   产品语义为「学会的词不会忘」，云端取 max 才是安全收敛点。
     const stmt = db.prepare(
       `INSERT INTO progress(user_id, cat, word, level, updated_at)
        VALUES(?, ?, ?, ?, datetime('now'))
        ON CONFLICT(user_id, cat, word)
-       DO UPDATE SET level = excluded.level, updated_at = excluded.updated_at`
+       DO UPDATE SET
+         level = MAX(progress.level, excluded.level),
+         updated_at = CASE WHEN excluded.level > progress.level THEN excluded.updated_at ELSE progress.updated_at END`
     );
     for (const p of list) {
       const cat = String(p.cat || '').slice(0, 40);
