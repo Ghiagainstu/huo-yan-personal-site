@@ -7457,6 +7457,22 @@ function phonHTML(word,alt){
   return h;
 }
 function nextCard(){if(!cardList.length) return;if(window.speechSynthesis) speechSynthesis.cancel();cardIdx=(cardIdx+1)%cardList.length;flipped=false;renderCard()}
+/* 游戏单词发音：优先本地真人 mp3（PHON 美音→英音），加载失败或缺失时回退浏览器合成。
+   句子朗读不适用（无句子音频），仍走 speak()。 */
+function speakWordHQ(word){
+  const k=String(word||'').toLowerCase();
+  const p=PHON[k]||[];
+  const url=p[3]||p[2];
+  if(!url){ speak(word,'en-US',null); return; }
+  let done=false,fell=false;
+  const a=new Audio(); a.preload='auto'; a.src=url;
+  const fb=()=>{ if(!done&&!fell){ done=true; fell=true; speak(word,'en-US',null); } };
+  a.onplaying=()=>{ a._started=true; };
+  a.onended=()=>{ done=true; };
+  a.onerror=fb;
+  const pr=a.play(); if(pr&&pr.catch) pr.catch(fb);
+  setTimeout(()=>{ if(!a._started) fb(); },6000);   // 真人音 6s 宽限，未开始播放才回退
+}
 function prevCard(){if(!cardList.length) return;if(window.speechSynthesis) speechSynthesis.cancel();cardIdx=(cardIdx-1+cardList.length)%cardList.length;flipped=false;renderCard()}
 function markKnow(){
   if(!cardList.length) return;
@@ -7711,7 +7727,7 @@ function gameActListen(){
       '<div class="game-h2">点喇叭可再听一次</div>'+
       '<div class="game-opts" id="gOpts"></div>'+
     '</div>';
-  document.getElementById('gSpk').onclick=()=>speak(w[0],'en-US',null);
+  document.getElementById('gSpk').onclick=()=>speakWordHQ(w[0]);
   const box=document.getElementById('gOpts');
   all.forEach(o=>{
     const b=document.createElement('div');
@@ -7720,7 +7736,7 @@ function gameActListen(){
     b.onclick=()=>gAnswer(b,o.w[0]===w[0],w[0]);
     box.appendChild(b);
   });
-  setTimeout(()=>speak(w[0],'en-US',null),350);
+  setTimeout(()=>speakWordHQ(w[0]),350);
 }
 /* 看图选词 */
 function gameActSee(){
@@ -7738,7 +7754,7 @@ function gameActSee(){
       '<div class="game-h2">点图可听发音,点词卡作答</div>'+
       '<div class="game-opts" id="gOpts"></div>'+
     '</div>';
-  document.getElementById('gPic').onclick=()=>speak(w[0],'en-US',null);
+  document.getElementById('gPic').onclick=()=>speakWordHQ(w[0]);
   const box=document.getElementById('gOpts');
   all.forEach(o=>{
     const b=document.createElement('div');
@@ -7902,8 +7918,8 @@ function gameActSpell(){
         '<button class="game-btn green" id="gSpellBtn">✅ 检查</button>'+
       '</div>'+
     '</div>';
-  document.getElementById('gPic').onclick=()=>speak(w[0],'en-US',null);
-  document.getElementById('gSpk').onclick=()=>speak(w[0],'en-US',null);
+  document.getElementById('gPic').onclick=()=>speakWordHQ(w[0]);
+  document.getElementById('gSpk').onclick=()=>speakWordHQ(w[0]);
   const inp=document.getElementById('gSpell');
   const check=()=>{
     const v=inp.value.trim().toLowerCase();
@@ -7912,7 +7928,7 @@ function gameActSpell(){
   };
   document.getElementById('gSpellBtn').onclick=check;
   inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); check(); } });
-  setTimeout(function(){ inp.focus(); speak(w[0],'en-US',null); },350);
+  setTimeout(function(){ inp.focus(); speakWordHQ(w[0]); },350);
 }
 /* 真假判断关：这句英文配这张图,对吗? */
 function gameActTF(){
