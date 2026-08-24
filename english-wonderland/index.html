@@ -7220,7 +7220,7 @@ function buildList(){
       if(curFilter==='done' && lv<3) return;
       if(curSearch){ const en=w[0].toLowerCase(), zh=w[1]; if(en.indexOf(curSearch)===-1 && zh.indexOf(curSearch)===-1) return; }
       if(curRegion!=='all'){ const r=regionOf(w); if(r!=='both' && r!==curRegion) return; }
-      if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
+      if(curTier!=='all' && tierOfWord(c.id,w[0])!==curTier) return;
       items.push({cat:c,w:w});
     });
     if(items.length) groups.push({cat:c, items});
@@ -7535,7 +7535,7 @@ function gameBuildQueue(){
   const early=[];   // 已见未到期 → 兜底「提前复习」
   const master=[];  // 已掌握 → 最后兜底「自由复习」
   CATS.forEach(c=>c.words.forEach(w=>{
-    if(curTier!=='all' && tierOfCat(c.id)!==curTier) return;
+    if(curTier!=='all' && tierOfWord(c.id,w[0])!==curTier) return;
     const key=wordKey(c.id,w[0]);
     const lv=getLevel(c.id,w[0]);
     const r=review[key];
