@@ -8658,12 +8658,16 @@ function renderBoxPool(){
   const g=document.getElementById('boxPool'); if(!g) return;
   const pool=(auth&&auth.box&&auth.box.pool)||[];
   if(!pool.length) return;
+  // 权重→真实百分比：v7 权重总和 116.5（≠100），按总和归一化显示
+  const totalW=pool.reduce((s,p)=>s+(p.weight||0),0)||1;
+  const pct=w=>((w||0)/totalW*100);
+  const fmt=pct=>{ const v=Math.round(pct*10)/10; return (Number.isInteger(v)?v:v.toFixed(1))+'%'; };
   g.innerHTML=pool.map(p=>{
     if(p.kind==='points'){
-      return '<div class="box-pool-item"><span class="box-pool-ic">💰</span><span class="box-pool-name">'+p.name+'</span><b class="box-pool-w" style="background:#E0A800">'+(p.weight||0)+'%</b></div>';
+      return '<div class="box-pool-item"><span class="box-pool-ic">💰</span><span class="box-pool-name">'+p.name+'</span><b class="box-pool-w" style="background:#E0A800">'+fmt(pct(p.weight))+'</b></div>';
     }
     const rr=PET_RARITY[p.rarity]||{t:'',c:'#888'};
-    return '<div class="box-pool-item"><span class="box-pool-ic">'+petIconHtml(p.slug,'box-pool-img')+'</span><span class="box-pool-name">'+p.name+'</span><span class="box-pool-rr" style="background:'+rr.c+'">'+rr.t+'</span><b class="box-pool-w" style="background:'+rr.c+'">'+(p.weight||0)+'%</b></div>';
+    return '<div class="box-pool-item"><span class="box-pool-ic">'+petIconHtml(p.slug,'box-pool-img')+'</span><span class="box-pool-name">'+p.name+'</span><span class="box-pool-rr" style="background:'+rr.c+'">'+rr.t+'</span><b class="box-pool-w" style="background:'+rr.c+'">'+fmt(pct(p.weight))+'</b></div>';
   }).join('');
 }
 let boxDrawing=false; // 防连点
