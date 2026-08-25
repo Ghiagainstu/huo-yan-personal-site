@@ -8556,7 +8556,7 @@ async function buyItem(id){
   if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
   showToast('✅ 兑换成功：'+(it?it.name:id),'ok');
 }
-/* ================= 盲盒系统（v7：12 款火火装扮 + 积分两档） ================= */
+/* ================= 盲盒系统（v7.2：14 款火火装扮[含史诗+隐藏款] + 积分两档） ================= */
 const PET_META=[
   {slug:'pet-nailong',name:'奶龙风',rarity:'common'},
   {slug:'pet-pixel',name:'我的世界像素风',rarity:'common'},
@@ -8569,16 +8569,20 @@ const PET_META=[
   {slug:'pet-ultra',name:'奥特曼风',rarity:'rare'},
   {slug:'pet-lego',name:'乐高风',rarity:'vrare'},
   {slug:'pet-galaxy',name:'星空梦幻风',rarity:'vrare'},
-  {slug:'pet-gold',name:'金色传说风',rarity:'legend'}
+  {slug:'pet-diamond',name:'钻石风',rarity:'epic'},
+  {slug:'pet-gold',name:'金色传说风',rarity:'legend'},
+  {slug:'pet-secret',name:'彩虹流光风',rarity:'hidden',secret:true}
 ];
-const PET_RARITY={common:{t:'普通',c:'#4CAF50'},rare:{t:'稀有',c:'#2196F3'},vrare:{t:'很稀有',c:'#9C27B0'},legend:{t:'传说',c:'#FFB300'}};
+const PET_RARITY={common:{t:'普通',c:'#4CAF50'},rare:{t:'稀有',c:'#2196F3'},vrare:{t:'很稀有',c:'#9C27B0'},epic:{t:'史诗',c:'#00ACC1'},legend:{t:'传说',c:'#FFB300'},hidden:{t:'隐藏',c:'#37474F'}};
+/* 隐藏款未拥有时一律显示「？？？」，抽中后揭晓真名 */
+function petName(p,owned){ return (p.secret&&(!owned||owned.indexOf(p.slug)<0))?'？？？':p.name; }
 const LS_DISP_PET='kids_disp_pet';
 function dispPet(){ return localStorage.getItem(LS_DISP_PET)||''; }
 function setDispPet(slug){
   const owned=(auth&&auth.box&&auth.box.owned)||[];
   if(!slug || owned.indexOf(slug)<0){
     const p=PET_META.find(x=>x.slug===slug);
-    showToast(p?('还没拥有「'+p.name+'」，去抽盲盒试试运气吧'):'宠物数据未加载','err');
+    showToast(p?('还没拥有「'+petName(p,auth&&auth.box&&auth.box.owned)+'」，去抽盲盒试试运气吧'):'宠物数据未加载','err');
     return;
   }
   localStorage.setItem(LS_DISP_PET,slug);
@@ -8649,7 +8653,7 @@ function renderBoxGrid(){
     const rr=PET_RARITY[p.rarity];
     return '<div class="box-cell'+(has?'':' locked')+(show===p.slug?' showing':'')+'" onclick="setDispPet(\''+p.slug+'\')">'+
       (has?petIconHtml(p.slug,'box-pet-img'):'<span class="box-ic">❓</span>')+
-      '<span class="box-nm">'+p.name+'</span>'+
+      '<span class="box-nm">'+petName(p,owned)+'</span>'+
       '<span class="box-rr" style="background:'+rr.c+'">'+rr.t+'</span>'+
       '</div>';
   }).join('');
@@ -8782,7 +8786,7 @@ function renderMyPets(){
     const rr=PET_RARITY[p.rarity];
     return '<div class="box-cell'+(has?'':' locked')+(show===p.slug?' showing':'')+'" onclick="setDispPet(\''+p.slug+'\')">'+
       (has?petIconHtml(p.slug,'box-pet-img'):'<span class="box-ic">❓</span>')+
-      '<span class="box-nm">'+p.name+'</span>'+
+      '<span class="box-nm">'+petName(p,owned)+'</span>'+
       '<span class="box-rr" style="background:'+rr.c+'">'+rr.t+'</span>'+
       '</div>';
   }).join('');
