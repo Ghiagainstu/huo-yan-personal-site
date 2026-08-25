@@ -490,12 +490,12 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .box-cell.locked{background:#f7f7f7;border-style:dashed;opacity:.55;}
 .box-cell.showing{border-color:#ffb74d;box-shadow:0 0 0 2px #ffe0b2;}
 .box-pool{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.box-pool-item{font-size:11px;color:#555;background:#fff;border:1px solid #f0e2c0;border-radius:10px;padding:5px 8px;display:flex;align-items:center;gap:6px;}
-.box-pool-ic{width:30px;display:flex;justify-content:center;flex-shrink:0;}
-.box-pool-img{width:28px;height:28px;object-fit:contain;}
+.box-pool-item{font-size:12px;color:#555;background:#fff;border:1px solid #f0e2c0;border-radius:10px;padding:5px 8px;display:flex;align-items:center;gap:6px;}
+.box-pool-ic{width:34px;display:flex;justify-content:center;flex-shrink:0;}
+.box-pool-img{width:32px;height:32px;object-fit:contain;}
 .box-pool-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.box-pool-rr{color:#fff;font-size:9px;border-radius:6px;padding:1px 5px;flex-shrink:0;}
-.box-pool-w{color:#fff;font-size:10px;border-radius:8px;padding:2px 6px;flex-shrink:0;}
+.box-pool-rr{color:#fff;font-size:11px;border-radius:6px;padding:1px 6px;flex-shrink:0;}
+.box-pool-w{color:#fff;font-size:11px;border-radius:8px;padding:2px 7px;flex-shrink:0;}
 .box-draws-empty{font-size:12px;color:#bbb;text-align:center;padding:12px 0;}
 .box-draw-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #f0e2c0;border-radius:10px;padding:6px 10px;margin:5px 0;font-size:12px;}
 .box-draw-ic{width:30px;display:flex;justify-content:center;flex-shrink:0;}
@@ -8590,7 +8590,7 @@ function setDispPet(slug){
   renderPetCorner();
   showToast('✅ 已设为展示宠物','ok');
 }
-function petImg(slug){ return 'images/'+slug+'.webp'; }
+function petImg(slug){ const v={'pet-diamond':2}[slug]; return 'images/'+slug+'.webp'+(v?'?v='+v:''); }
 function petIconHtml(slug,cls){
   return '<img class="'+(cls||'box-pet-img')+'" src="'+petImg(slug)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<span class=&quot;box-pet-fb&quot;>❓</span>\')"/>';
 }
