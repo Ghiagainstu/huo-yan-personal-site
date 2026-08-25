@@ -5,9 +5,9 @@
 // POST /api/box/reset_today {admin, name}    → 管理接口：回滚指定用户今日所有抽奖（删当日 draw/宠物/积分/已用次数，admin=852121）
 import { json, getUserByToken, cnDate } from './_lib.js';
 
-// 奖池：14 款火火装扮（v7 扩充；v7.2 +史诗·钻石风 +隐藏款·？？？）+ 2 积分档
+// 奖池：14 款火火装扮（v7 扩充；v7.2 +史诗·晶砖史诗风 +隐藏款·？？？）+ 2 积分档
 // v7.2 概率定案（2026-08-25 火哥确认）：+15=25%、+25=15%、传说=1%、很稀有各=2%、稀有各=4%、
-//   史诗(钻石风)=0.5%、隐藏款=0.2%，普通吃剩余 42.3%/6≈7.05%。
+//   史诗(晶砖史诗风)=0.5%、隐藏款=0.2%，普通吃剩余 42.3%/6≈7.05%。
 // 权重单位=0.01%（×100 取整），总和恰 10000：
 //   普通 705 / 稀有 400 / 很稀有 200 / 传说 100 / 史诗 50 / 隐藏 20 / +15 为 2500 / +25 为 1500。
 const POOL = [
@@ -20,10 +20,10 @@ const POOL = [
   { slug: 'pet-piggy',   name: '库洛米风',     rarity: 'rare',    weight: 400 },
   { slug: 'pet-xuan',    name: '炫卡斗士风',    rarity: 'rare',    weight: 400 },
   { slug: 'pet-ultra',   name: '奥特曼风',     rarity: 'rare',    weight: 400 },
-  { slug: 'pet-lego',    name: '乐高风',      rarity: 'vrare',   weight: 200 },
+  { slug: 'pet-lego',    name: '乐高积木风',    rarity: 'vrare',   weight: 200 },
   { slug: 'pet-galaxy',  name: '星空梦幻风',    rarity: 'vrare',   weight: 200 },
-  { slug: 'pet-diamond', name: '钻石风',      rarity: 'epic',    weight: 50 },
   { slug: 'pet-gold',    name: '金色传说风',    rarity: 'legend',  weight: 100 },
+  { slug: 'pet-diamond', name: '晶砖史诗风',    rarity: 'epic',    weight: 50 },
   { slug: 'pet-secret',  name: '？？？',       rarity: 'hidden',  weight: 20 },
   { slug: 'box-p15',     name: '积分 +15',     kind: 'points',   points: 15,  weight: 2500 },
   { slug: 'box-p25',     name: '积分 +25',     kind: 'points',   points: 25,  weight: 1500 },
