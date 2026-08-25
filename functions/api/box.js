@@ -5,22 +5,25 @@
 // POST /api/box/reset_today {admin, name}    → 管理接口：回滚指定用户今日所有抽奖（删当日 draw/宠物/积分/已用次数，admin=852121）
 import { json, getUserByToken, cnDate } from './_lib.js';
 
-// 奖池：12 款火火装扮（v7 扩充：+蛋仔派对/奥特曼/星空梦幻）+ 2 积分档；weight 为概率（原总和 100，v7 加 16.5 → 装扮约 67%/积分约 33%）
+// 奖池：12 款火火装扮（v7 扩充：+蛋仔派对/奥特曼/星空梦幻）+ 2 积分档
+// v7.1 概率定案（2026-08-25 火哥确认）：+20=25%、+10=15%、传说=1%、很稀有各=2%、稀有各=4%，
+//   普通吃剩余 43%/6≈7.1667%。权重整体 ×6 取整（单位=1/6%），总和恰 600：
+//   普通 43 / 稀有 24 / 很稀有 12 / 传说 6 / +10 为 90 / +20 为 150。
 const POOL = [
-  { slug: 'pet-nailong', name: '奶龙风',      rarity: 'common',  weight: 10 },
-  { slug: 'pet-pixel',   name: '我的世界像素风', rarity: 'common',  weight: 10 },
-  { slug: 'pet-mengke',  name: '奇妙萌可风',    rarity: 'common',  weight: 10 },
-  { slug: 'pet-orca',    name: '虎鲸风',      rarity: 'common',  weight: 10 },
-  { slug: 'pet-mini',    name: '迷你特工队风',  rarity: 'common',  weight: 10 },
-  { slug: 'pet-eggy',    name: '蛋仔派对风',    rarity: 'common',  weight: 10 },
-  { slug: 'pet-piggy',   name: '库洛米风',     rarity: 'rare',    weight: 4.5 },
-  { slug: 'pet-xuan',    name: '炫卡斗士风',    rarity: 'rare',    weight: 4.5 },
-  { slug: 'pet-ultra',   name: '奥特曼风',     rarity: 'rare',    weight: 4.5 },
-  { slug: 'pet-lego',    name: '乐高风',      rarity: 'vrare',   weight: 2 },
-  { slug: 'pet-galaxy',  name: '星空梦幻风',    rarity: 'vrare',   weight: 2 },
-  { slug: 'pet-gold',    name: '金色传说风',    rarity: 'legend',  weight: 1 },
-  { slug: 'box-p10',     name: '积分 +10',     kind: 'points',   points: 10,  weight: 28 },
-  { slug: 'box-p20',     name: '积分 +20',     kind: 'points',   points: 20,  weight: 10 },
+  { slug: 'pet-nailong', name: '奶龙风',      rarity: 'common',  weight: 43 },
+  { slug: 'pet-pixel',   name: '我的世界像素风', rarity: 'common',  weight: 43 },
+  { slug: 'pet-mengke',  name: '奇妙萌可风',    rarity: 'common',  weight: 43 },
+  { slug: 'pet-orca',    name: '虎鲸风',      rarity: 'common',  weight: 43 },
+  { slug: 'pet-mini',    name: '迷你特工队风',  rarity: 'common',  weight: 43 },
+  { slug: 'pet-eggy',    name: '蛋仔派对风',    rarity: 'common',  weight: 43 },
+  { slug: 'pet-piggy',   name: '库洛米风',     rarity: 'rare',    weight: 24 },
+  { slug: 'pet-xuan',    name: '炫卡斗士风',    rarity: 'rare',    weight: 24 },
+  { slug: 'pet-ultra',   name: '奥特曼风',     rarity: 'rare',    weight: 24 },
+  { slug: 'pet-lego',    name: '乐高风',      rarity: 'vrare',   weight: 12 },
+  { slug: 'pet-galaxy',  name: '星空梦幻风',    rarity: 'vrare',   weight: 12 },
+  { slug: 'pet-gold',    name: '金色传说风',    rarity: 'legend',  weight: 6 },
+  { slug: 'box-p10',     name: '积分 +10',     kind: 'points',   points: 10,  weight: 90 },
+  { slug: 'box-p20',     name: '积分 +20',     kind: 'points',   points: 20,  weight: 150 },
 ];
 // 重复装扮折算积分（普通/稀有/很稀有/传说）
 const DUP_POINTS = { common: 10, rare: 20, vrare: 40, legend: 80 };
