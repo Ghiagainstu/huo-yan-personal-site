@@ -8556,16 +8556,19 @@ async function buyItem(id){
   if(ap&&document.getElementById('avatarModal').style.display==='flex') renderAvatarPresets(ap,true);
   showToast('✅ 兑换成功：'+(it?it.name:id),'ok');
 }
-/* ================= 盲盒系统（v5 终稿：9 款火火装扮 + 积分两档） ================= */
+/* ================= 盲盒系统（v7：12 款火火装扮 + 积分两档） ================= */
 const PET_META=[
   {slug:'pet-nailong',name:'奶龙风',rarity:'common'},
   {slug:'pet-pixel',name:'我的世界像素风',rarity:'common'},
   {slug:'pet-mengke',name:'奇妙萌可风',rarity:'common'},
   {slug:'pet-orca',name:'虎鲸风',rarity:'common'},
   {slug:'pet-mini',name:'迷你特工队风',rarity:'common'},
+  {slug:'pet-eggy',name:'蛋仔派对风',rarity:'common'},
   {slug:'pet-piggy',name:'库洛米风',rarity:'rare'},
   {slug:'pet-xuan',name:'炫卡斗士风',rarity:'rare'},
+  {slug:'pet-ultra',name:'奥特曼风',rarity:'rare'},
   {slug:'pet-lego',name:'乐高风',rarity:'vrare'},
+  {slug:'pet-galaxy',name:'星空梦幻风',rarity:'vrare'},
   {slug:'pet-gold',name:'金色传说风',rarity:'legend'}
 ];
 const PET_RARITY={common:{t:'普通',c:'#4CAF50'},rare:{t:'稀有',c:'#2196F3'},vrare:{t:'很稀有',c:'#9C27B0'},legend:{t:'传说',c:'#FFB300'}};

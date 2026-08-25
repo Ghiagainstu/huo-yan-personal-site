@@ -5,16 +5,19 @@
 // POST /api/box/reset_today {admin, name}    → 管理接口：回滚指定用户今日所有抽奖（删当日 draw/宠物/积分/已用次数，admin=852121）
 import { json, getUserByToken, cnDate } from './_lib.js';
 
-// 奖池：9 款火火装扮（v5 终稿）+ 2 积分档；weight 为概率（总和 100）
+// 奖池：12 款火火装扮（v7 扩充：+蛋仔派对/奥特曼/星空梦幻）+ 2 积分档；weight 为概率（原总和 100，v7 加 16.5 → 装扮约 67%/积分约 33%）
 const POOL = [
   { slug: 'pet-nailong', name: '奶龙风',      rarity: 'common',  weight: 10 },
   { slug: 'pet-pixel',   name: '我的世界像素风', rarity: 'common',  weight: 10 },
   { slug: 'pet-mengke',  name: '奇妙萌可风',    rarity: 'common',  weight: 10 },
   { slug: 'pet-orca',    name: '虎鲸风',      rarity: 'common',  weight: 10 },
   { slug: 'pet-mini',    name: '迷你特工队风',  rarity: 'common',  weight: 10 },
+  { slug: 'pet-eggy',    name: '蛋仔派对风',    rarity: 'common',  weight: 10 },
   { slug: 'pet-piggy',   name: '库洛米风',     rarity: 'rare',    weight: 4.5 },
   { slug: 'pet-xuan',    name: '炫卡斗士风',    rarity: 'rare',    weight: 4.5 },
+  { slug: 'pet-ultra',   name: '奥特曼风',     rarity: 'rare',    weight: 4.5 },
   { slug: 'pet-lego',    name: '乐高风',      rarity: 'vrare',   weight: 2 },
+  { slug: 'pet-galaxy',  name: '星空梦幻风',    rarity: 'vrare',   weight: 2 },
   { slug: 'pet-gold',    name: '金色传说风',    rarity: 'legend',  weight: 1 },
   { slug: 'box-p10',     name: '积分 +10',     kind: 'points',   points: 10,  weight: 28 },
   { slug: 'box-p20',     name: '积分 +20',     kind: 'points',   points: 20,  weight: 10 },
