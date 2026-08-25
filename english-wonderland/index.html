@@ -8592,7 +8592,7 @@ function setDispPet(slug){
 }
 function petImg(slug){ return 'images/'+slug+'.webp'; }
 function petIconHtml(slug,cls){
-  return '<img class="'+(cls||'box-pet-img')+'" src="'+petImg(slug)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<span class=&quot;box-pet-fb&quot;>🐉</span>\')"/>';
+  return '<img class="'+(cls||'box-pet-img')+'" src="'+petImg(slug)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<span class=&quot;box-pet-fb&quot;>❓</span>\')"/>';
 }
 let shopTab='shop';
 function setShopTab(t){
@@ -8662,6 +8662,7 @@ function renderBoxPool(){
   const g=document.getElementById('boxPool'); if(!g) return;
   const pool=(auth&&auth.box&&auth.box.pool)||[];
   if(!pool.length) return;
+  const owned=(auth&&auth.box&&auth.box.owned)||[];
   // 权重→真实百分比：v7 权重总和 116.5（≠100），按总和归一化显示
   const totalW=pool.reduce((s,p)=>s+(p.weight||0),0)||1;
   const pct=w=>((w||0)/totalW*100);
@@ -8671,7 +8672,9 @@ function renderBoxPool(){
       return '<div class="box-pool-item"><span class="box-pool-ic">💰</span><span class="box-pool-name">'+p.name+'</span><b class="box-pool-w" style="background:#E0A800">'+fmt(pct(p.weight))+'</b></div>';
     }
     const rr=PET_RARITY[p.rarity]||{t:'',c:'#888'};
-    return '<div class="box-pool-item"><span class="box-pool-ic">'+petIconHtml(p.slug,'box-pool-img')+'</span><span class="box-pool-name">'+p.name+'</span><span class="box-pool-rr" style="background:'+rr.c+'">'+rr.t+'</span><b class="box-pool-w" style="background:'+rr.c+'">'+fmt(pct(p.weight))+'</b></div>';
+    // 隐藏款未拥有时显示 ❓，不剧透真图
+    const ic=(p.rarity==='hidden'&&!owned.includes(p.slug))?'<span class="box-pool-ic">❓</span>':petIconHtml(p.slug,'box-pool-img');
+    return '<div class="box-pool-item"><span class="box-pool-ic">'+ic+'</span><span class="box-pool-name">'+p.name+'</span><span class="box-pool-rr" style="background:'+rr.c+'">'+rr.t+'</span><b class="box-pool-w" style="background:'+rr.c+'">'+fmt(pct(p.weight))+'</b></div>';
   }).join('');
 }
 let boxDrawing=false; // 防连点
