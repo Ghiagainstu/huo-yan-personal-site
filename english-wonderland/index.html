@@ -63,8 +63,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 /* ===== 筛选设置面板（v3：10 个筛选按钮收纳进 ⚙️ 一键设置） ===== */
 .filter-row-single{justify-content:flex-start;}
 .filter-gear{flex:0 0 auto;position:relative;padding:9px 14px;}
-.filter-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#E53935;color:#fff;font-size:11px;line-height:18px;text-align:center;padding:0 4px;box-sizing:border-box;}
-.filter-summary{flex:1;min-width:0;font-size:12px;color:#889;align-self:center;text-align:right;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.filter-cur{font-size:12px;color:#11998e;background:#e8f8f3;border-radius:8px;padding:6px 10px;margin:-6px 0 12px;}
 .filter-mask{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1000;}
 .filter-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(400px,calc(100vw - 32px));max-height:82vh;overflow-y:auto;background:#fff;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.2);z-index:1001;padding:16px;box-sizing:border-box;}
 .filter-panel-head{display:flex;justify-content:space-between;align-items:center;font-size:17px;color:#2d3436;margin-bottom:14px;}
@@ -87,7 +86,6 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .filter-reset{flex:1;border:1px solid #e0e0e0;background:#fff;color:#666;border-radius:12px;padding:10px;font-size:14px;cursor:pointer;}
 .filter-done{flex:1;border:none;background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;border-radius:12px;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;}
 @media (max-width:480px){
-  .filter-summary{font-size:11px;}
   .filter-panel{left:12px;right:12px;top:auto;bottom:12px;transform:none;width:auto;padding:14px;}
 }
 .filter-chip[data-rg].active{background:#11998e;} /* 通用/美式/英式 选中态用青色，与上方分级区分 */
@@ -757,7 +755,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
       </div>
       <button class="game-btn box-draw-btn" id="boxDrawBtn" onclick="boxDraw()">🎁 点击抽盲盒</button>
       <div class="box-msg" id="boxMsg"></div>
-      <div class="box-hint">学 10 个新词 / 闯关答对 20 题 = 1 次抽奖机会 · 每日最多 2 次 · 重复自动折积分</div>
+      <div class="box-hint">每掌握 10 个单词 / 游戏答对 20 题 = 1 次机会 · 机会长期累计 · 每日最多抽 2 次 · 重复装扮自动折算积分</div>
       <div class="box-grid-name">🐾 我的宠物</div>
       <div class="box-grid" id="boxGrid"></div>
       <div class="box-grid-name">🎯 奖池与概率</div>
@@ -821,8 +819,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
     </div>
     <div id="searchResults" class="search-results" style="display:none"></div>
     <div class="filter-row filter-row-single">
-        <button class="filter-chip filter-gear" onclick="openFilterPanel()">⚙️ 筛选设置<span class="filter-badge" id="filterBadge" style="display:none"></span></button>
-        <span class="filter-summary" id="filterSummary">🌐 通用 · 📗 全部</span>
+        <button class="filter-chip filter-gear" onclick="openFilterPanel()">⚙️ 筛选设置</button>
     </div>
     <div class="filter-mask" id="filterMask" onclick="closeFilterPanel()" style="display:none"></div>
     <div class="filter-panel" id="filterPanel" role="dialog" aria-label="卡片筛选设置" style="display:none">
@@ -830,6 +827,7 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <b>🎛️ 筛选设置</b>
         <button class="filter-close" onclick="closeFilterPanel()" aria-label="关闭">✕</button>
       </div>
+      <div class="filter-cur" id="filterCur"></div>
       <div class="filter-sec">
         <div class="filter-sec-t">学习范围</div>
         <div class="filter-seg" id="fSegTier">
@@ -7051,16 +7049,13 @@ function syncFilterUI(){
   document.querySelectorAll('#fSegRegion button').forEach(b=>b.classList.toggle('active',b.dataset.rg===curRegion));
   document.querySelectorAll('#fSegFilter button').forEach(b=>b.classList.toggle('active',b.dataset.f===curFilter));
   const sw=document.getElementById('fShuffleChk'); if(sw) sw.checked=!!curShuffle;
-  const n=(curRegion!=='all'?1:0)+(curTier!=='all'?1:0)+(curFilter!=='all'?1:0)+(curShuffle?1:0);
-  const badge=document.getElementById('filterBadge');
-  if(badge){ badge.style.display=n?'block':'none'; badge.textContent=n; }
-  const sum=document.getElementById('filterSummary');
-  if(sum){
+  const cur=document.getElementById('filterCur');
+  if(cur){
     const parts=[curRegion==='all'?'🌐 通用':curRegion==='us'?'🇺🇸 美式':'🇬🇧 英式',
                  curTier==='all'?'📗 全部':curTier==='core'?'📘 核心':'📙 拓展'];
     if(curFilter!=='all') parts.push(curFilter==='todo'?'📖 待学习':'✅ 已掌握');
-    if(curShuffle) parts.push('🔀');
-    sum.textContent=parts.join(' · ');
+    if(curShuffle) parts.push('🔀 打乱');
+    cur.textContent='当前：'+parts.join(' · ');
   }
 }
 /* ===== 单词搜索(英文或中文) ===== */
@@ -8725,7 +8720,9 @@ function renderBoxDraws(){
   g.innerHTML=draws.map(d=>{
     const rr=d.rarity?PET_RARITY[d.rarity]:{t:'积分',c:'#E0A800'};
     const ic=d.kind==='points'?'💰':petIconHtml(d.slug,'box-draw-img');
-    const nm=d.kind==='dupe'?(d.name+'（重复→'+d.points+'分）'):d.name;
+    const meta=d.slug?PET_META.find(x=>x.slug===d.slug):null;   // 历史记录统一解析真名（隐藏款已揭晓）
+    const dispName=meta?meta.name:d.name;
+    const nm=d.kind==='dupe'?(dispName+'（重复→'+d.points+'分）'):dispName;
     return '<div class="box-draw-item"><span class="box-draw-ic">'+ic+'</span><span class="box-draw-name">'+esc(nm)+'</span><span class="box-draw-date">'+fmtCnTime(d.t,d.date)+'</span><span class="box-draw-rr" style="background:'+rr.c+'">'+rr.t+'</span></div>';
   }).join('');
 }
@@ -8808,7 +8805,7 @@ function boxCelebrate(){
   const slot=ov.querySelector('#spinSlot');
   const pool=PET_META.map(p=>p.slug);
   let idx=0, result=null, hasResult=false, stopped=false, timer=null;
-  const put=s=>{ slot.innerHTML=s==='points'?'<span class="box-spin-ic">💰</span>':petIconHtml(s,'box-spin-img'); };
+  const put=s=>{ slot.innerHTML=s==='points'?'<span class="box-spin-ic">💰</span>':(s==='pet-secret'?'<span class="box-spin-ic">❓</span>':petIconHtml(s,'box-spin-img')); };
   const later=(fn,ms)=>{ if(stopped) return; timer=setTimeout(fn,ms); };
   // 第一段：快速轮转（约 22 帧 × 55ms ≈ 1.2s）
   function fast(){
@@ -8851,7 +8848,9 @@ function boxCelebrate(){
     else {
       const rr=PET_RARITY[result.rarity]||{t:'',c:'#888'};
       ic=petIconHtml(result.slug,'box-big');
-      tt=result.name+(result.kind==='dupe'?'（已拥有）':' 到手啦！');
+      const meta=PET_META.find(x=>x.slug===result.slug);   // 揭晓真名（服务端对隐藏款只回 '？？？'）
+      const realName=meta?meta.name:result.name;
+      tt=realName+(result.kind==='dupe'?'（已拥有）':' 到手啦！');
       st=result.kind==='dupe'?('重复装扮 → 已折算 ⭐'+result.points+' 积分'):('稀有度：'+rr.t);
     }
     ov.innerHTML='<div class="box-celebrate-box">'+ic+'<div class="box-tt">'+tt+'</div><div class="box-st">'+st+'</div>'+

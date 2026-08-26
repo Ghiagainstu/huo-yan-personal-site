@@ -189,7 +189,7 @@ export async function onRequestPost(ctx) {
   const bonus = await counterGet(db, 'box_bonus', u.id);
   const invBonus = await inviteBonusActive(db, u.id);
   const tickets = ticketsOf(mastered, usr ? usr.game_stars : 0) + bonus + invBonus - used;
-  if (tickets <= 0) return json({ error: '还没有抽奖机会，先学 10 个新词或闯关 20 题吧' }, 400);
+  if (tickets <= 0) return json({ error: '还没有抽奖机会，先掌握 10 个单词或游戏答对 20 题吧' }, 400);
 
   // 服务端加权随机
   const totalW = POOL.reduce((s, p) => s + p.weight, 0);
