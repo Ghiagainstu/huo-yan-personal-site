@@ -9186,8 +9186,8 @@ async function renderRank(){
       let rv=it.stars+' 词';               // 本周/今日榜：只显示新增掌握词数，不显示积分
       if(rankType==='total') rv=it.mastered+' 词';
       else if(rankType==='score') rv=it.score+' 分';
-      // 宠物徽章：我的行优先本地展示宠物；他人行取最高稀有度宠物（优先级 legend>vrare>rare>common）
-      const rankRr={legend:0,vrare:1,rare:2,common:3};
+      // 宠物徽章：我的行优先本地展示宠物；他人行取最高稀有度宠物（优先级 hidden>epic>legend>vrare>rare>common）
+      const rankRr={hidden:0,epic:1,legend:2,vrare:3,rare:4,common:5};
       let petSlug='';
       const pets=it.pets||[];
       if(mine && dispPet() && PET_META.find(p=>p.slug===dispPet()) && pets.indexOf(dispPet())>=0) petSlug=dispPet();
