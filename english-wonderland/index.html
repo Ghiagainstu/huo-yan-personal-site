@@ -99,8 +99,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
 .search-input::placeholder{color:#b2bec3;font-size:13px;}
 .search-clear{border:none;background:#f0f2f5;color:#888;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;flex-shrink:0;}
 .search-clear:active{background:#e2e6ea;}
-.cat-row{flex:1;margin-top:0;}
-.cat-select{width:100%;box-sizing:border-box;border:2px solid #e0e0e0;outline:none;background:#fff;color:#444;font-size:15px;font-weight:bold;font-family:inherit;border-radius:14px;padding:10px 12px;cursor:pointer;}
+.cat-row{flex:1;margin-top:0;display:flex;gap:8px;align-items:stretch;}
+.cat-select{flex:1;box-sizing:border-box;border:2px solid #e0e0e0;outline:none;background:#fff;color:#444;font-size:15px;font-weight:bold;font-family:inherit;border-radius:14px;padding:10px 12px;cursor:pointer;}
+.filter-gear-sm{flex:0 0 auto;width:42px;border:2px solid #e0e0e0;outline:none;background:#fff;color:#555;font-size:16px;border-radius:14px;cursor:pointer;transition:all .2s;}
+.filter-gear-sm:hover{background:#f7fbff;border-color:#2575fc;color:#2575fc;}
 .cat-select:focus{border-color:#2575fc;background:#f7fbff;}
 .search-results{margin:4px 0 10px;}
 .search-info{font-size:13px;color:#888;margin-bottom:8px;}
@@ -815,12 +817,10 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
         <select id="catSelect" class="cat-select" onchange="onCatSelect(this.value)" title="按分类筛选">
           <option value="all">📚 全部分类</option>
         </select>
+        <button class="filter-gear-sm" onclick="openFilterPanel()" title="高级筛选设置">⚙️</button>
       </div>
     </div>
-    <div id="searchResults" class="search-results" style="display:none"></div>
-    <div class="filter-row filter-row-single">
-        <button class="filter-chip filter-gear" onclick="openFilterPanel()">⚙️ 筛选设置</button>
-    </div>
+    <div id="searchResults" class="search-results" style="display:none">    </div>
     <div class="filter-mask" id="filterMask" onclick="closeFilterPanel()" style="display:none"></div>
     <div class="filter-panel" id="filterPanel" role="dialog" aria-label="卡片筛选设置" style="display:none">
       <div class="filter-panel-head">
