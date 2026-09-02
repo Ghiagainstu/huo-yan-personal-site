@@ -5344,22 +5344,16 @@ const EXAMPLES = {
   'sports|gymnastics': 'She practices gymnastics on the balance beam every morning.|她每天早上在平衡木上练习体操。',
   'sports|high jump': 'He won the high jump with a leap of one metre fifty.|他以一米五的成绩赢了跳高比赛。',
   'sports|long jump': 'Take a deep breath and sprint before your long jump.|跳远前先深吸一口气再助跑。',
-  'sports|puzzle': 'I put the puzzle together.',
   'sports|race': 'The two runners are neck and neck in the race.|两名赛跑选手在比赛中不相上下。',
   'sports|rowing': 'Rowing a boat against the current makes your arms strong.|逆流划船能让手臂变强壮。',
-  'sports|scooter': 'I ride my scooter outside.',
   'sports|scuba diving': 'Scuba diving lets you breathe and walk under the sea.|水肺潜水让你能在海底呼吸前行。',
-  'sports|seesaw': 'I play on the seesaw.',
   'sports|skating': 'The ice is smooth enough for skating today.|今天冰面很平滑，适合滑冰。',
   'sports|skiing': 'We wear thick gloves and goggles when skiing.|滑雪时我们戴上厚手套和护目镜。',
-  'sports|slide': 'I slide down the slide.',
   'sports|snorkeling': 'With snorkeling, you float face down and watch the coral below.|浮潜时你面朝下漂浮，看着下方的珊瑚。',
   'sports|soccer': 'The school soccer team won the city cup last year.|校足球队去年赢得了城市杯。',
-  'sports|swing': 'I swing on the swing.',
   'sports|table tennis': 'Table tennis balls fly faster than you can blink.|乒乓球飞得比眨眼还快。',
   'sports|tennis': 'Hit the tennis ball before it bounces twice.|要在网球弹跳两次之前把它打回去。',
   'sports|volleyball': 'The volleyball flew over the net and landed inside the line.|排球飞过球网，落在界内。',
-  'sports|yo-yo': 'I play with my yo-yo.',
   'sports|yoga': 'Grandma does yoga in the park every morning.|奶奶每天早上在公园做瑜伽。',
   'food|beef': 'The beef noodles in this shop are famous.|这家店的牛肉面很有名。',
   'food|bread': 'The bakery sells fresh bread every morning.|面包店每天早上卖新鲜面包。',
@@ -5487,7 +5481,6 @@ const EXAMPLES = {
   'sh-school|student': 'A good <b>student</b> asks questions bravely.|好学生会勇敢地提问。',
   'sh-school|pupil': 'Each <b>pupil</b> watered one plant in the classroom.|每个小学生都给教室里的一盆花浇了水。',
   'sh-school|class': 'Our <b>class</b> is cleaning the playground today.|我们班今天打扫操场。',
-  'objects|rubber': 'I erase with a <b>rubber</b>.|我用橡皮擦。',
   'sh-greet|hello': 'She waved and said “<b>hello</b>” to everyone.|她挥手向大家问好。',
   'sh-greet|hi': '<b>Hi</b>, long time no see!|嗨，好久不见！',
   'sh-greet|yes': '“<b>Yes</b>, I finished my homework,” said Tom happily.|汤姆开心地说：“是的，我写完作业了。”',
@@ -6689,13 +6682,12 @@ function catMastered(cat){return cat.words.filter(w=>getLevel(cat.id,w[0])>=3).l
 const REGION = {
   // 美式特有（英式用别的词）
   apartment:'us', pants:'us', truck:'us', fries:'us', cookie:'us', candy:'us',
-  eggplant:'us', zucchini:'us', sneakers:'us', eraser:'us', subway:'us', gray:'both', soccer:'us',
+  eggplant:'us', zucchini:'us', sneakers:'us', eraser:'us', subway:'us', soccer:'us',
   // 英式特有
-  autumn:'uk', bin:'uk', rubbish:'uk', maths:'uk',
-  // BRAM 成对词（以下标记仅兜底，实际由 bramPair 命中后视为 both）
-  flat:'uk', trousers:'uk', lorry:'uk', chips:'uk', biscuit:'uk', sweets:'uk',
-  aubergine:'uk', courgette:'uk', trainers:'uk', rubber:'uk', underground:'uk',
-  fall:'us', football:'uk'
+  autumn:'uk', bin:'uk', rubbish:'uk', maths:'uk'
+  /* 2026-09-02 清理：删除 14 条幽灵兜底（flat/trousers/lorry/chips/biscuit/sweets/
+     aubergine/courgette/trainers/rubber/underground/fall/football/gray——词已不在
+     词表，regionOf 按词表主词查询永远命中不了） */
 };
 function regionOf(w){
   const k=(Array.isArray(w)?w[0]:w).toLowerCase();
