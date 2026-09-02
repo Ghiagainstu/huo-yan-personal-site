@@ -919,6 +919,7 @@ const PHON={
   'were':['/wɜː/', '/wɜːr/', 'audio/were-uk.mp3', 'audio/were-us.mp3'],
   'english':['/ˈɪŋ.ɡlɪʃ/', '/ˈɪŋ.ɡlɪʃ/', 'audio/english-uk.mp3', 'audio/english-us.mp3'],
   'maths':['/mæθs/', '/mæθs/', 'audio/maths-uk.mp3', 'audio/maths-us.mp3'],
+  'math':['/mæθs/', '/mæθ/', 'audio/maths-uk.mp3', 'audio/math-us.mp3'],
   'music':['/ˈmjuːzɪk/','/ˈmjuːzɪk/','audio/music-uk.mp3','audio/music-uk.mp3'],
   'art':['/ɑɹt/', '/ɑɹt/', 'audio/art-uk.mp3', 'audio/art-us.mp3'],
   'pe':['/ˌpiː ˈiː/', '/ˌpiː ˈiː/', 'audio/pe-uk.mp3', 'audio/pe-us.mp3'],
@@ -1942,6 +1943,7 @@ const PHON={
   'bench':['/bɛntʃ/', '/bɛntʃ/', 'audio/bench-uk.mp3', 'audio/bench-us.mp3'],
   'best':['/ˈbɛst/', '/ˈbɛst/', 'audio/best-uk.mp3', 'audio/best-us.mp3'],
   'bin':['/bɪn/', '/bɪn/', 'audio/bin-uk.mp3', 'audio/bin-us.mp3'],
+  'trash can':['/bɪn/', '/ˈtɹæʃ kæn/', 'audio/bin-uk.mp3', 'audio/trash-can-us.mp3'],
   'blind':['/blaɪnd/', '/blaɪnd/', 'audio/blind-uk.mp3', 'audio/blind-us.mp3'],
   'block':['/blɒk/', '/blɑk/', 'audio/block-uk.mp3', 'audio/block-us.mp3'],
   'blouse':['/blaʊs/', '/blaʊs/', 'audio/blouse-uk.mp3', 'audio/blouse-us.mp3'],
@@ -1973,6 +1975,7 @@ const PHON={
   'cocoon':['/kəˈkuːn/', '/kəˈkuːn/', 'audio/cocoon-uk.mp3', 'audio/cocoon-us.mp3'],
   'coke':['/kəʊk/', '/koʊk/', 'audio/coke-uk.mp3', 'audio/coke-us.mp3'],
   'colour':['/ˈkʌlə/', '/ˈkʌlər/', 'audio/colour-uk.mp3', 'audio/colour-us.mp3'],
+  'color':['/ˈkʌlə/', '/ˈkʌlər/', 'audio/colour-uk.mp3', 'audio/color-us.mp3'],
   'comic':['/ˈkɒmɪk/', '/ˈkɑmɪk/', 'audio/comic-uk.mp3', 'audio/comic-us.mp3'],
   'count':['/kaʊnt/', '/kaʊnt/', 'audio/count-uk.mp3', 'audio/count-us.mp3'],
   'crisp':['/kɹɪsp/', '/kɹɪsp/', 'audio/crisp-uk.mp3', 'audio/crisp-us.mp3'],
@@ -2080,6 +2083,7 @@ const PHON={
   'motorbike':['/ˈməʊtəbaɪk/', '/ˈmoʊtərbaɪk/', 'audio/motorbike-uk.mp3', 'audio/motorbike-us.mp3'],
   'mr':['/ˈmɪstə/', '/ˈmɪstər/', 'audio/mr-uk.mp3', 'audio/mr-us.mp3'],
   'mum':['/mʌm/', '/mʌm/', 'audio/mum-uk.mp3', 'audio/mum-us.mp3'],
+  'mom':['/mʌm/', '/mɑm/', 'audio/mum-uk.mp3', 'audio/mom-us.mp3'],
   'musical':['/ˈmju.zɪ.kəl/', '/ˈmju.zɪ.kəl/', 'audio/musical-uk.mp3', 'audio/musical-us.mp3'],
   'name':['/neɪm/', '/neɪm/', 'audio/name-uk.mp3', 'audio/name-us.mp3'],
   'national':['/ˈnæʃ(ə)nəl/', '/ˈnæʃ(ə)nəl/', 'audio/national-uk.mp3', 'audio/national-us.mp3'],
@@ -2136,6 +2140,7 @@ const PHON={
   'rough':['/ɹʌf/', '/ɹʌf/', 'audio/rough-uk.mp3', 'audio/rough-us.mp3'],
   'row':['/ˈɹəʊ/', '/ˈɹoʊ/', 'audio/row-uk.mp3', 'audio/row-us.mp3'],
   'rubbish':['/ˈɹʌbɪʃ/', '/ˈɹə-/', 'audio/rubbish-uk.mp3', 'audio/rubbish-us.mp3'],
+  'garbage':['/ˈɹʌbɪʃ/', '/ˈɡɑɹbɪdʒ/', 'audio/rubbish-uk.mp3', 'audio/garbage-us.mp3'],
   'rug':['/ɹʌɡ/', '/ɹʌɡ/', 'audio/rug-uk.mp3', 'audio/rug-us.mp3'],
   'rule':['/ɹuːl/', '/ɹuːl/', 'audio/rule-uk.mp3', 'audio/rule-us.mp3'],
   'russian':['/ˈɹʌʃən/', '/ˈɹʌʃən/', 'audio/russian-uk.mp3', 'audio/russian-us.mp3'],
@@ -6938,7 +6943,8 @@ const BRAM = {
   candy:'sweets', eggplant:'aubergine', zucchini:'courgette', sneakers:'trainers',
   eraser:'rubber', subway:'underground', fall:'autumn', soccer:'football',
   gray:'grey', theater:'theatre', favorite:'favourite',
-  airplane:'aeroplane'
+  airplane:'aeroplane',
+  'trash can':'bin', garbage:'rubbish', math:'maths', mom:'mum', color:'colour'
 };
 const BRAM_REV = {};
 Object.keys(BRAM).forEach(k=>{ BRAM_REV[BRAM[k]] = k; });
