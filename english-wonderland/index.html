@@ -899,6 +899,15 @@ body{background:#f5f7fa;color:#333;min-height:100vh;}
    儿童英语学园 · 词库（生活主题，数量随版本增长）
    ============================================================ */
 const PHON={
+    'beijing':['/ˌbeɪˈdʒɪŋ/','/ˌbeɪˈdʒɪŋ/','audio/beijing-uk.mp3','audio/beijing-us.mp3'],
+    'london':['/ˈlʌndən/','/ˈlʌndən/','audio/london-uk.mp3','audio/london-us.mp3'],
+    'new york':['/njuː ˈjɔːk/','/nuː ˈjɔːrk/','audio/new-york-uk.mp3','audio/new-york-us.mp3'],
+    'paris':['/ˈpærɪs/','/ˈpærɪs/','audio/paris-uk.mp3','audio/paris-us.mp3'],
+    'rome':['/rəʊm/','/roʊm/','audio/rome-uk.mp3','audio/rome-us.mp3'],
+    'shanghai':['/ˌʃæŋˈhaɪ/','/ˌʃæŋˈhaɪ/','audio/shanghai-uk.mp3','audio/shanghai-us.mp3'],
+    'sydney':['/ˈsɪdni/','/ˈsɪdni/','audio/sydney-uk.mp3','audio/sydney-us.mp3'],
+    'tokyo':['/ˈtəʊkiəʊ/','/ˈtoʊkioʊ/','audio/tokyo-uk.mp3','audio/tokyo-us.mp3'],
+
   'grey':['/ɡɹeɪ/', '/ɡɹeɪ/', 'audio/grey-uk.mp3', 'audio/grey-us.mp3'],
   'theatre':['/ˈθɪətə/', '/ˈθiːətər/', 'audio/theatre-uk.mp3', 'audio/theatre-us.mp3'],
   'racoon':['/ræˈkuːn/', '/ræˈkuːn/', 'audio/racoon-uk.mp3', 'audio/racoon-us.mp3'],
@@ -2258,11 +2267,13 @@ const IMG_BASE='images/';
    只登记本次改过的图；未登记的不带参数，继续吃缓存。下次改图把对应值 +1（2→3）。 */
 const IMG_V={basket:2,bench:2,cage:2,clock:2,cup:2,cushion:2,helicopter:2,key:3,mask:2,model:2,seat:2,sheet:2,stone:3,table:2,top:2,
   cat:2,dog:2,kitten:2,puppy:2,
-  actress:2,aviary:2,bar:2,block:2,dining:2,driver:2,furniture:2,lesson:2,make:2,rope:2,soup:2,tape:2,temple:2,welcome:2};
+  actress:2,aviary:2,bar:2,block:2,dining:2,driver:2,furniture:2,lesson:2,make:2,rope:2,soup:2,tape:2,temple:2,welcome:2,beijing:2,london:2,'new-york':2,paris:2,rome:2,shanghai:2,sydney:2,tokyo:2};
 function imgSrc(slug){ return IMG_BASE+slug+'.webp'+(IMG_V[slug]?'?v='+IMG_V[slug]:''); }
+const GEO_CAPS = new Set(['china','america','england']);
+function capEn(t){ if(!t) return t; const k=String(t).toLowerCase(); return GEO_CAPS.has(k) ? t.charAt(0).toUpperCase()+t.slice(1) : t; }
 const HAVE_IMG = new Set([
   'accountant', 'actor', 'actress', 'aeroplane', 'afraid', 'afternoon', 'air', 'airport', 'alligator', 'alpaca', 'ambulance', 'america', 'american', 'angry', 'animal', 'ankle', 'answer', 'ant', 'anteater', 'apartment', 'apple', 'apricot', 'april', 'april-fools-day', 'aquarium', 'arm', 'artist', 'ask', 'asleep', 'asparagus', 'astronaut', 'august', 'aunt', 'autumn', 'aviary', 'avocado', 'awake', 'baby', 'back', 'bad', 'badminton', 'bag', 'bake', 'baker', 'ball', 'balloon', 'bamboo-shoot', 'banana', 'bank', 'bar', 'barber', 'baseball', 'basin', 'basket', 'basketball', 'bat', 'bathroom', 'beach', 'bean-sprouts', 'bear', 'beautiful', 'become', 'bed', 'bed-sheet', 'bedroom', 'bee', 'beef', 'beet', 'beetle', 'begin', 'bell', 'belt', 'bench', 'best', 'big', 'bike', 'billiards', 'bin', 'bird', 'birthday', 'bitter-melon', 'blackberry', 'blackboard', 'blind', 'block', 'blouse', 'blow', 'blue-whale', 'blueberry', 'blunt', 'board', 'boat', 'body', 'bone', 'book', 'bookstore', 'boot', 'bored', 'bottle', 'bow', 'bowl', 'bowling', 'box', 'boy', 'branch', 'brave', 'bread', 'break', 'breakfast', 'breeze', 'bright', 'bring', 'broccoli', 'brother', 'brown-bear', 'brush', 'buck', 'buffalo', 'builder', 'bull', 'bus', 'bus-stop', 'bush', 'busy', 'butter', 'butterfly', 'buy', 'cabbage', 'cage', 'cake', 'call', 'camel', 'candy', 'cantaloupe', 'cap', 'capital', 'capybara', 'car', 'carnation', 'carrot', 'cashier', 'castle', 'cat', 'catch', 'caterpillar', 'cauliflower', 'cave', 'celery', 'centipede', 'chair', 'chameleon', 'chase', 'cheap', 'cheek', 'cheese', 'cherry', 'chess', 'chicken', 'chicken-meat', 'child', 'children', 'children-s-day', 'chili', 'chimpanzee', 'chin', 'china', 'chinese-dragon', 'chives', 'chocolate', 'chopsticks', 'cicada', 'cilantro', 'cinema', 'clap', 'classmate', 'classroom', 'clean', 'cleaner', 'climb', 'clock', 'close', 'cloud', 'cloudy', 'clownfish', 'coat', 'cobra', 'coconut', 'cocoon', 'coffee', 'coke', 'cola', 'cold', 'colour', 'come', 'comic', 'computer', 'cook', 'cookie', 'cool', 'corn', 'count', 'cousin', 'cow', 'crab', 'crayon', 'cricket', 'crisp', 'crocodile', 'cross', 'crossing', 'cry', 'cucumber', 'cup', 'cupboard', 'cushion', 'cut', 'cute', 'cuttlefish', 'cycling', 'cymbals', 'dad', 'daily', 'dance', 'dancer', 'dangerous', 'dark', 'date', 'daughter', 'day', 'dear', 'december', 'deer', 'dentist', 'desert', 'desk', 'dessert', 'diary', 'dictionary', 'different', 'difficult', 'dig', 'dining', 'dinosaur', 'dirty', 'dish', 'diver', 'diving', 'doctor', 'dog', 'doll', 'dolphin', 'donkey', 'donut', 'door', 'double-ninth-festival', 'dragon-boat-festival', 'dragon-fruit', 'dragonfly', 'draw', 'dress', 'drill', 'drink', 'driver', 'drum', 'dry', 'duck', 'duckling', 'dumpling', 'durian', 'e-bike', 'eagle', 'ear', 'early', 'easter', 'easy', 'eat', 'eel', 'egg', 'eggplant', 'eight', 'eighteen', 'eighth', 'eighty', 'elbow', 'elephant', 'eleven', 'eleventh', 'elf', 'empty', 'engine', 'engineer', 'england', 'eraser', 'evening', 'everywhere', 'excavator', 'excited', 'exercise', 'exercise-book', 'expensive', 'expression', 'eye', 'eye-exercises', 'eyebrow', 'face', 'factory', 'fairy', 'family', 'fan', 'farm', 'farmer', 'fast', 'fat', 'father', 'favorite', 'february', 'feed', 'feeler', 'ferry', 'fifteen', 'fifteenth', 'fifth', 'fifty', 'fig', 'fight', 'find', 'finger', 'fire', 'fire-truck', 'firecrackers', 'firefighter', 'firefly', 'fireman', 'fireworks', 'first', 'fish', 'fish-meat', 'fisherman', 'fishing', 'five', 'flame', 'flamingo', 'floor', 'flour', 'flower', 'fluffy', 'flute', 'fly', 'fog', 'foggy', 'food', 'foot', 'forest', 'fork', 'forty', 'fountain', 'four', 'fourteen', 'fourth', 'fox', 'friday', 'fridge', 'friend', 'fries', 'frog', 'frost', 'fruit', 'full', 'fun', 'funny', 'furniture', 'fw-a', 'fw-about', 'fw-above', 'fw-after', 'fw-again', 'fw-all', 'fw-also', 'fw-always', 'fw-am', 'fw-an', 'fw-and', 'fw-another', 'fw-any', 'fw-are', 'fw-around', 'fw-art', 'fw-at', 'fw-because', 'fw-before', 'fw-behind', 'fw-below', 'fw-beside', 'fw-between', 'fw-both', 'fw-but', 'fw-by', 'fw-can', 'fw-chinese', 'fw-class', 'fw-did', 'fw-do', 'fw-does', 'fw-down', 'fw-each', 'fw-english', 'fw-every', 'fw-few', 'fw-for', 'fw-from', 'fw-geography', 'fw-had', 'fw-has', 'fw-he', 'fw-hello', 'fw-her', 'fw-her2', 'fw-here', 'fw-hers', 'fw-hi', 'fw-him', 'fw-his', 'fw-history', 'fw-how', 'fw-i', 'fw-if', 'fw-in', 'fw-in-front-of', 'fw-into', 'fw-is', 'fw-it', 'fw-its', 'fw-just', 'fw-loudly', 'fw-many', 'fw-maths', 'fw-me', 'fw-mine', 'fw-much', 'fw-music', 'fw-must', 'fw-my', 'fw-near', 'fw-never', 'fw-no', 'fw-not', 'fw-now', 'fw-off', 'fw-often', 'fw-on', 'fw-or', 'fw-other', 'fw-our', 'fw-ours', 'fw-out', 'fw-over', 'fw-pe', 'fw-please', 'fw-pupil', 'fw-quickly', 'fw-quietly', 'fw-quite', 'fw-really', 'fw-science', 'fw-she', 'fw-should', 'fw-slowly', 'fw-so', 'fw-some', 'fw-sometimes', 'fw-soon', 'fw-sorry', 'fw-student', 'fw-than', 'fw-thanks', 'fw-that', 'fw-the', 'fw-their', 'fw-theirs', 'fw-them', 'fw-then', 'fw-there', 'fw-these', 'fw-they', 'fw-this', 'fw-those', 'fw-through', 'fw-to', 'fw-too', 'fw-under', 'fw-up', 'fw-us', 'fw-usually', 'fw-very', 'fw-was', 'fw-we', 'fw-well', 'fw-were', 'fw-what', 'fw-when', 'fw-where', 'fw-which', 'fw-while', 'fw-who', 'fw-why', 'fw-will', 'fw-with', 'fw-would', 'fw-yes', 'fw-you', 'fw-your', 'fw-yours', 'game', 'garden', 'garlic', 'gecko', 'geese', 'ghost', 'giant', 'gift', 'ginger', 'giraffe', 'girl', 'give', 'glass', 'glasses', 'glove', 'glue', 'go', 'goal', 'goat', 'gold', 'goldfish', 'golf', 'good', 'goose', 'gorilla', 'grammar', 'grandma', 'grandpa', 'grandparents', 'grape', 'grass', 'grasshopper', 'green-bean', 'greeting', 'grey', 'ground', 'groundhog', 'group', 'guava', 'guess', 'guitar', 'gymnastics', 'hail', 'hair', 'half', 'halloween', 'hamburger', 'hammer', 'hamster', 'hand', 'happy', 'hard', 'hare', 'harmonica', 'harp', 'hat', 'have', 'hawthorn', 'hay', 'head', 'hear', 'heavy', 'hedgehog', 'heel', 'helicopter', 'help', 'hen', 'hey', 'hide', 'high', 'high-jump', 'high-speed-train', 'hiking', 'hill', 'hippo', 'hissing', 'hobby', 'hockey', 'hole', 'home', 'homework', 'honey', 'hoop', 'hooray', 'horse', 'horseshoe-crab', 'hospital', 'hot', 'hot-air-balloon', 'hot-dog', 'hotel', 'hour', 'house', 'housefly', 'hug', 'humming', 'hundred', 'hungry', 'hurry', 'hurt', 'husband', 'ice', 'ice-cream', 'ice-cube', 'iguana', 'ink', 'insect', 'instrument', 'invitation', 'island', 'jack-o-lantern', 'jacket', 'jam', 'january', 'jean', 'jeans', 'jeep', 'jelly', 'jellyfish', 'jet', 'join', 'judge', 'judo', 'juice', 'july', 'jump', 'june', 'jungle', 'kangaroo', 'karate', 'key', 'kick', 'kind', 'king', 'kitchen', 'kite', 'kitten', 'kiwi', 'knee', 'knife', 'koala', 'komodo-dragon', 'lady', 'ladybug', 'lake', 'lamp', 'lantern-festival', 'lanternfish', 'large', 'last', 'late', 'laugh', 'leaf', 'learn', 'leave', 'leek', 'left', 'leg', 'lemon', 'lesson', 'letter', 'lettuce', 'library', 'life', 'lifeboat', 'light', 'lightning', 'like', 'lime', 'lion', 'listen', 'little', 'live', 'living-room', 'lizard', 'lobster', 'log', 'long', 'long-jump', 'longan', 'longhorn-beetle', 'look', 'lotus-root', 'loud', 'love', 'lunch', 'lychee', 'make', 'mammoth', 'man', 'mandrill', 'mango', 'mangosteen', 'manta-ray', 'mantis', 'map', 'march', 'marker', 'marmot', 'mask', 'match', 'matter', 'may', 'meat', 'melon', 'member', 'mermaid', 'mice', 'mid-autumn-festival', 'milk', 'millimeter', 'minus', 'minute', 'mirror', 'miss', 'mitten', 'model', 'module', 'monday', 'money', 'monkey', 'monster', 'month', 'moon', 'mop', 'morning', 'mosquito', 'moth', 'mother', 'mother-s-day', 'motherland', 'motorbike', 'motorcycle', 'mountain', 'mouse', 'mouth', 'mr', 'mug', 'mum', 'museum', 'mushroom', 'musical', 'muskox', 'mutton', 'name', 'national', 'national-day', 'neck', 'need', 'nest', 'new', 'new-year', 'new-year-s-eve', 'news', 'newspaper', 'night', 'nine', 'nineteen', 'ninety', 'ninth', 'nod', 'noise', 'noodle', 'noon', 'nose', 'note', 'november', 'number', 'nurse', 'ocean', 'ocean-sunfish', 'october', 'octopus', 'okra', 'old', 'once', 'one', 'onion', 'open', 'orange', 'organ', 'ostrich', 'otter', 'owl', 'packet', 'page', 'paint', 'painter', 'painting', 'pair', 'palace', 'pancake', 'panda', 'pangolin', 'pants', 'papaya', 'paper', 'parcel', 'parents', 'park', 'parrot', 'party', 'pass', 'pasta', 'pea', 'peach', 'peacock', 'pear', 'peasant', 'peel', 'pen', 'pencil', 'pencil-case', 'penguin', 'people', 'pepper', 'persimmon', 'pet', 'pharmacy', 'phoenix', 'phone', 'phone-call', 'photo', 'piano', 'pick', 'picnic', 'picture', 'picture-book', 'pie', 'piece', 'pig', 'pillow', 'pilot', 'pineapple', 'pingpong', 'pioneer', 'pitaya', 'pizza', 'place', 'plane', 'plant', 'plate', 'play', 'playground', 'plum', 'poem', 'point', 'polar-bear', 'police', 'police-station', 'policeman', 'policewoman', 'pomegranate', 'pomelo', 'pond', 'pool', 'pop', 'popcorn', 'pork', 'porridge', 'post-office', 'postman', 'potato', 'prince', 'princess', 'proboscis-monkey', 'project', 'puddle', 'pufferfish', 'pull', 'pumpkin', 'puppet', 'puppy', 'push', 'put', 'puzzle', 'python', 'quarter', 'queen', 'question', 'quiet', 'quilt', 'rabbit', 'raccoon', 'race', 'radio', 'radish', 'rain', 'rainbow', 'raincoat', 'raindrop', 'rainy', 'raspberry', 'rat', 'ray-fish', 'read', 'ready', 'recorder', 'red-envelope', 'reporter', 'rest', 'restaurant', 'rhino', 'rice', 'ride', 'rise', 'river', 'road', 'robot', 'rock', 'rocket', 'roll', 'roof', 'room', 'rooster', 'root', 'rope', 'rose', 'rough', 'round', 'row', 'rowing', 'rubbish', 'rug', 'rule', 'ruler', 'run', 'running-shoes', 'russian', 'sabertooth', 'sad', 'sail', 'sailboat', 'salad', 'sale', 'salesperson', 'salt', 'salty', 'sandal', 'sandwich', 'saturday', 'sausage', 'saxophone', 'scallion', 'scarf', 'school', 'school-bus', 'scientist', 'scissors', 'scooter', 'score', 'scorpion', 'screwdriver', 'scuba-diving', 'sea', 'sea-cucumber', 'sea-lion', 'sea-monster', 'sea-turtle', 'sea-urchin', 'seagull', 'seahorse', 'seal', 'season', 'seat', 'second', 'see', 'seed', 'seesaw', 'self', 'september', 'seven', 'seventeen', 'seventh', 'seventy', 'shadow', 'shake', 'shaker', 'shark', 'sharp', 'sharpener', 'sheep', 'sheet', 'shelf', 'shell', 'shine', 'shiny', 'ship', 'shirt', 'shoe', 'shopping-mall', 'short', 'shorts', 'shoulder', 'shout', 'show', 'sick', 'sign', 'silver', 'sing', 'singer', 'sister', 'sit', 'six', 'sixteen', 'sixth', 'sixty', 'size', 'skate', 'skateboard', 'skating', 'sketchbook', 'ski', 'skiing', 'skirt', 'sky', 'sleep', 'slide', 'slippers', 'slope', 'sloth', 'slow', 'small', 'smart', 'smell', 'smile', 'smoke', 'snail', 'snake', 'sneakers', 'snorkeling', 'snow', 'snowflake', 'snowman', 'snowy', 'soccer', 'sock', 'sofa', 'soft', 'soil', 'soldier', 'son', 'sore', 'soup', 'sour', 'spaceship', 'speak', 'spell', 'sphere', 'spider', 'spinach', 'spoon', 'sports', 'spring', 'spring-festival', 'sprout', 'squid', 'squirrel', 'stadium', 'stalk', 'stand', 'star', 'starfish', 'stars', 'station', 'steamed-bun', 'stingray', 'stone', 'stop', 'store', 'storm', 'straight', 'strawberry', 'stream', 'string', 'strong', 'study', 'subject', 'submarine', 'subway', 'sugar', 'sugarcane', 'summer', 'sun', 'sunday', 'sunflower', 'sunglasses', 'sunny', 'sunshine', 'supermarket', 'supper', 'swan', 'sweater', 'sweep', 'sweet', 'sweet-potato', 'swim', 'swimming-pool', 'swimsuit', 'swing', 't-shirt', 'table', 'table-tennis', 'tadpole', 'take', 'talk', 'tall', 'tambourine', 'tangerine', 'tape', 'taste', 'taxi', 'tea', 'teacher', 'teachers-day', 'teeth', 'telephone', 'temple', 'ten', 'tennis', 'tenth', 'term', 'text', 'thank', 'thanksgiving', 'theater', 'theatre', 'thin', 'thing', 'think', 'third', 'thirsty', 'thirteen', 'thirtieth', 'thirty', 'thousand', 'three', 'throw', 'thunder', 'thursday', 'tie', 'tiger', 'time', 'timetable', 'tired', 'toad', 'today', 'toe', 'tofu', 'tomato', 'tomorrow', 'tongue', 'tooth', 'toothbrush', 'toothpaste', 'top', 'tornado', 'tortoise', 'touch', 'tower', 'toy', 'tractor', 'traffic', 'train', 'train-station', 'tram', 'tree', 'tricycle', 'trolley-bus', 'truck', 'trumpet', 'trunk', 'try', 'tuesday', 'tummy', 'turkey', 'turn', 'turnip', 'turtle', 'tv', 'twelfth', 'twelve', 'twentieth', 'twenty', 'twenty-first', 'two', 'type', 'typhoon', 'ugly', 'umbrella', 'uncle', 'underground', 'unicorn', 'uniform', 'unit', 'university', 'van', 'vegetable', 'venomous-snake', 'vest', 'vet', 'violin', 'visit', 'vocabulary', 'volcano', 'volleyball', 'wait', 'waiter', 'waitress', 'walk', 'wall', 'walrus', 'want', 'warm', 'wash', 'wasp', 'watch', 'water', 'waterfall', 'watermelon', 'wave', 'way', 'wear', 'weather', 'wednesday', 'week', 'weekend', 'welcome', 'western-dragon', 'wet', 'whale', 'wheel', 'wife', 'wild-boar', 'win', 'wind', 'window', 'windy', 'wing', 'winter', 'winter-melon', 'witch', 'wizard', 'wolf', 'woman', 'word', 'work', 'worker', 'worm', 'wrist', 'write', 'writer', 'xylophone', 'yacht', 'yak', 'yam', 'year', 'yesterday', 'yo-yo', 'yoga', 'yogurt', 'young', 'zebra', 'zero', 'zoo', 'zucchini'
-,'black-hole','black-panther','cheetah','earth','jaguar','jupiter','leopard','mars','mercury','neptune','puma','satellite','saturn','snow-leopard','universe','uranus','venus','alien','comet','galaxy','meteor','milky-way','planet','pluto','space-station','telescope','ufo']);;;
+,'beijing','london','new-york','paris','rome','shanghai','sydney','tokyo','black-hole','black-panther','cheetah','earth','jaguar','jupiter','leopard','mars','mercury','neptune','puma','satellite','saturn','snow-leopard','universe','uranus','venus','alien','comet','galaxy','meteor','milky-way','planet','pluto','space-station','telescope','ufo']);;;
 
 /* ★ 图片预加载：翻卡滑动窗口 + 游戏前瞻 + 空闲渐进，消灭"点下一张等半秒" */
 const PRELOAD_BEFORE = 3;     // 翻卡：当前卡往前预载 3 张（覆盖回翻，循环）
@@ -2301,7 +2312,16 @@ function currentCardSlug(){
   return (a && a.slice(0,4)==='img:') ? a.slice(4) : '';
 }
 /* ===== 单词元数据(核心/拓展 + 沪教版分册单元, 来源 WORD_META.draft.js 2026-08-13) ===== */
-const WORD_META = {    "alligator": {src:'add', giggle:false, diff:3, syl:4, len:9, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'动物', concrete:'concrete'},
+const WORD_META = {
+    "beijing": {src:'add', giggle:false, diff:2, syl:2, len:7, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "london": {src:'add', giggle:false, diff:2, syl:2, len:6, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "new york": {src:'add', giggle:false, diff:2, syl:3, len:8, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "paris": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "rome": {src:'add', giggle:false, diff:2, syl:1, len:4, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "shanghai": {src:'add', giggle:false, diff:2, syl:2, len:8, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "sydney": {src:'add', giggle:false, diff:2, syl:2, len:6, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "tokyo": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'地理', concrete:'concrete'},
+    "alligator": {src:'add', giggle:false, diff:3, syl:4, len:9, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'动物', concrete:'concrete'},
     "capybara": {src:'add', giggle:false, diff:3, syl:4, len:9, pos:'n', freq:'ext', book:'—', unit:'—', scene:'动物', concrete:'concrete'},
     "cobra": {src:'add', giggle:false, diff:3, syl:2, len:5, pos:'n', freq:'ext', book:'—', unit:'—', scene:'动物', concrete:'concrete'},
     "alpaca": {src:'card', giggle:false, diff:3, syl:3, len:6, pos:'n', freq:'ext', book:'—', unit:'—', age:'7-8', scene:'动物', concrete:'concrete'},
@@ -3223,15 +3243,15 @@ const WORD_META = {    "alligator": {src:'add', giggle:false, diff:3, syl:4, len
     "log": {src:'add', giggle:false, diff:1, syl:1, len:3, pos:'n', freq:'core', book:'—', unit:'—', scene:'天气自然', concrete:'concrete'},
     "shadow": {src:'add', giggle:false, diff:2, syl:2, len:6, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'天气自然', concrete:'concrete'},
     "smoke": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'天气自然', concrete:'concrete'},
-    "america": {src:'add', giggle:false, diff:2, syl:4, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
-    "american": {src:'add', giggle:false, diff:3, syl:4, len:8, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
-    "capital": {src:'add', giggle:false, diff:2, syl:3, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
+    "america": {src:'add', giggle:false, diff:2, syl:4, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地理', concrete:'concrete'},
+    "american": {src:'add', giggle:false, diff:3, syl:4, len:8, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地理', concrete:'concrete'},
+    "capital": {src:'add', giggle:false, diff:2, syl:3, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地理', concrete:'concrete'},
     "castle": {src:'add', giggle:false, diff:2, syl:2, len:6, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
-    "china": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
+    "china": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地理', concrete:'concrete'},
     "crossing": {src:'add', giggle:false, diff:3, syl:2, len:8, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
-    "england": {src:'add', giggle:false, diff:2, syl:2, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'12-18', scene:'地点', concrete:'concrete'},
+    "england": {src:'add', giggle:false, diff:2, syl:2, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'12-18', scene:'地理', concrete:'concrete'},
     "house": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
-    "motherland": {src:'add', giggle:false, diff:3, syl:3, len:10, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
+    "motherland": {src:'add', giggle:false, diff:3, syl:3, len:10, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地理', concrete:'concrete'},
     "palace": {src:'add', giggle:false, diff:2, syl:3, len:6, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
     "place": {src:'add', giggle:false, diff:2, syl:2, len:5, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
     "station": {src:'add', giggle:false, diff:2, syl:2, len:7, pos:'n', freq:'core', book:'—', unit:'—', age:'15-18', scene:'地点', concrete:'concrete'},
@@ -4138,8 +4158,6 @@ const CATS = [
     ['mitten','手套', 'img:mitten'],
     ['blouse','(女式)衬衫','img:blouse'],
     ['cap','帽子','img:cap'],
-    ['jean','牛仔裤；斜纹棉布','img:jean'],
-    
     ['sunglasses','太阳镜','img:sunglasses']]} ,
 {id:'nature', zh:'天气自然', en:'Weather & Nature', tint:['#E0F2F1','#B2DFDB'], tpls:['I see the {w}.', 'Look at the {w}.', 'The {w} is here.', 'Wow, the {w}!'], words:[
     ['beach','海滩', 'img:beach'],
@@ -4593,6 +4611,21 @@ const CATS = [
     ['sore','疼的','img:sore'],
     ['straight','成直线地','img:straight'],
     ['ugly','丑的','img:ugly']]} ,
+{id:'geography', zh:'国家与地区', en:'Countries & Places', tint:['#E8EAF6','#C5CAE9'], tpls:['I love my {w}.', 'We travel to {w}.', '{w} is a big place.', 'I want to visit {w}.'], words:[
+    ['america','美国；美洲','img:america'],
+    ['american','美国的，美国人','img:american'],
+    ['capital','首都','img:capital'],
+    ['china','中国','img:china'],
+    ['england','英国','img:england'],
+    ['motherland','祖国','img:motherland'],
+    ['beijing','北京','img:beijing'],
+    ['london','伦敦','img:london'],
+    ['new york','纽约','img:new-york'],
+    ['paris','巴黎','img:paris'],
+    ['rome','罗马','img:rome'],
+    ['shanghai','上海','img:shanghai'],
+    ['sydney','悉尼','img:sydney'],
+    ['tokyo','东京','img:tokyo']]} ,
 {id:'places', zh:'地点', en:'Places', tint:['#EFEBE9','#D7CCC8'], tpls:['I go to the {w}.', 'We visit the {w}.', 'The {w} is fun.', 'We go to the {w}!'], words:[
     ['airport','机场', 'img:airport'],
     ['apartment','公寓', 'img:apartment'],
@@ -4630,15 +4663,9 @@ const CATS = [
     ['university','大学', 'img:university'],
     ['zoo','动物园','img:zoo'],
     ['playground','游乐场', 'img:playground'],
-    ['america','美国；美洲','img:america'],
-    ['american','美国的,美国人','img:american'],
-    ['capital','首都','img:capital'],
     ['castle','城堡','img:castle'],
-    ['china','中国','img:china'],
     ['crossing','十字路口','img:crossing'],
-    ['england','英国','img:england'],
     ['house','房子','img:house'],
-    ['motherland','祖国','img:motherland'],
     ['palace','宫殿','img:palace'],
     ['place','地方；住所；席位','img:place'],
     ['station','车站；电台；基地','img:station'],
@@ -4683,6 +4710,7 @@ const CATS = [
     ['driver','司机','img:driver'],
     ['engineer','工程师','img:engineer'],
     ['farmer','农民', 'img:farmer'],
+    ['fireman','消防员','img:fireman'],
     ['firefighter','消防员', 'img:firefighter'],
     ['fisherman','渔夫', 'img:fisherman'],
     ['king','国王','img:king'],
@@ -4690,6 +4718,8 @@ const CATS = [
     ['painter','画家','img:painter'],
     ['pilot','飞行员', 'img:pilot'],
     ['police','警察', 'img:police'],
+    ['policeman','男警察','img:policeman'],
+    ['policewoman','女警','img:policewoman'],
     ['postman','邮递员', 'img:postman'],
     ['queen','王后','img:queen'],
     ['reporter','记者','img:reporter'],
@@ -4712,10 +4742,7 @@ const CATS = [
     ['artist','画家；艺术家','img:artist'],
     ['cleaner','清洁工','img:cleaner'],
     ['diver','跳水者；潜水员','img:diver'],
-    ['fireman','消防员','img:fireman'],
     ['peasant','农民','img:peasant'],
-    ['policeman','男警察','img:policeman'],
-    ['policewoman','女警','img:policewoman'],
     ['salesperson','销售员','img:salesperson']]} ,
 {id:'instruments', zh:'乐器', en:'Musical Instruments', tint:['#F3E5F5','#E1BEE7'], tpls:['I can play the {w}.', 'The {w} makes music.', 'I hear the {w}.', 'I like the {w}.'], words:[
     ['bell','铃铛', 'img:bell'],
@@ -6252,15 +6279,24 @@ const EXAMPLES = {
   'places|university': 'My sister studies robots at <b>university</b>.|我姐姐在大学里研究机器人。',
   'places|zoo': 'The pandas at the <b>zoo</b> eat bamboo all day.|动物园里的熊猫整天吃竹子。',
   'places|playground': 'Everyone races to the swings on the <b>playground</b>.|大家冲向游乐场的秋千。',
-  'places|america': 'My pen pal lives in <b>America</b>.|我的笔友住在美国。',
-  'places|american': 'Hot dogs are a popular <b>American</b> snack.|热狗是很受欢迎的美国小吃。',
-  'places|capital': 'Beijing is the <b>capital</b> of China.|北京是中国的首都。',
+  'geography|america': 'My pen pal lives in <b>America</b>.|我的笔友住在美国。',
+  'geography|american': 'Hot dogs are a popular <b>American</b> snack.|热狗是很受欢迎的美国小吃。',
+  'geography|capital': 'Beijing is the <b>capital</b> of China.|北京是中国的首都。',
   'places|castle': 'The old <b>castle</b> has thick stone walls.|古老的城堡有着厚厚的石墙。',
-  'places|china': '<b>China</b> is famous for its long history and tasty food.|中国以悠久的历史和可口的食物闻名。',
+  'geography|china': '<b>China</b> is famous for its long history and tasty food.|中国以悠久的历史和可口的食物闻名。',
   'places|crossing': 'Wait for the green light at the <b>crossing</b>.|在十字路口等绿灯亮起。',
-  'places|england': 'It often rains softly in <b>England</b>.|英国经常下蒙蒙细雨。',
+  'geography|england': 'It often rains softly in <b>England</b>.|英国经常下蒙蒙细雨。',
   'places|house': 'Our <b>house</b> has a red door and a big window.|我们家有一扇红门和一扇大窗。',
-  'places|motherland': 'We sang a song for our <b>motherland</b> on National Day.|国庆节我们为祖国唱了一首歌。',
+  'geography|motherland': 'We sang a song for our <b>motherland</b> on National Day.|国庆节我们为祖国唱了一首歌。',
+  'geography|beijing': 'We climbed the Great Wall in <b>Beijing</b>.|我们在北京爬了长城。',
+  'geography|london': 'Big Ben stands tall in <b>London</b>.|大本钟高高地矗立在伦敦。',
+  'geography|new york': 'The Statue of Liberty is in <b>New York</b>.|自由女神像在纽约。',
+  'geography|paris': 'The Eiffel Tower is in <b>Paris</b>.|埃菲尔铁塔在巴黎。',
+  'geography|rome': 'We ate pizza in <b>Rome</b>.|我们在罗马吃了披萨。',
+  'geography|shanghai': 'My aunt lives in <b>Shanghai</b>.|我的姨妈住在上海。',
+  'geography|sydney': 'The Opera House is in <b>Sydney</b>.|歌剧院在悉尼。',
+  'geography|tokyo': 'Tokyo is a busy city in <b>Japan</b>.|东京是日本一座繁忙的城市。',
+
   'places|palace': 'Golden roofs shine on the ancient <b>palace</b>.|古老宫殿的金顶闪闪发光。',
   'places|place': 'This quiet <b>place</b> is perfect for reading.|这个安静的地方非常适合看书。',
   'places|station': 'Meet me at the <b>station</b> at nine.|九点到车站来见我。',
@@ -6955,7 +6991,7 @@ function bramPair(word){ // 返回 [英式, 美式]，非英美变体返回 null
 /* 分类展示顺序：按儿童认知梯度（具体到抽象）。未列出的分类排在最后,保持可回退。 */
 const CAT_ORDER = [
   'animals','colors','numbers','body','fruits','vegetables','food','clothes','family',
-  'nature','plants','space','transport','places','insects','objects','sports','instruments','festivals','fantasy','time',
+  'nature','plants','space','transport','places','geography','insects','objects','sports','instruments','festivals','fantasy','time',
   'verbs','adjectives','shapes',
   'sh-subjects','sh-school','sh-greet','sh-pron-pers','sh-pron-poss','sh-pron-other',
   'sh-article','sh-prep','sh-conj','sh-modal','sh-adv'
@@ -6999,7 +7035,7 @@ function saveCatLast(item){
 const CAT_ICON = {
   'animals':'🐾','fantasy':'🐉','fruits':'🍎','vegetables':'🥦','food':'🍔','colors':'🎨','shapes':'🔷',
   'numbers':'🔢','body':'🧍','family':'👨‍👩‍👧','clothes':'👕','nature':'🌿','plants':'🌱','objects':'🧸',
-  'transport':'🚗','verbs':'🏃','adjectives':'😊','places':'📍','festivals':'🎉','jobs':'👷','instruments':'🎻',
+  'transport':'🚗','verbs':'🏃','adjectives':'😊','places':'📍','geography':'🌍','festivals':'🎉','jobs':'👷','instruments':'🎻',
   'sports':'⚽','space':'🪐','insects':'🐝','time':'⏰','sh-subjects':'📚','sh-school':'🏫','sh-greet':'👋','sh-pron-pers':'👤',
   'sh-pron-poss':'💼','sh-pron-other':'💬','sh-article':'🔤','sh-prep':'📌','sh-conj':'🔗','sh-modal':'💡','sh-adv':'⏩'
 };
@@ -7083,7 +7119,7 @@ function renderSearchResults(){
   if(!cardList.length){ box.style.display='block'; box.innerHTML='<div class="search-info">🔍 未找到与「'+esc(curSearch)+'」匹配的单词</div>'; return; }
   let html='<div class="search-info">🔍 找到 '+cardList.length+' 个匹配</div><div class="search-tags">';
   cardList.forEach((it,i)=>{
-    html+='<button class="search-tag'+(i===cardIdx?' active':'')+'" onclick="jumpToResult('+i+')">'+esc(it.w[0])+'<span class="zh">'+esc(it.w[1])+'</span></button>';
+    html+='<button class="search-tag'+(i===cardIdx?' active':'')+'" onclick="jumpToResult('+i+')">'+esc(capEn(it.w[0]))+'<span class="zh">'+esc(it.w[1])+'</span></button>';
   });
   html+='</div>';
   box.style.display='block';
@@ -7463,7 +7499,7 @@ function renderCard(){
         '<div class="card-face card-front">'+
           '<div class="card-art">'+svg+tierBadge+'</div>'+
           '<div class="card-body">'+
-            '<div class="word-en-wrap"><span class="word-en">'+dispEn+'</span>'+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
+            '<div class="word-en-wrap"><span class="word-en">'+capEn(dispEn)+'</span>'+posBadge(word)+(rg!=='both'?'<span class="region-pill '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
             phonHTML(word,currentAlt)+
             '<div class="tap-hint">👆 点击卡片看中文意思</div>'+
           '</div>'+
@@ -7472,7 +7508,7 @@ function renderCard(){
           '<div class="card-art">'+svg+'</div>'+
           '<div class="card-body">'+
             '<div class="word-zh">'+zh+(rg!=='both'?'<span class="region-pill sm '+(rg==='us'?'us':'uk')+'">'+(rg==='us'?'🇺🇸':'🇬🇧')+'</span>':'')+'</div>'+
-            '<div class="word-en" style="font-size:26px">'+dispEn+'</div>'+posBadge(word)+
+            '<div class="word-en" style="font-size:26px">'+capEn(dispEn)+'</div>'+posBadge(word)+
             phonHTML(word,currentAlt)+
             (example?'<div class="word-example">💬 '+example.split('|')[0]+'</div>'+(example.split('|')[1]?'<div class="word-example-zh">'+example.split('|')[1]+'</div>':'')+'':'')+
             '<button class="speak-btn" id="speakExBtn" onclick="event.stopPropagation();speakExample()">🔊 听例句</button>'+
