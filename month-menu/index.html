@@ -501,14 +501,15 @@ function dishRuleCats(dish){
 const WD_CN = ['日','一','二','三','四','五','六']; // getDay():0=日
 function pad(n){ return String(n).padStart(2,'0'); }
 function fmt(dt){ return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`; }
-function mealOf(wd){ if(wd>=1&&wd<=5) return '晚餐'; if(wd===0) return '午餐'; return null; } // 周六休息
+const SAT_COOK_FROM = new Date(2026, 8, 1); // 2026-09 起周六也做饭（午餐）；之前周六休息
+function mealOf(dt){ const wd=dt.getDay(); if(wd>=1&&wd<=5) return '晚餐'; if(wd===0) return '午餐'; if(wd===6) return dt>=SAT_COOK_FROM ? '午餐' : null; return null; }
 function weekKeyOf(dt){ const mon=new Date(dt); mon.setDate(dt.getDate()-((dt.getDay()+6)%7)); return fmt(mon); }
 
 // 连续轮转指针：从纪元(2026-01-01)到 target 之间的烧菜日总数
 const EPOCH = new Date(2026,0,1);
 function cookDaysBefore(target){
   let n=0; const cur=new Date(EPOCH);
-  while(cur<target){ if(mealOf(cur.getDay())) n++; cur.setDate(cur.getDate()+1); }
+  while(cur<target){ if(mealOf(cur)) n++; cur.setDate(cur.getDate()+1); }
   return n;
 }
 
@@ -545,7 +546,7 @@ function buildMonth(y,m){
   const cells=[];
   for(let i=0;i<offset;i++) cells.push(null);
   for(let d=1;d<=days;d++){
-    const dt=new Date(y,m-1,d); const wd=dt.getDay(); const meal=mealOf(wd);
+    const dt=new Date(y,m-1,d); const wd=dt.getDay(); const meal=mealOf(dt);
     cells.push({date:fmt(dt), d, wd, meal, weekKey:weekKeyOf(dt), dishes:[]});
   }
   while(cells.length%7!==0) cells.push(null);
