@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>清迈亲子景点手册 · 火哥的个人站</title>
-<meta name="description" content="清迈亲子游景点卡片：黏黏瀑布、丛林飞跃、彩虹溶洞、打铁手工、大象自然保护公园、山顶绵羊牧场、夜间动物园。点击卡片看详情。">
+<meta name="description" content="清迈亲子游手册（6岁）：黏黏瀑布、丛林飞跃、彩虹溶洞、打铁手工、大象保护公园、绵羊牧场、夜间动物园、古城攀岩馆、泰餐烹饪课。每张卡含价格、时间、内容、路程。">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#ffffff">
 <!-- Google tag (gtag.js) -->
@@ -65,7 +65,7 @@
   .card .name{font-size:16px;font-weight:700}
   .card .en{font-size:11.5px;color:var(--sub);margin-top:1px;letter-spacing:.02em}
   .card .tag{font-size:13px;color:var(--sub);margin-top:8px;line-height:1.5}
-  .card .more{font-size:13px;font-weight:600;color:var(--gold-dark);margin-top:10px;display:inline-block}
+  .card .more{font-size:13px;font-weight:600;color:var(--gold-dark);margin-top:10px;display:inline-block;padding:4px 0;min-height:28px}
   /* ---------- 底部弹层 ---------- */
   .mask{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;visibility:hidden;
     transition:opacity .22s;z-index:50;display:flex;align-items:flex-end;justify-content:center}
@@ -80,14 +80,23 @@
   .sheet-head .t{flex:1}
   .sheet-head .t .n{font-size:19px;font-weight:700}
   .sheet-head .t .e{font-size:12px;color:var(--sub);margin-top:2px}
-  .close{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
-    background:#fff;color:var(--sub);font-size:18px;cursor:pointer;line-height:1}
+  .close{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);
+    background:#fff;color:var(--sub);font-size:20px;cursor:pointer;line-height:1;
+    -webkit-tap-highlight-color:transparent}
+  ul.list li{padding-left:18px}
   .close:hover{background:var(--panel)}
   .meta{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
   .meta .row{display:flex;padding:10px 14px;border-bottom:1px solid var(--line)}
   .meta .row:last-child{border-bottom:none}
-  .meta .k{flex:0 0 64px;color:var(--sub);font-size:13px}
-  .meta .v{flex:1;font-size:14px}
+  .meta .k{flex:0 0 52px;color:var(--sub);font-size:13px;padding-right:8px;padding-top:2px}
+  .meta .v{flex:1;min-width:0;font-size:13.5px;word-break:break-word;line-height:1.6}
+  @media(max-width:400px){
+    .meta .row{display:block;padding:9px 13px}
+    .meta .k{flex:none;font-size:12px;padding:0 0 2px;color:var(--gold-dark);font-weight:600}
+    .meta .v{font-size:13px}
+    .sheet{padding-left:15px;padding-right:15px}
+    .gallery img{width:120px;height:82px}
+  }
   .sec-title{font-size:13px;font-weight:700;color:var(--gold-dark);margin:16px 0 8px;
     display:flex;align-items:center;gap:6px}
   .sec-title::before{content:"";width:3px;height:13px;background:var(--gold);border-radius:2px;display:inline-block}
@@ -133,7 +142,7 @@
     <p class="sub">两大一小 · 6 岁友好 · 点击卡片看详情与实用贴士</p>
   </header>
   <div class="grid" id="grid"></div>
-  <footer>资料整理自小红书笔记与实地攻略</footer>
+  <footer>9 个景点 · 路程均从 Golden Town Kad Ruamchok 出发估算<br>价格/营业以出行前官方核实为准 · 整理自小红书与实地攻略</footer>
 </div>
 
 <div class="mask" id="mask">
@@ -149,15 +158,14 @@
       name:"黏黏瀑布", en:"Buatong / Sticky Waterfall",
       tag:"能爬的钙化瀑布，免费玩水一整天",
       imgs:["img/sticky-1.jpg","img/sticky-2.jpg","img/sticky-3.jpg"],
-      meta:[
-        ["位置","湄登县 Si Lanna 国家公园（Mae Taeng，市区西北约 60km）"],
-        ["门票","免费（入口登记姓名+车牌，停车免费）"],
-        ["开放","08:00–17:00"],
-        ["游玩","约 2–3 小时（攀爬+玩水）"]
+      meta:[        ["价格","免费（入口登记姓名+车牌，停车免费）；寄存柜约 30 铢，防水袋约 25 铢"],
+        ["时间","08:00–17:00；建议上午早到（周末 11:00–15:00 最挤）；游玩约 2–3 小时"],
+        ["内容","4 层石灰华瀑布，碳酸钙沉积使岩面粗糙防滑，可手脚并用逆流攀爬；主瀑段 20–45 分钟两侧有绳；顶层天然水池、对岸七彩泉眼；6 岁可浅水/半段玩"],
+        ["路程","Si Lanna 国家公园（湄登 Mae Taeng，古城约 60km）。从 Golden Town Kad Ruamchok 出发约 50–60km / 1–1.2 小时车程；建议包车，可与湄登大象营串一日线"]
       ],
       hi:[
         "瀑布含碳酸氢钙泉（Nam Phu Chet Si），水流经处沉积石灰华，岩面粗糙如砂纸，赤脚踩上去不打滑，可像蜘蛛人一样逆流攀爬",
-        "共 4 层，主瀑段爬升约 20–45 分钟，难度轻松~中等，两侧有绳索借力；5 岁娃可由家长牵手体验浅水段",
+        "共 4 层，主瀑段爬升约 20–45 分钟，难度轻松~中等，两侧有绳索借力；6 岁体力好可在家长陪同下爬半段",
         "顶层有天然水池可泡脚/游泳；对岸是七彩泉眼源头，水质清透可看"
       ],
       tips:[
@@ -172,11 +180,10 @@
       name:"丛林飞跃 Skyline", en:"Zipline Adventure",
       tag:"雨林上空滑索，6 岁身高≥120cm 即可玩",
       imgs:["img/skyline-1.jpg","img/skyline-2.jpg"],
-      meta:[
-        ["位置","清迈西北山区（古城约 5km 起含免费接送）"],
-        ["门票","含接送+泰式自助午餐+保险+中/英导游"],
-        ["开放","周二休（周一及周三–日）；接驳 07:00–13:30"],
-        ["游玩","全程约 3–5 小时"]
+      meta:[        ["价格","含酒店接送+泰式自助午餐+保险+中/英导游；平台参考 ¥350–435/人（携程极速/终极套餐）"],
+        ["时间","周二休（周一及周三–日）；接驳 07:00–13:30 多时段；全程约 3–5 小时"],
+        ["内容","38 个平台、21 条滑索（最长 900m）、2100m 丛林旱滑、9m 巨型秋千、15m 速降、5 座高空桥；两位教练一前一后护航，大部分无失重感"],
+        ["路程","Doi Saket 萨科特山（古城约 18km）。从 Golden Town 出发约 30–40km / 45–60 分钟；套餐含市区接送，下单填住宿地址确认是否超区"]
       ],
       hi:[
         "38 个平台、21 条滑索（最长 900m）、2100m 丛林旱滑（过山车式）、9m 巨型秋千、15m 速降、5 座高空桥",
@@ -195,11 +202,10 @@
       name:"彩虹溶洞", en:"Mae Sap Cave",
       tag:"不用暴汗，灯光映出天然彩纹的神仙溶洞",
       imgs:["img/cave-1.jpg","img/cave-2.jpg"],
-      meta:[
-        ["位置","坤 Khan 国家公园（Samoeng，市区西南约 1 小时车程）"],
-        ["门票","100–150 铢 + 强制头盔 20–30 铢 + 停车费"],
-        ["开放","约 08:00–17:00"],
-        ["游玩","溶洞 1–1.5h + 1.2km 步道"]
+      meta:[        ["价格","门票 100–150 铢 + 强制头盔 20–30 铢 + 停车费；包车约 1,500 铢/天"],
+        ["时间","约 08:00–17:00；最佳光线 10:00–14:00；溶洞 1–1.5h + 1.2km 步道"],
+        ["内容","坤 Khan 国家公园「Unseen Thailand」：4 个洞厅（入口/礼佛/祖母绿/钻石），海拔 620m、洞长 144m；矿物质在灯光下呈天然彩纹原图直出；回程可买路边草莓"],
+        ["路程","Samoeng 三鹏县（古城约 54km）。从 Golden Town 出发约 50–60km / 1.2–1.5 小时；山路弯多，建议包车并与湄林线组合"]
       ],
       hi:[
         "泰国「Unseen Thailand」奇观：洞内矿物质在灯光下折射出红/绿/蓝天然彩纹，原图直出无滤镜",
@@ -218,11 +224,10 @@
       name:"打铁片手工", en:"Lanna Artisans",
       tag:"古城南门 50 铢，敲出专属旅行纪念",
       imgs:["img/smith-1.jpg","img/smith-2.jpg","img/smith-3.jpg"],
-      meta:[
-        ["位置","古城南门银庙（Wat Sri Suphan）旁，Wua Lai Rd"],
-        ["价格","铝片 50 铢/件；铜戒指 70、手镯 110 铢（仅现金）"],
-        ["开放","每日 09:00–17:00"],
-        ["游玩","约 1 小时（做 2 件）"]
+      meta:[        ["价格","铝片 50 铢/件；铜戒指 70、手镯 110 铢；仅收现金"],
+        ["时间","每日 09:00–17:00；上午 9 点或下午 2 点后人少；做 2 件约 1 小时"],
+        ["内容","画图案→复写纸拓印铁片→小锤敲打→店员打磨上油抛光打孔，6 步成品；钥匙扣/戒指/手镯当场带走，家族经营半露天工坊"],
+        ["路程","古城南门银庙旁 Wua Lai Rd。从 Golden Town 出发约 6–8km / 15–20 分钟车程；Grab/双条车可达，地图搜 Lanna Artisans Art Gallery"]
       ],
       hi:[
         "画图案或选模板 → 复写纸拓印到铁片 → 小锤敲打 → 店员打磨上油抛光打孔，6 步成品",
@@ -241,11 +246,10 @@
       name:"大象自然保护公园", en:"Elephant Nature Park",
       tag:"无接触大象救助营，给孩子保护自然的视角",
       imgs:["img/elephant-1.jpg","img/elephant-2.jpg"],
-      meta:[
-        ["位置","湄登县（Mae Taeng），市区约 90 分钟车程"],
-        ["门票","半日 2,500 / 全日 SkyWalk 3,500 / 过夜 5,800 铢（儿童 3–11 半价；官网预订）"],
-        ["开放","每日（需预约，含接送）"],
-        ["游玩","半日约 4h / 全日整天"]
+      meta:[        ["价格","半日 2,500 / 全日 SkyWalk 3,500 / 过夜 5,800 铢；3–11 岁儿童半价；官网预订"],
+        ["时间","每日（需预约，含接送）；半日约 4 小时 / 全日整天"],
+        ["内容","Lek Chailert 创立救助营，「无接触」不骑乘不表演不触摸；喂香蕉甘蔗、看象群河里洗澡、听救助故事、素食自助午餐；有无障碍通道"],
+        ["路程","湄登县 Mae Taeng（古城约 40km）。从 Golden Town 出发约 40–50km / 1–1.2 小时；官网预订含市区接送，下单填住宿地址确认"]
       ],
       hi:[
         "由 Lek Chailert 创立的救助营，主张「无接触」：不骑乘、不表演、不触摸，尊重象的自主",
@@ -261,13 +265,12 @@
     {
       emoji:"🐑", grad:"linear-gradient(135deg,#e8c46a,#c99a3a)", loc:"湄林山顶",
       name:"山顶绵羊牧场", en:"Maekee Sheep House",
-      tag:"湄林山顶童话牧场，5 岁娃能玩半天",
+      tag:"湄林山顶童话牧场，6 岁娃能玩半天",
       imgs:["img/sheep-1.jpg","img/sheep-2.jpg","img/sheep-3.jpg"],
-      meta:[
-        ["位置","湄林区 Pong Yang 山顶（市区约 45 分钟–1h20）"],
-        ["门票","约 100 铢（外国游客 200 / 儿童 50 / 110cm 以下免费，部分含胡萝卜桶）"],
-        ["开放","07:30–18:00"],
-        ["游玩","约 2–3 小时"]
+      meta:[        ["价格","约 100 铢（外国游客 200 / 儿童 50 / 110cm 以下免费，部分含胡萝卜桶）"],
+        ["时间","07:30–18:00；下午 3 点后光线柔人少；游玩约 2–3 小时"],
+        ["内容","约 10 英亩草甸，白羊成群可抚摸投喂，另有羊驼/山羊/牧羊犬；可抱小羊羔、骑羊漫步，网红秋千+风车+咖啡馆"],
+        ["路程","湄林 Pong Yang 山顶（古城约 8km 到湄林再上山）。从 Golden Town 出发约 20–30km / 40–60 分钟；可顺路串蒙占山 Mon Cham"]
       ],
       hi:[
         "约 10 英亩草甸，白羊成群干净亲人，可近距离抚摸投喂；还有 2 只羊驼、山羊、牧羊犬",
@@ -285,15 +288,14 @@
       name:"夜间动物园", en:"Chiang Mai Night Safari",
       tag:"亚洲唯二夜间动物园，坐车喂长颈鹿",
       imgs:["img/night-1.jpg","img/night-2.jpg"],
-      meta:[
-        ["位置","Hang Dong（素贴山脚下），市中心约 12–15km / 20–30 分钟"],
-        ["门票","外国游客约 1,200 铢成人 / 600 铢儿童（101–140cm），100cm 以下免费"],
-        ["开放","11:00–22:00"],
-        ["游玩","约 4–5 小时"]
+      meta:[        ["价格","外国游客约 1,200 铢成人 / 600 铢儿童（101–140cm），100cm 以下免费；蔬果篮 30 铢"],
+        ["时间","11:00–22:00；建议 15:30–16:00 入园；全程约 4–5 小时；表演约 18:10 起"],
+        ["内容","步行区 Jaguar Trail + 草食观光车 Savanna + 肉食区 Predator Prowl；无玻璃游览车喂长颈鹿斑马；音乐喷泉灯光秀。⚠️ 老虎表演 2026 年起暂停维护，别把它当核心期待"],
+        ["路程","Hang Dong 素贴山下（古城约 15km）。从 Golden Town（城北）出发约 22–28km / 35–45 分钟；建议打车/包车往返"]
       ],
       hi:[
         "三大区：步行区（Jaguar Trail）、草食动物观光车（Savanna）、肉食猎手区（Predator Prowl）",
-        "坐无玻璃游览车近距离喂长颈鹿/斑马（蔬果篮 30 铢），5 岁娃极兴奋",
+        "坐无玻璃游览车近距离喂长颈鹿/斑马（蔬果篮 30 铢），孩子极兴奋",
         "灯光水幕秀 + 民族舞蹈/老虎表演（约 18:10 起）"
       ],
       tips:[
@@ -424,7 +426,7 @@
 <script>
 /* ===== 访问密码门 ===== */
 (function(){
-  var PASS = 'huoyan2026'; /* ← 想改密码就改这一行，保存即生效 */
+  var PASS = '2027'; /* ← 想改密码就改这一行，保存即生效 */
   var gate = document.getElementById('pw-gate');
   var input = document.getElementById('pw-input');
   var btn = document.getElementById('pw-btn');
