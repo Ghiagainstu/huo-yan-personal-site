@@ -374,7 +374,7 @@
       ]
     },
     {
-      emoji:"🍽️", grad:"linear-gradient(135deg,#8a6a3a,#4a3418)", loc:"古城 / 湄林",
+      emoji:"🍽️", grad:"linear-gradient(135deg,#8a6a3a,#4a3418)", loc:"古城/湄林",
       name:"米其林泰餐 Baan Landai", en:"Baan Landai Fine Thai Cuisine",
       tag:"连续 7 年米其林，泰北家传菜，人均 600–1000 铢",
       imgs:["img/michelin-1.jpg","img/michelin-2.jpg"],
@@ -397,7 +397,7 @@
       ]
     },
     {
-      emoji:"🥊", grad:"linear-gradient(135deg,#b23a3a,#6d1a1a)", loc:"城北 / 湄林",
+      emoji:"🥊", grad:"linear-gradient(135deg,#b23a3a,#6d1a1a)", loc:"城北/湄林",
       name:"泰拳训练营（成人体验）", en:"Muay Thai Training",
       tag:"大人专属：1v1 打靶 + 团课，350–500 铢/节",
       imgs:["img/muaythai-1.jpg","img/muaythai-2.jpg"],
@@ -421,7 +421,7 @@
       ]
     },
     {
-      emoji:"🎫", grad:"linear-gradient(135deg,#4a3a7a,#241a45)", loc:"古城 / 长康路",
+      emoji:"🎫", grad:"linear-gradient(135deg,#4a3a7a,#241a45)", loc:"古城/长康路",
       name:"泰拳比赛（现场观赛）", en:"Muay Thai Stadium",
       tag:"每晚 21:00 开赛，600 铢起看真打",
       imgs:["img/fight-1.jpg","img/fight-2.jpg"],
@@ -468,14 +468,18 @@
     '</a>';
   }).join('');
 
+  function fmt(t){
+    return String(t).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  }
+
   function openSheet(i){
     var s = SPOTS[i];
     var meta = s.meta.map(function(m){
-      return '<div class="row"><div class="k">'+m[0]+'</div><div class="v">'+m[1]+'</div></div>';
+      return '<div class="row"><div class="k">'+m[0]+'</div><div class="v">'+fmt(m[1])+'</div></div>';
     }).join('');
-    var hi = '<ul class="list">'+s.hi.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>';
+    var hi = '<ul class="list">'+s.hi.map(function(t){return '<li>'+fmt(t)+'</li>';}).join('')+'</ul>';
     var tp = '<ul class="list">'+s.tips.map(function(t){
-      return '<li>'+t.replace('⚠️ ','<span style="color:#c0392b;font-weight:600">⚠️ </span>')+'</li>';
+      return '<li>'+fmt(t).replace('⚠️ ','<span style="color:#c0392b;font-weight:600">⚠️ </span>')+'</li>';
     }).join('')+'</ul>';
     sheet.innerHTML =
       '<div class="sheet-head">' +

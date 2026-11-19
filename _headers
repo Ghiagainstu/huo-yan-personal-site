@@ -48,5 +48,12 @@
 /kids-math/*.html
   Cache-Control: no-store, no-cache, must-revalidate
 
+/chiangmai/*.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+# chiangmai 景点图：长缓存（换图须改文件名或加 ?v=N 破缓存）
+/chiangmai/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /index.html
   Cache-Control: no-store, no-cache, must-revalidate
