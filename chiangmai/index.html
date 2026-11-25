@@ -107,6 +107,30 @@
     border-radius:50%;background:var(--gold)}
   .warn{background:var(--gold-bg);border:1px solid #f0d9a8;border-radius:10px;padding:10px 13px;
     font-size:13.5px;color:#7a5a1e;margin-top:6px}
+  /* 时段建议角标 */
+  .card .slot-tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;
+    margin-top:9px;background:var(--gold-bg);color:var(--gold-dark);border:1px solid #f0d9a8}
+  .card .slot-tag.indoors{background:#eef7f2;color:#2f7a56;border-color:#cbe6d8}
+  .card .slot-tag.avoid{background:#fdeeee;color:#b0392f;border-color:#f3cccc}
+  /* 空气质量提示卡 */
+  .airbox{background:#f4f7fa;border:1px solid #dbe4ec;border-radius:12px;padding:13px 15px;margin:0 0 16px}
+  .airbox summary{font-size:13.5px;font-weight:700;color:#1f4e79;cursor:pointer;list-style:none;
+    display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .airbox summary::-webkit-details-marker{display:none}
+  .airbox summary .chev{font-size:11px;color:#5b7a99;transition:transform .2s}
+  .airbox[open] summary .chev{transform:rotate(90deg)}
+  .airbox .ab-body{font-size:13px;color:#33475b;line-height:1.72;margin-top:11px}
+  .airbox .ab-body p{margin:0 0 9px}
+  .airbox .ab-body p:last-child{margin-bottom:0}
+  .airbox .ab-body b{color:#1f4e79}
+  .airbox .thr{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 12px}
+  .airbox .thr div{border-radius:8px;padding:7px 5px;text-align:center;font-size:11px;line-height:1.45}
+  .airbox .thr .g{background:#e8f5ee;color:#256b4b}
+  .airbox .thr .y{background:#fdf3e0;color:#8a6212}
+  .airbox .thr .o{background:#fcece6;color:#a34720}
+  .airbox .thr .r{background:#fbe6e6;color:#a32d2d}
+  .airbox .thr b{display:block;font-size:13px;margin-bottom:2px}
+  .airbox .note{font-size:11.5px;color:#6b7c8d;margin-top:10px}
   footer{margin-top:30px;text-align:center;font-size:12px;color:var(--sub)}
   footer a{color:var(--gold-dark);text-decoration:none}
   /* ===== 访问密码门 ===== */
@@ -142,6 +166,22 @@
     <h1>清迈亲子景点手册</h1>
     <p class="sub">两大一小 · 6 岁友好 · 点击卡片看详情与实用贴士</p>
   </header>
+  <details class="airbox" id="airbox">
+    <summary><span>🌫️ 2 月焚烧季 · 每日决策规则（点开看）</span><span class="chev">▸</span></summary>
+    <div class="ab-body">
+      <p><b>核心：2 月没有"干净周"，只有"干净日"。</b>2026 年 2 月逐日 AQI 在 41–122 间波动，月初即超标、中旬短暂好转、18–19 日二次反弹。所以<b>每天出门前看实时读数，别预设哪周安全</b>。</p>
+      <p><b>看什么：</b>Air4Thai（泰国官方 µg/m³）+ IQAir（US AQI），看 <b>24 小时均值</b>不看瞬时。孩子按 WHO 标准从严（15 µg/m³），不要用泰国标准 37.5 放宽。</p>
+      <div class="thr">
+        <div class="g"><b>&lt;50</b>全天户外</div>
+        <div class="y"><b>50–100</b>正常活动</div>
+        <div class="o"><b>100–150</b>孩子减量</div>
+        <div class="r"><b>&gt;150</b>取消户外</div>
+      </div>
+      <p><b>一天里的窗口：</b>中午 12 点前、晚 7 点后空气封闭下沉；<b>13:00–18:00 是唯一扩散窗口</b>，户外项目尽量排下午。清晨看云海/坐热气球要接受烟霾替代的可能。</p>
+      <p><b>怎么用卡片角标：</b>每张卡右上角有「室内 / 下午 / 清晨 / 夜间 / 避开2月」标签。AQI 高时优先点「室内」标签的项目；AQI 好时再排「下午」的户外大项。</p>
+      <p class="note">数据依据：清迈大学气候变化数据中心、泰国污染控制厅、WEDO AIR 逐月统计；2027 年具体火情无法提前预测，出行前查 Air4Thai 实时值。</p>
+    </div>
+  </details>
   <div class="grid" id="grid"></div>
   <footer>40 个地点 · 当日往返版（已去掉寺庙与硬性过夜）<br>路程均从 Golden Town Kad Ruamchok 出发估算 · 价格营业以出行前官方核实为准</footer>
 </div>
@@ -159,6 +199,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"黏黏瀑布", en:"Buatong / Sticky Waterfall",
       tag:"能爬的钙化瀑布，免费玩水一整天",
+      slot:{s:"下午", d:"户外体力项目，2 月烟霾季优先排 13:00–18:00 扩散窗口；早晨污染物下沉贴地，不建议带孩子玩水。AQI>150 取消。"},
       imgs:["img/sticky-1.jpg","img/sticky-2.jpg","img/sticky-3.jpg"],
       meta:[        ["价格","免费（入口登记姓名+车牌，停车免费）；寄存柜约 30 铢，防水袋约 25 铢"],
         ["时间","08:00–17:00；建议上午早到（周末 11:00–15:00 最挤）；游玩约 2–3 小时"],
@@ -182,6 +223,7 @@
       rec:"⭐⭐⭐",
       name:"丛林飞跃 Skyline", en:"Zipline Adventure",
       tag:"雨林上空滑索，6 岁身高≥120cm 即可玩",
+      slot:{s:"下午", d:"高空项目对能见度敏感，2 月务必排下午；早晨山脚烟霾浓，看不到全景。AQI>150 取消。"},
       imgs:["img/skyline-1.jpg","img/skyline-2.jpg"],
       meta:[        ["价格","含酒店接送+泰式自助午餐+保险+中/英导游；平台参考 ¥350–435/人（携程极速/终极套餐）"],
         ["时间","周二休（周一及周三–日）；接驳 07:00–13:30 多时段；全程约 3–5 小时"],
@@ -205,6 +247,7 @@
       rec:"⭐⭐⭐",
       name:"彩虹溶洞", en:"Mae Sap Cave",
       tag:"不用暴汗，灯光映出天然彩纹的神仙溶洞",
+      slot:{s:"下午", d:"洞内为主受空气影响小，2 月可安排下午；若上午 AQI 高，先进洞再决定户外段。"},
       imgs:["img/cave-1.jpg","img/cave-2.jpg"],
       meta:[        ["价格","门票 100–150 铢 + 强制头盔 20–30 铢 + 停车费；包车约 1,500 铢/天"],
         ["时间","约 08:00–17:00；最佳光线 10:00–14:00；溶洞 1–1.5h + 1.2km 步道"],
@@ -228,6 +271,7 @@
       rec:"⭐⭐⭐",
       name:"打铁片手工", en:"Lanna Artisans",
       tag:"古城南门 50 铢，敲出专属旅行纪念",
+      slot:{s:"灵活", d:"古城南门半户外，AQI>100 时改到银器敲制等室内手作；上午 9 点或下午 2 点后人少。"},
       imgs:["img/smith-1.jpg","img/smith-2.jpg","img/smith-3.jpg"],
       meta:[        ["价格","铝片 50 铢/件；铜戒指 70、手镯 110 铢；仅收现金"],
         ["时间","每日 09:00–17:00；上午 9 点或下午 2 点后人少；做 2 件约 1 小时"],
@@ -251,6 +295,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"大象自然保护公园", en:"Elephant Nature Park",
       tag:"无接触大象救助营，给孩子保护自然的视角",
+      slot:{s:"下午", d:"湄林户外营地，2 月排下午场并确认当日 AQI；北部县域读数常高于城区，孩子备儿童 N95。"},
       imgs:["img/elephant-1.jpg","img/elephant-2.jpg"],
       meta:[        ["价格","半日 2,500 / 全日 SkyWalk 3,500 / 过夜 5,800 铢；3–11 岁儿童半价；官网预订"],
         ["时间","每日（需预约，含接送）；半日约 4 小时 / 全日整天"],
@@ -273,6 +318,7 @@
       rec:"⭐⭐⭐⭐",
       name:"山顶绵羊牧场", en:"Maekee Sheep House",
       tag:"湄林山顶童话牧场，6 岁娃能玩半天",
+      slot:{s:"下午", d:"山顶视野依赖能见度，2 月排 15:00 后，光线柔且空气开始扩散；早晨常被烟霾盖住。"},
       imgs:["img/sheep-1.jpg","img/sheep-2.jpg","img/sheep-3.jpg"],
       meta:[        ["价格","约 100 铢（外国游客 200 / 儿童 50 / 110cm 以下免费，部分含胡萝卜桶）"],
         ["时间","07:30–18:00；下午 3 点后光线柔人少；游玩约 2–3 小时"],
@@ -295,6 +341,7 @@
       rec:"⭐⭐⭐⭐",
       name:"夜间动物园", en:"Chiang Mai Night Safari",
       tag:"亚洲唯二夜间动物园，坐车喂长颈鹿",
+      slot:{s:"夜间", d:"晚间项目基本不受白天烟霾影响，是 2 月少数可照常安排的大项；晚间气温低给孩子加件外套。"},
       imgs:["img/night-1.jpg","img/night-2.jpg"],
       meta:[        ["价格","外国游客约 1,200 铢成人 / 600 铢儿童（101–140cm），100cm 以下免费；蔬果篮 30 铢"],
         ["时间","11:00–22:00；建议 15:30–16:00 入园；全程约 4–5 小时；表演约 18:10 起"],
@@ -317,6 +364,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"古城攀岩馆 Main Wall", en:"Main Wall Climbing Gym",
       tag:"6 岁全包 790 铢，雨天暴晒都能放电的室内首选",
+      slot:{s:"室内", d:"室内馆，AQI>100 时的首选替代；雨天、暴晒、烟霾天都能玩，一个月可当固定项。"},
       imgs:["img/climb-1.jpg","img/climb-2.jpg"],
       meta:[
         ["价格","儿童全包 790 铢（门票+装备+1h 私教+全程保护）；单日票 340 铢（4–19岁，不含装备）；装备另租：鞋100/安全带50/粉袋20；成人日票 400、含装备 550 铢；月卡约 2,000 铢（住一个月超值）"],
@@ -341,6 +389,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"泰餐烹饪课（小小厨师）", en:"Mama Noi Thai Cookery School",
       tag:"6 岁做小小厨师，逛菜场 + 有机花园 + 亲手煮 3 道菜",
+      slot:{s:"室内", d:"室内厨房 + 有机花园，逛菜场为户外段。2 月若早晨 AQI 高，缩短菜场时间、直接进厨房。"},
       imgs:["img/cook-1.jpg","img/cook-2.jpg"],
       meta:[
         ["价格","小小厨师班（4岁+）儿童约 1,200 泰铢左右（约 ¥240，官方/平台价为准）；成人普通班约 ¥179 起（Klook 含食材/导游/保险/食谱）；私人课另计"],
@@ -366,6 +415,7 @@
       rec:"⭐⭐⭐",
       name:"暹罗昆虫博物馆", en:"Siam Insect Zoo",
       tag:"能摸能看的昆虫自然课，雨天室内首选",
+      slot:{s:"室内", d:"全室内，AQI>100 时带孩子的最佳备选之一，约 2 小时。"},
       imgs:["img/insect-1.jpg","img/insect-2.jpg"],
       meta:[
         ["价格","外国游客约 200 铢成人 / 150 铢儿童（官方攻略价），以现场为准"],
@@ -389,6 +439,7 @@
       rec:"⭐⭐⭐⭐",
       name:"米其林泰餐 Baan Landai", en:"Baan Landai Fine Thai Cuisine",
       tag:"连续 7 年米其林，泰北家传菜，人均 600–1000 铢",
+      slot:{s:"灵活", d:"室内餐厅，空气质量不影响用餐；建议避开 2 月下旬，若当日 AQI 高就选午市早段。"},
       imgs:["img/michelin-1.jpg","img/michelin-2.jpg"],
       meta:[
         ["价格","人均约 600–1000 铢（米其林里性价比高）；招牌红酒炖猪肋排、蟹肉炒饭、蟹肉咖喱汤面"],
@@ -413,6 +464,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"泰拳训练营（成人体验）", en:"Muay Thai Training",
       tag:"大人专属：1v1 打靶 + 团课，350–500 铢/节",
+      slot:{s:"室内", d:"拳馆室内，不受烟霾影响；2 月可作为每周固定训练，时间越好越好约教练。"},
       imgs:["img/muaythai-1.jpg","img/muaythai-2.jpg"],
       meta:[
         ["价格","团课约 350–500 铢/节（Money Muay Thai 350）；日票 500 铢；周票约 2,500；月票 4,500–12,000（视场馆）；私教 1v1 约 1,200–1,500 铢/小时；拳套+手带租借约 50 铢"],
@@ -438,6 +490,7 @@
       rec:"⭐⭐",
       name:"泰拳比赛（现场观赛）", en:"Muay Thai Stadium",
       tag:"每晚 21:00 开赛，600 铢起看真打",
+      slot:{s:"夜间", d:"21:00 室内场馆，不受烟霾影响；成人向、时间晚，孩子不适配。"},
       imgs:["img/fight-1.jpg","img/fight-2.jpg"],
       meta:[
         ["价格","统一档位：标准席 600 / 环边 Ringside 1,000 / VIP 1,500 铢（VIP 常含无限饮品）；部分场馆有早鸟或线上小折扣"],
@@ -464,6 +517,7 @@
       rec:"⭐⭐⭐⭐",
       name:"湄康蓬山村（过夜）", en:"Mae Kampong Village",
       tag:"住一晚才算懂它：云雾茶山村，社区旅游样板",
+      slot:{s:"避开2月", d:"山村在山上且过夜，2 月烟霾叠加山雾，体验大打折扣；若坚持去选 1 月或 2 月上旬。"},
       imgs:["img/maekampong-1.jpg","img/maekampong-2.jpg"],
       meta:[
         ["价格","民宿约 550–1,200 铢/人/晚含早（多通过房主 Facebook 直订，不在订房平台）；家常餐 80–150 铢；咖啡 40–60 铢；小巴 Warorot 市场直达约 150 铢/单程"],
@@ -488,6 +542,7 @@
       rec:"⭐⭐⭐",
       name:"乌蒙寺（森林寺）", en:"Wat Umong",
       tag:"七百年隧道古寺，青苔佛头与林中静坐",
+      slot:{s:"下午", d:"林中隧道寺，2 月排 14:00 后；早晨空气封闭、隧道内粉尘不易散。"},
       imgs:["img/umong-1.jpg","img/umong-2.jpg"],
       meta:[
         ["价格","门票约 20 铢/人（小红书实拍）；喂鱼饲料约 10 铢/袋"],
@@ -512,6 +567,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"瑜伽固定项（月度）", en:"Yoga & Sound Bath",
       tag:"住一个月才值得：350 铢/节，小班私教感",
+      slot:{s:"室内", d:"室内小班，AQI>100 时照常；2 月保持每周固定节奏比临时景点更有价值。"},
       imgs:["img/yoga-1.jpg"],
       meta:[
         ["价格","单次约 200–400 铢；月不限次约 2,000–3,500 铢；Yoga Pretz 实拍 350 铢/节、**仅收现金**；公园免费晨间瑜伽垫租 15 铢"],
@@ -536,6 +592,7 @@
       rec:"⭐⭐⭐⭐",
       name:"南奔复古火车半日", en:"Lamphun by Train",
       tag:"5 铢火车 29 分钟，半小时邻居的慢上午",
+      slot:{s:"上午", d:"南奔在清迈南边，读数通常低于北部；选上午早班车，全程 29 分钟户外暴露短。"},
       imgs:["img/lamphun-1.jpg"],
       meta:[
         ["价格","火车票**成人 5 铢 / 儿童 3 铢**（小红书亲子博主实拍）；南奔当地小吃与游乐场约 10–30 铢/项"],
@@ -560,6 +617,7 @@
       rec:"⭐⭐⭐",
       name:"Kew Mae Pan 高山步道", en:"Kew Mae Pan Nature Trail",
       tag:"泰国屋脊的云林山脊，2 月正当时",
+      slot:{s:"避开2月", d:"高山步道全靠视野，2 月烟霾会遮掉山脊；若 AQI>100 改室内，宁可 1 月去。"},
       imgs:["img/inthanon-1.jpg"],
       meta:[
         ["价格","国家公园门票外国成人 300 铢 / 儿童（3–14岁）150 铢，摩托 20 铢；**向导 200 铢/组（最多10人，官方另标 220 铢，带足现金）**；双佛塔另收 100 铢"],
@@ -584,6 +642,7 @@
       rec:"⭐⭐⭐⭐",
       name:"清莱三庙（蓝白庙一日）", en:"Chiang Rai Three Temples",
       tag:"泰北标志性艺术建筑，当日往返经典远线",
+      slot:{s:"避开2月", d:"长途一日线全天户外，2 月下旬烟霾会毁掉蓝白庙的视觉效果；尽量排 1 月或 2 月上旬。"},
       imgs:["img/chiangrai-1.jpg","img/chiangrai-2.jpg"],
       meta:[
         ["价格","跟团/包车 1,000–1,800 铢全包（含往返接送+门票+午餐+英文导游）；包车约 4,500 铢/天；白庙 100 铢、蓝庙免费、黑庙 80 铢（单去才另付）"],
@@ -608,6 +667,7 @@
       rec:"⭐⭐⭐⭐⭐",
       name:"Tok Sen 木槌按摩", en:"Tok Sen Massage",
       tag:"兰纳独有木槌疗法，一个月做第三次才懂",
+      slot:{s:"室内", d:"室内疗法，AQI>100 时照常；2 月安排固定时段比一次性体验更有价值。"},
       imgs:["img/toksen-1.jpg"],
       meta:[
         ["价格","OMH 古医学院院内约 400 铢/h（当地价）；Green Bamboo 400 铢/60分；Come Ma 800；Lila 1,200/90分；Fah Lanna 1,600 铢/60分"],
@@ -632,6 +692,7 @@
       rec:"⭐⭐⭐",
       name:"大象噗噗造纸乐园", en:"Elephant Poo Poo Paper Park",
       tag:"把象粪做成纸，湄林顺路的手作科普",
+      slot:{s:"灵活", d:"半室内工坊，可作为湄林线短停；当日 AQI 高时缩短户外环节。"},
       imgs:["img/poopaper-1.jpg"],
       meta:[
         ["价格","约 21–100 铢（按体验项目）"],
@@ -653,6 +714,7 @@
       rec:"⭐⭐",
       name:"兰花蝴蝶园", en:"Orchid & Butterfly Farm",
       tag:"蝴蝶+兰花，湄林线上的轻松点缀",
+      slot:{s:"室内", d:"温室 + 网室蝴蝶区，室内为主，烟霾天亲子备选；但园子小，仅作湄林线补丁。"},
       imgs:["img/orchid-1.jpg","img/orchid-2.jpg"],
       meta:[
         ["价格","约 40–60 铢/人（现场买票；英文源标 40 铢，近期评论多提到 60 铢，儿童半价）"],
@@ -674,6 +736,7 @@
       rec:"⭐⭐",
       name:"Dutch Farm 荷兰农场", en:"Dutch Farm Chiang Mai",
       tag:"小马驹互动，低龄亲子半日",
+      slot:{s:"下午", d:"城东户外农场，读数低于北部县；2 月排下午，AQI>100 缩短停留。"},
       imgs:["img/dutch-1.jpg","img/dutch-2.jpg"],
       meta:[
         ["价格","门票：成人约 100–150 铢、儿童约 30 铢（本地/外国游客不同价，按评论口径，现场再确认）；喂食、骑小马另计"],
@@ -695,6 +758,7 @@
       rec:"⭐⭐⭐",
       name:"班康瓦艺术村", en:"Baan Kang Wat",
       tag:"文青高脚木屋聚落，手作+咖啡",
+      slot:{s:"下午", d:"半户外聚落，2 月排下午；周一多数店休，空气差时只逛室内工作室。"},
       imgs:["img/kangwat-1.jpg"],
       meta:[
         ["价格","逛免费；陶艺/手作课另计（约两位数铢起）"],
@@ -716,6 +780,7 @@
       rec:"⭐⭐",
       name:"博桑油纸伞村", en:"Bo Sang Umbrella Village",
       tag:"泰北经典手作，可自己画伞",
+      slot:{s:"下午", d:"半户外手作村，2 月排 13:00 后；画伞在棚下，AQI>100 仍可短时体验。"},
       imgs:["img/bosang-1.jpg"],
       meta:[
         ["价格","纸伞彩绘 DIY 约 100–800 铢；逛免费"],
@@ -737,6 +802,7 @@
       rec:"⭐⭐⭐",
       name:"魏功甘古城马车游", en:"Wiang Kum Kam",
       tag:"马车绕古城遗址，轻松半日",
+      slot:{s:"下午", d:"户外马车游，2 月排 15:00 后；绕遗址约 1 小时，AQI>100 建议取消。"},
       imgs:["img/wiangkumkam-1.jpg"],
       meta:[
         ["价格","马车约 300–500 铢/车"],
@@ -758,6 +824,7 @@
       rec:"⭐⭐",
       name:"Huay Tung Tao 湖竹棚", en:"Huay Tung Tao Lake",
       tag:"本地人周末日常，竹棚烤鱼坐一下午",
+      slot:{s:"下午", d:"户外水边竹棚无遮挡，2 月排 14:00 后；AQI>100 改室内。"},
       imgs:["img/huaytungtao-1.jpg"],
       meta:[
         ["价格","门票约 50 铢（现场确认）；竹棚租+烤鱼餐另计"],
@@ -779,6 +846,7 @@
       rec:"⭐⭐⭐⭐",
       name:"因他侬云海观景（不徒步）", en:"Doi Inthanon Sunrise",
       tag:"凌晨上山看泰国屋脊云海，2 月最佳",
+      slot:{s:"清晨", d:"必须凌晨上山，但清晨正是污染物下沉时段，2 月云海常被烟霾替代；降低期待，AQI>150 取消。"},
       imgs:["img/inthanon-1.jpg"],
       meta:[
         ["价格","国家公园票外国成人 300 / 儿童 150 铢，摩托 20 铢；双佛塔另 100 铢（可选）"],
@@ -801,6 +869,7 @@
       rec:"⭐⭐",
       name:"实弹射击场", en:"Shooting Range",
       tag:"成人独特体验，中文教练可选",
+      slot:{s:"室内", d:"室内靶场，不受空气质量影响，全天可安排。"},
       imgs:["img/shooting-1.jpg"],
       meta:[
         ["价格","700 年射击场现场 S 包 1,316 铢起；平台套票约 ¥340–970；Black Diamond Pack A 815 铢起"],
@@ -823,6 +892,7 @@
       rec:"⭐",
       name:"动力伞飞行", en:"Paramotor Flight",
       tag:"成人向空中体验，天气依赖强",
+      slot:{s:"清晨", d:"清晨/傍晚起飞，2 月两个窗口都可能撞上烟霾，俯瞰观感大减；6 岁不能飞，仅大人参与。"},
       imgs:["img/paramotor-1.jpg","img/paramotor-2.jpg"],
       meta:[
         ["价格","FlyingBird：体验 ฿1,990（10 分钟）/ 标准 ฿2,800（15–20 分钟）/ 双人 ฿5,000 / 日出日落 ฿3,500；含 GoPro、飞行服、保险，标准档含市区免费接送"],
@@ -844,6 +914,7 @@
       rec:"⭐⭐⭐⭐",
       name:"卡丁车 Chiangmai Circuit", en:"Go-Kart Racing",
       tag:"泰北最长 1,180 米赛道，690 铢开 10 分钟",
+      slot:{s:"下午", d:"户外赛道，2 月排 13:00 后；AQI>100 改 X-Centre 室内漂移卡丁。"},
       imgs:["img/kart-1.jpg"],
       meta:[
         ["价格","成人单人 10 分钟 690 铢；双人 790、竞技赛车 1,490、儿童 590 铢（8 岁+ 且身高 >135cm）"],
@@ -866,6 +937,7 @@
       rec:"⭐⭐⭐⭐",
       name:"ATV 越野 + 河流漂流", en:"ATV Adventure & River Tubing",
       tag:"成人向越野半日，3 小时 1,800–3,500 铢",
+      slot:{s:"下午", d:"Mae Taeng 北部基地读数高于城区，2 月选下午场，全程备儿童 N95；AQI>100 改室内。"},
       imgs:["img/atv-3.jpg","img/atv-1.jpg"],
       meta:[
         ["价格","3 小时 ATV 约 1,800–3,500 铢（渠道价差大）；ATV+漂流全日：自驾到基地 3,190 铢/人、含接送 3,490 铢；乘客 2,890 / 3,190 铢"],
@@ -889,6 +961,7 @@
       rec:"⭐⭐⭐",
       name:"泰服妆造旅拍", en:"Thai Costume Photoshoot",
       tag:"800 铢当一天泰北王室，1 小时出片",
+      slot:{s:"下午", d:"下午光线最好，且恰是扩散窗口；拍摄多在户外，AQI>100 缩短外景时间。"},
       imgs:["img/thaicostume-1.jpg"],
       meta:[
         ["价格","Cha-Nang-Studio：泰服+妆发+底片全送+5 张精修 = 800 铢（约 ¥160）；其他店套系差异大"],
@@ -911,6 +984,7 @@
       rec:"⭐⭐⭐⭐",
       name:"迪卡侬免费球类课", en:"Decathlon Free Sports",
       tag:"周末免费足球/篮球/拳击，6 岁可玩",
+      slot:{s:"室内", d:"固定周末 9:00，室内场地不受烟霾影响；但 2027 年排期需向门店确认。"},
       imgs:["img/decathlon-1.jpg","img/decathlon-2.jpg"],
       meta:[
         ["价格","免费"],
@@ -932,6 +1006,7 @@
       rec:"⭐⭐",
       name:"兰纳银器敲制", en:"Lanna Silver Repoussé",
       tag:"银寺作场亲手敲银戒，带得走的纪念",
+      slot:{s:"室内", d:"室内作场，AQI>100 时照常；与打铁片同区，可一次安排两种手作。"},
       imgs:["img/silver-1.jpg","img/silver-2.jpg"],
       meta:[
         ["价格","约 250–1,200 铢（1–2 小时至半天，视作品）"],
@@ -953,6 +1028,7 @@
       rec:"⭐⭐⭐",
       name:"X-Centre 刺激园", en:"X-Centre Adventure Park",
       tag:"蹦极、漂移卡丁、ATV、彩弹一站玩齐",
+      slot:{s:"下午", d:"室外项目为主，2 月排下午；室内漂移卡丁可作烟霾天替代。"},
       imgs:["img/xcentre-1.jpg"],
       meta:[
         ["价格","50 米蹦极约 2,000 铢（含教练、保险、T 恤、证书）；室内漂移卡丁 800–1,000 铢/15 分钟；ATV/buggy 1 小时 2,000–5,500 铢；彩弹约 800 铢/100 发"],
@@ -974,6 +1050,7 @@
       rec:"⭐⭐",
       name:"MAIIAM 当代艺术馆", en:"MAIIAM Contemporary Art Museum",
       tag:"旧厂房改的美术馆，镜面瓷砖外墙＋东南亚当代展",
+      slot:{s:"室内", d:"全室内空调馆，AQI>150 时首选；可待 2 小时，但 2 月底开放日需官网确认。"},
       imgs:["img/maiiam-1.jpg","img/maiiam-2.jpg"],
       meta:[
         ["价格","成人 200 铢（学生 100、60 岁以上 150、12 岁以下免费）——旧攻略的 150 铢已过时"],
@@ -996,6 +1073,7 @@
       rec:"⭐⭐⭐",
       name:"Kalm Village 工艺聚落", en:"Kalm Village / Museum of Makers",
       tag:"契迪龙寺旁的免费建筑庭院，工艺与设计档案",
+      slot:{s:"室内", d:"庭院 + 室内展馆，AQI>100 时主要待室内部分；免费，可随时进出。"},
       imgs:["img/kalm-1.jpg","img/kalm-2.jpg"],
       meta:[
         ["价格","免费（部分展览、工作坊、纪录片放映另计，如放映 290 铢）"],
@@ -1017,6 +1095,7 @@
       rec:"⭐",
       name:"Highlands 高尔夫", en:"Chiang Mai Highlands Golf",
       tag:"泰北第一球场，4,100 铢含球童球车",
+      slot:{s:"避开2月", d:"户外 4 小时且无儿童托管，2 月烟霾叠加双重不适配；建议改 1 月或 2 月上旬。"},
       imgs:["img/golf-1.jpg","img/golf-2.jpg"],
       meta:[
         ["价格","旺季 18 洞约 4,100 铢（含果岭费＋球童＋球车）；球童小费约 400 铢/场；租杆 1,500–2,000 铢、租鞋 200 铢"],
@@ -1039,6 +1118,7 @@
       rec:"⭐⭐⭐",
       name:"North Gate Jazz Co-Op", en:"North Gate Jazz Co-Op",
       tag:"免门票的现场爵士，清迈夜生活地标",
+      slot:{s:"夜间", d:"晚间室内演出，不受白天烟霾影响；酒吧 24:00 打烊，成人向、孩子不适配。"},
       imgs:["img/jazz-1.jpg"],
       meta:[
         ["价格","免费入场，饮品 150–250 铢；散场给乐手小费 100 铢起"],
@@ -1074,6 +1154,7 @@
         '<div class="name">'+s.name+'</div>' +
         '<div class="en">'+s.en+'</div>' +
         '<div class="tag">'+s.tag+'</div>' +
+        (s.slot ? '<span class="slot-tag'+(s.slot.s==='室内'?' indoors':s.slot.s==='避开2月'?' avoid':'')+'">'+s.slot.s+' · 看空气质量</span>' : '') +
         '<span class="more">查看详情 →</span>' +
       '</div>' +
     '</a>';
@@ -1099,6 +1180,7 @@
         '<button class="close" id="closeBtn" aria-label="关闭">×</button>' +
       '</div>' +
       '<div class="meta">'+meta+'</div>' +
+      (s.slot ? '<div class="sec-title">时段建议 · 空气质量</div><div class="warn" style="background:#f4f7fa;border-color:#dbe4ec;color:#33475b">'+fmt(s.slot.d)+'</div>' : '') +
       '<div class="sec-title">亮点</div>'+hi+
       '<div class="sec-title">实用贴士</div>'+tp+
       (s.imgs && s.imgs.length ? '<div class="sec-title">参考图</div>'+
